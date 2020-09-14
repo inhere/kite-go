@@ -15,8 +15,11 @@
 go get github.com/gookit/ruxc
 ```
 
-## Packages
+## Dep Packages
 
-- [rux](https://github.com/gookit/rux)
-- [gcli](https://github.com/gookit/gcli)
-- [ini](https://github.com/gookit/ini)
+- https://github.com/swaggo/swag
+- https://github.com/go-openapi/spec
+- https://github.com/go-openapi/swag
+- https://github.com/gookit/rux
+- https://github.com/gookit/gcli
+- https://github.com/gookit/ini
