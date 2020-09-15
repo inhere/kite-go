@@ -9,19 +9,16 @@ import (
 	"github.com/gookit/rux"
 )
 
-// {{ .GroupName }} {{ .GroupDesc }}
-type {{ .GroupName }} struct {}
+// {{ upFirst .GroupName }} {{ .GroupDesc }}
+type {{ upFirst .GroupName }} struct {}
 
 // AddRoutes register routes to the router
-func (grp *Anything) AddRoutes(r *rux.Router) {
-    {{range _, $m := .Methods }}
-    	r.{{ $m.METHOD }}("{{ $m.Path }}", grp.{{ $m.MethodName }})
-    {{end}}
+func (grp *{{ .GroupName }}) AddRoutes(r *rux.Router) {
+	{{range $i, $m := .Actions }}r.{{ $m.METHOD }}("{{ $m.Path }}", grp.{{ $m.MethodName }}){{end}}
 }
-
-{{range _, $m := .Methods }}
+{{range $i, $m := .Actions }}
 // {{ $m.MethodName }} {{ $m.MethodDesc }}
-func (*{{ .GroupName}}) {{ $m.MethodName }}(c *rux.Context) {
+func (*{{ upFirst $.GroupName}}) {{ $m.MethodName }}(c *rux.Context) {
 	c.Text(200, "hello")
 }
 {{end}}

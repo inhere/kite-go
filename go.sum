@@ -22,13 +22,20 @@ github.com/google/gofuzz v1.0.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/
 github.com/google/renameio v0.1.0/go.mod h1:KWCgfxg9yswjAJkECMjeO8J8rahYeXnNhOm40UhjYkI=
 github.com/gookit/color v1.2.6 h1:f6/ehoHPXwi2tuntjpBRhpBhFLL9YjrnB2m6RWsbCRg=
 github.com/gookit/color v1.2.6/go.mod h1:AhIE+pS6D4Ql0SQWbBeXPHw7gY0/sjHoA4s/n1KB7xg=
+github.com/gookit/color v1.2.9/go.mod h1:AhIE+pS6D4Ql0SQWbBeXPHw7gY0/sjHoA4s/n1KB7xg=
+github.com/gookit/color v1.3.0 h1:W4cNkas23wTpLrSGDzK/dlPPayRnVX6vfeN9lMpC8zM=
+github.com/gookit/color v1.3.0/go.mod h1:R3ogXq2B9rTbXoSHJ1HyUVAZ3poOJHpd9nQmyGZsfvQ=
 github.com/gookit/gcli/v2 v2.3.3 h1:3bGnLxFda8b7G/YsWVKWoZIzRgWBSbyCNELIhBi4MN8=
 github.com/gookit/gcli/v2 v2.3.3/go.mod h1:V/FKnJUmFF5G3L3/zq9c22nO6jEWMZsgA36gAOOhHsw=
 github.com/gookit/goutil v0.2.10/go.mod h1:Hk4DFtZTUY6CxsnMU3nysqUXYSm8KRattv4TqHXrUos=
 github.com/gookit/goutil v0.3.1 h1:VpWkYhJ4tHqhTwa1DV7JeVK0TNdw6pNh8HB06XxQx4c=
 github.com/gookit/goutil v0.3.1/go.mod h1:avL1wnSRDLyY4lC2FPAq5vNLwUB9JYaKWoUxx9lISNs=
+github.com/gookit/goutil v0.3.5 h1:95hWrCXcz7wuwlvcHw7YyUbFH0fV15YM0WPioYMcZww=
+github.com/gookit/goutil v0.3.5/go.mod h1:OHs5W5Xmfj4pCMXHnMxsDPrCc0SRbHLgJ2qs6wr5fxM=
 github.com/gookit/ini/v2 v2.0.5 h1:AT24KFsTh80YPW0vW3KoBuaLDTWx68A0vWkrGbmuwKs=
 github.com/gookit/ini/v2 v2.0.5/go.mod h1:z1Uhs+Kda+cL/2oLdW3uVH7dvo5e8cWORfZ6hieP4QA=
+github.com/gookit/slog v0.0.3 h1:z2YzjsPOUR58aR2IBrs+SGjnihQpOnnoqKtSPT/SuLk=
+github.com/gookit/slog v0.0.3/go.mod h1:qqAjLK+1zmvm8Kd20hir7d1EMwj7VneRejonPJGmSQs=
 github.com/json-iterator/go v1.1.10 h1:Kz6Cvnvv2wGdaG/V8yMvfkmNiXq9Ya2KUv4rouJJr68=
 github.com/json-iterator/go v1.1.10/go.mod h1:KdQUCv79m/52Kvf8AW2vK1V8akMuk1QjK/uOdHXbAo4=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
@@ -55,6 +62,8 @@ github.com/stretchr/objx v0.2.0/go.mod h1:qt09Ya8vawLte6SNmTgCsAVtYtaKzEcn8ATUoH
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.4.0 h1:2E4SXV/wtOkTonXsotYi4li6zVWxYlZuYNCXe9XRJyk=
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
+github.com/stretchr/testify v1.6.1 h1:hDPOHmpOpP40lSULcqw7IrRb/u7w6RpDC9399XyoNd0=
+github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20190510104115-cbcb75029529/go.mod h1:yigFU9vqHzYiE8UmvKecakEJjdnWj3jj499lnFckfCI=
 golang.org/x/crypto v0.0.0-20190611184440-5c40567a22f8/go.mod h1:yigFU9vqHzYiE8UmvKecakEJjdnWj3jj499lnFckfCI=
@@ -88,4 +97,6 @@ gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127/go.mod h1:Co6ibVJAznAaIkqp8
 gopkg.in/errgo.v2 v2.1.0/go.mod h1:hNsd1EY+bozCKY1Ytp96fpM3vjJbqLJn88ws8XvfDNI=
 gopkg.in/yaml.v2 v2.2.2 h1:ZCJp+EgiOT7lHqUV2J862kp8Qj64Jo6az82+3Td9dZw=
 gopkg.in/yaml.v2 v2.2.2/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
+gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c h1:dUUwHk2QECo/6vqA44rthZ8ie2QXMNeKRTHCNY2nXvo=
+gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
 honnef.co/go/tools v0.0.1-2020.1.4/go.mod h1:X/FiERA/W4tHapMX5mGpAtMSVEeEUOyHaw9vFzvIQ3k=
