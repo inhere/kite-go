@@ -3,7 +3,7 @@
  *
  * @author https://github.com/inhere
  */
-package api
+package {{ .PkgName }}
 
 import (
 	"github.com/gookit/rux"
@@ -13,11 +13,11 @@ import (
 type {{ upFirst .GroupName }} struct {}
 
 // AddRoutes register routes to the router
-func (grp *{{ .GroupName }}) AddRoutes(r *rux.Router) {
-	{{range $i, $m := .Actions }}r.{{ $m.METHOD }}("{{ $m.Path }}", grp.{{ $m.MethodName }}){{end}}
+func (grp *{{ .GroupName }}) AddRoutes(r *rux.Router) { {{range $i, $m := .Actions }}
+	r.{{ $m.METHOD }}("{{ $m.Path }}", grp.{{ $m.MethodName }}){{end}}
 }
 {{range $i, $m := .Actions }}
-// {{ $m.MethodName }} {{ $m.MethodDesc }}
+// {{ $m.MethodName }} {{ $m.MethodDesc }}{{ $m.TagComments }}
 func (*{{ upFirst $.GroupName}}) {{ $m.MethodName }}(c *rux.Context) {
 	c.Text(200, "hello")
 }
