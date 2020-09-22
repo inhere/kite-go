@@ -1,6 +1,11 @@
 package swagger
 
 import (
+	"encoding/json"
+	"errors"
+	"fmt"
+
+	"github.com/gookit/color"
 	"github.com/gookit/gcli/v2"
 )
 
@@ -39,6 +44,25 @@ var DocBrowse = &gcli.Command{
 			return err
 		}
 
-		return swagger.PrintNode(docBrowseOpts.NodeName)
+		if docBrowseOpts.PathName != "" {
+			path := docBrowseOpts.PathName
+			if pItem, ok := swagger.SwaggerProps.Paths.Paths[path]; ok {
+				bts, err := json.MarshalIndent(pItem, "", "  ")
+				if err != nil {
+					return err
+				}
+
+				color.Success.Printf("'paths.%s' of the Document:\n", path)
+				fmt.Println(string(bts))
+			} else {
+				return fmt.Errorf("'paths.%s' is not exist of the Document", path)
+			}
+		}
+
+		if docBrowseOpts.NodeName != "" {
+			return swagger.PrintNode(docBrowseOpts.NodeName)
+		}
+
+		return errors.New("please setting --node|--path value")
 	},
 }

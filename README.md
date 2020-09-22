@@ -15,6 +15,17 @@
 go get github.com/gookit/ruxc
 ```
 
+## Packages
+
+data faker:
+
+- https://github.com/brianvoe/gofakeit
+
+markdown:
+
+- github.com/gomarkdown/markdown
+- github.com/russross/blackfriday
+
 ## Dep Packages
 
 - https://github.com/swaggo/swag

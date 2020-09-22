@@ -1,0 +1,8 @@
+# config file for kite
+# homepage: https://github.com/gookit/kite
+#
+
+"swag:browse":
+    swagger_file: testdata/swagger.json
+
+"swag:doc":
