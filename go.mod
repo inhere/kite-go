@@ -1,4 +1,4 @@
-module github.com/gookit/ruxc
+module github.com/gookit/kite
 
 go 1.13
 

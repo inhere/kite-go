@@ -10,8 +10,8 @@ import (
 )
 
 // local run:
-// 	go run ./_examples/cliapp.go
-// 	go build ./_examples/cliapp.go && ./cliapp
+// 	go run ./cmd/kite/main.go
+// 	go build ./cmd/kite/main.go && ./cliapp
 //
 // run on windows(cmd, powerShell):
 // 	go build ./_examples/cliapp.go; ./cliapp

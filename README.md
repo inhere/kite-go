@@ -1,6 +1,6 @@
-# Ruxc
+# Kite
 
-`ruxc` - A CLI tools for [rux](https://github.com/gookit/rux) framework.
+`Kite` - A CLI tools for [rux](https://github.com/gookit/rux) framework.
 
 ## Features
 
@@ -12,7 +12,7 @@
 ## Install
 
 ```bash
-go get github.com/gookit/ruxc
+go get github.com/gookit/Kite
 ```
 
 ## Packages
