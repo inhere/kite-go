@@ -1,18 +1,18 @@
 # Kite
 
-`Kite` - A CLI tools for [rux](https://github.com/gookit/rux) framework.
+`Kite` - A CLI tools package.
 
 ## Features
 
-- create new project
+- quick create new project
 - hot reload serve on file modified
 - generate simple/controller/restful codes
-- install development tools. eg: swagger, golint, revive
+- install development tools. eg: swaggo, swaggerui, golint, revive
 
 ## Install
 
 ```bash
-go get github.com/gookit/Kite
+go get github.com/gookit/kite
 ```
 
 ## Packages
@@ -31,6 +31,7 @@ markdown:
 - https://github.com/swaggo/swag
 - https://github.com/go-openapi/spec
 - https://github.com/go-openapi/swag
+- https://github.com/gookit/config
 - https://github.com/gookit/rux
 - https://github.com/gookit/gcli
 - https://github.com/gookit/ini

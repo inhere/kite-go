@@ -3,7 +3,9 @@ package main
 import (
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v2/builtin"
 	"github.com/gookit/ini/v2"
+	"github.com/gookit/kite/cmd/mkdown"
 	"github.com/gookit/kite/cmd/swagger"
 	"github.com/gookit/slog"
 )
@@ -11,7 +13,7 @@ import (
 var configFile string
 
 func init() {
-	err := ini.LoadExists("kite.ini")
+	err := ini.LoadExists("kite.yaml")
 	if err != nil {
 		color.Error.Println("load config error:", err)
 	}
@@ -24,11 +26,16 @@ func init() {
 
 func main() {
 	app := gcli.NewApp(func(a *gcli.App) {
-		a.Name = "kite Application"
-		a.Description = "CLI tool application for rux"
+		a.Name = "Kite Application"
+		a.Description = "CLI tool application"
 	})
 	app.GOptsBinder = func(gf *gcli.Flags) {
-		gf.StrOpt(&configFile, "config", "c", "kite.ini", "the INI config file for kite")
+		gf.StrOpt(&configFile,
+			"config",
+			"c",
+			"kite.ini",
+			"the YAML config file for kite",
+			)
 	}
 
 	loadCommands(app)
@@ -40,4 +47,7 @@ func loadCommands(app *gcli.App) {
 	app.AddCommand(swagger.GenCode)
 	app.AddCommand(swagger.DocBrowse)
 	app.AddCommand(swagger.DocGen)
+
+	app.Add(builtin.GenAutoComplete())
+	app.Add(mkdown.ConvertMD2html())
 }
