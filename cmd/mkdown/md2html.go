@@ -2,6 +2,7 @@ package mkdown
 
 import (
 	"bytes"
+	"errors"
 	"flag"
 	"os"
 	"strings"
@@ -11,7 +12,10 @@ import (
 	gmparser "github.com/gomarkdown/markdown/parser"
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v2"
-	"github.com/russross/blackfriday"
+	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/extension"
+	gdparser "github.com/yuin/goldmark/parser"
+	gdhtml "github.com/yuin/goldmark/renderer/html"
 )
 
 // filetypes: [".md", ".markdown", ".mdown"]
@@ -56,6 +60,7 @@ var (
 	drivers = map[string]string{
 		"bf": "blackfriday",
 		"gm": "gomarkdown",
+		"gd": "goldmark",
 	}
 )
 
@@ -107,7 +112,12 @@ func ConvertMD2html() *gcli.Command {
 	c.StrOpt(&mh.output, "output", "", "",
 		"the rendered content output, default output STDOUT")
 	c.StrOpt(&mh.driver, "driver", "", "bf",
-		"set the markdown renderer driver.\nallow:\n bf - blackfriday,\n gm - gomarkdown")
+		`set the markdown renderer driver.
+allow:
+bf - blackfriday
+gm - gomarkdown
+gd - goldmark
+`)
 
 	c.AddArg("files", "the listed files will be render to html", false, true)
 
@@ -160,63 +170,27 @@ func (mh md2html) driverName() string {
 }
 
 func (mh md2html) blackFriday(input []byte, args []string) (err error) {
-	// set up options
-	// extensions := 0
-	// extensions |= blackfriday.EXTENSION_NO_INTRA_EMPHASIS
-	// extensions |= blackfriday.EXTENSION_TABLES
-	// extensions |= blackfriday.EXTENSION_FENCED_CODE
-	// extensions |= blackfriday.EXTENSION_AUTOLINK
-	// extensions |= blackfriday.EXTENSION_STRIKETHROUGH
-	// extensions |= blackfriday.EXTENSION_SPACE_HEADERS
+	// blackfriday.Run()
 
-	// if mh.latex {
-	// render the data into LaTeX
-	// renderer = blackfriday.La(0)
-	// } else {
-	// render the data into HTML
-	htmlFlags := blackfriday.HTMLFlagsNone
-	// if xhtml {
-	// 	htmlFlags |= blackfriday.HTML_USE_XHTML
-	// }
-	if mh.smartyPants {
-		htmlFlags |= blackfriday.Smartypants
-	}
-	if mh.fractions {
-		htmlFlags |= blackfriday.SmartypantsFractions
-	}
-	if mh.latexDashes {
-		htmlFlags |= blackfriday.SmartypantsLatexDashes
-	}
+	// return mh.outToWriter(buf.Bytes())
+	return errors.New("TODO: current not support 'blackFriday'")
+}
 
-	title := ""
-	if mh.page {
-		htmlFlags |= blackfriday.CompletePage
-		title = getTitle(input)
-	}
-	// if mh.tocOnly {
-	// 	htmlFlags |= blackfriday.HTML_OMIT_CONTENTS
-	// }
-	if mh.toc {
-		htmlFlags |= blackfriday.TOC
-	}
-
-	r := blackfriday.NewHTMLRenderer(blackfriday.HTMLRendererParameters{
-		Flags: blackfriday.CommonHTMLFlags,
-		Title: title,
-	})
-	optList := []blackfriday.Option{
-		blackfriday.WithRenderer(r),
-		blackfriday.WithExtensions(blackfriday.CommonExtensions),
-	}
-	parser := blackfriday.New(optList...)
-	ast := parser.Parse(input)
-
+func (mh md2html) goldMark(source []byte, args []string) (err error) {
+	md := goldmark.New(
+		goldmark.WithExtensions(extension.GFM),
+		goldmark.WithParserOptions(
+			gdparser.WithAutoHeadingID(),
+		),
+		goldmark.WithRendererOptions(
+			gdhtml.WithHardWraps(),
+			gdhtml.WithXHTML(),
+		),
+	)
 	var buf bytes.Buffer
-	r.RenderHeader(&buf, ast)
-	ast.Walk(func(node *blackfriday.Node, entering bool) blackfriday.WalkStatus {
-		return r.RenderNode(&buf, node, entering)
-	})
-	r.RenderFooter(&buf, ast)
+	if err := md.Convert(source, &buf); err != nil {
+		return err
+	}
 
 	return mh.outToWriter(buf.Bytes())
 }

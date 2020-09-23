@@ -2,21 +2,25 @@ package main
 
 import (
 	"github.com/gookit/color"
+	"github.com/gookit/config/v2"
 	"github.com/gookit/gcli/v2"
-	"github.com/gookit/gcli/v2/builtin"
-	"github.com/gookit/ini/v2"
-	"github.com/gookit/kite/cmd/mkdown"
-	"github.com/gookit/kite/cmd/swagger"
+	"github.com/gookit/i18n"
+	"github.com/gookit/kite/cmd"
 	"github.com/gookit/slog"
 )
 
 var configFile string
 
 func init() {
-	err := ini.LoadExists("kite.yaml")
+	err := config.LoadExists("kite.yaml")
 	if err != nil {
 		color.Error.Println("load config error:", err)
 	}
+
+	i18n.Init("resource/language", "zh-CN", map[string]string{
+		"en":"English",
+		"zh-CN":"简体中文",
+	})
 
 	slog.Configure(func(logger *slog.SugaredLogger) {
 		f := logger.Formatter.(*slog.TextFormatter)
@@ -38,16 +42,7 @@ func main() {
 			)
 	}
 
-	loadCommands(app)
+	cmd.AddCommands(app)
 
 	app.Run()
-}
-
-func loadCommands(app *gcli.App) {
-	app.AddCommand(swagger.GenCode)
-	app.AddCommand(swagger.DocBrowse)
-	app.AddCommand(swagger.DocGen)
-
-	app.Add(builtin.GenAutoComplete())
-	app.Add(mkdown.ConvertMD2html())
 }

@@ -21,10 +21,13 @@ data faker:
 
 - https://github.com/brianvoe/gofakeit
 
+- https://github.com/dvyukov/go-fuzz  a fuzz testing tool.
+
 markdown:
 
-- github.com/gomarkdown/markdown
+- github.com/yuin/goldmark
 - github.com/russross/blackfriday
+- github.com/gomarkdown/markdown
 
 ## Dep Packages
 
