@@ -1,47 +1,57 @@
 package cmd
 
 import (
-	"github.com/gookit/color"
 	"github.com/gookit/gcli/v2"
+	"github.com/gookit/goutil/dump"
 	"github.com/gookit/kite/app"
 	"github.com/gookit/kite/pkg/httpserve"
 	"github.com/gookit/kite/web"
-	"github.com/gookit/rux"
 	"github.com/gookit/rux/handlers"
 )
 
 // options for the HttpServe
 var httpServeOpts = struct {
-	env     string
-	port    int
-	debug    bool
-	runtime string
+	env        string
+	host       string
+	port       int
+	debug      bool
+	runtime    string
 	staticPath string
 }{}
 
 // HttpServe Command
 var HttpServe = &gcli.Command{
-	Name:   "serve",
-	UseFor: "start an http application serve",
+	Name:    "serve",
+	UseFor:  "start an http application serve",
 	Aliases: []string{"server", "http:serve"},
 	Config: func(c *gcli.Command) {
 		// bind options
 		c.StrOpt(&httpServeOpts.env, "env", "", app.EnvDev, "the application env name")
 		c.BoolOpt(&httpServeOpts.debug, "debug", "", true, "the debug mode for run serve")
 		c.StrOpt(&httpServeOpts.runtime, "runtime", "", "", "the runtime directory path")
+
+		c.StrVar(&httpServeOpts.host, gcli.FlagMeta{
+			Name:   "host",
+			Shorts: []string{"h"},
+			Desc:   "host for the start http serve",
+			DefVal: "127.0.0.1",
+		})
+		c.IntVar(&httpServeOpts.port, gcli.FlagMeta{
+			Name:   "port",
+			Shorts: []string{"p"},
+			Desc:   "port for the start http serve",
+			DefVal: 8080,
+		})
 	},
 	Func: func(c *gcli.Command, args []string) error {
-		r := httpserve.NewServe()
-		r.Use(handlers.PanicsHandler())
 
-		// handle error
-		r.OnError = func(c *rux.Context) {
-			if err := c.FirstError(); err != nil {
-				color.Error.Println(err)
-				c.HTTPError(err.Error(), 400)
-				return
-			}
-		}
+		dump.P(httpServeOpts)
+
+		return nil
+		s := httpserve.New()
+
+		r := s.Rux()
+		r.Use(handlers.PanicsHandler())
 
 		if httpServeOpts.debug {
 			r.Use(handlers.RequestLogger())

@@ -6,10 +6,10 @@ import (
 	"github.com/gookit/gcli/v2"
 )
 
-var HotReloadServe = &gcli.Command{
-	Name:    "hotreload",
-	Aliases: []string{"hot:reload"},
-	UseFor:  "hot reload serve on files modified",
+var SQL2MkDown = &gcli.Command{
+	Name:    "sql2md",
+	Aliases: []string{"sql:tomd"},
+	UseFor:  "convert create table SQL to markdown table",
 	Config: func(c *gcli.Command) {
 
 	},

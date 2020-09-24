@@ -16,7 +16,7 @@ require (
 	github.com/gookit/rux v1.3.0
 	github.com/gookit/slog v0.0.3
 	github.com/gookit/view v1.0.2
-	github.com/yuin/goldmark v1.2.1 // indirect
+	github.com/yuin/goldmark v1.2.1
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
 	golang.org/x/sys v0.0.0-20200916084744-dbad9cb7cb7a // indirect
 )

@@ -58,8 +58,8 @@ var (
 )
 
 var GenCode = &gcli.Command{
-	Name:    "swag:gocode",
-	Aliases: []string{"swag2code", "swag2go"},
+	Name:    "swag2go",
+	Aliases: []string{"swag2code"},
 	UseFor:  "generate go API service codes by swagger.yaml or swagger.json",
 	Config: func(c *gcli.Command) {
 		c.StrOpt(&swag2codeOpts.SwagFile,
@@ -113,7 +113,7 @@ tag  - group by tag name
 		c.VarOpt(&swag2codeOpts.SpecPaths, "paths", "", "only generate for the given spec paths")
 		c.Examples = `
 {$fullCmd} --paths /anything /blog/{id}
-{$fullCmd} -f testdata/swagger.json --paths /anything/{anything} --group-type path -o stdout 
+{$fullCmd} -f testdata/swagger.json --paths /anything/{anything} --group-type path -o stdout
 `
 	},
 	Func: func(c *gcli.Command, args []string) (err error) {

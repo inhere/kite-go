@@ -8,11 +8,20 @@ import (
 )
 
 func AddCommands(app *gcli.App) {
-	app.AddCommand(swagger.GenCode)
-	app.AddCommand(swagger.DocBrowse)
-	app.AddCommand(swagger.DocGen)
+	app.Add(
+		swagger.GenCode,
+		swagger.DocGen,
+		swagger.DocBrowse,
+		swagger.Doc2MkDown,
+		swagger.InstallSwagGo,
+		swagger.InstallSwagUI,
+	)
+
+	app.Add(
+		mkdown.Markdown2HTML,
+		mkdown.Markdown2SQL,
+	)
 
 	// app.Add(filewatcher.FileWatcher(nil))
 	app.Add(builtin.GenAutoComplete())
-	app.Add(mkdown.ConvertMD2html())
 }

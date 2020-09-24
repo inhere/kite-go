@@ -1,4 +1,4 @@
-package cmd
+package swagger
 
 import (
 	"errors"
@@ -6,10 +6,10 @@ import (
 	"github.com/gookit/gcli/v2"
 )
 
-var HotReloadServe = &gcli.Command{
-	Name:    "hotreload",
-	Aliases: []string{"hot:reload"},
-	UseFor:  "hot reload serve on files modified",
+var Doc2MkDown = &gcli.Command{
+	Name:    "swag2md",
+	Aliases: []string{"swagtomd", "swag:tomd"},
+	UseFor:  "convert swagger document file to markdown",
 	Config: func(c *gcli.Command) {
 
 	},

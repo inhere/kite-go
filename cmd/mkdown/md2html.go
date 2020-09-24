@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"errors"
 	"flag"
+	"fmt"
 	"os"
 	"strings"
 
 	"github.com/gomarkdown/markdown"
-	"github.com/gomarkdown/markdown/html"
+	gmhtml "github.com/gomarkdown/markdown/html"
 	gmparser "github.com/gomarkdown/markdown/parser"
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v2"
@@ -56,6 +57,8 @@ const (
 	driverGM = "gm"
 )
 
+var mh = md2html{}
+
 var (
 	drivers = map[string]string{
 		"bf": "blackfriday",
@@ -72,58 +75,54 @@ DOC: https://docs.gitlab.com/ee/api/markdown.html#render-an-arbitrary-markdown-d
 curl --header Content-Type:application/json --data '{"text":"Hello world! :tada:", "gfm":true, "project":"group_example/project_example"}' https://gitlab.example.com/api/v4/markdown
 */
 
-// ConvertMD2html Convert Markdown to HTML
+// Markdown2HTML Convert Markdown to HTML
 // styles from https://github.com/facelessuser/MarkdownPreview
 //
 // "image_path": "https://github.githubassets.com/images/icons/emoji/unicode/",
 // "non_standard_image_path": "https://github.githubassets.com/images/icons/emoji/"
-func ConvertMD2html() *gcli.Command {
-	var mh = md2html{}
+var Markdown2HTML = &gcli.Command{
+	Name:    "md2html",
+	UseFor:  "convert one or multi markdown file to html",
+	Aliases: []string{"mkdown2html"},
+	// Config:  nil,
+	// Examples: "",
+	Func: mh.Handle,
+	Config: func(c *gcli.Command) {
+		c.BoolOpt(&mh.toc, "toc", "", false,
+			"Generate a table of contents (implies --latex=false)")
+		flag.BoolVar(&mh.tocOnly, "toconly", false,
+			"Generate a table of contents only (implies -toc)")
+		c.BoolOpt(&mh.page, "page", "", false,
+			"Generate a standalone HTML page (implies --latex=false)")
+		c.BoolOpt(&mh.latex, "latex", "", false,
+			"Generate LaTeX output instead of HTML")
 
-	c := &gcli.Command{
-		Name:    "md:html",
-		UseFor:  "convert one or multi markdown file to html",
-		Aliases: []string{"md2html", "md:html"},
-		// Config:  nil,
-		// Examples: "",
-		Func: mh.Handle,
-	}
+		c.BoolOpt(&mh.smartyPants, "smartypants", "", true,
+			"Apply smartypants-style substitutions")
+		c.BoolOpt(&mh.latexDashes, "latexdashes", "", true,
+			"Use LaTeX-style dash rules for smartypants")
+		c.BoolOpt(&mh.fractions, "fractions", "", true,
+			"Use improved fraction rules for smartypants")
+		c.BoolOpt(&mh.htmlSimple, "html-simple", "", true,
+			"Sets HTML output to a simple, just bare minimum HTML tags and attributes")
 
-	c.BoolOpt(&mh.toc, "toc", "", false,
-		"Generate a table of contents (implies --latex=false)")
-	flag.BoolVar(&mh.tocOnly, "toconly", false,
-		"Generate a table of contents only (implies -toc)")
-	c.BoolOpt(&mh.page, "page", "", false,
-		"Generate a standalone HTML page (implies --latex=false)")
-	c.BoolOpt(&mh.latex, "latex", "", false,
-		"Generate LaTeX output instead of HTML")
-
-	c.BoolOpt(&mh.smartyPants, "smartypants", "", true,
-		"Apply smartypants-style substitutions")
-	c.BoolOpt(&mh.latexDashes, "latexdashes", "", true,
-		"Use LaTeX-style dash rules for smartypants")
-	c.BoolOpt(&mh.fractions, "fractions", "", true,
-		"Use improved fraction rules for smartypants")
-	c.BoolOpt(&mh.htmlSimple, "html-simple", "", true,
-		"Sets HTML output to a simple, just bare minimum HTML tags and attributes")
-
-	c.StrOpt(&mh.css, "css", "", "",
-		"Link to a CSS stylesheet (implies --page)")
-	c.StrOpt(&mh.output, "output", "", "",
-		"the rendered content output, default output STDOUT")
-	c.StrOpt(&mh.driver, "driver", "", "bf",
-		`set the markdown renderer driver.
+		c.StrOpt(&mh.css, "css", "", "",
+			"Link to a CSS stylesheet (implies --page)")
+		c.StrOpt(&mh.output, "output", "", "",
+			"the rendered content output, default output STDOUT")
+		c.StrOpt(&mh.driver, "driver", "", "bf",
+			`set the markdown renderer driver.
 allow:
 bf - blackfriday
 gm - gomarkdown
 gd - goldmark
 `)
 
-	c.AddArg("files", "the listed files will be render to html", false, true)
+		c.AddArg("files", "the listed files will be render to html", false, true)
 
-	// save
-	mh.cmd = c
-	return c
+		// save
+		mh.cmd = c
+	},
 }
 
 func (mh md2html) Handle(c *gcli.Command, args []string) (err error) {
@@ -212,35 +211,35 @@ func (mh md2html) goMarkdown(input []byte, args []string) (err error) {
 		return
 	} else {
 		// render the data into HTML
-		var htmlFlags html.Flags
+		var htmlFlags gmhtml.Flags
 		// if xhtml {
 		// 	htmlFlags |= html.UseXHTML
 		// }
 		if mh.smartyPants {
-			htmlFlags |= html.Smartypants
+			htmlFlags |= gmhtml.Smartypants
 		}
 		if mh.fractions {
-			htmlFlags |= html.SmartypantsFractions
+			htmlFlags |= gmhtml.SmartypantsFractions
 		}
 		if mh.latexDashes {
-			htmlFlags |= html.SmartypantsLatexDashes
+			htmlFlags |= gmhtml.SmartypantsLatexDashes
 		}
 
 		title := ""
 		if mh.page {
-			htmlFlags |= html.CompletePage
+			htmlFlags |= gmhtml.CompletePage
 			title = getTitle(input)
 		}
 		if mh.toc {
-			htmlFlags |= html.TOC
+			htmlFlags |= gmhtml.TOC
 		}
 
-		params := html.RendererOptions{
+		params := gmhtml.RendererOptions{
 			Flags: htmlFlags,
 			Title: title,
 			CSS:   mh.css,
 		}
-		renderer = html.NewRenderer(params)
+		renderer = gmhtml.NewRenderer(params)
 	}
 
 	// parse and render
@@ -259,13 +258,13 @@ func (mh md2html) outToWriter(htmlText []byte) (err error) {
 		out = os.Stdout
 	} else {
 		if out, err = os.Create(mh.output); err != nil {
-			return mh.cmd.Errorf("Error creating %s: %v", mh.output, err)
+			return fmt.Errorf("error creating %s: %v", mh.output, err)
 		}
 		defer out.Close()
 	}
 
 	if _, err = out.Write(htmlText); err != nil {
-		err = mh.cmd.Errorf("Error writing output: %s", err.Error())
+		err = fmt.Errorf("error writing output: %s", err.Error())
 	}
 	return
 }
