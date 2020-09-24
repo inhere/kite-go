@@ -20,9 +20,10 @@ type SwagDoc struct {
 }
 
 // PrintNode JSON string
-func (d SwagDoc) PrintNode(name string) (err error) {
+func (d SwagDoc) PrintNode(name, filter string) (err error) {
 	name = strings.ToLower(name)
 
+	filtered := filter != ""
 	showName := name
 	indent := "  "
 
@@ -40,9 +41,13 @@ func (d SwagDoc) PrintNode(name string) (err error) {
 
 		var pathNames []string
 		for path := range d.Paths.Paths {
-			pathNames = append(pathNames, path)
+			if filtered && strings.Contains(path, filter){
+				pathNames = append(pathNames, path)
+			}
 		}
-		sort.Strings(pathNames)
+		if len(pathNames) > 0 {
+			sort.Strings(pathNames)
+		}
 
 		bts, err = json.MarshalIndent(pathNames, "", indent)
 	case "def", "defs", "definitions":
@@ -58,8 +63,13 @@ func (d SwagDoc) PrintNode(name string) (err error) {
 		err = errors.New("node name value is invalid")
 	}
 
+	suffix := ""
 	if err == nil {
-		color.Success.Printf("'%s' of the Document:\n", showName)
+		if filtered {
+			suffix = "(filtered)"
+		}
+
+		color.Success.Printf("'%s' of the Document%s:\n", showName, suffix)
 		fmt.Println(string(bts))
 	}
 

@@ -14,10 +14,10 @@ var configFile string
 
 func init() {
 	config.AddDriver(yaml.Driver)
-	err := config.LoadExists("kite.yaml")
-	if err != nil {
-		color.Error.Println("load config error:", err)
-	}
+	// err := config.LoadExists("kite.yaml")
+	// if err != nil {
+	// 	color.Error.Println("load config error:", err)
+	// }
 
 	slog.Configure(func(logger *slog.SugaredLogger) {
 		f := logger.Formatter.(*slog.TextFormatter)
@@ -42,7 +42,7 @@ func main() {
 			&configFile,
 			"config",
 			"c",
-			"kite.ini",
+			"kite.yaml",
 			"the YAML config file for kite",
 		)
 	}

@@ -10,6 +10,7 @@ import (
 )
 
 var docBrowseOpts = struct {
+	Filter   string
 	NodeName string
 	PathName string
 	SwagFile string
@@ -37,6 +38,10 @@ var DocBrowse = &gcli.Command{
 			Shorts: []string{"p"},
 			Desc:   "show path info of the the `documents.paths`. eg: /anything",
 		})
+		c.StrVar(&docBrowseOpts.Filter, gcli.FlagMeta{
+			Name: "filter",
+			Desc: "filter the results of path or node",
+		})
 	},
 	Func: func(c *gcli.Command, args []string) (err error) {
 		// load swagger doc file
@@ -60,7 +65,7 @@ var DocBrowse = &gcli.Command{
 		}
 
 		if docBrowseOpts.NodeName != "" {
-			return swagger.PrintNode(docBrowseOpts.NodeName)
+			return swagger.PrintNode(docBrowseOpts.NodeName, docBrowseOpts.Filter)
 		}
 
 		return errors.New("please setting --node|--path value")
