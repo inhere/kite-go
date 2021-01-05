@@ -1,0 +1,22 @@
+name: goblog
+desc: |
+  abd
+  def
+pkg_name: goblog
+skeleton:
+  app:
+    type: dir
+    items:
+      - app.go
+      - common:
+        type: dir
+  cmd:
+    - routes.go
+  resource:
+    - views/
+    - languages/:
+        - en.ini
+        - zh-CN.ini
+  web:
+    - routes.go
+  main.go: "main" # mark main file

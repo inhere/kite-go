@@ -43,7 +43,7 @@ var swag2codeOpts = struct {
 	ActionSuffix string
 	SpecPaths    gcli.Strings
 }{
-	tplDir: "resource/templates", // default dir
+	tplDir: "resource/template/codegen", // default dir
 }
 
 var (

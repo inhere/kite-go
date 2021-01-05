@@ -1,0 +1,28 @@
+type @organization = string
+
+// 定义一个 model
+model User {
+  name: string,
+  age: number
+}
+
+/**
+ * 模块的初始化函数
+ * @param organization
+ */
+init(organization: string) {
+  @organization = organization;
+}
+
+/**
+ * 模块的静态方法
+ * @param username
+ * @param age
+ */
+static function getUser(username: string, age: number): string {
+  var user = new User{
+    name = username,
+    age = age
+  };
+  return `user's name is ${user.name} ,user's age is ${user.age}! `;
+}

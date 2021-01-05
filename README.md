@@ -15,6 +15,20 @@
 go get github.com/gookit/kite
 ```
 
+## Build
+
+```bash
+go build -o gokite
+```
+
+## some 
+
+code gen:
+
+- swagger codegen
+- https://github.com/aliyun/darabonba
+- https://github.com/xo/xo is a command-line tool to generate Go code based on a database schema or a custom query.
+
 ## Packages
 
 data faker:
@@ -29,11 +43,20 @@ markdown:
 - github.com/russross/blackfriday
 - github.com/gomarkdown/markdown
 
-## Dep Packages
+swagger:
 
 - https://github.com/swaggo/swag
-- https://github.com/go-openapi/spec
-- https://github.com/go-openapi/swag
+  - https://github.com/go-openapi/spec
+  - https://github.com/go-openapi/swag
+- https://github.com/getkin/kin-openapi support swagger 3
+
+yaml:
+
+- https://github.com/go-yaml/yaml `go get gopkg.in/yaml.v2`
+- https://github.com/goccy/go-yaml
+
+## Dep Packages
+
 - https://github.com/gookit/config
 - https://github.com/gookit/rux
 - https://github.com/gookit/gcli
