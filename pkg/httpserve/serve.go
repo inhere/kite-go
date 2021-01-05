@@ -6,7 +6,7 @@ import (
 )
 
 type HttpServer struct {
-	r *rux.Router
+	r    *rux.Router
 	Host string
 	Port int
 }

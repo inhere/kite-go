@@ -3,10 +3,10 @@ package cmd
 import (
 	"github.com/gookit/gcli/v2"
 	"github.com/gookit/goutil/dump"
+	"github.com/gookit/rux/handlers"
 	"github.com/inherelab/kit/app"
 	"github.com/inherelab/kit/pkg/httpserve"
 	"github.com/inherelab/kit/web"
-	"github.com/gookit/rux/handlers"
 )
 
 // options for the HttpServe

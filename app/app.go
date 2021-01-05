@@ -3,9 +3,9 @@ package app
 // Env names
 const (
 	EnvLocal = "local"
-	EnvDev = "dev"
-	EnvPre = "pre"
-	EnvProd = "prod"
+	EnvDev   = "dev"
+	EnvPre   = "pre"
+	EnvProd  = "prod"
 )
 
 var (

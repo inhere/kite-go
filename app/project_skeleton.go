@@ -15,4 +15,3 @@ func NewSkeleton(file string) *Skeleton {
 
 	return s
 }
-

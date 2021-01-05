@@ -41,7 +41,7 @@ func (d SwagDoc) PrintNode(name, filter string) (err error) {
 
 		var pathNames []string
 		for path := range d.Paths.Paths {
-			if filtered && strings.Contains(path, filter){
+			if filtered && strings.Contains(path, filter) {
 				pathNames = append(pathNames, path)
 			}
 		}

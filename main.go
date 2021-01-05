@@ -6,8 +6,8 @@ import (
 	"github.com/gookit/config/v2/yaml"
 	"github.com/gookit/gcli/v2"
 	"github.com/gookit/i18n"
-	"github.com/inherelab/kit/cmd"
 	"github.com/gookit/slog"
+	"github.com/inherelab/kit/cmd"
 )
 
 var configFile string

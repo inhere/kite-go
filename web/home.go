@@ -3,9 +3,9 @@ package web
 import (
 	"os"
 
-	"github.com/inherelab/kit/app"
 	"github.com/gookit/rux"
 	"github.com/gookit/view"
+	"github.com/inherelab/kit/app"
 )
 
 // HomeController struct
