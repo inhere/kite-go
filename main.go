@@ -6,7 +6,7 @@ import (
 	"github.com/gookit/config/v2/yaml"
 	"github.com/gookit/gcli/v2"
 	"github.com/gookit/i18n"
-	"github.com/gookit/kite/cmd"
+	"github.com/inherelab/kit/cmd"
 	"github.com/gookit/slog"
 )
 

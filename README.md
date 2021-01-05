@@ -12,7 +12,7 @@
 ## Install
 
 ```bash
-go get github.com/gookit/kite
+go get github.com/inherelab/kit
 ```
 
 ## Build

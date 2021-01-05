@@ -3,7 +3,7 @@ package web
 import (
 	"os"
 
-	"github.com/gookit/kite/app"
+	"github.com/inherelab/kit/app"
 	"github.com/gookit/rux"
 	"github.com/gookit/view"
 )

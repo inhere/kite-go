@@ -3,8 +3,8 @@ package cmd
 import (
 	"github.com/gookit/gcli/v2"
 	"github.com/gookit/gcli/v2/builtin"
-	"github.com/gookit/kite/cmd/mkdown"
-	"github.com/gookit/kite/cmd/swagger"
+	"github.com/inherelab/kit/cmd/mkdown"
+	"github.com/inherelab/kit/cmd/swagger"
 )
 
 func AddCommands(app *gcli.App) {
