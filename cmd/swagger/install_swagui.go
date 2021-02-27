@@ -3,13 +3,13 @@ package swagger
 import (
 	"errors"
 
-	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v3"
 )
 
 var InstallSwagUI = &gcli.Command{
-	Name:    "swag:downui",
-	Aliases: []string{"swag:inui", "swag:installui"},
-	UseFor:  "download latest swagger-UI assets from github repository",
+	Name:    "downui",
+	Aliases: []string{"inui", "installui"},
+	Desc:  "download latest swagger-UI assets from github repository",
 	Config: func(c *gcli.Command) {
 
 	},

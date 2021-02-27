@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v3"
 )
 
 var docBrowseOpts = struct {
@@ -17,9 +17,9 @@ var docBrowseOpts = struct {
 }{}
 
 var DocBrowse = &gcli.Command{
-	Name:    "swag:browse",
-	Aliases: []string{"swag:cat", "swag:see"},
-	UseFor:  "open browser for browse input swagger doc file",
+	Name:    "browse",
+	Aliases: []string{"cat", "see"},
+	Desc:  "open browser for browse input swagger doc file",
 	Config: func(c *gcli.Command) {
 		c.StrOpt(&docBrowseOpts.SwagFile,
 			"swagger-file", "f",

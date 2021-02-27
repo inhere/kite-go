@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/rux/handlers"
 	"github.com/inherelab/kit/app"
@@ -22,8 +22,8 @@ var httpServeOpts = struct {
 // HttpServe Command
 var HttpServe = &gcli.Command{
 	Name:    "serve",
-	UseFor:  "start an http application serve",
-	Aliases: []string{"server", "http:serve"},
+	Desc:  "start an http application serve",
+	Aliases: []string{"server", "http-serve"},
 	Config: func(c *gcli.Command) {
 		// bind options
 		c.StrOpt(&httpServeOpts.env, "env", "", app.EnvDev, "the application env name")

@@ -11,8 +11,22 @@ import (
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
 	"github.com/gookit/color"
+	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/fsutil"
 )
+
+var SwagCommand = &gcli.Command{
+	Name: "swag",
+	Desc: "some tool for use swagger",
+	Subs: []*gcli.Command{
+		DocBrowse,
+		DocGen,
+		Doc2MkDown,
+		GenCode,
+		InstallSwagGo,
+		InstallSwagUI,
+	},
+}
 
 // SwagDoc struct
 type SwagDoc struct {

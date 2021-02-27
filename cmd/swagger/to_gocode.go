@@ -13,7 +13,7 @@ import (
 	"strings"
 
 	"github.com/go-openapi/spec"
-	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/strutil"
@@ -60,7 +60,7 @@ var (
 var GenCode = &gcli.Command{
 	Name:    "swag2go",
 	Aliases: []string{"swag2code"},
-	UseFor:  "generate go API service codes by swagger.yaml or swagger.json",
+	Desc:  "generate go API service codes by swagger.yaml or swagger.json",
 	Config: func(c *gcli.Command) {
 		c.StrOpt(&swag2codeOpts.SwagFile,
 			"swagger-file",

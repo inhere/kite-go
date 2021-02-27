@@ -4,7 +4,7 @@ import (
 	"github.com/gookit/color"
 	"github.com/gookit/config/v2"
 	"github.com/gookit/config/v2/yaml"
-	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v3"
 	"github.com/gookit/i18n"
 	"github.com/gookit/slog"
 	"github.com/inherelab/kit/cmd"
@@ -35,7 +35,7 @@ func init() {
 func main() {
 	app := gcli.NewApp(func(a *gcli.App) {
 		a.Name = "Kite Application"
-		a.Description = "CLI tool application"
+		a.Desc = "CLI tool application"
 	})
 	app.GOptsBinder = func(gf *gcli.Flags) {
 		gf.StrOpt(
@@ -60,5 +60,5 @@ func main() {
 
 	cmd.AddCommands(app)
 
-	app.Run()
+	app.Run(nil)
 }

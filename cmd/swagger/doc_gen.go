@@ -3,7 +3,7 @@ package swagger
 import (
 	"fmt"
 
-	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/sysutil"
 )
 
@@ -12,8 +12,8 @@ var docGenOpts = struct {
 }{}
 
 var DocGen = &gcli.Command{
-	Name:   "swag:gen",
-	UseFor: "generate swagger doc files by package: swaggo/swag",
+	Name:   "gen",
+	Desc: "generate swagger doc files by package: swaggo/swag",
 	Config: func(c *gcli.Command) {
 		c.StrOpt(&docGenOpts.Output, "output", "o", "./static", `the output directory for generated doc files`)
 	},

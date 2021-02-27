@@ -3,13 +3,13 @@ package cmd
 import (
 	"errors"
 
-	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v3"
 )
 
 var HotReloadServe = &gcli.Command{
 	Name:    "hotreload",
-	Aliases: []string{"hot:reload"},
-	UseFor:  "hot reload serve on files modified",
+	Aliases: []string{"hot-reload"},
+	Desc:  "hot reload serve on files modified",
 	Config: func(c *gcli.Command) {
 
 	},

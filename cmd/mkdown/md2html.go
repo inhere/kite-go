@@ -12,7 +12,7 @@ import (
 	gmhtml "github.com/gomarkdown/markdown/html"
 	gmparser "github.com/gomarkdown/markdown/parser"
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v3"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
 	gdparser "github.com/yuin/goldmark/parser"
@@ -81,9 +81,9 @@ curl --header Content-Type:application/json --data '{"text":"Hello world! :tada:
 // "image_path": "https://github.githubassets.com/images/icons/emoji/unicode/",
 // "non_standard_image_path": "https://github.githubassets.com/images/icons/emoji/"
 var Markdown2HTML = &gcli.Command{
-	Name:    "md2html",
-	UseFor:  "convert one or multi markdown file to html",
-	Aliases: []string{"mkdown2html"},
+	Name:    "html",
+	Desc:  "convert one or multi markdown file to html",
+	Aliases: []string{"tohtml"},
 	// Config:  nil,
 	// Examples: "",
 	Func: mh.Handle,

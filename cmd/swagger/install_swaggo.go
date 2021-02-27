@@ -3,13 +3,13 @@ package swagger
 import (
 	"errors"
 
-	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v3"
 )
 
 var InstallSwagGo = &gcli.Command{
-	Name:    "swaggo:install",
-	Aliases: []string{"swaggo-install"},
-	UseFor:  "install swaggo/swag from github repository",
+	Name:    "swaggo",
+	Aliases: []string{"swaggo-ins"},
+	Desc:  "install swaggo/swag from github repository",
 	Config: func(c *gcli.Command) {
 
 	},

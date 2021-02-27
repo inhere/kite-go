@@ -3,13 +3,13 @@ package mkdown
 import (
 	"errors"
 
-	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v3"
 )
 
 var Markdown2SQL = &gcli.Command{
-	Name:    "md2sql",
-	Aliases: []string{"mkdown2sql"},
-	UseFor:  "convert an markdown table to create DB table SQL",
+	Name:    "sql",
+	Aliases: []string{"tosql"},
+	Desc:  "convert an markdown table to create DB table SQL",
 	Config: func(c *gcli.Command) {
 
 	},
