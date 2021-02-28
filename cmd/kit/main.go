@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/gookit/color"
 	"github.com/gookit/config/v2"
-	"github.com/gookit/config/v2/yaml"
+	"github.com/gookit/config/v2/yamlv3"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/i18n"
 	"github.com/gookit/slog"
@@ -13,7 +13,7 @@ import (
 var configFile string
 
 func init() {
-	config.AddDriver(yaml.Driver)
+	config.AddDriver(yamlv3.Driver)
 	// err := config.LoadExists("kite.yaml")
 	// if err != nil {
 	// 	color.Error.Println("load config error:", err)
@@ -46,7 +46,7 @@ func main() {
 			"the YAML config file for kite",
 		)
 	}
-	app.On(gcli.EvtAppPrepareAfter, func(_ ...interface{}) {
+	app.On(gcli.EvtGlobalOptionParsed, func(_ ...interface{}) {
 		if configFile == "" {
 			return
 		}
@@ -58,7 +58,7 @@ func main() {
 		}
 	})
 
-	cmd.AddCommands(app)
+	cmd.Register(app)
 
 	app.Run(nil)
 }

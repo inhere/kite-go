@@ -15,7 +15,7 @@ import (
 	"github.com/gookit/goutil/fsutil"
 )
 
-var SwagCommand = &gcli.Command{
+var SwaggerCmd = &gcli.Command{
 	Name: "swag",
 	Desc: "some tool for use swagger",
 	Subs: []*gcli.Command{
