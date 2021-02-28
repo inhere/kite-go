@@ -1,4 +1,4 @@
-module github.com/inherelab/kit
+module github.com/inherelab/kite
 
 go 1.13
 

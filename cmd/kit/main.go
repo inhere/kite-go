@@ -7,7 +7,7 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/i18n"
 	"github.com/gookit/slog"
-	"github.com/inherelab/kit/cmd"
+	"github.com/inherelab/kite/cmd"
 )
 
 var configFile string

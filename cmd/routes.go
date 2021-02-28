@@ -3,9 +3,9 @@ package cmd
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/builtin"
-	"github.com/inherelab/kit/cmd/gotool"
-	"github.com/inherelab/kit/cmd/mkdown"
-	"github.com/inherelab/kit/cmd/swagger"
+	"github.com/inherelab/kite/cmd/gotool"
+	"github.com/inherelab/kite/cmd/mkdown"
+	"github.com/inherelab/kite/cmd/swagger"
 )
 
 // Register commands to gcli.App
