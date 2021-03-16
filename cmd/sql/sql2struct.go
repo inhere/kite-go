@@ -1,4 +1,4 @@
-package cmd
+package sql
 
 import (
 	"errors"
@@ -6,10 +6,10 @@ import (
 	"github.com/gookit/gcli/v3"
 )
 
-var HotReloadServe = &gcli.Command{
-	Name:    "hotreload",
-	Aliases: []string{"hot-reload"},
-	Desc:  "hot reload serve on files modified",
+var Conv2Struct = &gcli.Command{
+	Name:    "struct",
+	Aliases: []string{"tostruct"},
+	Desc:  "convert create table SQL to Go struct",
 	Config: func(c *gcli.Command) {
 
 	},

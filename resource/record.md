@@ -51,7 +51,15 @@ data file: /dist/data.json
 **terminal**
 
 - https://github.com/creack/pty
+- https://github.com/pkg/term
 - https://github.com/liamg/aminal
+
+**terminal interactive**
+
+- https://github.com/AlecAivazis/survey
+- https://github.com/chzyer/readline **Useful**
+- https://github.com/c-bata/go-prompt
+- https://github.com/chriswalz/complete
 
 **swagger**
 
@@ -62,9 +70,27 @@ data file: /dist/data.json
 
 **github&gitlab**
 
-- https://github.com/profclems/glab
+github:
+
 - https://github.com/cli/cli
 - https://github.com/github/hub
+  - https://github.com/github/hub/blob/master/etc/hub.zsh_completion
+- https://github.com/google/go-github
+
+gitlab:
+  
+- https://github.com/profclems/glab
+- https://github.com/xanzy/go-gitlab
+
+**git**
+
+- https://github.com/libgit2/git2go
+- https://github.com/go-git/go-git A highly extensible Git implementation in pure Go.
+- https://github.com/MichaelMure/git-bug
+  - https://github.com/MichaelMure/git-bug/blob/master/misc/zsh_completion/git-bug
+- https://github.com/chriswalz/bit
+- https://github.com/augmentable-dev/askgit
+- https://github.com/filhodanuvem/gitql
 
 **expression evaluation**
 
@@ -75,6 +101,7 @@ data file: /dist/data.json
 
 - https://github.com/Shelnutt2/db2struct
 - https://github.com/JohannesKaufmann/html-to-markdown
+- https://github.com/xo/xo Command line tool to generate idiomatic Go code for SQL databases supporting PostgreSQL, MySQL, SQLite, Oracle, and Microsoft SQL Server
 
 **data faker:**
 
@@ -85,6 +112,7 @@ data file: /dist/data.json
 **database**  
 
 - https://github.com/DATA-DOG/go-sqlmock
+- https://github.com/xo/usql
 
 **database migrate**  
 
@@ -92,9 +120,17 @@ data file: /dist/data.json
 - https://github.com/rubenv/sql-migrate
 - https://github.com/pressly/goose
 
+**embedded database**
+
+- https://github.com/etcd-io/bbolt
+    - https://github.com/asdine/storm
+- https://github.com/dgraph-io/badger
+    - https://github.com/genjidb/genji
+
 **json&yaml**
 
 - https://github.com/tidwall/gjson Get JSON values quickly - JSON parser for Go
+- https://github.com/buger/jsonparser Get JSON values quickly
 - https://github.com/mailru/easyjson
 - https://github.com/zyedidia/json5 Go JSON5 decoder package based on encoding/json
 - https://github.com/go-yaml/yaml `go get gopkg.in/yaml.v3`
@@ -125,4 +161,15 @@ data file: /dist/data.json
 **other**
 
 - https://github.com/sergi/go-diff
+- https://github.com/waigani/diffparser
+  - https://github.com/pmezard/go-difflib
 - https://github.com/progrium/macdriver
+- github.com/mitchellh/go-homedir
+- https://github.com/tj/go-update
+- https://github.com/Yash-Handa/logo-ls ls command with beautiful Icons and Git Integrations
+  - https://github.com/Yash-Handa/logo-ls/tree/master/assets
+- github.com/kballard/go-shellquote
+- https://github.com/otiai10/copy Go copy directory recursively
+- https://github.com/kr/pretty
+- https://github.com/davecgh/go-spew
+  - https://github.com/kortschak/utter It's forks

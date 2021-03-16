@@ -1,4 +1,4 @@
-package app
+package common
 
 // Skeleton project skeleton struct
 type Skeleton struct {

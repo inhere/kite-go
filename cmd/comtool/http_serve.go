@@ -1,4 +1,4 @@
-package cmd
+package comtool
 
 import (
 	"github.com/gookit/gcli/v3"
@@ -30,13 +30,13 @@ var HttpServe = &gcli.Command{
 		c.BoolOpt(&httpServeOpts.debug, "debug", "", true, "the debug mode for run serve")
 		c.StrOpt(&httpServeOpts.runtime, "runtime", "", "", "the runtime directory path")
 
-		c.StrVar(&httpServeOpts.host, gcli.FlagMeta{
+		c.StrVar(&httpServeOpts.host, &gcli.FlagMeta{
 			Name:   "host",
 			Shorts: []string{"h"},
 			Desc:   "host for the start http serve",
 			DefVal: "127.0.0.1",
 		})
-		c.IntVar(&httpServeOpts.port, gcli.FlagMeta{
+		c.IntVar(&httpServeOpts.port, &gcli.FlagMeta{
 			Name:   "port",
 			Shorts: []string{"p"},
 			Desc:   "port for the start http serve",

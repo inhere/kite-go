@@ -76,13 +76,13 @@ var GenCode = &gcli.Command{
 			`the output directory for generated codes
 if input 'stdout' will print codes on terminal
 `)
-		c.StrVar(&swag2codeOpts.Template, gcli.FlagMeta{
+		c.StrVar(&swag2codeOpts.Template, &gcli.FlagMeta{
 			Name:   "template",
 			Desc:   "the template name for generate codes",
 			Shorts: []string{"t"},
 			DefVal: "rux-controller",
 		})
-		c.StrVar(&swag2codeOpts.GroupType, gcli.FlagMeta{
+		c.StrVar(&swag2codeOpts.GroupType, &gcli.FlagMeta{
 			Name: "group-type",
 			Desc: `the code generate group type. allow:
 none - dont generate group struct
@@ -101,12 +101,12 @@ tag  - group by tag name
 				return fmt.Errorf("'group-type' must one of %v", ss)
 			},
 		})
-		c.StrVar(&swag2codeOpts.GroupSuffix, gcli.FlagMeta{
+		c.StrVar(&swag2codeOpts.GroupSuffix, &gcli.FlagMeta{
 			Name:   "group-suffix",
 			Desc:   "Add suffix for group name. eg: API, Controller",
 			DefVal: "API",
 		})
-		c.StrVar(&swag2codeOpts.ActionSuffix, gcli.FlagMeta{
+		c.StrVar(&swag2codeOpts.ActionSuffix, &gcli.FlagMeta{
 			Name: "action-suffix",
 			Desc: "Add suffix for action name. eg: Action, Method",
 		})
@@ -132,7 +132,7 @@ tag  - group by tag name
 			return
 		}
 
-		dump.Config(func(d *dump.Dumper) {
+		dump.Config(func(d *dump.Options) {
 			d.MaxDepth = 8
 		})
 

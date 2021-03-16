@@ -30,7 +30,7 @@ var DocGen = &gcli.Command{
 		return err
 	},
 	Help: `
-Install swag:
+Install swaggo:
     go get -u github.com/swaggo/swag/cmd/swag
 `,
 }

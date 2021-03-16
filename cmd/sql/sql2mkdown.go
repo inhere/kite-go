@@ -1,4 +1,4 @@
-package cmd
+package sql
 
 import (
 	"errors"
@@ -6,7 +6,7 @@ import (
 	"github.com/gookit/gcli/v3"
 )
 
-var SQL2MkDown = &gcli.Command{
+var Conv2Mkdown = &gcli.Command{
 	Name:    "sql2md",
 	Aliases: []string{"sql-tomd"},
 	Desc:  "convert create table SQL to markdown table",
