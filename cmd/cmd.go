@@ -8,6 +8,7 @@ import (
 	"github.com/inherelab/kite/cmd/git"
 	"github.com/inherelab/kite/cmd/gotool"
 	"github.com/inherelab/kite/cmd/mkdown"
+	"github.com/inherelab/kite/cmd/self"
 	"github.com/inherelab/kite/cmd/sql"
 	"github.com/inherelab/kite/cmd/swagger"
 )
@@ -21,10 +22,12 @@ func Register(app *gcli.App) {
 		swagger.SwaggerCmd,
 		mkdown.MkDownCmd,
 		gotool.GoToolsCmd,
+		self.KiteManage,
 	)
 
 	// app.Add(filewatcher.FileWatcher(nil))
 	app.Add(
+		comtool.RunScripts,
 		comtool.HotReloadServe,
 		builtin.GenAutoComplete(),
 	)

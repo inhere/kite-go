@@ -4,7 +4,7 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/rux/handlers"
-	"github.com/inherelab/kite/app"
+	"github.com/inherelab/kite/pkg/consts"
 	"github.com/inherelab/kite/pkg/httpserve"
 	"github.com/inherelab/kite/web"
 )
@@ -26,7 +26,7 @@ var HttpServe = &gcli.Command{
 	Aliases: []string{"server", "http-serve"},
 	Config: func(c *gcli.Command) {
 		// bind options
-		c.StrOpt(&httpServeOpts.env, "env", "", app.EnvDev, "the application env name")
+		c.StrOpt(&httpServeOpts.env, "env", "", consts.EnvDev, "the application env name")
 		c.BoolOpt(&httpServeOpts.debug, "debug", "", true, "the debug mode for run serve")
 		c.StrOpt(&httpServeOpts.runtime, "runtime", "", "", "the runtime directory path")
 

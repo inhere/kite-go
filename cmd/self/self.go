@@ -1,12 +1,13 @@
 package self
 
 import (
-	"github.com/gookit/config/v2"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/show"
+	"github.com/inherelab/kite/pkg/conf"
 )
 
-var KiteSelf = &gcli.Command{
+// KiteManage manage kite self
+var KiteManage = &gcli.Command{
 	Name: "self",
 	Desc: "provide commands for manage kite self",
 	Subs: []*gcli.Command{
@@ -22,7 +23,7 @@ var KiteInfo = &gcli.Command{
 		show.AList("information", map[string]interface{}{
 			"binDir":  c.BinDir(),
 			"workDir": c.WorkDir(),
-			"loaded": config.Default().LoadedFiles(),
+			"loaded": conf.Obj().LoadedFiles(),
 		}, nil)
 		return nil
 	},

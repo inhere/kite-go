@@ -9,7 +9,7 @@ import (
 
 var CmdsOfGit = &gcli.Command{
 	Name: "git",
-	Desc: "tool commands for quick use git",
+	Desc: "tools for quick use `git` commands",
 	Subs: []*gcli.Command{
 		StatusInfo,
 		AddCommitPush,

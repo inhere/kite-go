@@ -2,30 +2,23 @@ package main
 
 import (
 	"github.com/gookit/color"
-	"github.com/gookit/config/v2"
-	"github.com/gookit/config/v2/yamlv3"
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/slog"
 	"github.com/inherelab/kite/cmd"
+	"github.com/inherelab/kite/pkg/boot"
 	"github.com/inherelab/kite/pkg/conf"
 )
 
 var confFile string
 
 // dev run:
-//	go run ./cmd/kit
-func init() {
-
-
-}
-
+//	go run ./bin/kit
 func main() {
 	app := gcli.NewApp(func(a *gcli.App) {
 		a.Name = "Kite"
 		a.Desc = "Kite CLI tool application"
 	})
-	app.GOptsBinder = func(gf *gcli.Flags) {
-		gf.StrOpt(&confFile,
+	app.GOptsBinder = func(gfs *gcli.Flags) {
+		gfs.StrOpt(&confFile,
 			"config",
 			"c",
 			"kite.yaml",
@@ -33,28 +26,23 @@ func main() {
 		)
 	}
 	app.On(gcli.EvtGOptionsParsed, func(_ ...interface{}) {
-		if confFile == "" {
-			return
+		if confFile != "" {
+			color.Infoln("load custom config file:", confFile)
+			err := conf.Obj().LoadExists(confFile)
+			if err != nil {
+				color.Error.Println("load user config error:", err)
+				return
+			}
 		}
 
-		slog.Printf("load custom config file %s", confFile)
-		err := config.LoadFiles(confFile)
-		if err != nil {
-			color.Error.Println("load user config error:", err)
-		}
+		// boot kite
+		color.Infoln("bootstrap kite runtime environment")
+		boot.Boot(app)
 	})
 
-	boot()
-
+	// load commands
 	cmd.Register(app)
+
+	// do run
 	app.Run(nil)
-}
-
-func boot() {
-	err := conf.Obj().MapStruct("kite", conf.Conf)
-	if err != nil {
-		color.Error.Println(err)
-		return
-	}
-
 }
