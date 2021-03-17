@@ -3,6 +3,7 @@ package boot
 import (
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/i18n"
 	"github.com/gookit/slog"
 	"github.com/inherelab/kite/pkg/conf"
@@ -27,9 +28,11 @@ func Boot(app *gcli.App) {
 
 	// lang
 	langDir := "resource/language"
-	slog.Println("load language files from:", langDir)
-	i18n.Init(langDir, "zh-CN", map[string]string{
-		"en":    "English",
-		"zh-CN": "简体中文",
-	})
+	if fsutil.IsDir(langDir) {
+		slog.Println("load language files from:", langDir)
+		i18n.Init(langDir, "zh-CN", map[string]string{
+			"en":    "English",
+			"zh-CN": "简体中文",
+		})
+	}
 }
