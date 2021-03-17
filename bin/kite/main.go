@@ -12,8 +12,7 @@ var confFile string
 
 // dev run:
 //	go run ./bin/kit
-// build run:
-//	go build ./bin/kit && ./kit
+//	go run ./bin/kit
 func main() {
 	app := gcli.NewApp(func(a *gcli.App) {
 		a.Name = "Kite"

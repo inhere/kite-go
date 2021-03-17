@@ -91,6 +91,7 @@ func (r *CmdRunner) AddWithArgs(binName string, args ...string) *CmdRunner {
 
 // Run all commands.
 func (r *CmdRunner) Run() {
+	color.Magenta.Printf("# Run All Workflows(%d steps):\n", len(r.commands))
 	// c := exec.Command("test")
 	// c := exec.Cmd{}
 	for i, cmd := range r.commands {
@@ -115,6 +116,7 @@ func (r *CmdRunner) Run() {
 			break
 		}
 	}
+	color.Success.Println("Run Completed")
 }
 
 func (r *CmdRunner) RunNoPrint() {
