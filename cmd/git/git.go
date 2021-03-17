@@ -60,7 +60,6 @@ var AddCommitNotPush = &gcli.Command{
 	Desc: "run git add/commit at once command",
 	Func: acpFunc,
 	Config: func(c *gcli.Command) {
-		acpOpts.notPush = true // not push
 
 		c.BoolOpt(&dryRun, "dry-run", "", false, "dont real execute command")
 		c.StrOpt(&acpOpts.message, "message", "m", "", "the commit message")
@@ -75,6 +74,11 @@ var AddCommitNotPush = &gcli.Command{
 }
 
 var acpFunc = func(c *gcli.Command, args []string) error {
+	runPush := acpOpts.notPush == false
+	if c.Name == "ac" {
+		runPush = false // not push
+	}
+
 	cr := cmdutil.NewRunner()
 	cr.DryRun = dryRun
 
@@ -88,11 +92,10 @@ var acpFunc = func(c *gcli.Command, args []string) error {
 
 	cr.AddGitCmd("commit", "-m", acpOpts.message)
 
-	if acpOpts.notPush == false {
+	if runPush {
 		cr.AddGitCmd("push")
 	}
 
 	cr.Run()
-
 	return nil
 }
