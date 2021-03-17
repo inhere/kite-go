@@ -73,7 +73,7 @@ func (c *Cmd) Run() error {
 	osc.Stdout = os.Stdout
 	osc.Stderr = os.Stderr
 
-	return osc.Start()
+	return osc.Run()
 }
 
 // GetBinArgs cmd line string

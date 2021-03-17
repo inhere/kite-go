@@ -109,7 +109,7 @@ func (r *CmdRunner) Run() {
 
 		// c.Output()
 
-		r.lastErr = c.Start()
+		r.lastErr = c.Run()
 		if r.lastErr != nil && r.IgnoreErr == false {
 			color.Errorln("cmd exec error:", r.lastErr, ", stop run.")
 			break
