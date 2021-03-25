@@ -1,4 +1,4 @@
-package boot
+package app
 
 import (
 	"github.com/gookit/color"
@@ -9,7 +9,7 @@ import (
 	"github.com/inherelab/kite/pkg/conf"
 )
 
-func Boot(app *gcli.App) {
+func Boot(cli *gcli.App) {
 	// config
 	if conf.Obj().Exists("kite") {
 		err := conf.Obj().MapStruct("kite", conf.Conf)

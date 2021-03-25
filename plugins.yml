@@ -1,0 +1,3 @@
+plugins_dir: ./plugins
+plugins:
+  pgit: ggit

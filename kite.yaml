@@ -6,6 +6,7 @@
 
 kite:
   tmp_dir: ./tmp
+  plugins_dir: ./plugins
 
 aliases:
   ac: git ac

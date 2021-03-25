@@ -24,8 +24,13 @@ help:
 
 ##Available Commands:
 
-  build2gobin:     ## build kit to go bin dir
-build2gobin:
+  kit2gobin:     ## build kit to go bin dir
+kit2gobin:
+	go build -ldflags="-X 'kite.Info.Version=v2.0.2' -X 'kite.PubDate=222233'" -o $(GOPATH)/bin/kit ./bin/kit
+	chmod a+x $(GOPATH)/bin/kit
+
+  kite2gobin:     ## build kite to go bin dir
+kite2gobin:
 	go build  -o $(GOPATH)/bin/kit ./bin/kit
 	chmod a+x $(GOPATH)/bin/kit
 
@@ -33,6 +38,6 @@ build2gobin:
 csfix:
 	go fmt ./...
 
-  csdiff:     ## Display code style error files by gofmt
-csdiff:
-	gofmt -l ./
+  test1:     ## Display code style error files by gofmt
+test1:
+	date

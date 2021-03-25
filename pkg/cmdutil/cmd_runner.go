@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/gookit/color"
+	"github.com/gookit/gcli/v3/interact"
 	"github.com/gookit/goutil/cliutil"
 )
 
@@ -16,12 +17,21 @@ type CmdRunner struct {
 	DryRun bool
 	// Ignore check prevision return code
 	IgnoreErr bool
+	// Interactive Whether to interactively ask before executing command
+	Interactive bool
 	// added commands
 	commands  []*Cmd
 }
 
-func NewRunner() *CmdRunner {
-	return &CmdRunner{}
+// NewRunner create
+func NewRunner(fn ...func(cr *CmdRunner)) *CmdRunner {
+	cr := &CmdRunner{}
+
+	if len(fn) > 0 {
+		fn[0](cr)
+	}
+
+	return cr
 }
 
 func (r *CmdRunner) SetWordDir(wordDir string) {
@@ -92,6 +102,8 @@ func (r *CmdRunner) AddWithArgs(binName string, args ...string) *CmdRunner {
 // Run all commands.
 func (r *CmdRunner) Run() {
 	color.Magenta.Printf("# Run All Workflows(%d steps):\n", len(r.commands))
+
+	yesRun := true
 	// c := exec.Command("test")
 	// c := exec.Cmd{}
 	for i, cmd := range r.commands {
@@ -108,7 +120,12 @@ func (r *CmdRunner) Run() {
 			continue
 		}
 
-		// c.Output()
+		if r.Interactive {
+			yesRun = interact.Confirm("continue run", yesRun)
+			if !yesRun {
+				continue
+			}
+		}
 
 		r.lastErr = c.Run()
 		if r.lastErr != nil && r.IgnoreErr == false {

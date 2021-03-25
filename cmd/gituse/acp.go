@@ -1,4 +1,4 @@
-package git
+package gituse
 
 import (
 	"strings"
@@ -33,6 +33,7 @@ var AddCommitNotPush = &gcli.Command{
 	Func: acpFunc,
 	Config: func(c *gcli.Command) {
 		c.BoolOpt(&dryRun, "dry-run", "", false, "dont real execute command")
+		c.BoolOpt(&interactive, "interactive", "i", false, "interactively ask before executing command")
 		c.StrOpt(&acpOpts.message, "message", "m", "", "the commit message")
 		c.Required("message")
 
@@ -50,8 +51,10 @@ var acpFunc = func(c *gcli.Command, args []string) error {
 		runPush = false // not push
 	}
 
-	cr := cmdutil.NewRunner()
-	cr.DryRun = dryRun
+	cr := cmdutil.NewRunner(func(cr *cmdutil.CmdRunner) {
+		cr.DryRun = dryRun
+		cr.Interactive = interactive
+	})
 
 	if len(args) > 0 {
 		cr.AddGitCmd("status", args...)

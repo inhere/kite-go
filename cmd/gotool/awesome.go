@@ -2,6 +2,9 @@ package gotool
 
 import "github.com/gookit/gcli/v3"
 
+var awesomeEnUrl = "https://github.com/avelino/awesome-go"
+var awesomeCnUrl = "https://github.com/yinggaozhen/awesome-go-cn"
+
 // AwesomeGo command
 var AwesomeGo = &gcli.Command{
 	Name: "awesome",

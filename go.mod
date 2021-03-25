@@ -11,8 +11,8 @@ require (
 	github.com/gookit/color v1.3.8
 	github.com/gookit/config/v2 v2.0.22
 	github.com/gookit/gcli/v3 v3.0.0
-	github.com/gookit/gitcmd v0.1.0 // indirect
-	github.com/gookit/goutil v0.3.10
+	github.com/gookit/gitwrap v0.1.0 // indirect
+	github.com/gookit/goutil v0.3.12
 	github.com/gookit/i18n v1.1.3
 	github.com/gookit/ini/v2 v2.0.9
 	github.com/gookit/rux v1.3.1
@@ -25,6 +25,6 @@ require (
 // for develop
 replace github.com/gookit/goutil => ../goutil
 
-replace github.com/gookit/gitcmd => ../gitcmd
+replace github.com/gookit/gitwrap => ../gitwrap
 
 replace github.com/gookit/gcli/v3 => ../gcli

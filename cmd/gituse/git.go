@@ -1,4 +1,4 @@
-package git
+package gituse
 
 import (
 	"errors"
@@ -8,11 +8,15 @@ import (
 	"github.com/inherelab/kite/pkg/gituse"
 )
 
-var dryRun bool
-var yesRun bool // Direct execution without confirmation
+var (
+	dryRun bool
+	yesRun bool // Direct execution without confirmation
 
-// CmdForGit commands for use git
-var CmdForGit = &gcli.Command{
+	interactive bool // interactively ask before executing command
+)
+
+// GitCommands commands for use git
+var GitCommands = &gcli.Command{
 	Name: "git",
 	Desc: "tools for quick use `git` commands",
 	Subs: []*gcli.Command{
@@ -21,6 +25,7 @@ var CmdForGit = &gcli.Command{
 		AddCommitNotPush,
 		TagCmd,
 		gituse.OpenRemoteRepo,
+		CreatePRLink,
 	},
 	Config: func(c *gcli.Command) {
 		c.On(gcli.EvtCmdOptParsed, func(obj ...interface{}) {

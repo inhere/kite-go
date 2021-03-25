@@ -4,6 +4,7 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/sysutil"
+	"github.com/inherelab/kite"
 	"github.com/inherelab/kite/pkg/conf"
 )
 
@@ -28,6 +29,7 @@ var KiteInfo = &gcli.Command{
 			"home Dir": sysutil.HomeDir(),
 			"loaded files": conf.Obj().LoadedFiles(),
 			"language": "TODO",
+			"publish date": kite.Info.PubDate,
 			// "i18n files": i18n.Default().LoadFile(),
 		}, nil)
 
@@ -43,5 +45,5 @@ var UpdateSelf = &gcli.Command{
 
 var InitKite = &gcli.Command{
 	Name: "init",
-	Desc: "init kite, create an config to use home dir",
+	Desc: "init kite env, will create config to use home dir",
 }

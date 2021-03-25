@@ -22,6 +22,11 @@ COPY . $BUILd_DIR
 # -ldflags '-w -s'
 #   -s: 去掉符号表
 #   -w: 去掉调试信息，不能gdb调试了
+# 设置值：
+#  go build -ldflags="-X 'package_path.variable_name=new_value'"
+# examples:
+#   go build -ldflags="-X 'main.Version=v1.0.0'"
+#   go build -v -ldflags="-X 'main.Version=v1.0.0' -X 'app/build.User=$(id -u -n)' -X 'app/build.Time=$(date)'"
 # RUN cd $BUILd_DIR && CGO_ENABLED=0 go build -ldflags '-d -w -s' -o /tmp/app
 RUN go version && cd $BUILd_DIR && go build -ldflags '-w -s' -o $BUILd_DIR/app
 # RUN cd $BUILd_DIR && go build -o /tmp/app

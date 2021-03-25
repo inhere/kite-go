@@ -3,8 +3,9 @@ package main
 import (
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
+	"github.com/inherelab/kite"
+	"github.com/inherelab/kite/app"
 	"github.com/inherelab/kite/cmd"
-	"github.com/inherelab/kite/pkg/boot"
 	"github.com/inherelab/kite/pkg/conf"
 )
 
@@ -15,11 +16,13 @@ var confFile string
 // build run:
 //	go build ./bin/kit && ./kit
 func main() {
-	app := gcli.NewApp(func(a *gcli.App) {
+	cli := gcli.NewApp(func(a *gcli.App) {
 		a.Name = "Kite"
 		a.Desc = "Kite CLI tool application"
+
+		a.Version = kite.Info.Version
 	})
-	app.GOptsBinder = func(gfs *gcli.Flags) {
+	cli.GOptsBinder = func(gfs *gcli.Flags) {
 		gfs.StrOpt(&confFile,
 			"config",
 			"c",
@@ -27,7 +30,7 @@ func main() {
 			"the YAML config file for kite",
 		)
 	}
-	app.On(gcli.EvtGOptionsParsed, func(_ ...interface{}) {
+	cli.On(gcli.EvtGOptionsParsed, func(_ ...interface{}) {
 		if confFile != "" {
 			color.Infoln("load custom config file:", confFile)
 			err := conf.Obj().LoadExists(confFile)
@@ -39,12 +42,12 @@ func main() {
 
 		// boot kite
 		color.Infoln("bootstrap kite runtime environment")
-		boot.Boot(app)
+		app.Boot(cli)
 	})
 
 	// load commands
-	cmd.Register(app)
+	cmd.Register(cli)
 
 	// do run
-	app.Run(nil)
+	cli.Run(nil)
 }
