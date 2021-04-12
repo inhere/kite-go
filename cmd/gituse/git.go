@@ -26,10 +26,12 @@ var GitCommands = &gcli.Command{
 		TagCmd,
 		gituse.OpenRemoteRepo,
 		CreatePRLink,
+		BatchPull,
 	},
 	Config: func(c *gcli.Command) {
-		c.On(gcli.EvtCmdOptParsed, func(obj ...interface{}) {
+		c.On(gcli.EvtCmdOptParsed, func(obj ...interface{}) bool {
 			c.Infoln("workDir:", c.WorkDir())
+			return true
 		})
 	},
 }

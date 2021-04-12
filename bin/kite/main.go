@@ -29,23 +29,24 @@ func main() {
 			"the YAML config file for kite",
 		)
 	}
-	cli.On(gcli.EvtGOptionsParsed, func(_ ...interface{}) {
+	cli.On(gcli.EvtGOptionsParsed, func(_ ...interface{}) bool {
 		if confFile != "" {
 			color.Infoln("load custom config file:", confFile)
 			err := conf.Obj().LoadExists(confFile)
 			if err != nil {
 				color.Error.Println("load user config error:", err)
-				return
+				return false
 			}
 		}
 
 		// boot kite
 		color.Infoln("bootstrap kite runtime environment")
 		app.Boot(cli)
+		return false
 	})
 
 	// load commands
-	cmd.Register(cli)
+	cmd.Boot(cli)
 
 	// do run
 	cli.Run(nil)

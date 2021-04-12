@@ -3,6 +3,7 @@ package conf
 import (
 	"github.com/gookit/config/v2"
 	"github.com/gookit/config/v2/yamlv3"
+	"github.com/gookit/goutil/structs"
 )
 
 var configObj = config.NewWith("kite", func(c *config.Config) {
@@ -29,3 +30,5 @@ type Config struct {
 func Obj() *config.Config {
 	return configObj
 }
+
+var Aliases  = &structs.Aliases{}

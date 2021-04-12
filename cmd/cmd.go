@@ -15,6 +15,13 @@ import (
 	"github.com/inherelab/kite/cmd/swagger"
 )
 
+// Boot commands to gcli.App
+func Boot(app *gcli.App) {
+	addListener(app)
+
+	Register(app)
+}
+
 // Register commands to gcli.App
 func Register(app *gcli.App) {
 	// app.Add(
@@ -42,4 +49,12 @@ func Register(app *gcli.App) {
 	)
 
 	app.AddAliases("self:init", "init")
+}
+
+func addListener(app *gcli.App) {
+	app.On(gcli.EvtCmdNotFound, func(data ...interface{}) bool {
+
+		// TODO
+		return false
+	})
 }
