@@ -1,4 +1,4 @@
-package gituse
+package gitx
 
 import (
 	"errors"
@@ -29,11 +29,19 @@ var GitCommands = &gcli.Command{
 		BatchPull,
 	},
 	Config: func(c *gcli.Command) {
-		c.On(gcli.EvtCmdOptParsed, func(obj ...interface{}) bool {
-			c.Infoln("workDir:", c.WorkDir())
-			return true
-		})
+		addListener(c)
 	},
+}
+
+func addListener(c *gcli.Command) {
+	c.On(gcli.EvtCmdOptParsed, func(obj ...interface{}) bool {
+		c.Infoln("WorkDir:", c.WorkDir())
+		return false
+	})
+	c.On(gcli.EvtCmdSubNotFound, func(data ...interface{}) (stop bool) {
+		c.Errorln(data[1], "- the git subcommand is not exists, will call system command(TODO)")
+		return true
+	})
 }
 
 var StatusInfo = &gcli.Command{

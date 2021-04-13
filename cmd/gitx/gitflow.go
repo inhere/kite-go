@@ -1,4 +1,4 @@
-package gituse
+package gitx
 
 import "github.com/gookit/gcli/v3"
 
