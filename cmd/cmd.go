@@ -10,6 +10,7 @@ import (
 	"github.com/inherelab/kite/cmd/gitx"
 	"github.com/inherelab/kite/cmd/gotool"
 	"github.com/inherelab/kite/cmd/mkdown"
+	"github.com/inherelab/kite/cmd/phptool"
 	"github.com/inherelab/kite/cmd/self"
 	"github.com/inherelab/kite/cmd/sql"
 	"github.com/inherelab/kite/cmd/swagger"
@@ -38,6 +39,7 @@ func Register(app *gcli.App) {
 		swagger.SwaggerCmd,
 		mkdown.MkDownCmd,
 		gotool.GoToolsCmd,
+		phptool.PhpToolsCmd,
 		self.KiteManage,
 	)
 

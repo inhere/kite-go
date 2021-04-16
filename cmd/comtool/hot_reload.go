@@ -8,7 +8,7 @@ import (
 
 var HotReloadServe = &gcli.Command{
 	Name:    "hotreload",
-	Aliases: []string{"hot-reload"},
+	Aliases: []string{"hot-reload", "hotr"},
 	Desc:  "hot reload serve on files modified",
 	Config: func(c *gcli.Command) {
 

@@ -9,7 +9,7 @@ var dryRun bool
 
 var CmdForGitlab = &gcli.Command{
 	Name: "gitlab",
-	Aliases: []string{"gl", "glab"},
+	Aliases: []string{"gl", "gitl", "glab"},
 	Desc: "useful tools for use gitlab",
 	Subs: []*gcli.Command{
 		UpdatePushCmd,

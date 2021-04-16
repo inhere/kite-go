@@ -7,7 +7,7 @@ import (
 
 var CmdForGithub = &gcli.Command{
 	Name: "github",
-	Aliases: []string{"gh", "hub", "ghub"},
+	Aliases: []string{"gh", "gith", "hub", "ghub"},
 	Desc: "useful tools for use github",
 	Subs: []*gcli.Command{
 		gituse.OpenRemoteRepo,

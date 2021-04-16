@@ -15,7 +15,7 @@ var acpOpts = struct {
 var AddCommitPush = &gcli.Command{
 	Name: "acp",
 	Desc: "run git add/commit/push at once command",
-	Func: acpFunc,
+	Func: acpHandleFunc,
 	Config: func(c *gcli.Command) {
 		AddCommitNotPush.Config(c)
 
@@ -30,7 +30,7 @@ var AddCommitPush = &gcli.Command{
 var AddCommitNotPush = &gcli.Command{
 	Name: "ac",
 	Desc: "run git add/commit at once command",
-	Func: acpFunc,
+	Func: acpHandleFunc,
 	Config: func(c *gcli.Command) {
 		c.BoolOpt(&dryRun, "dry-run", "", false, "dont real execute command")
 		c.BoolOpt(&interactive, "interactive", "i", false, "interactively ask before executing command")
@@ -45,7 +45,7 @@ var AddCommitNotPush = &gcli.Command{
 	},
 }
 
-var acpFunc = func(c *gcli.Command, args []string) error {
+var acpHandleFunc = func(c *gcli.Command, args []string) error {
 	runPush := acpOpts.notPush == false
 	if c.Name == "ac" {
 		runPush = false // not push
@@ -70,6 +70,5 @@ var acpFunc = func(c *gcli.Command, args []string) error {
 		cr.AddGitCmd("push")
 	}
 
-	cr.Run()
-	return nil
+	return cr.Run().LastErr()
 }

@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/gitwrap"
 	"github.com/inherelab/kite/pkg/cmdutil"
 	"github.com/inherelab/kite/pkg/gituse"
 )
@@ -21,6 +22,7 @@ var GitCommands = &gcli.Command{
 	Desc: "tools for quick use `git` commands",
 	Subs: []*gcli.Command{
 		StatusInfo,
+		RemoteInfo,
 		AddCommitPush,
 		AddCommitNotPush,
 		TagCmd,
@@ -50,6 +52,20 @@ var StatusInfo = &gcli.Command{
 	Desc: "git status command",
 	Func: func(c *gcli.Command, args []string) error {
 		return cmdutil.NewGitCmd("status").Run()
+	},
+}
+
+var RemoteInfo = &gcli.Command{
+	Name: "remote",
+	Aliases: []string{"rmt"},
+	Desc: "git remote command",
+	Func: func(c *gcli.Command, args []string) error {
+		err := gitwrap.New("remote", "-v").Run()
+		if err != nil {
+			return err
+		}
+
+		return nil
 	},
 }
 

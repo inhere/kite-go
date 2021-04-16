@@ -100,7 +100,7 @@ func (r *CmdRunner) AddWithArgs(binName string, args ...string) *CmdRunner {
 }
 
 // Run all commands.
-func (r *CmdRunner) Run() {
+func (r *CmdRunner) Run() *CmdRunner {
 	color.Magenta.Printf("# Run All Workflows(%d steps):\n", len(r.commands))
 
 	yesRun := true
@@ -134,8 +134,14 @@ func (r *CmdRunner) Run() {
 		}
 	}
 	color.Success.Println("Run Completed")
+	return r
 }
 
 func (r *CmdRunner) RunNoPrint() {
 
+}
+
+// LastErr get
+func (r *CmdRunner) LastErr() error {
+	return r.lastErr
 }
