@@ -1,0 +1,5 @@
+package gituse
+
+func BatchPull() {
+
+}
