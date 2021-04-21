@@ -1,15 +1,26 @@
 package gitx
 
-import "github.com/gookit/gcli/v3"
+import (
+	"errors"
+
+	"github.com/gookit/gcli/v3"
+)
 
 var GitFlow = &gcli.Command{
 	Name: "gitflow",
 	Desc: "tool commands for git-flow development",
-	Aliases: []string{"gflow", "gf"},
 	Subs: []*gcli.Command{
 		InitFlow,
 		CreatePRLink,
+		UpdateNoPush,
+		UpdateAndPush,
 		BranchOperateEx,
+	},
+
+	Aliases: []string{"gflow", "gf"},
+	Config: func(c *gcli.Command) {
+		c.BoolOpt(&dryRun, "dry-run", "", false, "Dry-run the workflow, dont real execute")
+		c.BoolOpt(&yesRun, "yes", "y", false, "Direct execution without confirmation")
 	},
 }
 
@@ -22,6 +33,34 @@ var CreatePRLink = &gcli.Command{
 var InitFlow = &gcli.Command{
 	Name: "init",
 	Desc: "init repo remote and other info for current project",
+}
+
+var (
+	gfUpOpts = struct {
+		push bool
+	}{}
+	UpdateNoPush = &gcli.Command{
+		Name:    "update",
+		Desc:    "Update codes from origin and main remote repositories",
+		Func:    handleUpdatePush,
+
+		Aliases: []string{"up"},
+		Config: func(c *gcli.Command) {
+			c.BoolOpt(&gfUpOpts.push, "push", "p", false, "Push to origin remote after update")
+		},
+	}
+
+	UpdateAndPush = &gcli.Command{
+		Name:    "update-push",
+		Desc:    "Update codes from origin and main remote repositories, then push to remote",
+		Func:    handleUpdatePush,
+
+		Aliases: []string{"upp", "up-push"},
+	}
+)
+
+func handleUpdatePush(c *gcli.Command, args []string) error {
+	return errors.New("TODO")
 }
 
 var BranchOperateEx = &gcli.Command{

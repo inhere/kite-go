@@ -32,6 +32,9 @@ var GitCommands = &gcli.Command{
 	},
 	Config: func(c *gcli.Command) {
 		addListener(c)
+
+		c.BoolOpt(&dryRun, "dry-run", "", false, "Dry-run the workflow, dont real execute")
+		c.BoolOpt(&yesRun, "yes", "y", false, "Direct execution without confirmation")
 	},
 }
 

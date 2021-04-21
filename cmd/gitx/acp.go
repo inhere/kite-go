@@ -14,7 +14,7 @@ var acpOpts = struct {
 
 var AddCommitPush = &gcli.Command{
 	Name: "acp",
-	Desc: "run git add/commit/push at once command",
+	Desc: "run `git add/commit/push` at once command",
 	Func: acpHandleFunc,
 	Config: func(c *gcli.Command) {
 		AddCommitNotPush.Config(c)
