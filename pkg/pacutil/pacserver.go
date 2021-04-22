@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/gookit/color"
+	"github.com/gookit/rux"
 	"github.com/gookit/slog"
 )
 
@@ -77,9 +78,23 @@ func (g *HandlerGroup) loadPData(pacFile, maxAge string) error {
 	return err
 }
 
+func (g *HandlerGroup) gfwHandle(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	dst, err := DecodeGfwList(pacOpts.gwfile)
+	if err != nil {
+		_, err = w.Write([]byte(`error`))
+		slog.ErrorT(err)
+		return
+	}
+
+	_, err = w.Write(dst)
+	slog.ErrorT(err)
+}
+
 func (g *HandlerGroup) viewHandle(w http.ResponseWriter, r *http.Request) {
 	e := g.pd.Etag
 
+	// w.Header().Set("Content-Type", "application/x-ns-proxy-autoconfig; charset=utf-8")
 	// Caching
 	w.Header().Set("Etag", e)
 	w.Header().Set("Cache-Control", "max-age="+g.pd.MaxAge)
@@ -141,9 +156,9 @@ func (g *HandlerGroup)  missingHandle(w http.ResponseWriter, r *http.Request) {
 	slog.ErrorT(err)
 }
 
-func startServer(addr, pacFile, maxAge string) error {
+func startServer(opts PacOpts) error {
 	hg := &HandlerGroup{}
-	err := hg.loadPData(pacFile, maxAge)
+	err := hg.loadPData(opts.file, opts.maxAge)
 	if err != nil {
 		return err
 	}
@@ -151,20 +166,15 @@ func startServer(addr, pacFile, maxAge string) error {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/",hg.missingHandle)
-	mux.HandleFunc("/pac",hg.viewHandle)
-	mux.HandleFunc("/wpad.dat", hg.wpadHandle)
-	mux.HandleFunc("/edit/", hg.editHandle)
-	mux.HandleFunc("/save/", hg.saveHandle)
-	mux.HandleFunc("/favicon.ico", hg.missingHandle)
+	h := createHttpRux(hg)
+	// h := createHttpMux(hg)
 
-	slog.Info("server start on", addr)
+	slog.Info("server start on", opts.addr)
 
 	// TODO loggingHandler := logging.NewApacheLoggingHandler(mux, os.Stdout)
 	server := &http.Server{
-		Addr:    addr,
-		Handler: mux,
+		Addr:    opts.addr,
+		Handler: h,
 	}
 
 	go func() {
@@ -183,4 +193,32 @@ func startServer(addr, pacFile, maxAge string) error {
 
 	defer cancel()
 	return server.Shutdown(ctx)
+}
+
+func createHttpRux(hg *HandlerGroup) *rux.Router {
+	r := rux.New()
+	rux.Debug(true)
+
+	r.GET("/", rux.WrapHTTPHandlerFunc(hg.missingHandle))
+	r.GET("/pac",rux.WrapHTTPHandlerFunc(hg.viewHandle))
+	r.GET("/gfw", rux.WrapHTTPHandlerFunc(hg.gfwHandle))
+	r.GET("/wpad.dat", rux.WrapHTTPHandlerFunc(hg.wpadHandle))
+	r.GET("/edit/", rux.WrapHTTPHandlerFunc(hg.editHandle))
+	r.GET("/save/", rux.WrapHTTPHandlerFunc(hg.saveHandle))
+	r.GET("/favicon.ico", rux.WrapHTTPHandlerFunc(hg.missingHandle))
+
+	return r
+}
+
+func createHttpMux(hg *HandlerGroup) *http.ServeMux {
+	r := http.NewServeMux()
+	r.HandleFunc("/",hg.missingHandle)
+	r.HandleFunc("/pac",hg.viewHandle)
+	r.HandleFunc("/gfw", hg.gfwHandle)
+	r.HandleFunc("/wpad.dat", hg.wpadHandle)
+	r.HandleFunc("/edit/", hg.editHandle)
+	r.HandleFunc("/save/", hg.saveHandle)
+	r.HandleFunc("/favicon.ico", hg.missingHandle)
+
+	return r
 }

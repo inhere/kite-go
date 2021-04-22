@@ -30,3 +30,8 @@ var proxy = 'SOCKS5 127.0.0.1:1080';
 // multi
 var proxy = "SOCKS5 127.0.0.1:9527; PROXY 127.0.0.1:9580; DIRECT"
 ```
+
+## refer
+
+- 代理自动配置 https://zh.wikipedia.org/wiki/%E4%BB%A3%E7%90%86%E8%87%AA%E5%8A%A8%E9%85%8D%E7%BD%AE
+- https://zh.wikipedia.org/zh/%E4%BB%A3%E7%90%86%E8%87%AA%E5%8A%A8%E9%85%8D%E7%BD%AE

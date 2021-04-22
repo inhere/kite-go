@@ -1,9 +1,7 @@
 package pacutil
 
 import (
-	"encoding/base64"
 	"fmt"
-	"io/ioutil"
 
 	"github.com/gookit/gcli/v3"
 )
@@ -23,20 +21,21 @@ var PacTools = &gcli.Command{
 	},
 }
 
-var pacOpts = struct {
+type PacOpts struct {
 	addr string
 	file string
-	mAge string
 	gwUrl string
 	gwfile string
-}{}
+	maxAge string
+}
 
+var pacOpts = PacOpts{}
 var (
 	PacServe = &gcli.Command{
 		Name: "serve",
 		Desc: "start an pac serve",
 		Func: func(c *gcli.Command, args []string) error {
-			return startServer(pacOpts.addr, pacOpts.file, pacOpts.mAge)
+			return startServer(pacOpts)
 		},
 
 		Config: func(c *gcli.Command) {
@@ -44,7 +43,8 @@ var (
 			c.StrOpt(&pacOpts.file, "file", "f", "", "pac file path")
 			c.FlagMeta("file").Required = true
 
-			c.StrOpt(&pacOpts.mAge, "max-age", "m", "31536000", "Cache Control max-age")
+			c.StrOpt(&pacOpts.gwfile, "gwfile", "", "", "gfw list file")
+			c.StrOpt(&pacOpts.maxAge, "max-age", "m", "31536000", "Cache Control max-age")
 		},
 		Examples: `
 {$fullCmd} -f ./tmp/gfwlist-210422.pac
@@ -61,19 +61,12 @@ var (
 		Aliases: []string{"upgw"},
 	}
 
-	// example: pac catgw tmp/gfwlist-210422.txt
+	// example: pacgo catgw -f tmp/gfwlist-210422.txt
 	GFWListCat = &gcli.Command{
 		Name: "catgw",
 		Desc: "decode gfw list content and print it",
 		Func: func(c *gcli.Command, args []string) error {
-
-			src, err := ioutil.ReadFile(pacOpts.gwfile)
-			if err != nil {
-				return err
-			}
-
-			dst := make([]byte, len(src))
-			_, err = base64.StdEncoding.Decode(dst, src)
+			dst, err := DecodeGfwList(pacOpts.gwfile)
 			if err != nil {
 				return err
 			}
@@ -87,6 +80,9 @@ var (
 			c.StrOpt(&pacOpts.gwfile, "file", "f", "", "gfw list file")
 			c.StrOpt(&pacOpts.gwUrl, "url", "u", "", "gfw list file url")
 		},
+		Examples: `
+{$fullCmd} -f ./tmp/gfwlist-210422.txt
+`,
 	}
 
 	GFWList2pac = &gcli.Command{
