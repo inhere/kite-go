@@ -5,9 +5,9 @@ import (
 )
 
 // dev run:
-//	go run ./bin/pac
+//	go run ./bin/pacgo
 // build run:
-//	go build ./bin/pac && ./pac
+//	go build ./bin/pacgo && ./pac
 func main() {
 	c := pacutil.PacTools
 	c.MustRun(nil)

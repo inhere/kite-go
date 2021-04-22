@@ -41,9 +41,14 @@ var (
 
 		Config: func(c *gcli.Command) {
 			c.StrOpt(&pacOpts.addr, "addr", "a", ":11080", "server address")
-			c.StrOpt(&pacOpts.file, "file", "f", ":11080", "pac file path")
+			c.StrOpt(&pacOpts.file, "file", "f", "", "pac file path")
+			c.FlagMeta("file").Required = true
+
 			c.StrOpt(&pacOpts.mAge, "max-age", "m", "31536000", "Cache Control max-age")
 		},
+		Examples: `
+{$fullCmd} -f ./tmp/gfwlist-210422.pac
+`,
 	}
 
 	GFWListUpdate = &gcli.Command{

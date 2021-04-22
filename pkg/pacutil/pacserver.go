@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/gookit/color"
+	"github.com/gookit/slog"
 )
 
 const editTpl = `
@@ -51,7 +52,8 @@ func (p *PData) edit(w http.ResponseWriter) {
 	// t, _ := template.ParseFiles(*templatePath + "/edit.html")
 	t := template.New("edit")
 	template.Must(t.Parse(editTpl))
-	t.Execute(w, p)
+	// t.Execute(w, p)
+	slog.ErrorT(t.Execute(w, p))
 }
 
 // refer https://github.com/ceaser/pac-server/blob/master/main.go
@@ -88,7 +90,9 @@ func (g *HandlerGroup) viewHandle(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	fmt.Fprintf(w, "%s", g.pd.Body)
+	// fmt.Fprintf(w, "%s", g.pd.Body)
+	_, err := w.Write(g.pd.Body)
+	slog.ErrorT(err)
 }
 
 func (g *HandlerGroup) editHandle(w http.ResponseWriter, r *http.Request) {
@@ -125,12 +129,16 @@ func (g *HandlerGroup) wpadHandle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/x-ns-proxy-autoconfig; charset=utf-8")
-	fmt.Fprintf(w, "%s", g.pd.Body)
+	// fmt.Fprintf(w, "%s", g.pd.Body)
+	_, err := w.Write(g.pd.Body)
+	slog.ErrorT(err)
 }
 
 func (g *HandlerGroup)  missingHandle(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
-	fmt.Fprint(w, "404")
+	// fmt.Fprint(w, "404")
+	_, err := w.Write([]byte("404"))
+	slog.ErrorT(err)
 }
 
 func startServer(addr, pacFile, maxAge string) error {
@@ -144,11 +152,14 @@ func startServer(addr, pacFile, maxAge string) error {
 	signal.Notify(stop, os.Interrupt)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/",hg.viewHandle)
+	mux.HandleFunc("/",hg.missingHandle)
+	mux.HandleFunc("/pac",hg.viewHandle)
 	mux.HandleFunc("/wpad.dat", hg.wpadHandle)
 	mux.HandleFunc("/edit/", hg.editHandle)
 	mux.HandleFunc("/save/", hg.saveHandle)
 	mux.HandleFunc("/favicon.ico", hg.missingHandle)
+
+	slog.Info("server start on", addr)
 
 	// TODO loggingHandler := logging.NewApacheLoggingHandler(mux, os.Stdout)
 	server := &http.Server{
@@ -159,7 +170,11 @@ func startServer(addr, pacFile, maxAge string) error {
 	go func() {
 		err := server.ListenAndServe()
 		if err != nil {
-			color.Errorln(err)
+			if err != http.ErrServerClosed {
+				slog.Error(err)
+			} else {
+				color.Success.Println("Server closed")
+			}
 		}
 	}()
 	<-stop
