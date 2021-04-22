@@ -10,7 +10,7 @@ import (
 // https://github.com/100apps/ipac
 // https://zh.wikipedia.org/zh/%E4%BB%A3%E7%90%86%E8%87%AA%E5%8A%A8%E9%85%8D%E7%BD%AE
 var PacTools = &gcli.Command{
-	Name: "pac",
+	Name: "pacgo",
 	// Hidden: true,
 	Desc: "pac tools",
 	Subs: []*gcli.Command{
@@ -19,6 +19,8 @@ var PacTools = &gcli.Command{
 		GFWList2pac,
 		GFWListUpdate,
 	},
+
+	Aliases: []string{"pac"},
 }
 
 type PacOpts struct {

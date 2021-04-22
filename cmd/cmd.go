@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/builtin"
+	"github.com/inherelab/kite/cmd/codegen"
 	"github.com/inherelab/kite/cmd/comtool"
 	"github.com/inherelab/kite/cmd/doctool"
 	"github.com/inherelab/kite/cmd/github"
@@ -14,6 +15,7 @@ import (
 	"github.com/inherelab/kite/cmd/self"
 	"github.com/inherelab/kite/cmd/sql"
 	"github.com/inherelab/kite/cmd/swagger"
+	"github.com/inherelab/kite/pkg/pacutil"
 )
 
 // Boot commands to gcli.App
@@ -44,7 +46,9 @@ func Register(app *gcli.App) {
 	)
 
 	// app.Add(filewatcher.FileWatcher(nil))
+	app.Add(pacutil.PacTools.WithHidden())
 	app.Add(
+		codegen.CodeGen,
 		comtool.RunScripts,
 		comtool.HotReloadServe,
 		builtin.GenAutoComplete(),
