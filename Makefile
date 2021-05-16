@@ -26,7 +26,7 @@ help:
 
   kit2gobin:     ## build kit to go bin dir
 kit2gobin:
-	go build -ldflags="-X 'kite.Info.Version=v2.0.2' -X 'kite.PubDate=222233'" -o $(GOPATH)/bin/kit ./bin/kit
+	go build -ldflags="-X 'github.com/inherelab/kite.Info.Version=v1.0.2' -X 'github.com/inherelab/kite.Info.PubDate=222233'" -o $(GOPATH)/bin/kit ./bin/kit
 	chmod a+x $(GOPATH)/bin/kit
 
   kite2gobin:     ## build kite to go bin dir

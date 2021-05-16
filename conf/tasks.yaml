@@ -1,0 +1,10 @@
+jobs:
+  updateBlog:
+    name: update blog site
+    steps:
+      - name: step1
+        timeout-minutes: 1
+        work-dir: /data/www/inhere.xyz
+        run: |
+          git checkout .
+          git pull -f

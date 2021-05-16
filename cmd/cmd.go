@@ -15,6 +15,7 @@ import (
 	"github.com/inherelab/kite/cmd/self"
 	"github.com/inherelab/kite/cmd/sql"
 	"github.com/inherelab/kite/cmd/swagger"
+	"github.com/inherelab/kite/cmd/taskx"
 	"github.com/inherelab/kite/pkg/pacutil"
 )
 
@@ -43,18 +44,21 @@ func Register(app *gcli.App) {
 		gotool.GoToolsCmd,
 		phptool.PhpToolsCmd,
 		self.KiteManage,
+		taskx.TaskManage,
 	)
 
 	// app.Add(filewatcher.FileWatcher(nil))
 	app.Add(pacutil.PacTools.WithHidden())
 	app.Add(
 		codegen.CodeGen,
+		comtool.HttpServe,
 		comtool.RunScripts,
 		comtool.HotReloadServe,
 		builtin.GenAutoComplete(),
 	)
 
 	app.AddAliases("self:init", "init")
+	app.AddAliases("self:info", "info")
 }
 
 func addListener(app *gcli.App) {

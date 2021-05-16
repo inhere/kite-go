@@ -19,19 +19,21 @@ type CmdRunner struct {
 	IgnoreErr bool
 	// Interactive Whether to interactively ask before executing command
 	Interactive bool
+	// TODO Concurrent run
+	// BeforeRun commands
+	BeforeRun func(r *CmdRunner)
 	// added commands
-	commands  []*Cmd
+	commands []*Cmd
 }
 
 // NewRunner create
-func NewRunner(fn ...func(cr *CmdRunner)) *CmdRunner {
-	cr := &CmdRunner{}
+func NewRunner(fn ...func(r *CmdRunner)) *CmdRunner {
+	r := &CmdRunner{}
 
 	if len(fn) > 0 {
-		fn[0](cr)
+		fn[0](r)
 	}
-
-	return cr
+	return r
 }
 
 func (r *CmdRunner) SetWordDir(wordDir string) {
@@ -95,12 +97,15 @@ func (r *CmdRunner) AddWithArgs(binName string, args ...string) *CmdRunner {
 	cmd.Args = args
 
 	r.commands = append(r.commands, cmd)
-
 	return r
 }
 
 // Run all commands.
 func (r *CmdRunner) Run() *CmdRunner {
+	if r.BeforeRun != nil {
+		r.BeforeRun(r)
+	}
+
 	color.Magenta.Printf("# Run All Workflows(%d steps):\n", len(r.commands))
 
 	yesRun := true

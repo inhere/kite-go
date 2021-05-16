@@ -7,4 +7,5 @@ func AddRoutes(r *rux.Router) {
 	r.StaticDir("/static", "static")
 
 	r.Controller("/", &HomeController{})
+	r.Controller("/tasks", &TaskController{})
 }
