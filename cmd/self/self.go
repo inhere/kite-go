@@ -3,8 +3,9 @@ package self
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/show"
+	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/sysutil"
-	"github.com/inherelab/kite"
+	"github.com/inherelab/kite/app"
 	"github.com/inherelab/kite/pkg/conf"
 )
 
@@ -29,10 +30,11 @@ var KiteInfo = &gcli.Command{
 			"home Dir": sysutil.HomeDir(),
 			"loaded files": conf.Obj().LoadedFiles(),
 			"language": "TODO",
-			"publish date": kite.Info.PubDate,
+			"version": app.Info.Version,
+			"publish date": app.Info.BuildDate,
 			// "i18n files": i18n.Default().LoadFile(),
 		}, nil)
-
+dump.P(app.Info)
 		return nil
 	},
 }

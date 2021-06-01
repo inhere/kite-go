@@ -127,14 +127,21 @@ gitlab:
 - https://github.com/dgraph-io/badger
     - https://github.com/genjidb/genji
 
-**json&yaml**
+**json**
 
 - https://github.com/tidwall/gjson Get JSON values quickly - JSON parser for Go
 - https://github.com/buger/jsonparser Get JSON values quickly
 - https://github.com/mailru/easyjson
-- https://github.com/zyedidia/json5 Go JSON5 decoder package based on encoding/json
+
+**yaml**
+
 - https://github.com/go-yaml/yaml `go get gopkg.in/yaml.v3`
 - https://github.com/goccy/go-yaml
+
+**json5**
+
+- https://github.com/yosuke-furukawa/json5
+- https://github.com/zyedidia/json5 Go JSON5 decoder package based on encoding/json
 
 **cron job**
 
