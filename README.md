@@ -9,6 +9,10 @@
 - generate simple/controller/restful codes
 - install development tools. eg: swaggo, swaggerui, golint, revive
 
+## PHP version
+
+- [inhere/kite](https://github.com/inhere/kite)
+
 ## Install
 
 ```bash

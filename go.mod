@@ -1,6 +1,6 @@
 module github.com/inherelab/kite
 
-go 1.13
+go 1.14
 
 require (
 	github.com/fsnotify/fsnotify v1.4.9
@@ -10,9 +10,9 @@ require (
 	github.com/gomarkdown/markdown v0.0.0-20201113031856-722100d81a8e
 	github.com/gookit/color v1.4.2
 	github.com/gookit/config/v2 v2.0.23
-	github.com/gookit/gcli/v3 v3.0.0
+	github.com/gookit/gcli/v3 v3.0.1
 	github.com/gookit/gitwrap v0.0.1
-	github.com/gookit/goutil v0.3.14
+	github.com/gookit/goutil v0.3.15
 	github.com/gookit/i18n v1.1.3
 	github.com/gookit/ini/v2 v2.0.9
 	github.com/gookit/rux v1.3.2

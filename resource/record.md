@@ -2,6 +2,8 @@
 
 ## tools
 
+- https://github.com/go-task/task Task is a task runner/build tool that aims to be simpler and easier to use than.
+
 **linux-command**
 
 data file: /dist/data.json
@@ -53,6 +55,7 @@ data file: /dist/data.json
 - https://github.com/creack/pty
 - https://github.com/pkg/term
 - https://github.com/liamg/aminal
+- https://github.com/atotto/clipboard Provide copying and pasting to the Clipboard for Go.
 
 **terminal interactive**
 
@@ -111,7 +114,7 @@ gitlab:
 
 **database**  
 
-- https://github.com/DATA-DOG/go-sqlmock
+- https://github.com/DATA-DOG/go-sqlmock 
 - https://github.com/xo/usql
 
 **database migrate**  
@@ -137,6 +140,7 @@ gitlab:
 
 - https://github.com/go-yaml/yaml `go get gopkg.in/yaml.v3`
 - https://github.com/goccy/go-yaml
+- https://github.com/ghodss/yaml
 
 **json5**
 

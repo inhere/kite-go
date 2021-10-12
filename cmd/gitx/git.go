@@ -29,6 +29,8 @@ var GitCommands = &gcli.Command{
 		gituse.OpenRemoteRepo,
 		CreatePRLink,
 		BatchPull,
+		Changelog,
+		ShowLog,
 	},
 	Config: func(c *gcli.Command) {
 		addListener(c)

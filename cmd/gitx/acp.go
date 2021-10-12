@@ -40,7 +40,7 @@ var AddCommitNotPush = &gcli.Command{
 		c.BindArg(&gcli.Argument{
 			Name:    "files",
 			Desc:    "Only add special files. default will add all changed files",
-			IsArray: true,
+			Arrayed: true,
 		})
 	},
 }
