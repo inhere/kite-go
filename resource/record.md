@@ -15,14 +15,12 @@ data file: /dist/data.json
 **tldr**
 
 
-
 **code gen**
 
 - swagger codegen
 - https://github.com/aliyun/darabonba
 - https://github.com/xo/xo is a command-line tool to generate Go code based on a database schema or a custom query.
 - https://github.com/dave/jennifer A code generator for Go
-
 
 **awesome-go**
 
@@ -38,7 +36,7 @@ data file: /dist/data.json
 - https://github.com/alecthomas/chroma A general purpose syntax highlighter in pure Go
 - https://github.com/zyedidia/highlight
 
-**markdown parser**
+**Markdown parser**
 
 - https://github.com/yuin/goldmark
 - https://github.com/russross/blackfriday
@@ -49,6 +47,19 @@ data file: /dist/data.json
 - https://github.com/MichaelMure/go-term-markdown
 - https://github.com/charmbracelet/glamour
 - https://github.com/charmbracelet/glow deps on the glamour
+
+**html to markdown**
+
+- https://github.com/JohannesKaufmann/html-to-markdown
+
+**swagger**
+
+- https://github.com/swaggo/swag
+    - https://github.com/go-openapi/spec
+    - https://github.com/go-openapi/swag
+- https://github.com/getkin/kin-openapi support swagger 3
+
+### terminal
 
 **terminal**
 
@@ -64,13 +75,6 @@ data file: /dist/data.json
 - https://github.com/c-bata/go-prompt
 - https://github.com/chriswalz/complete
 
-**swagger**
-
-- https://github.com/swaggo/swag
-    - https://github.com/go-openapi/spec
-    - https://github.com/go-openapi/swag
-- https://github.com/getkin/kin-openapi support swagger 3
-
 **github&gitlab**
 
 github:
@@ -81,7 +85,7 @@ github:
 - https://github.com/google/go-github
 
 gitlab:
-  
+
 - https://github.com/profclems/glab
 - https://github.com/xanzy/go-gitlab
 
@@ -112,12 +116,12 @@ gitlab:
 - https://github.com/dvyukov/go-fuzz  a fuzz testing tool.
 - https://github.com/FiloSottile/mkcert
 
-**database**  
+**database**
 
-- https://github.com/DATA-DOG/go-sqlmock 
+- [DATA-DOG/go-sqlmock](https://github.com/DATA-DOG/go-sqlmock)
 - https://github.com/xo/usql
 
-**database migrate**  
+**database migrate**
 
 - https://github.com/golang-migrate/migrate
 - https://github.com/rubenv/sql-migrate
@@ -130,6 +134,11 @@ gitlab:
 - https://github.com/dgraph-io/badger
     - https://github.com/genjidb/genji
 
+### config data
+
+- https://github.com/tomwright/dasel Select, put and delete data from JSON, TOML, YAML, XML and CSV files with a single tool. Supports conversion between formats and can be used as a Go package.
+- https://github.com/thedevsaddam/gojsonq A simple Go package to Query over JSON/YAML/XML/CSV Data
+
 **json**
 
 - https://github.com/tidwall/gjson Get JSON values quickly - JSON parser for Go
@@ -139,13 +148,25 @@ gitlab:
 **yaml**
 
 - https://github.com/go-yaml/yaml `go get gopkg.in/yaml.v3`
-- https://github.com/goccy/go-yaml
+- https://github.com/goccy/go-yaml `Y`
 - https://github.com/ghodss/yaml
 
 **json5**
 
 - https://github.com/yosuke-furukawa/json5
 - https://github.com/zyedidia/json5 Go JSON5 decoder package based on encoding/json
+
+### network
+
+**websocket**
+
+- https://github.com/gobwas/ws
+- https://github.com/gorilla/websocket
+- https://github.com/joewalnes/websocketd
+
+### tasks
+
+- https://github.com/wagoodman/bashful  Use a yaml file to stitch together commands and bash snippits and run them with a bit of style. Why? Because your bash script should be quiet and shy-like (...and not such a loud mouth).
 
 **cron job**
 
@@ -154,11 +175,7 @@ gitlab:
 - https://github.com/go-co-op/gocron
 - https://github.com/distribworks/dkron
 
-**websocket**
-
-- https://github.com/gobwas/ws
-- https://github.com/gorilla/websocket
-- https://github.com/joewalnes/websocketd
+## others
 
 **image process**
 

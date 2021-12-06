@@ -13,6 +13,7 @@ func OpenBrowser(url string)  {
 		binName = "start"
 	} else if sysutil.IsMac() {
 		binName = "open"
+		// binName = "open_command"
 	}
 
 	c := exec.Command(binName, url)

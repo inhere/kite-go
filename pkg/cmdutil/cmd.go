@@ -8,6 +8,7 @@ import (
 	"github.com/gookit/goutil/cliutil"
 )
 
+// Cmd struct
 type Cmd struct {
 	Bin  string
 	Args []string
@@ -17,6 +18,7 @@ type Cmd struct {
 	Before func() bool
 }
 
+// NewCmd new command.
 func NewCmd() *Cmd {
 	return &Cmd{}
 }
