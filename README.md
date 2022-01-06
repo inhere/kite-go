@@ -25,7 +25,13 @@ go get github.com/inherelab/kite
 go build -o kite
 ```
 
+### Local dev
 
+```bash
+make kit2gobin
+# or
+make kite2gobin
+```
 
 ## Gookit Packages
 

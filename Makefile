@@ -92,10 +92,12 @@ build-all: $(GO_DEPENDENCIES) build make-reports-dir ## Build all files - runtim
 	CGO_ENABLED=$(CGO_ENABLED) $(GOTEST) -run=nope -tags=integration -failfast -short ./... $(BUILDFLAGS)
 
 kit2gobin:  ## build kit to go bin dir
+	go mod tidy
 	go build $(BUILDFLAGS) -o $(GOPATH)/bin/kit ./bin/kit
 	chmod a+x $(GOPATH)/bin/kit
 
 kite2gobin: ## build kite to go bin dir
+	go mod tidy
 	go build $(BUILDFLAGS) -o $(GOPATH)/bin/kit ./bin/kit
 	chmod a+x $(GOPATH)/bin/kit
 
