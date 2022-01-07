@@ -20,7 +20,7 @@ func main() {
 		a.Name = "Kite"
 		a.Desc = "Kite CLI tool application"
 
-		a.Version = kite.Info.Version
+		a.Version = kite.Version
 	})
 	cli.GOptsBinder = func(gfs *gcli.Flags) {
 		gfs.StrOpt(&confFile,

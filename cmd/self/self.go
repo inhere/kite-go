@@ -3,9 +3,8 @@ package self
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/show"
-	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/sysutil"
-	"github.com/inherelab/kite/app"
+	"github.com/inherelab/kite"
 	"github.com/inherelab/kite/pkg/conf"
 )
 
@@ -25,24 +24,25 @@ var KiteInfo = &gcli.Command{
 	Desc: "show the kite tool information",
 	Func: func(c *gcli.Command, args []string) error {
 		show.AList("information", map[string]interface{}{
-			"bin Dir":  c.BinDir(),
-			"work Dir": c.WorkDir(),
-			"home Dir": sysutil.HomeDir(),
+			"bin Dir":      c.BinDir(),
+			"work Dir":     c.WorkDir(),
+			"home Dir":     sysutil.HomeDir(),
 			"loaded files": conf.Obj().LoadedFiles(),
-			"language": "TODO",
-			"version": app.Info.Version,
-			"publish date": app.Info.BuildDate,
+			"language":     "TODO",
+			"version":      kite.Version,
+			"build date":   kite.BuildDate,
+			"go version":   kite.GoVersion,
 			// "i18n files": i18n.Default().LoadFile(),
 		}, nil)
-dump.P(app.Info)
+
 		return nil
 	},
 }
 
 var UpdateSelf = &gcli.Command{
-	Name: "update",
+	Name:    "update",
 	Aliases: []string{"updateself", "selfup", "upself", "up"},
-	Desc: "update {$binName} to latest from github repository",
+	Desc:    "update {$binName} to latest from github repository",
 }
 
 var InitKite = &gcli.Command{

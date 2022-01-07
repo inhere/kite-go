@@ -17,7 +17,7 @@ GO_VERSION := $(shell $(GO) version | sed -e 's/^[^0-9.]*\([0-9.]*\).*/\1/')
 GO_DEPENDENCIES := $(call rwildcard,pkg/,*.go) $(call rwildcard,cmd/,*.go)
 
 BRANCH     := $(shell git rev-parse --abbrev-ref HEAD 2> /dev/null  || echo 'unknown')
-BUILD_DATE := $(shell date +%Y%m%d-%H:%M:%S)
+BUILD_DATE := $(shell date +%Y/%m/%d-%H:%M:%S)
 CGO_ENABLED = 0
 
 REPORTS_DIR=$(BUILD_TARGET)/reports
@@ -31,13 +31,13 @@ VERSION ?= $(shell echo "$$(git for-each-ref refs/tags/ --count=1 --sort=-versio
 #BUILD_TIME_CONFIG_FLAGS ?= ""
 
 # Full build flags used when building binaries. Not used for test compilation/execution.
-BUILDFLAGS :=  -ldflags \
-  " -X $(ROOT_PACKAGE)/app.Info.Version='$(VERSION)'\
-		-X $(ROOT_PACKAGE)/app.Info.Version='$(VERSION)'\
-		-X $(ROOT_PACKAGE)/app.Info.Revision='$(REV)'\
-		-X $(ROOT_PACKAGE)/app.Info.Branch='$(BRANCH)'\
-		-X $(ROOT_PACKAGE)/app.Info.BuildDate='$(BUILD_DATE)'\
-		-X $(ROOT_PACKAGE)/app.Info.GoVersion='$(GO_VERSION)'\
+BUILDFLAGS := -ldflags \
+  " -X $(ROOT_PACKAGE).Version=$(VERSION)\
+		-X $(ROOT_PACKAGE).Version=$(VERSION)\
+		-X $(ROOT_PACKAGE).Revision=$(REV)\
+		-X $(ROOT_PACKAGE).Branch=$(BRANCH)\
+		-X $(ROOT_PACKAGE).BuildDate=$(BUILD_DATE)\
+		-X $(ROOT_PACKAGE).GoVersion=$(GO_VERSION)\
 		$(BUILD_TIME_CONFIG_FLAGS)"
 
 # Some tests expect default values for version.*, so just use the config package values there.

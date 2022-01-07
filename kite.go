@@ -1,17 +1,12 @@
 package kite
 
-// Info for kite app
-var Info = &struct {
-	Version string
-	PubDate string
-}{
-	Version: "1.0.0",
-	PubDate: "2021-02-14 13:14",
-}
-
 var (
-	Version = "0.0.0"
-	PubDate = "2021-02-14 13:14"
+	Version   = "0.0.0"
+	PubDate   = "2021-02-14 13:14"
+	Branch    string
+	Revision  string
+	BuildDate string
+	GoVersion string
 )
 
 // Env names

@@ -6,9 +6,11 @@ import (
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/i18n"
 	"github.com/gookit/slog"
+	"github.com/inherelab/kite"
 	"github.com/inherelab/kite/pkg/conf"
 )
 
+// Boot app
 func Boot(cli *gcli.App) {
 	// config
 	if conf.Obj().Exists("kite") {
@@ -18,6 +20,9 @@ func Boot(cli *gcli.App) {
 			return
 		}
 	}
+
+	Info.Version = kite.Version
+	Info.GoVersion = kite.GoVersion
 
 	// slog
 	slog.Configure(func(logger *slog.SugaredLogger) {
