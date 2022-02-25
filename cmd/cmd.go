@@ -51,6 +51,7 @@ func Register(app *gcli.App) {
 	app.Add(pacutil.PacTools.WithHidden())
 	app.Add(
 		codegen.CodeGen,
+		comtool.FileCat,
 		comtool.HttpServe,
 		comtool.RunScripts,
 		comtool.HotReloadServe,
