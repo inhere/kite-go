@@ -6,7 +6,7 @@ func BatchPull() {
 
 }
 
-// GitBatchRun
+// GitBatchRun struct
 type GitBatchRun struct {
 	cmdutil.CmdRunner
 }
@@ -19,4 +19,3 @@ func NewBatchRun(fn ...func(gbr *GitBatchRun)) *GitBatchRun {
 	}
 	return gbr
 }
-

@@ -27,7 +27,7 @@ var KiteInfo = &gcli.Command{
 			"bin Dir":      c.BinDir(),
 			"work Dir":     c.WorkDir(),
 			"home Dir":     sysutil.HomeDir(),
-			"loaded files": conf.Obj().LoadedFiles(),
+			"loaded files": conf.C().LoadedFiles(),
 			"language":     "TODO",
 			"version":      kite.Version,
 			"build date":   kite.BuildDate,

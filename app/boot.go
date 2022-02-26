@@ -13,8 +13,8 @@ import (
 // Boot app
 func Boot(cli *gcli.App) {
 	// config
-	if conf.Obj().Exists("kite") {
-		err := conf.Obj().MapStruct("kite", conf.Conf)
+	if conf.C().Exists("kite") {
+		err := conf.C().MapStruct("kite", conf.Conf)
 		if err != nil {
 			color.Error.Println(err)
 			return
@@ -26,6 +26,8 @@ func Boot(cli *gcli.App) {
 
 	// slog
 	slog.Configure(func(logger *slog.SugaredLogger) {
+		logger.Level = slog.WarnLevel
+
 		f := logger.Formatter.(*slog.TextFormatter)
 		f.Template = "[{{datetime}}] [{{level}}] {{message}} {{data}}\n"
 	})

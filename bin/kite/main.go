@@ -32,7 +32,7 @@ func main() {
 	cli.On(gcli.EvtGOptionsParsed, func(_ ...interface{}) bool {
 		if confFile != "" {
 			color.Infoln("load custom config file:", confFile)
-			err := conf.Obj().LoadExists(confFile)
+			err := conf.C().LoadExists(confFile)
 			if err != nil {
 				color.Error.Println("load user config error:", err)
 				return false

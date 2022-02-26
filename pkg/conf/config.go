@@ -6,9 +6,11 @@ import (
 	"github.com/gookit/goutil/structs"
 )
 
-var configObj = config.NewWith("kite", func(c *config.Config) {
+var confObj = config.NewWith("kite", func(c *config.Config) {
 	c.AddDriver(yamlv3.Driver)
-	c.Options().TagName = "json"
+	c.WithOptions(func(opt *config.Options) {
+		opt.DecoderConfig.TagName = "json"
+	})
 })
 
 // Conf for kite
@@ -18,17 +20,17 @@ var Conf = &Config{
 
 // Config struct
 type Config struct {
-	LogDir string `json:"log_dir"`
-	LogFile string `json:"log_file"`
-	TmpDir string `json:"tmp_dir"`
+	LogDir   string `json:"log_dir"`
+	LogFile  string `json:"log_file"`
+	TmpDir   string `json:"tmp_dir"`
 	CacheDir string `json:"cache_dir"`
-	HomeDir string `json:"home_dir"`
-	WorkDir string
+	HomeDir  string `json:"home_dir"`
+	WorkDir  string
 }
 
-// Obj get the config.Config
-func Obj() *config.Config {
-	return configObj
+// C get the config.Config
+func C() *config.Config {
+	return confObj
 }
 
-var Aliases  = &structs.Aliases{}
+var Aliases = &structs.Aliases{}
