@@ -1,8 +1,6 @@
 package gitx
 
 import (
-	"errors"
-
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gitwrap"
 	"github.com/inherelab/kite/pkg/cmdutil"
@@ -10,22 +8,30 @@ import (
 )
 
 var (
-	dryRun bool
-	yesRun bool // Direct execution without confirmation
+	dryRun  bool
+	yesRun  bool // Direct execution without confirmation
+	workdir string
 
 	interactive bool // interactively ask before executing command
 )
 
+func bindCommonFlags(c *gcli.Command) {
+	c.BoolOpt(&dryRun, "dry-run", "", false, "run workflow, but dont real execute command")
+	c.StrOpt(&workdir, "workdir", "w", "", "the command workdir path")
+}
+
 // GitCommands commands for use git
 var GitCommands = &gcli.Command{
-	Name: "git",
-	Desc: "tools for quick use `git` commands",
+	Name:    "git",
+	Desc:    "tools for quick use `git` commands",
+	Aliases: []string{"g"},
 	Subs: []*gcli.Command{
 		StatusInfo,
 		RemoteInfo,
 		AddCommitPush,
 		AddCommitNotPush,
 		TagCmd,
+		UpdateCmd,
 		gituse.OpenRemoteRepo,
 		CreatePRLink,
 		BatchPull,
@@ -52,18 +58,18 @@ func addListener(c *gcli.Command) {
 }
 
 var StatusInfo = &gcli.Command{
-	Name: "status",
+	Name:    "status",
 	Aliases: []string{"st"},
-	Desc: "git status command",
+	Desc:    "git status command",
 	Func: func(c *gcli.Command, args []string) error {
 		return cmdutil.NewGitCmd("status").Run()
 	},
 }
 
 var RemoteInfo = &gcli.Command{
-	Name: "remote",
+	Name:    "remote",
 	Aliases: []string{"rmt"},
-	Desc: "git remote command",
+	Desc:    "git remote command",
 	Func: func(c *gcli.Command, args []string) error {
 		err := gitwrap.New("remote", "-v").Run()
 		if err != nil {
@@ -71,32 +77,5 @@ var RemoteInfo = &gcli.Command{
 		}
 
 		return nil
-	},
-}
-
-var TagCmd = &gcli.Command{
-	Name: "tag",
-	Desc: "git tag commands",
-	Subs: []*gcli.Command{
-		TagCreate,
-		TagDelete,
-	},
-}
-
-var TagCreate = &gcli.Command{
-	Name: "create",
-	Aliases: []string{"new"},
-	Desc: "create new tag by `git tag`",
-	Func: func(c *gcli.Command, args []string) error {
-		return errors.New("TODO")
-	},
-}
-
-var TagDelete = &gcli.Command{
-	Name: "delete",
-	Aliases: []string{"del", "rm", "remove"},
-	Desc: "delete exists tags by `git tag`",
-	Func: func(c *gcli.Command, args []string) error {
-		return errors.New("TODO")
 	},
 }

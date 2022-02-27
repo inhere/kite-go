@@ -6,7 +6,16 @@
 
 kite:
   tmp_dir: ./tmp
-  plugins_dir: ./plugins
+  plugin_dir: ./plugins
+  conf_files:
+    - config/config.yml
+    - config/plugins.yml
+    - config/tasks.yml
+
+logger:
+  log_dir: ./tmp/logs
+  log_file: kite.log
+  level: debug
 
 aliases:
   ac: git ac
@@ -25,6 +34,7 @@ scripts:
   pul: git pul $?
   pull: git pull $?
 
+# define some command flags value
 swag:browse:
   swagger_file: testdata/swagger.json
 

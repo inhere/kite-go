@@ -3,10 +3,19 @@ package gitlab
 import (
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
+	"github.com/inherelab/kite/pkg/gitflow"
 	"github.com/inherelab/kite/pkg/gituse"
 )
 
-var dryRun bool
+var (
+	dryRun  bool
+	workdir string
+)
+
+func bindCommonFlags(c *gcli.Command) {
+	c.BoolOpt(&dryRun, "dry-run", "", false, "run workflow, but dont real execute command")
+	c.StrOpt(&workdir, "workdir", "w", "", "the command workdir path")
+}
 
 // CmdForGitlab gitlab commands
 var CmdForGitlab = &gcli.Command{
@@ -14,8 +23,8 @@ var CmdForGitlab = &gcli.Command{
 	Aliases: []string{"gl", "gitl", "glab"},
 	Desc:    "useful tools for use gitlab",
 	Subs: []*gcli.Command{
-		UpdatePushCmd,
-		UpdateNotPushCmd,
+		gitflow.UpdateCmd,
+		gitflow.UpdatePushCmd,
 		gituse.OpenRemoteRepo,
 	},
 	Config: func(c *gcli.Command) {
@@ -23,39 +32,5 @@ var CmdForGitlab = &gcli.Command{
 			color.Info.Println("Current workdir:", c.WorkDir())
 			return false
 		})
-	},
-}
-
-var upOpts = struct {
-	notPush bool
-}{}
-
-// UpdatePushCmd command
-var UpdatePushCmd = &gcli.Command{
-	Name:    "update-push",
-	Desc:    "Update codes from origin and main remote repositories, then push to remote",
-	Aliases: []string{"up-push", "upp"},
-	Config: func(c *gcli.Command) {
-		UpdateNotPushCmd.Config(c)
-
-		c.BoolVar(&upOpts.notPush, &gcli.FlagMeta{
-			Name:  "not-push",
-			Alias: "np",
-			Desc:  "dont execute git push",
-		})
-	},
-	Func: func(c *gcli.Command, args []string) error {
-
-		return nil
-	},
-}
-
-// UpdateNotPushCmd command
-var UpdateNotPushCmd = &gcli.Command{
-	Name:    "update",
-	Desc:    "Update codes from origin and main remote repositories",
-	Aliases: []string{"up"},
-	Config: func(c *gcli.Command) {
-		c.BoolOpt(&dryRun, "dry-run", "", false, "run workflow, but dont real execute command")
 	},
 }

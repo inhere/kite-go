@@ -1,0 +1,5 @@
+proxy_cmd:
+  command_ids:
+    - 'php:ghpkg'
+  group_limits:
+    github: [acp, push, update]

@@ -3,22 +3,31 @@ package app
 import (
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/i18n"
 	"github.com/gookit/slog"
 	"github.com/inherelab/kite"
-	"github.com/inherelab/kite/pkg/conf"
+	"github.com/inherelab/kite/app/conf"
 )
+
+// LogConf struct
+type LogConf struct {
+	LogDir  string `json:"log_dir"`
+	LogFile string `json:"log_file"`
+}
 
 // Boot app
 func Boot(cli *gcli.App) {
-	// config
-	if conf.C().Exists("kite") {
-		err := conf.C().MapStruct("kite", conf.Conf)
-		if err != nil {
-			color.Error.Println(err)
-			return
-		}
+	color.Infoln("bootstrap kite runtime environment")
+
+	err := conf.Init()
+	if err != nil {
+		panic(err)
+	}
+
+	if IsDebug() {
+		dump.P(conf.C().Data())
 	}
 
 	Info.Version = kite.Version
