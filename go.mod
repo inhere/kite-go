@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/fsnotify/fsnotify v1.4.9
-	github.com/getkin/kin-openapi v0.22.0
+	github.com/getkin/kin-openapi v0.94.0
 	github.com/go-openapi/spec v0.20.0
 	github.com/go-openapi/swag v0.19.12
 	github.com/gomarkdown/markdown v0.0.0-20201113031856-722100d81a8e
