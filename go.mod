@@ -3,7 +3,7 @@ module github.com/inherelab/kite
 go 1.16
 
 require (
-	github.com/fsnotify/fsnotify v1.4.9
+	github.com/fsnotify/fsnotify v1.5.4
 	github.com/getkin/kin-openapi v0.22.0
 	github.com/go-openapi/spec v0.20.0
 	github.com/go-openapi/swag v0.19.12
