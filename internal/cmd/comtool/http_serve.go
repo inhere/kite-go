@@ -4,9 +4,9 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/rux/handlers"
+	"github.com/inherelab/kite/internal/web"
 	"github.com/inherelab/kite/pkg/consts"
 	"github.com/inherelab/kite/pkg/httpserve"
-	"github.com/inherelab/kite/web"
 )
 
 // options for the HttpServe
@@ -22,7 +22,7 @@ var httpServeOpts = struct {
 // HttpServe Command
 var HttpServe = &gcli.Command{
 	Name:    "serve",
-	Desc:  "start an http application serve",
+	Desc:    "start an http application serve",
 	Aliases: []string{"server", "http-serve"},
 	Config: func(c *gcli.Command) {
 		// bind options

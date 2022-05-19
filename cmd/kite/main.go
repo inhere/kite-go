@@ -4,7 +4,7 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/inherelab/kite"
 	"github.com/inherelab/kite/app"
-	"github.com/inherelab/kite/cmd"
+	"github.com/inherelab/kite/internal/cmd"
 )
 
 // dev run:
