@@ -11,7 +11,7 @@ require (
 	github.com/gookit/color v1.5.0
 	github.com/gookit/config/v2 v2.1.0
 	github.com/gookit/gcli/v3 v3.0.1
-	github.com/gookit/gitw v0.2.1
+	github.com/gookit/gitw v0.2.0
 	github.com/gookit/goutil v0.5.2
 	github.com/gookit/i18n v1.1.3
 	github.com/gookit/ini/v2 v2.1.0
@@ -22,8 +22,6 @@ require (
 )
 
 require (
-	github.com/PuerkitoBio/purell v1.1.1 // indirect
-	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.20.0 // indirect
@@ -39,20 +37,9 @@ require (
 	github.com/monoculum/formam v3.5.5+incompatible // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778 // indirect
-	golang.org/dl v0.0.0-20190829154251-82a15e2f2ead // indirect
 	golang.org/x/crypto v0.0.0-20220518034528-6f7dac969898 // indirect
-	golang.org/x/net v0.0.0-20220517181318-183a9ca12b87 // indirect
 	golang.org/x/sys v0.0.0-20220519141025-dcacdad47464 // indirect
 	golang.org/x/term v0.0.0-20220411215600-e5f449aeb171 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20220512140231-539c8e751b99 // indirect
 )
-
-// for develop
-replace github.com/gookit/slog => ../slog
-
-replace github.com/gookit/goutil => ../goutil
-
-replace github.com/gookit/gitw => ../gitw
-
-replace github.com/gookit/gcli/v3 => ../gcli
