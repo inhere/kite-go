@@ -3,10 +3,12 @@ module github.com/inherelab/kite
 go 1.16
 
 require (
+	github.com/PuerkitoBio/purell v1.1.1 // indirect
+	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/getkin/kin-openapi v0.22.0
-	github.com/go-openapi/spec v0.20.0
-	github.com/go-openapi/swag v0.19.12
+	github.com/go-openapi/spec v0.20.6
+	github.com/go-openapi/swag v0.19.15
 	github.com/gomarkdown/markdown v0.0.0-20201113031856-722100d81a8e
 	github.com/gookit/color v1.5.0
 	github.com/gookit/config/v2 v2.0.27
@@ -19,6 +21,7 @@ require (
 	github.com/gookit/slog v0.2.1
 	github.com/gookit/view v1.0.2
 	github.com/yuin/goldmark v1.3.1
+	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b // indirect
 )
 
 // for develop
