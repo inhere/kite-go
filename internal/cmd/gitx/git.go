@@ -2,7 +2,7 @@ package gitx
 
 import (
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/gitwrap"
+	"github.com/gookit/gitw"
 	"github.com/inherelab/kite/pkg/cmdutil"
 	"github.com/inherelab/kite/pkg/gituse"
 )
@@ -48,7 +48,7 @@ var GitCommands = &gcli.Command{
 
 func addListener(c *gcli.Command) {
 	c.On(gcli.EvtCmdOptParsed, func(obj ...interface{}) bool {
-		c.Infoln("WorkDir:", c.WorkDir())
+		c.Infoln("Workdir:", c.WorkDir())
 		return false
 	})
 	c.On(gcli.EvtCmdSubNotFound, func(data ...interface{}) (stop bool) {
@@ -71,7 +71,7 @@ var RemoteInfo = &gcli.Command{
 	Aliases: []string{"rmt"},
 	Desc:    "git remote command",
 	Func: func(c *gcli.Command, args []string) error {
-		err := gitwrap.New("remote", "-v").Run()
+		err := gitw.New("remote", "-v").Run()
 		if err != nil {
 			return err
 		}

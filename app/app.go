@@ -24,5 +24,5 @@ var (
 
 // IsDebug mode
 func IsDebug() bool {
-	return slog.MustLevelByName(KiteMode) >= slog.DebugLevel
+	return slog.LevelByName(KiteMode) >= slog.DebugLevel
 }

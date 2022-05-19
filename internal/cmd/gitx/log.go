@@ -2,7 +2,7 @@ package gitx
 
 import (
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/gitwrap"
+	"github.com/gookit/gitw"
 	"github.com/gookit/goutil"
 )
 
@@ -13,7 +13,7 @@ var (
 		NoMerges  bool `flag:"No contains merge request logs"`
 		MaxCommit int  `flag:"Max display how many commits;;15"`
 		Format    string
-		RepoDir   string	`flag:"repo directory for run git log, default is work dir"`
+		RepoDir   string      `flag:"repo directory for run git log, default is work dir"`
 		Logfile   string      `flag:"export changelog message to file"`
 		Exclude   gcli.String `flag:"exclude contains given sub-string. multi by comma split."`
 	}{}
@@ -38,13 +38,13 @@ var (
 		Func: func(c *gcli.Command, args []string) error {
 			maxNum := c.Arg("maxCommit").Int(logOpts.MaxCommit)
 			// git log --color --graph --pretty=format:'%Cred%h%Creset:%C(ul yellow)%d%Creset %s (%Cgreen%cr%Creset, %C(bold blue)%an%Creset)' --abbrev-commit -10
-			gitLog := gitwrap.New("log", "--graph")
-			gitLog.OnBeforeExec(gitwrap.PrintCmdline)
+			gitLog := gitw.New("log", "--graph")
+			gitLog.OnBeforeExec(gitw.PrintCmdline)
 
-			gitLog.Addf("-%d", maxNum)
-			gitLog.AddIf("--color", !logOpts.NoColor)
-			gitLog.AddIf("--no-merges", logOpts.NoMerges)
-			gitLog.AddIf("--abbrev-commit", logOpts.Abbrev)
+			gitLog.Argf("-%d", maxNum)
+			gitLog.ArgIf("--color", !logOpts.NoColor)
+			gitLog.ArgIf("--no-merges", logOpts.NoMerges)
+			gitLog.ArgIf("--abbrev-commit", logOpts.Abbrev)
 			gitLog.Add(`--pretty=format:%Cred%h%Creset:%C(ul yellow)%d%Creset %s (%Cgreen%cr%Creset, %C(bold blue)%an%Creset)`)
 
 			// dump.P(logOpts, maxNum)

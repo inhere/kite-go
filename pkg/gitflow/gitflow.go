@@ -2,7 +2,7 @@ package gitflow
 
 import (
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/gitwrap"
+	"github.com/gookit/gitw"
 	"github.com/inherelab/kite/pkg/gituse"
 )
 
@@ -25,9 +25,9 @@ var UpdatePushCmd = &gcli.Command{
 		})
 	},
 	Func: func(c *gcli.Command, args []string) error {
-		pull := gitwrap.Cmd("pull", args...)
+		pull := gitw.Cmd("pull", args...)
 		pull.WithWorkDir(gituse.Workdir)
-		pull.OnBeforeExec(gitwrap.PrintCmdline)
+		pull.OnBeforeExec(gitw.PrintCmdline)
 
 		return pull.Run()
 	},
@@ -42,9 +42,9 @@ var UpdateCmd = &gcli.Command{
 		gituse.BindCommonFlags(c)
 	},
 	Func: func(c *gcli.Command, args []string) error {
-		pull := gitwrap.Cmd("pull", args...)
+		pull := gitw.Cmd("pull", args...)
 		pull.WithWorkDir(gituse.Workdir)
-		pull.OnBeforeExec(gitwrap.PrintCmdline)
+		pull.OnBeforeExec(gitw.PrintCmdline)
 
 		return pull.Run()
 	},

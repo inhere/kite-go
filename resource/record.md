@@ -35,14 +35,16 @@ data file: /dist/data.json
 
 - https://github.com/alecthomas/chroma A general purpose syntax highlighter in pure Go
 - https://github.com/zyedidia/highlight
+- https://github.com/alecthomas/chroma 用 golang 写的语法高亮引擎
 
 **Markdown parser**
 
 - https://github.com/yuin/goldmark
 - https://github.com/russross/blackfriday
 - https://github.com/gomarkdown/markdown
+- https://github.com/88250/lute
 
-**cli markdown**
+- **cli markdown**
 
 - https://github.com/MichaelMure/go-term-markdown
 - https://github.com/charmbracelet/glamour
@@ -175,6 +177,10 @@ gitlab:
 - https://github.com/go-co-op/gocron
 - https://github.com/distribworks/dkron
 
+**proxy**
+
+- https://github.com/snail007/goproxy
+
 ## others
 
 **image process**
@@ -185,6 +191,16 @@ gitlab:
 **compile**
 
 - https://github.com/mitchellh/gox
+- https://github.com/gopherjs/gopherjs 将 Go 代码编译成 JavaScript 代码
+
+**interpreter**
+
+- https://github.com/goplus/gop
+- https://github.com/traefik/yaegi Yaegi 是另一个优雅的 Go 解释器。它在 Go 运行时之上为嵌入式解释器或交互式 shell 中的可执行 Go 脚本和插件提供支持。
+
+**regexp**
+
+- https://github.com/dlclark/regexp2
 
 **other**
 

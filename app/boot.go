@@ -38,7 +38,7 @@ func Boot(cli *gcli.App) {
 		logger.Level = slog.WarnLevel
 
 		f := logger.Formatter.(*slog.TextFormatter)
-		f.Template = "[{{datetime}}] [{{level}}] {{message}} {{data}}\n"
+		f.SetTemplate("[{{datetime}}] [{{level}}] {{message}} {{data}}\n")
 	})
 	// TODO output log to file
 

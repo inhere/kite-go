@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/gitwrap"
+	"github.com/gookit/gitw"
 	"github.com/gookit/goutil/dump"
 )
 
@@ -55,7 +55,7 @@ var UpdateCmd = &gcli.Command{
 		bindCommonFlags(c)
 	},
 	Func: func(c *gcli.Command, args []string) error {
-		pull := gitwrap.Cmd("pull", args...)
+		pull := gitw.NewWithArgs("pull", args...)
 		pull.WithWorkDir(workdir)
 
 		return pull.Run()

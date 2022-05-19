@@ -7,7 +7,7 @@
 kite:
   tmp_dir: ./tmp
   plugin_dir: ./plugins
-  conf_files:
+  include_config:
     - config/config.yml
     - config/plugins.yml
     - config/tasks.yml

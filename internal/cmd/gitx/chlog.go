@@ -4,8 +4,8 @@ import (
 	"path/filepath"
 
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/gitwrap"
-	"github.com/gookit/gitwrap/chlog"
+	"github.com/gookit/gitw"
+	"github.com/gookit/gitw/chlog"
 	"github.com/gookit/goutil/dump"
 )
 
@@ -66,17 +66,17 @@ The style for generate for changelog.
 				return err
 			}
 
-			repo := gitwrap.NewRepo(absDir)
+			repo := gitw.NewRepo(absDir)
 			dump.P(repo.DefaultRemoteInfo())
 
 			cl := chlog.New()
+			cl.Formatter = &chlog.MarkdownFormatter{
+				RepoURL: "https://github.com/gookit/gitw",
+			}
 			// with some settings ...
-			cl.WithConfig(func(c *chlog.Changelog) {
+			cl.WithConfigFn(func(c *chlog.Config) {
 				c.GroupPrefix = "\n### "
 				c.GroupSuffix = "\n"
-				c.Formatter = &chlog.MarkdownFormatter{
-					RepoURL: "https://github.com/gookit/gitwrap",
-				}
 			})
 
 			chlogOpts.sha1 = c.Arg("oldVersion").String()
