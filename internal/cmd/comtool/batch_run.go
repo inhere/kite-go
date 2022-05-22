@@ -8,9 +8,9 @@ import (
 
 // BatchRun command
 var BatchRun = &gcli.Command{
-	Name:    "cat",
-	Aliases: []string{"see", "bat"},
-	Desc:    "hot reload serve on files modified",
+	Name:    "brun",
+	Aliases: []string{"batch-run"},
+	Desc:    "batch run more commands at once",
 	Config: func(c *gcli.Command) {
 
 	},

@@ -5,7 +5,7 @@ import (
 	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/inherelab/kite"
-	"github.com/inherelab/kite/app/conf"
+	"github.com/inherelab/kite/app/appconf"
 )
 
 // KiteManage manage kite self
@@ -27,7 +27,7 @@ var KiteInfo = &gcli.Command{
 			"bin Dir":      c.BinDir(),
 			"work Dir":     c.WorkDir(),
 			"home Dir":     sysutil.HomeDir(),
-			"loaded files": conf.C().LoadedFiles(),
+			"loaded files": appconf.C().LoadedFiles(),
 			"language":     "TODO",
 			"version":      kite.Version,
 			"build date":   kite.BuildDate,

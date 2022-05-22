@@ -1,8 +1,8 @@
 package proxy
 
 const (
-	ProxyHttpKey  = "HTTP_PROXY"
-	ProxyHttpsKey = "HTTPS_PROXY"
+	HttpKey  = "HTTP_PROXY"
+	HttpsKey = "HTTPS_PROXY"
 )
 
 // Config struct

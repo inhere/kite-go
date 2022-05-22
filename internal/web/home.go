@@ -5,7 +5,7 @@ import (
 
 	"github.com/gookit/rux"
 	"github.com/gookit/view"
-	"github.com/inherelab/kite/pkg/consts"
+	"github.com/inherelab/kite/internal/appconst"
 )
 
 // HomeController struct
@@ -43,7 +43,7 @@ func (*HomeController) ApiDoc(c *rux.Context) {
 		"JsonFile":   "/" + swagFile,
 		"SwgUIPath":  "/static/swaggerui",
 		"AssetPath":  "/static",
-		"UpdateTime": fInfo.ModTime().Format(consts.DateFormat),
+		"UpdateTime": fInfo.ModTime().Format(appconst.DateFormat),
 	}
 
 	// c.HTML(200, nil)

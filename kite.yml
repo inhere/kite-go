@@ -4,39 +4,38 @@
 # homepage: https://github.com/inherelab/kite
 #
 
-kite:
-  tmp_dir: ./tmp
-  plugin_dir: ./plugins
+app:
+  base_dir: ~/Workspace/godev/gookit/kite
+  tmp_dir: '@base/tmp'
+  cache_dir: '@base/tmp/caches'
+  config_dir: ~/Workspace/godev/gookit/kite/config
+  resource_dir: '@base/resource'
   include_config:
-    - config/config.yml
-    - config/plugins.yml
-    - config/tasks.yml
+    - common.yml
+    - aliases.yml
+    - tasks.yml
 
 logger:
-  log_dir: ./tmp/logs
+  log_dir: '@tmp/logs'
   log_file: kite.log
   level: debug
 
-aliases:
-  ac: git ac
-  acp: git acp
+language:
+  langDir: '@resource/language'
 
-scripts:
-  echo: echo hi
-  test:
-    - echo $SHELL
-    - echo hello
-  # git quick use
-  gst: git status
-  st: git status
-  co: git checkout $@
-  br: git branch $?
-  pul: git pul $?
-  pull: git pull $?
+pluginManager:
+  main_config: 'plugins.yml'
+
+toolsManager:
+  config_dir: '@config/tools'
+  main_config: tools.yml
+
+scriptManager:
+  main_config: '@config/scripts.yml'
 
 # define some command flags value
 swag:browse:
   swagger_file: testdata/swagger.json
 
 swag:gocode:
-  template_dir: resource/templates
+  template_dir: '@resource/templates'
