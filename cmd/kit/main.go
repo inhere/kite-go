@@ -1,28 +1,21 @@
 package main
 
 import (
-	"github.com/gookit/gcli/v3"
-	"github.com/inherelab/kite"
+	"github.com/gookit/goutil/dump"
 	"github.com/inherelab/kite/app"
-	"github.com/inherelab/kite/internal/cmd"
+	"github.com/inherelab/kite/app/bootstrap"
 )
 
 // dev run:
 //	go run ./cmd/kit
 //	go run ./cmd/kit
 func main() {
-	cli := gcli.NewApp(func(a *gcli.App) {
-		a.Name = "Kite"
-		a.Desc = "Kite CLI tool application"
+	err := bootstrap.Boot(app.App())
+	if err != nil {
+		panic(err)
+	}
 
-		a.Version = kite.Version
-	})
-
-	app.Boot(cli)
-
-	// load commands
-	cmd.Boot(cli)
-
+	dump.P(app.App().CfgFile(), app.App().Config)
 	// do run
-	cli.Run(nil)
+	app.Run()
 }

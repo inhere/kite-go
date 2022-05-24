@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/builtin"
+	"github.com/inherelab/kite/app"
 	"github.com/inherelab/kite/internal/cmd/codegen"
 	"github.com/inherelab/kite/internal/cmd/comtool"
 	"github.com/inherelab/kite/internal/cmd/doctool"
@@ -20,14 +21,14 @@ import (
 )
 
 // Boot commands to gcli.App
-func Boot(app *gcli.App) {
+func Boot(app *app.KiteApp) {
 	addListener(app)
 
 	Register(app)
 }
 
 // Register commands to gcli.App
-func Register(app *gcli.App) {
+func Register(app *app.KiteApp) {
 	// app.Add(
 	// 	self.InitKite,
 	// )
@@ -64,7 +65,7 @@ func Register(app *gcli.App) {
 	app.AddAliases("self:info", "info")
 }
 
-func addListener(app *gcli.App) {
+func addListener(app *app.KiteApp) {
 	app.On(gcli.EvtCmdNotFound, func(data ...interface{}) bool {
 
 		// TODO

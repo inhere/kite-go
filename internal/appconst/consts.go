@@ -1,19 +1,17 @@
 package appconst
 
-// Env names
 const (
-	EnvLocal = "local"
-	EnvDev   = "dev"
-	EnvPre   = "pre"
-	EnvProd  = "prod"
-)
-
-const (
-	EnvKiteConfig  = "KITE_CONFIG"
+	// EnvKiteVerbose level.
+	EnvKiteVerbose = "KITE_VERBOSE"
+	// EnvKiteConfig main config file
+	EnvKiteConfig = "KITE_CONFIG"
+	// KiteConfigFile default main config filename
 	KiteConfigFile = "kite.yml"
 
+	// AppName for the application
 	AppName = "kite"
 
+	// ConfKeyApp name on config
 	ConfKeyApp = "app"
 )
 

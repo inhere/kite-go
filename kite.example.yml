@@ -10,7 +10,6 @@ app:
   cache_dir: '@base/tmp/caches'
   config_dir: ~/Workspace/godev/gookit/kite/config
   resource_dir: '@base/resource'
-  # file path relative the config_dir
   include_config:
     - common.yml
     - aliases.yml
