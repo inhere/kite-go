@@ -3,10 +3,14 @@ package appconst
 const (
 	// EnvKiteVerbose level.
 	EnvKiteVerbose = "KITE_VERBOSE"
-	// EnvKiteConfig main config file
+	// EnvKiteConfig main config file env name
 	EnvKiteConfig = "KITE_CONFIG"
-	// KiteConfigFile default main config filename
-	KiteConfigFile = "kite.yml"
+	// KiteConfigName default main config filename
+	KiteConfigName = "kite.yml"
+	// KiteDefaultDataDir path
+	KiteDefaultDataDir = "~/.kite"
+	// KiteDefaultConfigFile path
+	KiteDefaultConfigFile = "~/.kite/" + KiteConfigName
 
 	// AppName for the application
 	AppName = "kite"
