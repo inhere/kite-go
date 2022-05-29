@@ -6,7 +6,7 @@ import (
 	"github.com/gookit/i18n"
 	"github.com/gookit/slog"
 	"github.com/inherelab/kite/app"
-	"github.com/inherelab/kite/internal/cmd"
+	"github.com/inherelab/kite/internal/command"
 )
 
 // Boot app
@@ -30,7 +30,7 @@ func Boot(app *app.KiteApp) error {
 	}
 
 	// load commands
-	cmd.Boot(app)
+	command.Boot(app)
 
 	return nil
 }

@@ -1,7 +1,6 @@
 package app
 
 import (
-	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/envutil"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/sysutil"
@@ -12,8 +11,8 @@ import (
 
 // Init config
 func Init(app *KiteApp) error {
-	initlog.L.Info("init kite application")
-	info := &Info{
+	initlog.L.Info("init kite application, info, main config")
+	app.Info = &Info{
 		Branch:    kite.Branch,
 		Version:   kite.Version,
 		Revision:  kite.Revision,
@@ -22,40 +21,42 @@ func Init(app *KiteApp) error {
 		UpdatedAt: kite.UpdatedAt,
 	}
 
-	app.Info = info
-
-	confFile := findConfFile()
+	confFile := findConfFile(app)
 	if confFile == "" {
 		return nil
 	}
 
 	initlog.L.Info("load main config file:", confFile)
-	app.cfgFile = confFile
+	app.mainFile = confFile
 	err := app.cfg.LoadFiles(confFile)
 	if err != nil {
 		return err
 	}
 
-	// map config
-	err = app.cfg.MapOnExists(appconst.ConfKeyApp, app.Config)
-	return err
+	// map main config
+	err = app.cfg.MapOnExists(appconst.ConfKeyApp, app.Conf)
+	if err != nil {
+		return err
+	}
+
+	return app.init()
 }
 
 // findConfFile find main config file
-func findConfFile() string {
-	confFile := envutil.Getenv(appconst.EnvKiteConfig, sysutil.UserDir(".kite/"+appconst.KiteConfigFile))
-	if fsutil.IsFile(confFile) {
-		return confFile
+func findConfFile(app *KiteApp) string {
+	file := envutil.Getenv(appconst.EnvKiteConfig, sysutil.ExpandPath(appconst.KiteDefaultConfigFile))
+	if fsutil.IsFile(file) {
+		return file
 	}
 
-	confFile = cliutil.Workdir() + "/" + appconst.KiteConfigFile
-	if fsutil.IsFile(confFile) {
-		return confFile
+	file = app.WorkDir() + "/" + appconst.KiteConfigName
+	if fsutil.IsFile(file) {
+		return file
 	}
 
-	confFile = cliutil.BinDir() + "/" + appconst.KiteConfigFile
-	if fsutil.IsFile(confFile) {
-		return confFile
+	file = app.BinDir() + "/" + appconst.KiteConfigName
+	if fsutil.IsFile(file) {
+		return file
 	}
 	return ""
 }

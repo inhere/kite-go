@@ -6,6 +6,7 @@ import (
 )
 
 func LogBoot(app *app.KiteApp) {
+
 	// slog
 	slog.Configure(func(logger *slog.SugaredLogger) {
 		logger.Level = slog.WarnLevel

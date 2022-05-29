@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/gookit/goutil/dump"
 	"github.com/inherelab/kite/app"
 	"github.com/inherelab/kite/app/bootstrap"
 )
@@ -15,7 +14,6 @@ func main() {
 		panic(err)
 	}
 
-	dump.P(app.App().CfgFile(), app.App().Config)
 	// do run
 	app.Run()
 }
