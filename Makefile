@@ -5,7 +5,7 @@ rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 NAME := kite
 SHELL := /bin/bash
 BUILD_TARGET = build
-MAIN_SRC_FILE=bin/kite/main.go
+MAIN_SRC_FILE=cmd/kite/main.go
 
 GO := go
 GO_NOMOD :=GO111MODULE=off go
@@ -71,6 +71,7 @@ list: ## List all make targets
 .PHONY: help
 .DEFAULT_GOAL := help
 help:
+	@echo "Commands:"
 	@grep -h -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
 full: check ## Build and run the tests

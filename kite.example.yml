@@ -5,37 +5,37 @@
 #
 
 app:
-  base_dir: ~/Workspace/godev/gookit/kite
-  tmp_dir: '@base/tmp'
-  cache_dir: '@base/tmp/caches'
-  config_dir: ~/Workspace/godev/gookit/kite/config
-  resource_dir: '@base/resource'
+  base_dir: ~/.kite
+  tmp_dir: $base/tmp
+  cache_dir: $base/tmp/caches
+  config_dir: $base/config
+  resource_dir: $base/resource
   include_config:
     - common.yml
     - aliases.yml
     - tasks.yml
 
 logger:
-  log_dir: '@tmp/logs'
+  log_dir: $tmp/logs
   log_file: kite.log
   level: debug
 
 language:
-  langDir: '@resource/language'
+  langDir: $resource/language
 
 pluginManager:
   main_config: 'plugins.yml'
 
 toolsManager:
-  config_dir: '@config/tools'
+  config_dir: $config/tools
   main_config: tools.yml
 
 scriptManager:
-  main_config: '@config/scripts.yml'
+  main_config: $config/scripts.yml
 
 # define some command flags value
 swag:browse:
   swagger_file: testdata/swagger.json
 
 swag:gocode:
-  template_dir: '@resource/templates'
+  template_dir: $resource/templates
