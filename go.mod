@@ -9,7 +9,7 @@ require (
 	github.com/go-openapi/swag v0.21.1
 	github.com/gomarkdown/markdown v0.0.0-20220510115730-2372b9aa33e5
 	github.com/gookit/color v1.5.0
-	github.com/gookit/config/v2 v2.1.0
+	github.com/gookit/config/v2 v2.1.1
 	github.com/gookit/gcli/v3 v3.0.1
 	github.com/gookit/gitw v0.2.0
 	github.com/gookit/goutil v0.5.2
@@ -28,7 +28,7 @@ require (
 	github.com/gookit/filter v1.1.2 // indirect
 	github.com/gookit/gsr v0.0.7 // indirect
 	github.com/gookit/validate v1.4.1 // indirect
-	github.com/imdario/mergo v0.3.12 // indirect
+	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
@@ -41,5 +41,5 @@ require (
 	golang.org/x/sys v0.0.0-20220519141025-dcacdad47464 // indirect
 	golang.org/x/term v0.0.0-20220411215600-e5f449aeb171 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20220512140231-539c8e751b99 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
