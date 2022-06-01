@@ -9,7 +9,7 @@ require (
 	github.com/go-openapi/swag v0.21.1
 	github.com/gomarkdown/markdown v0.0.0-20220510115730-2372b9aa33e5
 	github.com/gookit/color v1.5.0
-	github.com/gookit/config/v2 v2.1.1
+	github.com/gookit/config/v2 v2.1.2
 	github.com/gookit/gcli/v3 v3.0.1
 	github.com/gookit/gitw v0.2.0
 	github.com/gookit/goutil v0.5.2
