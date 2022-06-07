@@ -61,6 +61,10 @@ data file: /dist/data.json
     - https://github.com/go-openapi/swag
 - https://github.com/getkin/kin-openapi support swagger 3
 
+**search index:**
+
+- https://github.com/blevesearch/bleve A modern text indexing library for go
+
 ### terminal
 
 **terminal**

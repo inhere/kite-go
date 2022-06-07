@@ -4,12 +4,12 @@ go 1.18
 
 require (
 	github.com/fsnotify/fsnotify v1.5.4
-	github.com/getkin/kin-openapi v0.94.0
+	github.com/getkin/kin-openapi v0.96.0
 	github.com/go-openapi/spec v0.20.6
 	github.com/go-openapi/swag v0.21.1
 	github.com/gomarkdown/markdown v0.0.0-20220527210340-c82b80a9daf2
 	github.com/gookit/color v1.5.0
-	github.com/gookit/config/v2 v2.1.1
+	github.com/gookit/config/v2 v2.1.2
 	github.com/gookit/event v1.0.6
 	github.com/gookit/gcli/v3 v3.0.1
 	github.com/gookit/gitw v0.2.0
@@ -23,13 +23,13 @@ require (
 )
 
 require (
-	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.20.0 // indirect
 	github.com/gookit/filter v1.1.2 // indirect
 	github.com/gookit/gsr v0.0.7 // indirect
 	github.com/gookit/validate v1.4.1 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
+	github.com/invopop/yaml v0.1.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
