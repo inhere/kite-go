@@ -15,7 +15,7 @@ require (
 	github.com/gookit/gitw v0.2.1
 	github.com/gookit/goutil v0.5.4
 	github.com/gookit/i18n v1.1.3
-	github.com/gookit/ini/v2 v2.1.0
+	github.com/gookit/ini/v2 v2.1.1
 	github.com/gookit/rux v1.3.3
 	github.com/gookit/slog v0.3.2
 	github.com/gookit/view v1.0.2
