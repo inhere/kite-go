@@ -20,9 +20,9 @@ var AddCommitPush = &gcli.Command{
 		AddCommitNotPush.Config(c)
 
 		c.BoolVar(&acpOpts.notPush, &gcli.FlagMeta{
-			Name:  "not-push",
-			Alias: "np",
-			Desc:  "dont execute git push",
+			Name:   "not-push",
+			Shorts: []string{"np"},
+			Desc:   "dont execute git push",
 		})
 	},
 }

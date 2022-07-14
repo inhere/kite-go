@@ -36,7 +36,7 @@ var (
 			c.AddArg("maxCommit", "Max display how many commits")
 		},
 		Func: func(c *gcli.Command, args []string) error {
-			maxNum := c.Arg("maxCommit").Int(logOpts.MaxCommit)
+			maxNum := c.Arg("maxCommit").Int()
 			// git log --color --graph --pretty=format:'%Cred%h%Creset:%C(ul yellow)%d%Creset %s (%Cgreen%cr%Creset, %C(bold blue)%an%Creset)' --abbrev-commit -10
 			gitLog := gitw.New("log", "--graph")
 			gitLog.OnBeforeExec(gitw.PrintCmdline)

@@ -35,13 +35,13 @@ var (
 			c.AddArg("oldVersion", `The old version. eg: v1.0.2, 349238b
 - keywords 'last/latest' will auto use latest tag
 - keywords 'prev/previous' will auto use previous tag`).
-				With(func(arg *gcli.Argument) {
+				WithFn(func(arg *gcli.Argument) {
 					arg.Required = true
 				})
 
 			c.AddArg("newVersion", `The new version. eg: v1.2.2, 66c0df1
 - keywords 'head' will auto use Head commit`).
-				With(func(arg *gcli.Argument) {
+				WithFn(func(arg *gcli.Argument) {
 					arg.Required = true
 				})
 

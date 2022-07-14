@@ -19,9 +19,7 @@ var BatchPull = &gcli.Command{
 	Config: func(c *gcli.Command) {
 		c.
 			AddArg("baseDir", "base directory for run batch pull, default is work dir").
-			With(func(arg *gcli.Argument) {
-				arg.Value = "./"
-			})
+			WithValue("./")
 
 		c.VarOpt(&bpullOpts.dirs, "dirs", "", "limit update the given dir names")
 	},
