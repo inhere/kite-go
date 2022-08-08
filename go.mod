@@ -6,7 +6,7 @@ require (
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/getkin/kin-openapi v0.98.0
 	github.com/go-openapi/spec v0.20.6
-	github.com/go-openapi/swag v0.21.1
+	github.com/go-openapi/swag v0.22.0
 	github.com/gomarkdown/markdown v0.0.0-20220527210340-c82b80a9daf2
 	github.com/gookit/color v1.5.1
 	github.com/gookit/config/v2 v2.1.2
@@ -40,6 +40,5 @@ require (
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
 	golang.org/x/term v0.0.0-20220526004731-065cf7ba2467 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
