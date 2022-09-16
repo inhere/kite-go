@@ -140,13 +140,14 @@ gitlab:
 - https://github.com/dgraph-io/badger
     - https://github.com/genjidb/genji
 
-### config data
+### parser - config data
 
 - https://github.com/tomwright/dasel Select, put and delete data from JSON, TOML, YAML, XML and CSV files with a single tool. Supports conversion between formats and can be used as a Go package.
 - https://github.com/thedevsaddam/gojsonq A simple Go package to Query over JSON/YAML/XML/CSV Data
 
 **json**
 
+- https://github.com/goccy/go-json Very fast json parser lib
 - https://github.com/tidwall/gjson Get JSON values quickly - JSON parser for Go
 - https://github.com/buger/jsonparser Get JSON values quickly
 - https://github.com/mailru/easyjson
@@ -205,6 +206,11 @@ gitlab:
 **regexp**
 
 - https://github.com/dlclark/regexp2
+
+**other**
+
+- https://github.com/agiledragon/gomonkey gomonkey 是一个使单元测试中的猴子补丁变得容易的库
+
 
 **other**
 
