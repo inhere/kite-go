@@ -6,8 +6,9 @@ import (
 )
 
 // dev run:
+//
 //	go run ./cmd/kit
-//	go run ./cmd/kit
+//	go run ./cmd/kit -h
 func main() {
 	err := bootstrap.Boot(app.App())
 	if err != nil {

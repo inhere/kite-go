@@ -19,9 +19,9 @@ var UpdatePushCmd = &gcli.Command{
 		gituse.BindCommonFlags(c)
 
 		c.BoolVar(&upOpts.notPush, &gcli.FlagMeta{
-			Name:  "not-push",
-			Alias: "np",
-			Desc:  "dont execute git push",
+			Name:   "not-push",
+			Desc:   "dont execute git push",
+			Shorts: []string{"np"},
 		})
 	},
 	Func: func(c *gcli.Command, args []string) error {
