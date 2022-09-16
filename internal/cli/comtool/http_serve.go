@@ -47,7 +47,6 @@ var HttpServe = &gcli.Command{
 
 		dump.P(httpServeOpts)
 
-		return nil
 		s := httpserve.New()
 
 		r := s.Rux()

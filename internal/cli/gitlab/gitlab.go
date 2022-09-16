@@ -13,22 +13,23 @@ var (
 )
 
 func bindCommonFlags(c *gcli.Command) {
-	c.BoolOpt(&dryRun, "dry-run", "", false, "run workflow, but dont real execute command")
+	c.BoolOpt(&dryRun, "dry-run", "dr", false, "run workflow, but dont real execute command")
 	c.StrOpt(&workdir, "workdir", "w", "", "the command workdir path")
 }
 
-// CmdForGitlab gitlab commands
-var CmdForGitlab = &gcli.Command{
+// GitLab commands
+var GitLab = &gcli.Command{
 	Name:    "gitlab",
+	Desc:    "useful tool commands for use gitlab",
 	Aliases: []string{"gl", "gitl", "glab"},
-	Desc:    "useful tools for use gitlab",
 	Subs: []*gcli.Command{
 		gitflow.UpdateCmd,
 		gitflow.UpdatePushCmd,
 		gituse.OpenRemoteRepo,
+		MergeRequest,
 	},
 	Config: func(c *gcli.Command) {
-		c.On(gcli.EvtCmdRunBefore, func(data ...interface{}) (stop bool) {
+		c.On(gcli.EvtCmdRunBefore, func(ctx *gcli.HookCtx) (stop bool) {
 			color.Info.Println("Current workdir:", c.WorkDir())
 			return false
 		})

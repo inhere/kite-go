@@ -18,8 +18,8 @@ var CmdForGithub = &gcli.Command{
 		gitflow.UpdatePushCmd,
 	},
 	Config: func(c *gcli.Command) {
-		c.On(gcli.EvtCmdSubNotFound, func(data ...interface{}) (stop bool) {
-			sub := data[1].(string)
+		c.On(gcli.EvtCmdSubNotFound, func(ctx *gcli.HookCtx) (stop bool) {
+			sub := ctx.Str("name")
 			slog.Infof("subcommand '%s' not found in %s, redirect to git", sub, c.Name)
 
 			c.App().RunCmd("git", c.RawArgs())

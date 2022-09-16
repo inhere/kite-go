@@ -47,12 +47,12 @@ var GitCommands = &gcli.Command{
 }
 
 func addListener(c *gcli.Command) {
-	c.On(gcli.EvtCmdOptParsed, func(obj ...interface{}) bool {
+	c.On(gcli.EvtCmdOptParsed, func(ctx *gcli.HookCtx) bool {
 		c.Infoln("Workdir:", c.WorkDir())
 		return false
 	})
-	c.On(gcli.EvtCmdSubNotFound, func(data ...interface{}) (stop bool) {
-		c.Errorln(data[1], "- the git subcommand is not exists, will call system command(TODO)")
+	c.On(gcli.EvtCmdSubNotFound, func(ctx *gcli.HookCtx) (stop bool) {
+		c.Errorln(ctx.Str("name"), "- the git subcommand is not exists, will call system command(TODO)")
 		return true
 	})
 }

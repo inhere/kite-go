@@ -16,6 +16,7 @@ var KiteManage = &gcli.Command{
 		InitKite,
 		KiteInfo,
 		UpdateSelf,
+		KiteConf,
 	},
 }
 
@@ -48,4 +49,10 @@ var UpdateSelf = &gcli.Command{
 var InitKite = &gcli.Command{
 	Name: "init",
 	Desc: "init kite env, will create config to use home dir",
+}
+
+var KiteConf = &gcli.Command{
+	Name:    "config",
+	Aliases: []string{"conf", "cfg"},
+	Desc:    "show application config information",
 }

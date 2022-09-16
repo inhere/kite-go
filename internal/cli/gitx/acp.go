@@ -19,11 +19,7 @@ var AddCommitPush = &gcli.Command{
 	Config: func(c *gcli.Command) {
 		AddCommitNotPush.Config(c)
 
-		c.BoolVar(&acpOpts.notPush, &gcli.FlagMeta{
-			Name:   "not-push",
-			Shorts: []string{"np"},
-			Desc:   "dont execute git push",
-		})
+		c.BoolOpt(&acpOpts.notPush, "not-push", "np", false, "dont execute git push")
 	},
 }
 
@@ -32,7 +28,8 @@ var AddCommitNotPush = &gcli.Command{
 	Desc: "run git add/commit at once command",
 	Func: acpHandleFunc,
 	Config: func(c *gcli.Command) {
-		c.BoolOpt(&dryRun, "dry-run", "", false, "dont real execute command")
+		bindCommonFlags(c)
+
 		c.BoolOpt(&interactive, "interactive", "i", false, "interactively ask before executing command")
 		c.StrOpt(&acpOpts.message, "message", "m", "", "the commit message")
 		c.Required("message")

@@ -1,23 +1,23 @@
-package command
+package cli
 
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/builtin"
 	"github.com/inherelab/kite/app"
-	"github.com/inherelab/kite/internal/command/bintool"
-	"github.com/inherelab/kite/internal/command/codegen"
-	"github.com/inherelab/kite/internal/command/comtool"
-	"github.com/inherelab/kite/internal/command/doctool"
-	"github.com/inherelab/kite/internal/command/github"
-	"github.com/inherelab/kite/internal/command/gitlab"
-	"github.com/inherelab/kite/internal/command/gitx"
-	"github.com/inherelab/kite/internal/command/gotool"
-	"github.com/inherelab/kite/internal/command/mkdown"
-	"github.com/inherelab/kite/internal/command/phptool"
-	"github.com/inherelab/kite/internal/command/self"
-	"github.com/inherelab/kite/internal/command/sql"
-	"github.com/inherelab/kite/internal/command/swagger"
-	"github.com/inherelab/kite/internal/command/taskx"
+	"github.com/inherelab/kite/internal/cli/bintool"
+	"github.com/inherelab/kite/internal/cli/codegen"
+	"github.com/inherelab/kite/internal/cli/comtool"
+	"github.com/inherelab/kite/internal/cli/doctool"
+	"github.com/inherelab/kite/internal/cli/github"
+	"github.com/inherelab/kite/internal/cli/gitlab"
+	"github.com/inherelab/kite/internal/cli/gitx"
+	"github.com/inherelab/kite/internal/cli/gotool"
+	"github.com/inherelab/kite/internal/cli/mkdown"
+	"github.com/inherelab/kite/internal/cli/phptool"
+	"github.com/inherelab/kite/internal/cli/self"
+	"github.com/inherelab/kite/internal/cli/sql"
+	"github.com/inherelab/kite/internal/cli/swagger"
+	"github.com/inherelab/kite/internal/cli/taskx"
 	"github.com/inherelab/kite/pkg/pacutil"
 )
 
@@ -38,7 +38,7 @@ func Register(app *app.KiteApp) {
 		doctool.DocumentCmd,
 		gitx.GitCommands,
 		gitx.GitFlow,
-		gitlab.CmdForGitlab,
+		gitlab.GitLab,
 		github.CmdForGithub,
 		sql.SQLCmd,
 		swagger.SwaggerCmd,
@@ -46,6 +46,7 @@ func Register(app *app.KiteApp) {
 		gotool.GoToolsCmd,
 		phptool.PhpToolsCmd,
 		self.KiteManage,
+		self.KiteConf,
 		taskx.TaskManage,
 		bintool.ToolsCmd,
 	)
@@ -68,7 +69,7 @@ func Register(app *app.KiteApp) {
 }
 
 func addListener(app *app.KiteApp) {
-	app.On(gcli.EvtCmdNotFound, func(data ...interface{}) bool {
+	app.On(gcli.EvtCmdNotFound, func(ctx *gcli.HookCtx) bool {
 
 		// TODO
 		return false
