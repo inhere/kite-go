@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/fsnotify/fsnotify v1.5.4
-	github.com/getkin/kin-openapi v0.103.0
+	github.com/getkin/kin-openapi v0.104.0
 	github.com/go-openapi/spec v0.20.7
 	github.com/go-openapi/swag v0.22.3
 	github.com/gomarkdown/markdown v0.0.0-20220527210340-c82b80a9daf2
@@ -34,6 +34,7 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
+	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/monoculum/formam v3.5.5+incompatible // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778 // indirect
