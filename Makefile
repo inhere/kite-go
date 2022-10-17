@@ -93,15 +93,15 @@ label: $(GO_DEPENDENCIES)
 build-all: $(GO_DEPENDENCIES) build make-reports-dir ## Build all files - runtime, all tests etc.
 	CGO_ENABLED=$(CGO_ENABLED) $(GOTEST) -run=nope -tags=integration -failfast -short ./... $(BUILDFLAGS)
 
-kit2gobin:  ## build kit to go bin dir
+kit2gobin:  ## build cmd/kit to go bin dir
 	go mod tidy
-	go build $(BUILDFLAGS) -o $(GOPATH)/bin/kit ./bin/kit
+	go build $(BUILDFLAGS) -o $(GOPATH)/bin/kit ./cmd/kit
 	chmod a+x $(GOPATH)/bin/kit
 
-kite2gobin: ## build kite to go bin dir
+kite2gobin: ## build cmd/kite to go bin dir
 	go mod tidy
-	go build $(BUILDFLAGS) -o $(GOPATH)/bin/kit ./bin/kit
-	chmod a+x $(GOPATH)/bin/kit
+	go build $(BUILDFLAGS) -o $(GOPATH)/bin/kit ./cmd/kite
+	chmod a+x $(GOPATH)/bin/kite
 
 tidy-deps: ## Cleans up dependencies
 	$(GO) mod tidy

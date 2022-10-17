@@ -24,9 +24,9 @@ var PacTools = &gcli.Command{
 }
 
 type PacOpts struct {
-	addr string
-	file string
-	gwUrl string
+	addr   string
+	file   string
+	gwUrl  string
 	gwfile string
 	maxAge string
 }
@@ -43,7 +43,7 @@ var (
 		Config: func(c *gcli.Command) {
 			c.StrOpt(&pacOpts.addr, "addr", "a", ":11080", "server address")
 			c.StrOpt(&pacOpts.file, "file", "f", "", "pac file path")
-			c.FlagMeta("file").Required = true
+			c.Opt("file").Required = true
 
 			c.StrOpt(&pacOpts.gwfile, "gwfile", "", "", "gfw list file")
 			c.StrOpt(&pacOpts.maxAge, "max-age", "m", "31536000", "Cache Control max-age")

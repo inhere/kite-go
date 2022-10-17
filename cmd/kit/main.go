@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gookit/goutil"
 	"github.com/inherelab/kite/app"
 	"github.com/inherelab/kite/app/bootstrap"
 )
@@ -10,10 +11,7 @@ import (
 //	go run ./cmd/kit
 //	go run ./cmd/kit -h
 func main() {
-	err := bootstrap.Boot(app.App())
-	if err != nil {
-		panic(err)
-	}
+	goutil.MustOK(bootstrap.Boot(app.App()))
 
 	// do run
 	app.Run()
