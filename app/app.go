@@ -4,6 +4,7 @@ import (
 	"github.com/gookit/config/v2"
 	"github.com/gookit/config/v2/yamlv3"
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/envutil"
 	"github.com/gookit/rux"
 	"github.com/gookit/slog"
@@ -144,14 +145,12 @@ func newInitApp() *KiteApp {
 	app.cfg = config.NewWith("kite", func(c *config.Config) {
 		c.AddDriver(yamlv3.Driver)
 		c.WithOptions(func(opt *config.Options) {
+			opt.ParseEnv = true
 			opt.DecoderConfig.TagName = "json"
 		})
 	})
 
-	err := Init(app)
-	if err != nil {
-		panic(err)
-	}
+	goutil.PanicErr(Init(app))
 
 	return app
 }
