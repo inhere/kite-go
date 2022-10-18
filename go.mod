@@ -12,7 +12,7 @@ require (
 	github.com/gookit/config/v2 v2.1.7
 	github.com/gookit/event v1.0.6
 	github.com/gookit/gcli/v3 v3.1.0
-	github.com/gookit/gitw v0.2.5
+	github.com/gookit/gitw v0.2.6
 	github.com/gookit/goutil v0.5.15
 	github.com/gookit/i18n v1.1.4
 	github.com/gookit/ini/v2 v2.1.3
