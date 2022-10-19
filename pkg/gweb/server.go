@@ -1,4 +1,4 @@
-package webapp
+package gweb
 
 import (
 	"context"
@@ -31,9 +31,10 @@ type HTTPServer struct {
 // NewHTTPServer create new HTTPServer.
 //
 // Usage:
-// 	srv := NewHTTPServer("127.0.0.1")
-// 	srv := NewHTTPServer("127.0.0.1:8090")
-// 	srv := NewHTTPServer("127.0.0.1", "8090")
+//
+//	srv := NewHTTPServer("127.0.0.1")
+//	srv := NewHTTPServer("127.0.0.1:8090")
+//	srv := NewHTTPServer("127.0.0.1", "8090")
 func NewHTTPServer(address ...string) *HTTPServer {
 	return &HTTPServer{
 		processID: os.Getpid(),

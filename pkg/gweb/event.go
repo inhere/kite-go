@@ -1,4 +1,4 @@
-package webapp
+package gweb
 
 const (
 	OnBeforeRoute = "app.route.before"

@@ -1,4 +1,4 @@
-package webapp
+package gweb
 
 import "github.com/gookit/rux"
 
