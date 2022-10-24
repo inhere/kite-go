@@ -1,11 +1,14 @@
 package web
 
-import "github.com/gookit/rux"
+import (
+	"github.com/gookit/rux"
+	"github.com/inherelab/kite/internal/web/controller"
+)
 
 // AddRoutes to rux.Router
 func AddRoutes(r *rux.Router) {
 	r.StaticDir("/static", "static")
 
-	r.Controller("/", &HomeController{})
-	r.Controller("/tasks", &TaskController{})
+	r.Controller("/", &controller.HomeController{})
+	r.Controller("/tasks", &controller.TaskController{})
 }

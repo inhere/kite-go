@@ -1,4 +1,4 @@
-package web
+package controller
 
 import (
 	"strings"
@@ -6,7 +6,7 @@ import (
 	"github.com/gookit/rux"
 )
 
-type TaskController struct {}
+type TaskController struct{}
 
 // AddRoutes to rux.Router
 func (c *TaskController) AddRoutes(r *rux.Router) {
