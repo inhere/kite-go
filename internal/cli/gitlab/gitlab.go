@@ -3,6 +3,7 @@ package gitlab
 import (
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
+	"github.com/inherelab/kite/internal/cli/gitx"
 	"github.com/inherelab/kite/pkg/gitflow"
 	"github.com/inherelab/kite/pkg/gituse"
 )
@@ -27,6 +28,8 @@ var GitLab = &gcli.Command{
 		gitflow.UpdatePushCmd,
 		gituse.OpenRemoteRepo,
 		MergeRequest,
+		gitx.AddCommitPush,
+		gitx.AddCommitNotPush,
 	},
 	Config: func(c *gcli.Command) {
 		c.On(gcli.EvtCmdRunBefore, func(ctx *gcli.HookCtx) (stop bool) {

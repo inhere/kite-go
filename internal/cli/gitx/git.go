@@ -3,7 +3,7 @@ package gitx
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gitw"
-	"github.com/inherelab/kite/pkg/cmdutil"
+	"github.com/gookit/goutil/sysutil/cmdr"
 	"github.com/inherelab/kite/pkg/gituse"
 )
 
@@ -12,7 +12,7 @@ var (
 	yesRun  bool // Direct execution without confirmation
 	workdir string
 
-	interactive bool // interactively ask before executing command
+	confirm bool // interactively ask before executing command
 )
 
 func bindCommonFlags(c *gcli.Command) {
@@ -62,7 +62,7 @@ var StatusInfo = &gcli.Command{
 	Aliases: []string{"st"},
 	Desc:    "git status command",
 	Func: func(c *gcli.Command, args []string) error {
-		return cmdutil.NewGitCmd("status").Run()
+		return cmdr.NewGitCmd("status").Run()
 	},
 }
 

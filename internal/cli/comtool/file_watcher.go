@@ -58,7 +58,7 @@ func watch(c *gcli.Command, _ []string) (err error) {
 	color.Info.Println("Work directory: ", c.WorkDir())
 
 	if fwOpts.Dir == "" && len(fwOpts.Files) == 0 {
-		return c.Errorf("watched directory or files cannot be empty")
+		return c.NewErrf("watched directory or files cannot be empty")
 	}
 
 	watcher, err = fsnotify.NewWatcher()
