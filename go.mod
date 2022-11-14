@@ -19,7 +19,7 @@ require (
 	github.com/gookit/rux v1.3.4
 	github.com/gookit/slog v0.3.4
 	github.com/gookit/view v1.0.2
-	github.com/yuin/goldmark v1.5.2
+	github.com/yuin/goldmark v1.5.3
 )
 
 require (
