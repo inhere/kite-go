@@ -24,6 +24,10 @@ logger:
 
 language:
   langDir: $resource/language
+  defLang: zh-CN
+  langMap:
+    en: English
+    zh-CN: 简体中文
 
 pluginManager:
   main_config: $config/parts/plugins.yml

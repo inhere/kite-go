@@ -16,13 +16,25 @@ var (
 	OSPathSepStr  = string(os.PathSeparator)
 )
 
-// Conf struct of app
+// Info for kite app
+type Info struct {
+	Branch    string
+	Version   string
+	Revision  string
+	GoVersion string
+	BuildDate string
+	PublishAt string
+	UpdatedAt string
+}
+
+// Config struct of app
 //
 // Gen by:
-//   kite go gen st -s @c -t json --name Conf
-type Conf struct {
-	// the main config file path. see Init()
-	mainFile string
+//
+//	kite go gen st -s @c -t json --name Conf
+type Config struct {
+	// the main config file path
+	confFile string
 	// BaseDir base dir
 	BaseDir string `json:"base_dir"`
 	// TmpDir tmp dir
@@ -38,10 +50,15 @@ type Conf struct {
 	IncludeConfig []string `json:"include_config"`
 }
 
-func newDefaultConf() *Conf {
+// ConfFile config
+func (c *Config) ConfFile() string {
+	return c.confFile
+}
+
+func newDefaultConf() *Config {
 	defDataDir := sysutil.ExpandPath(appconst.KiteDefaultDataDir)
 
-	return &Conf{
+	return &Config{
 		BaseDir:     defDataDir,
 		TmpDir:      defDataDir + "/tmp",
 		CacheDir:    defDataDir + "/tmp/cache",
@@ -50,7 +67,7 @@ func newDefaultConf() *Conf {
 	}
 }
 
-func (c *Conf) ensurePaths() {
+func (c *Config) ensurePaths() {
 	if c.BaseDir == "" {
 		c.BaseDir = appconst.KiteDefaultDataDir
 	}
@@ -84,32 +101,32 @@ func (c *Conf) ensurePaths() {
 }
 
 // CfgFile get main config file
-func (c *Conf) CfgFile() string {
-	return c.mainFile
+func (c *Config) CfgFile() string {
+	return c.confFile
 }
 
 // Path build and get full path relative the base dir.
-func (c *Conf) Path(subPaths ...string) string {
+func (c *Config) Path(subPaths ...string) string {
 	return joinPath(c.BaseDir, subPaths)
 }
 
 // TmpPath build and get full path relative the tmp dir.
-func (c *Conf) TmpPath(subPaths ...string) string {
+func (c *Config) TmpPath(subPaths ...string) string {
 	return joinPath(c.TmpDir, subPaths)
 }
 
 // CachePath build and get full path relative the cache dir.
-func (c *Conf) CachePath(subPaths ...string) string {
+func (c *Config) CachePath(subPaths ...string) string {
 	return joinPath(c.CacheDir, subPaths)
 }
 
 // ConfigPath build and get full path relative the config dir.
-func (c *Conf) ConfigPath(subPaths ...string) string {
+func (c *Config) ConfigPath(subPaths ...string) string {
 	return joinPath(c.ConfigDir, subPaths)
 }
 
 // PathResolve resolve path alias
-func (c *Conf) PathResolve(path string) string {
+func (c *Config) PathResolve(path string) string {
 	if path == "" || path[0] != PathAliasPrefix {
 		return path
 	}
@@ -143,6 +160,5 @@ func joinPath(basePath string, subPaths []string) string {
 	if len(subPaths) == 0 {
 		return basePath
 	}
-
 	return basePath + OSPathSepStr + strings.Join(subPaths, OSPathSepStr)
 }

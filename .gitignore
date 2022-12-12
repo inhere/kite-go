@@ -1,11 +1,12 @@
 # Created by .ignore support plugin (hsz.mobi)
 .idea/
 .DS_Store
+.env
 *.prof
 #build exe files
 /htu
 /kit
 /kite
 /tmp
-go.work
+/custom
 kite.yml

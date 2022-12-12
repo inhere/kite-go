@@ -5,7 +5,7 @@ import (
 	"github.com/inherelab/kite/app"
 )
 
-func LogBoot(app *app.KiteApp) {
+func BootLogger(ka *app.KiteApp) error {
 
 	// slog
 	slog.Configure(func(logger *slog.SugaredLogger) {
@@ -17,4 +17,5 @@ func LogBoot(app *app.KiteApp) {
 
 	// TODO output log to file
 
+	return nil
 }

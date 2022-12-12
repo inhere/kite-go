@@ -81,6 +81,11 @@ data file: /dist/data.json
 - https://github.com/c-bata/go-prompt
 - https://github.com/chriswalz/complete
 
+**ssh**
+
+- https://github.com/gliderlabs/ssh Easy SSH servers in Golang
+- https://github.com/moul/assh 💻 make your ssh client smarter
+
 **github&gitlab**
 
 github:

@@ -1,14 +1,12 @@
 package app
 
 import (
-	"github.com/gookit/config/v2"
-	"github.com/gookit/config/v2/yamlv3"
+	"sync"
+
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/envutil"
-	"github.com/gookit/rux"
+	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/slog"
-	"github.com/inherelab/kite"
 	"github.com/inherelab/kite/internal/appconst"
 	"github.com/inherelab/kite/internal/initlog"
 )
@@ -31,126 +29,76 @@ func IsDebug() bool {
 	return slog.LevelByName(KiteVerbose) >= slog.DebugLevel
 }
 
-// BootLoader for app start boot
-type BootLoader interface {
-	// Boot do something before application run
-	Boot(app *KiteApp) error
-}
-
-// BootFunc for application
-type BootFunc func(app *KiteApp) error
-
-// Boot do something
-func (fn BootFunc) Boot(app *KiteApp) error {
-	return fn(app)
-}
-
-// Info for kite app
-type Info struct {
-	Branch    string
-	Version   string
-	Revision  string
-	GoVersion string
-	BuildDate string
-	PublishAt string
-	UpdatedAt string
-}
-
-// KiteApp kite app struct
+// KiteApp kite app container
 type KiteApp struct {
-	*Conf
 	*Info
-	*gcli.App
-	// config data for app
-	cfg *config.Config
+	*Config
+	*gcli.Context
+
+	loaders []BootLoader
 }
 
-// IsDebug mode
-func (app *KiteApp) IsDebug() bool {
-	return IsDebug()
+// InitPaths for app
+func (ka *KiteApp) InitPaths() {
+	ka.ensurePaths()
 }
 
-// Cfg instance
-func (app *KiteApp) Cfg() *config.Config {
-	return app.cfg
-}
-
-func (app *KiteApp) init() error {
-	app.ensurePaths()
-
-	return app.LoadIncludeConfigs()
-}
-
-// LoadIncludeConfigs from conf.IncludeConfig
-func (app *KiteApp) LoadIncludeConfigs() error {
-	ln := len(app.IncludeConfig)
-	if ln == 0 {
-		return nil
+// AddBootFuncs to app
+func (ka *KiteApp) AddBootFuncs(bfs ...BootFunc) {
+	for _, bf := range bfs {
+		ka.loaders = append(ka.loaders, bf)
 	}
+}
 
-	initlog.L.Info("load include config files from 'include_config'")
-	filePaths := make([]string, 0, ln)
-	for _, file := range app.IncludeConfig {
-		if len(file) < 2 {
-			continue
+// AddLoaders to app
+func (ka *KiteApp) AddLoaders(bls ...BootLoader) {
+	ka.loaders = append(ka.loaders, bls...)
+}
+
+// Boot app
+func (ka *KiteApp) Boot() error {
+	for _, loader := range ka.loaders {
+		if bc, ok := loader.(BootChecker); ok {
+			if !bc.BeforeBoot() {
+				initlog.L.Debugf("skip boot on %v.BeforeBoot() return false", bc)
+				continue
+			}
 		}
 
-		// is relative path
-		if file[0] != OSPathSepChar && file[0] != PathAliasPrefix {
-			filePaths = append(filePaths, app.ConfigPath(file))
-		} else {
-			filePaths = append(filePaths, app.PathResolve(file))
+		if err := loader.Boot(ka); err != nil {
+			return errorx.Wrap(err, "boot loader fail")
 		}
 	}
-
-	return app.cfg.LoadFiles(filePaths...)
+	return nil
 }
 
-var kiteApp = newInitApp()
+// Run app
+func (ka *KiteApp) Run() {
+	Cli().Run(nil)
+}
+
+func (ka *KiteApp) SetConfFile(file string) {
+	ka.confFile = file
+}
+
+var initKa sync.Once
+var kiteApp *KiteApp
 
 // App instance
 func App() *KiteApp {
+	// init app at once
+	initKa.Do(func() {
+		kiteApp = &KiteApp{
+			Context: gcli.GCtx(),
+			// Info: info,
+			Config: newDefaultConf(),
+		}
+	})
+
 	return kiteApp
 }
 
 // Run boot and run app
 func Run() {
-	kiteApp.Run(nil)
-}
-
-// Cfg get the config.Config
-func Cfg() *config.Config {
-	return kiteApp.cfg
-}
-
-// Rux get the web router
-func Rux() *rux.Router {
-	return nil
-}
-
-func newInitApp() *KiteApp {
-	cliApp := gcli.NewApp(func(a *gcli.App) {
-		a.Name = "Kite"
-		a.Desc = "Kite CLI tool application"
-
-		a.Version = kite.Version
-	})
-
-	app := &KiteApp{
-		App: cliApp,
-		// Info: info,
-		Conf: newDefaultConf(),
-	}
-
-	app.cfg = config.NewWith("kite", func(c *config.Config) {
-		c.AddDriver(yamlv3.Driver)
-		c.WithOptions(func(opt *config.Options) {
-			opt.ParseEnv = true
-			opt.DecoderConfig.TagName = "json"
-		})
-	})
-
-	goutil.PanicErr(Init(app))
-
-	return app
+	kiteApp.Run()
 }
