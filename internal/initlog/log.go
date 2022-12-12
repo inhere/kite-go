@@ -8,6 +8,7 @@ import (
 var L = slog.NewStdLogger().Config(func(sl *slog.SugaredLogger) {
 	sl.Level = slog.DebugLevel
 	sl.CallerFlag = slog.CallerFlagFull
+	sl.CallerSkip += 2
 
 	f := sl.Formatter.(*slog.TextFormatter)
 	if sl.Level >= slog.DebugLevel {

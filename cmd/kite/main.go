@@ -9,6 +9,10 @@ import (
 //
 //	go run ./bin/kite
 //	go run ./bin/kite
+//
+// install:
+//
+//	go install ./cmd/kite
 func main() {
 	bootstrap.MustBoot(app.App())
 

@@ -9,6 +9,10 @@ import (
 //
 //	go run ./cmd/kit
 //	go run ./cmd/kit -h
+//
+// install:
+//
+//	go install ./cmd/kit
 func main() {
 	bootstrap.MustBoot(app.App())
 

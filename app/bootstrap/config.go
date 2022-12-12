@@ -10,9 +10,6 @@ import (
 )
 
 func BootConfig(ka *app.KiteApp) error {
-	confFile := ka.ConfFile()
-	initlog.L.Info("load and init kite config file:", confFile)
-
 	cfg := config.NewWith("kite", func(c *config.Config) {
 		c.AddDriver(yamlv3.Driver)
 		c.WithOptions(func(opt *config.Options) {
@@ -21,8 +18,12 @@ func BootConfig(ka *app.KiteApp) error {
 		})
 	})
 
-	if err := cfg.LoadFiles(confFile); err != nil {
-		return err
+	confFile := ka.ConfFile()
+	if confFile != "" {
+		initlog.L.Info("load and init kite config file:", confFile)
+		if err := cfg.LoadFiles(confFile); err != nil {
+			return err
+		}
 	}
 
 	// map app config

@@ -4,33 +4,42 @@ import (
 	"github.com/gookit/goutil/envutil"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/sysutil"
+	"github.com/gookit/ini/v2/dotenv"
 	"github.com/inherelab/kite/app"
 	"github.com/inherelab/kite/internal/appconst"
 	"github.com/inherelab/kite/internal/initlog"
 )
 
 func BootEnv(ka *app.KiteApp) error {
-	confFile := findConfFile(ka)
-	initlog.L.Info("load main config file:", confFile)
-	ka.SetConfFile(confFile)
+	if envFile := findConfFile(ka, ".env"); envFile != "" {
+		initlog.L.Info("find and load ENV config file:", envFile)
+
+		if err := dotenv.LoadFiles(envFile); err != nil {
+			return err
+		}
+	}
+
+	if confFile := findConfFile(ka, appconst.KiteConfigName); confFile != "" {
+		initlog.L.Info("find main config file:", confFile)
+		ka.SetConfFile(confFile)
+	}
+
 	return nil
 }
 
 // findConfFile find main config file
-func findConfFile(ka *app.KiteApp) string {
-	file := envutil.Getenv(appconst.EnvKiteConfig, sysutil.ExpandPath(appconst.KiteDefaultConfigFile))
-	if fsutil.IsFile(file) {
-		return file
+func findConfFile(ka *app.KiteApp, fileName string) string {
+	envFile := envutil.Getenv(appconst.EnvKiteConfig, sysutil.ExpandPath(appconst.KiteDefaultDataDir)+"/"+fileName)
+	maybeFiles := []string{
+		envFile,
+		ka.WorkDir() + "/" + fileName,
+		ka.BinDir() + "/" + fileName,
 	}
 
-	file = ka.WorkDir() + "/" + appconst.KiteConfigName
-	if fsutil.IsFile(file) {
-		return file
-	}
-
-	file = ka.BinDir() + "/" + appconst.KiteConfigName
-	if fsutil.IsFile(file) {
-		return file
+	for _, file := range maybeFiles {
+		if fsutil.IsFile(file) {
+			return file
+		}
 	}
 	return ""
 }
