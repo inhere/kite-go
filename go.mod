@@ -11,7 +11,7 @@ require (
 	github.com/gookit/color v1.5.2
 	github.com/gookit/config/v2 v2.1.8
 	github.com/gookit/event v1.0.6
-	github.com/gookit/gcli/v3 v3.1.0
+	github.com/gookit/gcli/v3 v3.1.1
 	github.com/gookit/gitw v0.3.0
 	github.com/gookit/goutil v0.6.1
 	github.com/gookit/i18n v1.1.4
