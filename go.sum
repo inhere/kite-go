@@ -42,8 +42,8 @@ github.com/gookit/filter v1.1.2/go.mod h1:pVXLLDD+A8yH9GRztq2Cp7zwZocnuTUpbZs9Q+
 github.com/gookit/filter v1.1.3/go.mod h1:gQEMpmF34ZFwP1/b5qjJ5JpxsiGgDb9xLIKidkQr2hk=
 github.com/gookit/filter v1.1.4 h1:SXd6PEumiP/0jtF2crQRaz1wmKwHbW9xg5Ds6/ZP16w=
 github.com/gookit/filter v1.1.4/go.mod h1:0CEPQvudso375RitQf9X8HerUg9cz8N7c/yn6b1RMzM=
-github.com/gookit/gcli/v3 v3.1.0 h1:8rcuProVYM3+tvh4L1bJ/U6a+2CkSje6nn3CQWmMYww=
-github.com/gookit/gcli/v3 v3.1.0/go.mod h1:oUGiA/RZxeaFdL0sl7BBeQc8uNya8Jdl6AvNqLKr5hQ=
+github.com/gookit/gcli/v3 v3.1.1 h1:08P3jgyOAf/WGVcI39lHaLnAQzysCcM+09CGC8bpVik=
+github.com/gookit/gcli/v3 v3.1.1/go.mod h1:dpuPbBLQ7imYcGRBN33DYxm3Qa83llLeI956HFQKA4w=
 github.com/gookit/gitw v0.3.0 h1:JIyWPZMIQ+pctS96wp4foVce+ocfYtbTO0oCH/XXQQ4=
 github.com/gookit/gitw v0.3.0/go.mod h1:3s3Aw82pWMkz6RlnolCFwwF1U2Ub6USF9Er45bN9QJQ=
 github.com/gookit/goutil v0.3.12/go.mod h1:ITj7Lw0muhJNOX+QRa+j+HH0+RNoQVuTmZx5d5LE1vE=
