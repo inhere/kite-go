@@ -11,7 +11,7 @@ type GitLab struct {
 	// GitUrl git url
 	GitUrl string `json:"git_url"`
 	// ApiUrl api url
-	ApiUrl string `json:"api_url"`
+	BaseApi string `json:"base_api"`
 	// Token person token.
 	// from /profile/personal_access_tokens
 	Token string `json:"token"`
@@ -21,4 +21,8 @@ type GitLab struct {
 	ForkRemote string `json:"fork_remote"`
 	// BranchAliases branch aliases
 	BranchAliases map[string]string `json:"branch_aliases"`
+}
+
+func (g *GitLab) DefaultRemote() string {
+	return g.ForkRemote
 }

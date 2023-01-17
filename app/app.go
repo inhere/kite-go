@@ -56,7 +56,7 @@ func (ka *KiteApp) AddLoaders(bls ...BootLoader) {
 	ka.loaders = append(ka.loaders, bls...)
 }
 
-// Boot app
+// Boot app start
 func (ka *KiteApp) Boot() error {
 	for _, loader := range ka.loaders {
 		if bc, ok := loader.(BootChecker); ok {
@@ -78,6 +78,7 @@ func (ka *KiteApp) Run() {
 	Cli().Run(nil)
 }
 
+// SetConfFile path.
 func (ka *KiteApp) SetConfFile(file string) {
 	ka.confFile = file
 }

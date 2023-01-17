@@ -1,4 +1,4 @@
-package gituse
+package gitx
 
 func BatchPull() {
 

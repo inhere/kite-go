@@ -10,8 +10,9 @@ import (
 	"github.com/inhere/kite/internal/initlog"
 )
 
+// BootEnv handle
 func BootEnv(ka *app.KiteApp) error {
-	if envFile := findConfFile(ka, ".env"); envFile != "" {
+	if envFile := findDotEnvFile(ka); envFile != "" {
 		initlog.L.Info("find and load ENV config file:", envFile)
 
 		if err := dotenv.LoadFiles(envFile); err != nil {
@@ -27,11 +28,30 @@ func BootEnv(ka *app.KiteApp) error {
 	return nil
 }
 
+// findDotEnvFile find .env config file
+func findDotEnvFile(ka *app.KiteApp) string {
+	fileName := appconst.DotEnvFileName
+	confFile := envutil.Getenv(appconst.EnvKiteDotEnv, sysutil.ExpandPath(appconst.KiteDefaultDataDir)+"/"+fileName)
+
+	maybeFiles := []string{
+		confFile,
+		ka.WorkDir() + "/" + fileName,
+		ka.BinDir() + "/" + fileName,
+	}
+
+	for _, file := range maybeFiles {
+		if fsutil.IsFile(file) {
+			return file
+		}
+	}
+	return ""
+}
+
 // findConfFile find main config file
 func findConfFile(ka *app.KiteApp, fileName string) string {
-	envFile := envutil.Getenv(appconst.EnvKiteConfig, sysutil.ExpandPath(appconst.KiteDefaultDataDir)+"/"+fileName)
+	confFile := envutil.Getenv(appconst.EnvKiteConfig, sysutil.ExpandPath(appconst.KiteDefaultConfDir)+"/"+fileName)
 	maybeFiles := []string{
-		envFile,
+		confFile,
 		ka.WorkDir() + "/" + fileName,
 		ka.BinDir() + "/" + fileName,
 	}

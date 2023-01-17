@@ -6,6 +6,12 @@ import (
 	"github.com/gookit/rux"
 )
 
+const (
+	ObjCli  = "cli"
+	ObjRux  = "rux"
+	ObjConf = "config"
+)
+
 // Cfg get the config object
 func Cfg() *config.Config {
 	return Get[*config.Config]("config")
@@ -13,7 +19,7 @@ func Cfg() *config.Config {
 
 // Rux get the web app
 func Rux() *rux.Router {
-	return Get[*rux.Router]("config")
+	return Get[*rux.Router]("ObjRux")
 }
 
 // Cli get the cli app
