@@ -1,21 +1,5 @@
 proxy_cmd:
   command_ids:
-    - 'php:ghpkg'
+    - 'php:gh-pkg'
   group_limits:
     github: [acp, push, update]
-
-gitlab:
-  main_remote: main
-  fork_remote: origin
-  git_url: git@gitlab.gongzl.com
-  host_url: http://gitlab.gongzl.com/
-  branch_aliases:
-    h: head
-    t: testing
-    q: qa
-    p: pre
-    m: master
-  # from /profile/personal_access_tokens
-  token: '{$GITLAB_PA_TOKEN}'
-  api_url: http://gitlab.gongzl.com/api/v4
-

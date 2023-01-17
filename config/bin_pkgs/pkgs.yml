@@ -1,0 +1,20 @@
+pkgs:
+  - name: chlog
+    desc: quick generate change log by git
+    link: https://github.com/gookit/gitw # project link
+    deps: go
+    workdir: # on run command
+    install: go install github.com/gookit/gitw/cmd/chlog@latest
+    update: '@install'
+    remove: rm -f $GOPATH/bin/chlog
+    afterTips:
+      install: tool has been installed to the $GOPATH/bin
+
+  - name: yq
+    link: https://github.com/mikefarah/yq
+    deps: go
+    install: go install github.com/mikefarah/yq/v4@latest
+    update: '@install'
+    remove: rm -f $GOPATH/bin/yq
+    afterTips:
+      install: tool has been installed to the $GOPATH/bin

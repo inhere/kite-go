@@ -34,7 +34,6 @@ VERSION ?= $(shell echo "$$(git for-each-ref refs/tags/ --count=1 --sort=-versio
 # Full build flags used when building binaries. Not used for test compilation/execution.
 BUILDFLAGS := -ldflags \
   " -X $(ROOT_PACKAGE).Version=$(VERSION)\
-		-X $(ROOT_PACKAGE).Version=$(VERSION)\
 		-X $(ROOT_PACKAGE).Revision=$(REV)\
 		-X $(ROOT_PACKAGE).Branch=$(BRANCH)\
 		-X $(ROOT_PACKAGE).BuildDate=$(BUILD_DATE)\
