@@ -4,7 +4,7 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gitw"
 	"github.com/gookit/goutil/sysutil/cmdr"
-	"github.com/inherelab/kite/pkg/gituse"
+	"github.com/inhere/kite/pkg/gituse"
 )
 
 var (
@@ -34,9 +34,13 @@ var GitCommands = &gcli.Command{
 		UpdateCmd,
 		gituse.OpenRemoteRepo,
 		CreatePRLink,
-		BatchPull,
+		BatchCmd,
 		Changelog,
 		ShowLog,
+		InitFlow,
+		UpdateNoPush,
+		UpdateAndPush,
+		BranchOperateEx,
 	},
 	Config: func(c *gcli.Command) {
 		addListener(c)

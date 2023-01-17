@@ -3,8 +3,8 @@ package github
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/slog"
-	"github.com/inherelab/kite/pkg/gitflow"
-	"github.com/inherelab/kite/pkg/gituse"
+	"github.com/inhere/kite/pkg/gitflow"
+	"github.com/inhere/kite/pkg/gituse"
 )
 
 // CmdForGithub commands

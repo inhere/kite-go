@@ -3,7 +3,7 @@ package gitflow
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gitw"
-	"github.com/inherelab/kite/pkg/gituse"
+	"github.com/inhere/kite/pkg/gituse"
 )
 
 var upOpts = struct {

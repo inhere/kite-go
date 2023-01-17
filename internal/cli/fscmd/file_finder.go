@@ -1,4 +1,4 @@
-package comtool
+package fscmd
 
 import (
 	"errors"

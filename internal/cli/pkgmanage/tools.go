@@ -1,4 +1,4 @@
-package bintool
+package pkgmanage
 
 import (
 	"errors"
@@ -6,10 +6,10 @@ import (
 	"github.com/gookit/gcli/v3"
 )
 
-// ToolsCmd command
-var ToolsCmd = &gcli.Command{
-	Name:    "tool",
-	Aliases: []string{"tools"},
+// ManageCmd command
+var ManageCmd = &gcli.Command{
+	Name:    "pkgm",
+	Aliases: []string{"pkgx"},
 	Desc:    "local tools management. eg: install, update and remove",
 	Config: func(c *gcli.Command) {
 

@@ -2,7 +2,7 @@ package gitx
 
 import (
 	"github.com/gookit/gcli/v3"
-	"github.com/inherelab/kite/pkg/cmdutil"
+	"github.com/inhere/kite/pkg/cmdutil"
 )
 
 var acpOpts = struct {

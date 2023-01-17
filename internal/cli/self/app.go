@@ -5,8 +5,8 @@ import (
 	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/sysutil"
-	"github.com/inherelab/kite"
-	"github.com/inherelab/kite/app"
+	"github.com/inhere/kite"
+	"github.com/inhere/kite/app"
 )
 
 // KiteManage manage kite self

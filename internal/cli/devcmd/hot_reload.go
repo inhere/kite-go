@@ -1,4 +1,4 @@
-package comtool
+package devcmd
 
 import (
 	"errors"
