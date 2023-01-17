@@ -15,13 +15,13 @@ builds:
           - -s -w -X main.version={{ .Version }} -X main.commit={{ .Commit }} -X main.date={{ .CommitDate }} -X main.builtBy=goreleaser
 
 dockers:
-    - image_templates: ["ghcr.io/inherelab/kite:{{ .Version }}"]
+    - image_templates: ["ghcr.io/inhere/kite:{{ .Version }}"]
       dockerfile: build/Dockerfile
       build_flag_templates:
           - --label=org.opencontainers.image.title={{ .ProjectName }}
           - --label=org.opencontainers.image.description={{ .ProjectName }}
-          - --label=org.opencontainers.image.url=https://github.com/inherelab/kite
-          - --label=org.opencontainers.image.source=https://github.com/inherelab/kite
+          - --label=org.opencontainers.image.url=https://github.com/inhere/kite
+          - --label=org.opencontainers.image.source=https://github.com/inhere/kite
           - --label=org.opencontainers.image.version={{ .Version }}
           - --label=org.opencontainers.image.created={{ time "2006-01-02T15:04:05Z07:00" }}
           - --label=org.opencontainers.image.revision={{ .FullCommit }}
@@ -30,7 +30,7 @@ dockers:
 nfpms:
     - maintainer: Inhere <in.798@qq.com>
       description: A personal tools application.
-      homepage: https://github.com/inherelab/kite
+      homepage: https://github.com/inhere/kite
       license: MIT
       formats:
           - deb

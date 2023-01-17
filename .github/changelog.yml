@@ -3,7 +3,7 @@ title: '## Change Log'
 style: gh-release
 # group names
 names: [Refactor, Fixed, Feature, Update, Other]
-repo_url: https://github.com/inherelab/kite
+repo_url: https://github.com/inhere/kite
 
 filters:
   # message length should >= 12

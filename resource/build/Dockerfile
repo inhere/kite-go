@@ -1,5 +1,5 @@
 #
-# @build-example docker build . -f Dockerfile -t inherelab/httprr
+# @build-example docker build . -f Dockerfile -t inhere/httprr
 #
 
 ################################################################################
