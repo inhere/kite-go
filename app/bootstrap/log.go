@@ -2,7 +2,7 @@ package bootstrap
 
 import (
 	"github.com/gookit/slog"
-	"github.com/inherelab/kite/app"
+	"github.com/inhere/kite/app"
 )
 
 func BootLogger(ka *app.KiteApp) error {

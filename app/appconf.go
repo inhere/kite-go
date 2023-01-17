@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/gookit/goutil/sysutil"
-	"github.com/inherelab/kite/internal/appconst"
+	"github.com/inhere/kite/internal/appconst"
 )
 
 // some special chars

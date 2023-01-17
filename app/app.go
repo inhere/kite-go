@@ -4,11 +4,12 @@ import (
 	"sync"
 
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/envutil"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/slog"
-	"github.com/inherelab/kite/internal/appconst"
-	"github.com/inherelab/kite/internal/initlog"
+	"github.com/inhere/kite/internal/appconst"
+	"github.com/inhere/kite/internal/initlog"
 )
 
 // Env names
@@ -66,7 +67,7 @@ func (ka *KiteApp) Boot() error {
 		}
 
 		if err := loader.Boot(ka); err != nil {
-			return errorx.Wrap(err, "boot loader fail")
+			return errorx.Wrap(err, "boot loader fail on "+goutil.FuncName(loader))
 		}
 	}
 	return nil

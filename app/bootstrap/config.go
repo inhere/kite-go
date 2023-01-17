@@ -4,9 +4,9 @@ import (
 	"github.com/gookit/config/v2"
 	"github.com/gookit/config/v2/yamlv3"
 	"github.com/gookit/goutil/dump"
-	"github.com/inherelab/kite/app"
-	"github.com/inherelab/kite/internal/appconst"
-	"github.com/inherelab/kite/internal/initlog"
+	"github.com/inhere/kite/app"
+	"github.com/inhere/kite/internal/appconst"
+	"github.com/inhere/kite/internal/initlog"
 )
 
 func BootConfig(ka *app.KiteApp) error {

@@ -5,9 +5,9 @@ import (
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/gookit/ini/v2/dotenv"
-	"github.com/inherelab/kite/app"
-	"github.com/inherelab/kite/internal/appconst"
-	"github.com/inherelab/kite/internal/initlog"
+	"github.com/inhere/kite/app"
+	"github.com/inhere/kite/internal/appconst"
+	"github.com/inhere/kite/internal/initlog"
 )
 
 func BootEnv(ka *app.KiteApp) error {

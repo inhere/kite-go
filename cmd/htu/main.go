@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/inherelab/kite/internal/cli/doctool"
+	"github.com/inhere/kite/internal/cli/doctool"
 )
 
 func main() {
