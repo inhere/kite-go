@@ -1,10 +1,10 @@
-package github
+package ghubcmd
 
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/slog"
-	"github.com/inhere/kite/pkg/gitflow"
-	"github.com/inhere/kite/pkg/gituse"
+	"github.com/inhere/kite/pkg/gitx"
+	"github.com/inhere/kite/pkg/gitx/gitflow"
 )
 
 // CmdForGithub commands
@@ -13,7 +13,7 @@ var CmdForGithub = &gcli.Command{
 	Aliases: []string{"gh", "gith", "hub", "ghub"},
 	Desc:    "useful tools for use github",
 	Subs: []*gcli.Command{
-		gituse.OpenRemoteRepo,
+		gitx.NewOpenRemoteCmd(gitx.GithubHost),
 		gitflow.UpdateCmd,
 		gitflow.UpdatePushCmd,
 	},

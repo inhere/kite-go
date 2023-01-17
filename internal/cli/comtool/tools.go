@@ -1,8 +1,6 @@
 package comtool
 
 import (
-	"errors"
-
 	"github.com/gookit/gcli/v3"
 	"github.com/inhere/kite/internal/cli/comtool/swagger"
 )
@@ -15,11 +13,12 @@ var ToolsCmd = &gcli.Command{
 	Subs: []*gcli.Command{
 		swagger.SwaggerCmd,
 		HttpServe,
+		BatchRun,
 	},
 	Config: func(c *gcli.Command) {
 
 	},
-	Func: func(c *gcli.Command, _ []string) error {
-		return errors.New("TODO")
-	},
+	// Func: func(c *gcli.Command, _ []string) error {
+	// 	return errors.New("TODO")
+	// },
 }

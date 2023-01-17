@@ -1,13 +1,17 @@
-package gitlab
+package glabcmd
 
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gitw"
+	"github.com/gookit/gitw/gitutil"
 	"github.com/gookit/goutil/dump"
+	"github.com/gookit/goutil/strutil"
+	"github.com/inhere/kite/pkg/gitx"
 )
 
 var (
 	mrOpts = struct {
+		gitx.CommonOpts
 		new    bool
 		direct bool
 		open   string
@@ -15,13 +19,13 @@ var (
 		target string
 	}{}
 
-	// MergeRequest command
-	MergeRequest = &gcli.Command{
+	// MergeRequestCmd command
+	MergeRequestCmd = &gcli.Command{
 		Name:    "merge-request",
 		Aliases: []string{"pr", "mr", "pull-request"},
 		Desc:    "Create new merge requests(PR/MR) by given project information",
 		Config: func(c *gcli.Command) {
-			bindCommonFlags(c)
+			mrOpts.BindCommonFlags(c)
 
 			c.BoolOpt(&mrOpts.new, "new", "", false,
 				"Open new pr page on browser. eg: http://my.gitlab.com/group/repo/merge_requests/new",
@@ -50,12 +54,26 @@ Special:
   # Will generate PR link for 'group/repo', from 'dev' to 'qa' branch
   {binWithCmd} -o dev -t qa group/repo
 `,
-		Func: func(c *gcli.Command, args []string) error {
+		Func: func(c *gcli.Command, args []string) (err error) {
 			workdir := c.WorkDir()
-
 			repoPath := c.Arg("repoPath").String()
 
-			dump.P(repoPath, gitw.NewRepo(workdir).Info())
+			var group, name string
+
+			if strutil.IsNotBlank(repoPath) {
+				group, name, err = gitutil.SplitPath(repoPath)
+				if err != nil {
+					return err
+				}
+			} else {
+				repo := gitw.NewRepo(workdir)
+
+				rtInfo := repo.DefaultRemoteInfo()
+				group, name = rtInfo.Group, rtInfo.Repo
+			}
+
+			dump.P(group, name)
+
 			return nil
 		},
 	}

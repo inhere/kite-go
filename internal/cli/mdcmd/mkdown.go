@@ -1,4 +1,4 @@
-package mkdown
+package mdcmd
 
 import "github.com/gookit/gcli/v3"
 
@@ -7,7 +7,7 @@ import "github.com/gookit/gcli/v3"
 var MkDownCmd = &gcli.Command{
 	Name:    "mkdown",
 	Desc:    "some tool for markdown",
-	Aliases: []string{"md", "markdown"},
+	Aliases: []string{"md", "mdown", "markdown"},
 	Subs: []*gcli.Command{
 		Markdown2HTML, Markdown2SQL,
 	},

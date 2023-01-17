@@ -1,4 +1,4 @@
-package mkdown
+package mdcmd
 
 import (
 	"errors"

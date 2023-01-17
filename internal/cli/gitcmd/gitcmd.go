@@ -1,10 +1,10 @@
-package gitx
+package gitcmd
 
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gitw"
 	"github.com/gookit/goutil/sysutil/cmdr"
-	"github.com/inhere/kite/pkg/gituse"
+	"github.com/inhere/kite/pkg/gitx"
 )
 
 var (
@@ -15,15 +15,10 @@ var (
 	confirm bool // interactively ask before executing command
 )
 
-func bindCommonFlags(c *gcli.Command) {
-	c.BoolOpt(&dryRun, "dry-run", "", false, "run workflow, but dont real execute command")
-	c.StrOpt(&workdir, "workdir", "w", "", "the command workdir path")
-}
-
 // GitCommands commands for use git
 var GitCommands = &gcli.Command{
 	Name:    "git",
-	Desc:    "tools for quick use `git` commands",
+	Desc:    "tools for quick use `git` and more extra commands",
 	Aliases: []string{"g"},
 	Subs: []*gcli.Command{
 		StatusInfo,
@@ -32,7 +27,7 @@ var GitCommands = &gcli.Command{
 		AddCommitNotPush,
 		TagCmd,
 		UpdateCmd,
-		gituse.OpenRemoteRepo,
+		gitx.NewOpenRemoteCmd(""),
 		CreatePRLink,
 		BatchCmd,
 		Changelog,

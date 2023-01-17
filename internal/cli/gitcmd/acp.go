@@ -1,11 +1,13 @@
-package gitx
+package gitcmd
 
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/inhere/kite/pkg/cmdutil"
+	"github.com/inhere/kite/pkg/gitx"
 )
 
 var acpOpts = struct {
+	gitx.CommonOpts
 	message string
 	notPush bool
 }{}
@@ -28,7 +30,7 @@ var AddCommitNotPush = &gcli.Command{
 	Desc: "run git add/commit at once command",
 	Func: acpHandleFunc,
 	Config: func(c *gcli.Command) {
-		bindCommonFlags(c)
+		acpOpts.BindCommonFlags(c)
 
 		c.BoolOpt(&confirm, "interactive", "i", false, "confirm ask before executing command")
 		c.StrOpt(&acpOpts.message, "message", "m", "", "the commit message")

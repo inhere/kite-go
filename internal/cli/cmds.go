@@ -8,15 +8,16 @@ import (
 	"github.com/inhere/kite/internal/cli/devcmd"
 	"github.com/inhere/kite/internal/cli/doctool"
 	"github.com/inhere/kite/internal/cli/fscmd"
-	"github.com/inhere/kite/internal/cli/github"
-	"github.com/inhere/kite/internal/cli/gitlab"
-	"github.com/inhere/kite/internal/cli/gitx"
+	"github.com/inhere/kite/internal/cli/ghubcmd"
+	"github.com/inhere/kite/internal/cli/gitcmd"
+	"github.com/inhere/kite/internal/cli/glabcmd"
 	"github.com/inhere/kite/internal/cli/gotool"
-	"github.com/inhere/kite/internal/cli/mkdown"
-	"github.com/inhere/kite/internal/cli/phptool"
+	"github.com/inhere/kite/internal/cli/mdcmd"
+	"github.com/inhere/kite/internal/cli/phpcmd"
 	"github.com/inhere/kite/internal/cli/pkgmanage"
 	"github.com/inhere/kite/internal/cli/self"
-	"github.com/inhere/kite/internal/cli/sql"
+	"github.com/inhere/kite/internal/cli/sqlcmd"
+	"github.com/inhere/kite/internal/cli/strcmd"
 	"github.com/inhere/kite/internal/cli/taskx"
 	"github.com/inhere/kite/pkg/pacutil"
 )
@@ -36,21 +37,20 @@ func Register(app *gcli.App) {
 
 	app.Add(
 		doctool.DocumentCmd,
-		gitx.GitCommands,
-		gitlab.GitLab,
-		github.CmdForGithub,
-		sql.SQLCmd,
-		mkdown.MkDownCmd,
+		gitcmd.GitCommands,
+		glabcmd.GitLab,
+		ghubcmd.CmdForGithub,
+		sqlcmd.SQLCmd,
+		mdcmd.MkDownCmd,
 		gotool.GoToolsCmd,
-		phptool.PhpToolsCmd,
+		phpcmd.PhpToolsCmd,
+		strcmd.StringCmd,
 		self.KiteManage,
-		self.KiteConf,
 		taskx.TaskManage,
 		pkgmanage.ManageCmd,
 		codegen.CodeGen,
 		fscmd.FsCmd,
 		comtool.ToolsCmd,
-		comtool.BatchRun,
 		comtool.RunScripts,
 		devcmd.DevToolsCmd,
 		builtin.GenAutoComplete(),
@@ -59,8 +59,9 @@ func Register(app *gcli.App) {
 	// app.Add(filewatcher.FileWatcher(nil))
 	app.Add(pacutil.PacTools.WithHidden())
 
-	app.AddAliases("self:init", "init")
-	app.AddAliases("self:info", "info")
+	app.AddAliases("app:init", "init")
+	app.AddAliases("app:info", "info")
+	app.AddAliases("app:config", "conf", "config")
 }
 
 func addListener(app *gcli.App) {

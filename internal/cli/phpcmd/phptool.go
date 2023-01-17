@@ -1,4 +1,4 @@
-package phptool
+package phpcmd
 
 import (
 	"github.com/gookit/gcli/v3"

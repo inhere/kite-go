@@ -1,4 +1,4 @@
-package gitx
+package gitcmd
 
 import (
 	"path/filepath"
@@ -34,7 +34,7 @@ var BatchStatusCmd = &gcli.Command{
 var BatchRunCmd = &gcli.Command{
 	Name:    "run",
 	Desc:    "checkout an new branch for development from `dist` remote",
-	Aliases: []string{"st"},
+	Aliases: []string{"exec"},
 }
 
 var bpullOpts = struct {

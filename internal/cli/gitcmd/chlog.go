@@ -1,4 +1,4 @@
-package gitx
+package gitcmd
 
 import (
 	"path/filepath"

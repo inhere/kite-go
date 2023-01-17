@@ -1,4 +1,4 @@
-package gitx
+package gitcmd
 
 import (
 	"github.com/gookit/gcli/v3"

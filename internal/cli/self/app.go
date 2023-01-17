@@ -12,7 +12,7 @@ import (
 // KiteManage manage kite self
 var KiteManage = &gcli.Command{
 	Name:    "app",
-	Aliases: []string{"self"},
+	Aliases: []string{"self", "manage"},
 	Desc:    "provide commands for manage kite self",
 	Subs: []*gcli.Command{
 		InitKite,

@@ -1,4 +1,4 @@
-package sql
+package sqlcmd
 
 import "github.com/gookit/gcli/v3"
 
