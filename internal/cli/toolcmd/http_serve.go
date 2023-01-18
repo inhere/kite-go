@@ -1,4 +1,4 @@
-package comtool
+package toolcmd
 
 import (
 	"github.com/gookit/gcli/v3"

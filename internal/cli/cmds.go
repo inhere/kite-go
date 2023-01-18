@@ -4,7 +4,6 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/builtin"
 	"github.com/inhere/kite/internal/cli/codegen"
-	"github.com/inhere/kite/internal/cli/comtool"
 	"github.com/inhere/kite/internal/cli/devcmd"
 	"github.com/inhere/kite/internal/cli/doctool"
 	"github.com/inhere/kite/internal/cli/fscmd"
@@ -19,6 +18,7 @@ import (
 	"github.com/inhere/kite/internal/cli/sqlcmd"
 	"github.com/inhere/kite/internal/cli/strcmd"
 	"github.com/inhere/kite/internal/cli/taskx"
+	"github.com/inhere/kite/internal/cli/toolcmd"
 	"github.com/inhere/kite/pkg/pacutil"
 )
 
@@ -31,14 +31,10 @@ func Boot(app *gcli.App) {
 
 // Register commands to gcli.App
 func Register(app *gcli.App) {
-	// app.Add(
-	// 	self.InitKite,
-	// )
-
 	app.Add(
 		doctool.DocumentCmd,
 		gitcmd.GitCommands,
-		glabcmd.GitLab,
+		glabcmd.GitLabCmd,
 		ghubcmd.CmdForGithub,
 		sqlcmd.SQLCmd,
 		mdcmd.MkDownCmd,
@@ -50,8 +46,8 @@ func Register(app *gcli.App) {
 		pkgmanage.ManageCmd,
 		codegen.CodeGen,
 		fscmd.FsCmd,
-		comtool.ToolsCmd,
-		comtool.RunScripts,
+		toolcmd.ToolsCmd,
+		toolcmd.RunScripts,
 		devcmd.DevToolsCmd,
 		builtin.GenAutoComplete(),
 	)

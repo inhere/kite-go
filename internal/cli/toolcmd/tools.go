@@ -1,8 +1,8 @@
-package comtool
+package toolcmd
 
 import (
 	"github.com/gookit/gcli/v3"
-	"github.com/inhere/kite/internal/cli/comtool/swagger"
+	"github.com/inhere/kite/internal/cli/toolcmd/swagger"
 )
 
 // ToolsCmd command

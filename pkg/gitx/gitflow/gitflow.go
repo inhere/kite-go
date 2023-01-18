@@ -3,9 +3,11 @@ package gitflow
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gitw"
+	"github.com/inhere/kite/pkg/gitx"
 )
 
 var upOpts = struct {
+	gitx.CommonOpts
 	notPush bool
 }{}
 
@@ -15,7 +17,7 @@ var UpdatePushCmd = &gcli.Command{
 	Desc:    "Update from origin and main remote, then push to origin remote",
 	Aliases: []string{"up-push", "upp"},
 	Config: func(c *gcli.Command) {
-		gitx.BindCommonFlags(c)
+		upOpts.BindCommonFlags(c)
 
 		c.BoolVar(&upOpts.notPush, &gcli.FlagMeta{
 			Name:   "not-push",
@@ -25,7 +27,7 @@ var UpdatePushCmd = &gcli.Command{
 	},
 	Func: func(c *gcli.Command, args []string) error {
 		pull := gitw.Cmd("pull", args...)
-		pull.WithWorkDir(gitx.Workdir)
+		pull.WithWorkDir(upOpts.Workdir)
 		pull.OnBeforeExec(gitw.PrintCmdline)
 
 		return pull.Run()
@@ -38,11 +40,11 @@ var UpdateCmd = &gcli.Command{
 	Desc:    "Update from origin and main remote repositories",
 	Aliases: []string{"up", "pul", "pull"},
 	Config: func(c *gcli.Command) {
-		gitx.BindCommonFlags(c)
+		upOpts.BindCommonFlags(c)
 	},
 	Func: func(c *gcli.Command, args []string) error {
 		pull := gitw.Cmd("pull", args...)
-		pull.WithWorkDir(gitx.Workdir)
+		pull.WithWorkDir(upOpts.Workdir)
 		pull.OnBeforeExec(gitw.PrintCmdline)
 
 		return pull.Run()

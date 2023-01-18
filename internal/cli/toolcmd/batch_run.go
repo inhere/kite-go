@@ -1,4 +1,4 @@
-package comtool
+package toolcmd
 
 import (
 	"errors"
