@@ -162,3 +162,8 @@ func joinPath(basePath string, subPaths []string) string {
 	}
 	return basePath + OSPathSepStr + strings.Join(subPaths, OSPathSepStr)
 }
+
+// IsAliasPath string
+func IsAliasPath(path string) bool {
+	return path[0] == PathAliasPrefix
+}

@@ -14,15 +14,15 @@ const (
 
 // Cfg get the config object
 func Cfg() *config.Config {
-	return Get[*config.Config]("config")
+	return Get[*config.Config](ObjConf)
 }
 
 // Rux get the web app
 func Rux() *rux.Router {
-	return Get[*rux.Router]("ObjRux")
+	return Get[*rux.Router](ObjRux)
 }
 
 // Cli get the cli app
 func Cli() *gcli.App {
-	return Get[*gcli.App]("cli")
+	return Get[*gcli.App](ObjCli)
 }

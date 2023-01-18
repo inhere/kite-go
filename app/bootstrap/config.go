@@ -40,7 +40,7 @@ func BootConfig(ka *app.KiteApp) error {
 		dump.P(cfg.Data())
 	}
 
-	app.Add("config", cfg)
+	app.Add(app.ObjConf, cfg)
 	return nil
 }
 
@@ -69,12 +69,17 @@ func loadIncludeConfigs(ka *app.KiteApp, cfg *config.Config) error {
 			continue
 		}
 
+		var filePath string
+
 		// is relative path
-		if file[0] != app.OSPathSepChar && file[0] != app.PathAliasPrefix {
-			filePaths = append(filePaths, ka.ConfigPath(file))
+		if file[0] != app.OSPathSepChar && !app.IsAliasPath(file) {
+			filePath = ka.ConfigPath(file)
 		} else {
-			filePaths = append(filePaths, ka.PathResolve(file))
+			filePath = ka.PathResolve(file)
 		}
+
+		initlog.L.Debugf("load the include file: %s", filePath)
+		filePaths = append(filePaths, filePath)
 	}
 
 	return cfg.LoadFiles(filePaths...)
