@@ -1,7 +1,5 @@
 package kite
 
-import "github.com/gookit/rux"
-
 var (
 	Version  = "0.1.0"
 	Branch   string
@@ -17,8 +15,3 @@ var (
 var (
 // httproute
 )
-
-// Rux get the web router
-func Rux() *rux.Router {
-	return nil
-}

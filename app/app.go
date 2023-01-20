@@ -36,7 +36,8 @@ type KiteApp struct {
 	*Config
 	*gcli.Context
 
-	loaders []BootLoader
+	loaders  []BootLoader
+	shutdown []func()
 }
 
 // InitPaths for app
@@ -52,8 +53,15 @@ func (ka *KiteApp) AddBootFuncs(bfs ...BootFunc) {
 }
 
 // AddLoaders to app
-func (ka *KiteApp) AddLoaders(bls ...BootLoader) {
+func (ka *KiteApp) AddLoaders(bls ...BootLoader) *KiteApp {
 	ka.loaders = append(ka.loaders, bls...)
+	return ka
+}
+
+// AddLoader to app
+func (ka *KiteApp) AddLoader(bl BootLoader) *KiteApp {
+	ka.loaders = append(ka.loaders, bl)
+	return ka
 }
 
 // Boot app start
@@ -73,14 +81,14 @@ func (ka *KiteApp) Boot() error {
 	return nil
 }
 
-// Run app
-func (ka *KiteApp) Run() {
-	Cli().Run(nil)
-}
-
 // SetConfFile path.
 func (ka *KiteApp) SetConfFile(file string) {
 	ka.confFile = file
+}
+
+// OnShutdown handler.
+func (ka *KiteApp) OnShutdown(fn func()) {
+	ka.shutdown = append(ka.shutdown, fn)
 }
 
 var initKa sync.Once
@@ -100,7 +108,11 @@ func App() *KiteApp {
 	return kiteApp
 }
 
-// Run boot and run app
+// Run app
 func Run() {
-	kiteApp.Run()
+	Cli().Run(nil)
+
+	for _, fn := range kiteApp.shutdown {
+		fn()
+	}
 }

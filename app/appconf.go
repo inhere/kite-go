@@ -35,7 +35,7 @@ type Info struct {
 type Config struct {
 	// the main config file path
 	confFile string
-	// BaseDir base dir
+	// BaseDir base data dir
 	BaseDir string `json:"base_dir"`
 	// TmpDir tmp dir
 	TmpDir string `json:"tmp_dir"`
@@ -125,7 +125,7 @@ func (c *Config) ConfigPath(subPaths ...string) string {
 	return joinPath(c.ConfigDir, subPaths)
 }
 
-// PathResolve resolve path alias
+// PathResolve resolve path alias. "$base/tmp" => "path/to/base_dir/tmp"
 func (c *Config) PathResolve(path string) string {
 	if path == "" || path[0] != PathAliasPrefix {
 		return path

@@ -26,6 +26,18 @@ type StdLoader struct {
 	BootFn   BootFunc
 }
 
+// NewStdLoader instance
+func NewStdLoader(fn BootFunc) *StdLoader {
+	return &StdLoader{BootFn: fn}
+}
+
+// WithBeforeFn handle
+func (l *StdLoader) WithBeforeFn(fn func() bool) *StdLoader {
+	l.BeforeFn = fn
+	return l
+}
+
+// BeforeBoot handle
 func (l *StdLoader) BeforeBoot() bool {
 	if l.BeforeFn != nil {
 		return l.BeforeFn()
@@ -33,6 +45,7 @@ func (l *StdLoader) BeforeBoot() bool {
 	return true
 }
 
+// Boot handle
 func (l *StdLoader) Boot(ka *KiteApp) error {
 	return l.BootFn(ka)
 }
