@@ -5,7 +5,8 @@ import (
 	"github.com/gookit/goutil/sysutil/cmdr"
 )
 
-var PhpServe = &gcli.Command{
+// PhpServeCmd instance
+var PhpServeCmd = &gcli.Command{
 	Name: "serve",
 	Desc: "start an php development server",
 	Func: func(c *gcli.Command, args []string) error {

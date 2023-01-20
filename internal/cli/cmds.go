@@ -3,6 +3,8 @@ package cli
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/builtin"
+	"github.com/gookit/gcli/v3/events"
+	"github.com/inhere/kite/app"
 	"github.com/inhere/kite/internal/cli/codegen"
 	"github.com/inhere/kite/internal/cli/devcmd"
 	"github.com/inhere/kite/internal/cli/doctool"
@@ -10,7 +12,9 @@ import (
 	"github.com/inhere/kite/internal/cli/ghubcmd"
 	"github.com/inhere/kite/internal/cli/gitcmd"
 	"github.com/inhere/kite/internal/cli/glabcmd"
-	"github.com/inhere/kite/internal/cli/gotool"
+	"github.com/inhere/kite/internal/cli/gocmd"
+	"github.com/inhere/kite/internal/cli/httpcmd"
+	"github.com/inhere/kite/internal/cli/javacmd"
 	"github.com/inhere/kite/internal/cli/mdcmd"
 	"github.com/inhere/kite/internal/cli/phpcmd"
 	"github.com/inhere/kite/internal/cli/pkgmanage"
@@ -32,23 +36,25 @@ func Boot(app *gcli.App) {
 // Register commands to gcli.App
 func Register(app *gcli.App) {
 	app.Add(
+		codegen.CodeGen,
+		devcmd.DevToolsCmd,
 		doctool.DocumentCmd,
+		fscmd.FsCmd,
 		gitcmd.GitCommands,
-		glabcmd.GitLabCmd,
 		ghubcmd.CmdForGithub,
-		sqlcmd.SQLCmd,
-		mdcmd.MkDownCmd,
-		gotool.GoToolsCmd,
+		glabcmd.GitLabCmd,
+		httpcmd.HttpCmd,
+		gocmd.GoToolsCmd,
 		phpcmd.PhpToolsCmd,
+		javacmd.JavaToolCmd,
+		mdcmd.MkDownCmd,
+		pkgmanage.ManageCmd,
 		strcmd.StringCmd,
 		self.KiteManage,
 		taskx.TaskManage,
-		pkgmanage.ManageCmd,
-		codegen.CodeGen,
-		fscmd.FsCmd,
+		sqlcmd.SQLCmd,
 		toolcmd.ToolsCmd,
 		toolcmd.RunScripts,
-		devcmd.DevToolsCmd,
 		builtin.GenAutoComplete(),
 	)
 
@@ -60,8 +66,19 @@ func Register(app *gcli.App) {
 	app.AddAliases("app:config", "conf", "config")
 }
 
-func addListener(app *gcli.App) {
-	app.On(gcli.EvtCmdNotFound, func(ctx *gcli.HookCtx) bool {
+func addListener(cli *gcli.App) {
+	cli.On(events.OnAppInitAfter, func(ctx *gcli.HookCtx) (stop bool) {
+		app.Log().Info("kite cli app init completed")
+		return
+	})
+
+	cli.On(events.OnCmdRunAfter, func(ctx *gcli.HookCtx) (stop bool) {
+		app.Log().Info("kite cli app cmd: %s run completed", ctx.Cmd.ID())
+		return
+	})
+
+	cli.On(gcli.EvtCmdNotFound, func(ctx *gcli.HookCtx) bool {
+		app.Log().Infof("kite cli app event: %s, TODO handle", ctx.Name())
 
 		// TODO
 		return false

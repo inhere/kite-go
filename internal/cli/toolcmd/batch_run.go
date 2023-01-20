@@ -6,8 +6,8 @@ import (
 	"github.com/gookit/gcli/v3"
 )
 
-// BatchRun command
-var BatchRun = &gcli.Command{
+// BatchRunCmd command
+var BatchRunCmd = &gcli.Command{
 	Name:    "brun",
 	Aliases: []string{"batch-run"},
 	Desc:    "batch run more commands at once",

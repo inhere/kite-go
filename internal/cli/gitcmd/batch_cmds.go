@@ -10,7 +10,7 @@ import (
 // BatchCmd command
 var BatchCmd = &gcli.Command{
 	Name:    "batch",
-	Aliases: []string{"dt", "devtool"},
+	Aliases: []string{"bat"},
 	Desc:    "provide some useful dev tools commands",
 	Subs: []*gcli.Command{
 		BatchRunCmd,

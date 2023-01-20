@@ -12,8 +12,7 @@ var ToolsCmd = &gcli.Command{
 	Desc:    "provide some useful tools commands",
 	Subs: []*gcli.Command{
 		swagger.SwaggerCmd,
-		HttpServe,
-		BatchRun,
+		BatchRunCmd,
 	},
 	Config: func(c *gcli.Command) {
 

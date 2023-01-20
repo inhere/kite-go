@@ -1,4 +1,4 @@
-package toolcmd
+package httpcmd
 
 import (
 	"github.com/gookit/gcli/v3"
@@ -19,8 +19,8 @@ var httpServeOpts = struct {
 	staticPath string
 }{}
 
-// HttpServe Command
-var HttpServe = &gcli.Command{
+// HttpServeCmd Command
+var HttpServeCmd = &gcli.Command{
 	Name:    "serve",
 	Desc:    "start an http application serve",
 	Aliases: []string{"server", "http-serve"},
