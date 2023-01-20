@@ -1,6 +1,6 @@
 
 gitlab:
-  main_remote: main
+  main_remote: upstream
   fork_remote: origin
   git_url: git@gitlab.your.com
   host_url: http://gitlab.your.com/

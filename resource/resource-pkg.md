@@ -110,11 +110,6 @@ gitlab:
 - https://github.com/augmentable-dev/askgit
 - https://github.com/filhodanuvem/gitql
 
-**expression evaluation**
-
-- https://github.com/antonmedv/expr
-- https://github.com/Knetic/govaluate
-
 **convert**
 
 - https://github.com/Shelnutt2/db2struct
@@ -207,6 +202,12 @@ gitlab:
 
 - https://github.com/goplus/gop
 - https://github.com/traefik/yaegi Yaegi 是另一个优雅的 Go 解释器。它在 Go 运行时之上为嵌入式解释器或交互式 shell 中的可执行 Go 脚本和插件提供支持。
+- https://github.com/d5/tengo 字节码编译的脚本语言
+
+**expression evaluation**
+
+- https://github.com/antonmedv/expr
+- https://github.com/Knetic/govaluate
 
 **regexp**
 
@@ -215,19 +216,19 @@ gitlab:
 **other**
 
 - https://github.com/agiledragon/gomonkey gomonkey 是一个使单元测试中的猴子补丁变得容易的库
-
-
-**other**
+- https://github.com/adnanh/webhook webhook is a lightweight incoming webhook server to run shell commands
+- https://github.com/hashicorp/go-plugin Golang plugin system over RPC.
+- https://github.com/bitfield/script Making it easy to write shell-like scripts in Go
 
 - https://github.com/sergi/go-diff
 - https://github.com/waigani/diffparser
   - https://github.com/pmezard/go-difflib
 - https://github.com/progrium/macdriver
-- github.com/mitchellh/go-homedir
+- https://github.com/mitchellh/go-homedir
 - https://github.com/tj/go-update
 - https://github.com/Yash-Handa/logo-ls ls command with beautiful Icons and Git Integrations
   - https://github.com/Yash-Handa/logo-ls/tree/master/assets
-- github.com/kballard/go-shellquote
+- https://github.com/kballard/go-shellquote
 - https://github.com/otiai10/copy Go copy directory recursively
 - https://github.com/kr/pretty
 - https://github.com/davecgh/go-spew

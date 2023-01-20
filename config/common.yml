@@ -3,3 +3,17 @@ proxy_cmd:
     - 'php:gh-pkg'
   group_limits:
     github: [acp, push, update]
+
+logger:
+  logfile: $tmp/logs/kite-go.log
+  buffer_size: 8192
+  use_json: false
+  level: debug
+  level_mode: 1
+
+language:
+  lang_dir: $resource/language
+  def_lang: zh-CN
+  lang_map:
+    en: English
+    zh-CN: 简体中文
