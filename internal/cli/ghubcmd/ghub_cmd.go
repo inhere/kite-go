@@ -7,8 +7,8 @@ import (
 	"github.com/inhere/kite/pkg/gitx/gitflow"
 )
 
-// CmdForGithub commands
-var CmdForGithub = &gcli.Command{
+// GithubCmd commands
+var GithubCmd = &gcli.Command{
 	Name:    "github",
 	Aliases: []string{"gh", "gith", "hub", "ghub"},
 	Desc:    "useful tools for use github",

@@ -5,6 +5,7 @@ import (
 	"github.com/gookit/gcli/v3/builtin"
 	"github.com/gookit/gcli/v3/events"
 	"github.com/inhere/kite/app"
+	"github.com/inhere/kite/internal/cli/appcmd"
 	"github.com/inhere/kite/internal/cli/codegen"
 	"github.com/inhere/kite/internal/cli/devcmd"
 	"github.com/inhere/kite/internal/cli/doctool"
@@ -18,7 +19,6 @@ import (
 	"github.com/inhere/kite/internal/cli/mdcmd"
 	"github.com/inhere/kite/internal/cli/phpcmd"
 	"github.com/inhere/kite/internal/cli/pkgmanage"
-	"github.com/inhere/kite/internal/cli/self"
 	"github.com/inhere/kite/internal/cli/sqlcmd"
 	"github.com/inhere/kite/internal/cli/strcmd"
 	"github.com/inhere/kite/internal/cli/taskx"
@@ -41,7 +41,7 @@ func Register(app *gcli.App) {
 		doctool.DocumentCmd,
 		fscmd.FsCmd,
 		gitcmd.GitCommands,
-		ghubcmd.CmdForGithub,
+		ghubcmd.GithubCmd,
 		glabcmd.GitLabCmd,
 		httpcmd.HttpCmd,
 		gocmd.GoToolsCmd,
@@ -50,12 +50,14 @@ func Register(app *gcli.App) {
 		mdcmd.MkDownCmd,
 		pkgmanage.ManageCmd,
 		strcmd.StringCmd,
-		self.KiteManage,
+		appcmd.ManageCmd,
 		taskx.TaskManage,
 		sqlcmd.SQLCmd,
 		toolcmd.ToolsCmd,
 		toolcmd.RunScripts,
-		builtin.GenAutoComplete(),
+		builtin.GenAutoComplete(func(c *gcli.Command) {
+			c.Hidden = true
+		}),
 	)
 
 	// app.Add(filewatcher.FileWatcher(nil))

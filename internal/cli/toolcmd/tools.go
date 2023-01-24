@@ -13,6 +13,7 @@ var ToolsCmd = &gcli.Command{
 	Subs: []*gcli.Command{
 		swagger.SwaggerCmd,
 		BatchRunCmd,
+		EnvInfoCmd,
 	},
 	Config: func(c *gcli.Command) {
 

@@ -6,9 +6,10 @@ import (
 	"github.com/gookit/gcli/v3"
 )
 
+// LinuxCmd instance
 var LinuxCmd = &gcli.Command{
 	Name:    "linux",
-	Aliases: []string{"luxcmd", "linux-cmd"},
+	Aliases: []string{"lin", "linux-cmd"},
 	Desc:    "document for use linux commands",
 	Config: func(c *gcli.Command) {
 
