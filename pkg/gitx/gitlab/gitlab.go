@@ -1,5 +1,15 @@
 package gitlab
 
+import (
+	"github.com/gookit/gitw"
+	"github.com/gookit/goutil/maputil"
+)
+
+const (
+	ProjIdSep  = "%2F"
+	DefMainRmt = "main"
+)
+
 // GitLab struct
 //
 // Gen by:
@@ -15,14 +25,30 @@ type GitLab struct {
 	// Token person token.
 	// from /profile/personal_access_tokens
 	Token string `json:"token"`
-	// MainRemote main remote
-	MainRemote string `json:"main_remote"`
-	// ForkRemote fork remote
-	ForkRemote string `json:"fork_remote"`
+	// UpstreamRemote the main remote address name
+	UpstreamRemote string `json:"main_remote"`
+	// DefaultRemote fork remote name, it's default remote, use for develop.
+	DefaultRemote string `json:"fork_remote"`
 	// BranchAliases branch aliases
-	BranchAliases map[string]string `json:"branch_aliases"`
+	BranchAliases maputil.Aliases `json:"branch_aliases"`
+	// DenyBranches deny as source branch for create PR.
+	DenyBranches map[string]string `json:"deny_branches"`
 }
 
-func (g *GitLab) DefaultRemote() string {
-	return g.ForkRemote
+// New instance.
+func New() *GitLab {
+	return &GitLab{
+		UpstreamRemote: DefMainRmt,
+		DefaultRemote:  gitw.DefaultRemoteName,
+	}
+}
+
+// ResolveAlias branch name
+func (g *GitLab) ResolveAlias(name string) string {
+	return g.BranchAliases.ResolveAlias(name)
+}
+
+// LocGlProject instance
+func (g *GitLab) LocGlProject(dir string) *GlProject {
+	return NewGlProject(dir, g)
 }

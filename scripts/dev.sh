@@ -5,4 +5,4 @@ set -ex
 
 #echo $@
 #echo $*
-go run ./cmd/kit $@
+go run ../cmd/kit $@
