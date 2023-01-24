@@ -33,10 +33,12 @@ type Info struct {
 //
 //	kite go gen st -s @c -t json --name Conf
 type Config struct {
+	// the dotenv file path
+	dotenvFile string
 	// the main config file path
 	confFile string
 	// BaseDir base data dir
-	BaseDir string `json:"base_dir"`
+	BaseDir string `json:"base_dir" default:"${KITE_BASE_DIR}"`
 	// TmpDir tmp dir
 	TmpDir string `json:"tmp_dir"`
 	// CacheDir cache dir
@@ -53,18 +55,6 @@ type Config struct {
 // ConfFile config
 func (c *Config) ConfFile() string {
 	return c.confFile
-}
-
-func newDefaultConf() *Config {
-	defDataDir := sysutil.ExpandPath(appconst.KiteDefaultDataDir)
-
-	return &Config{
-		BaseDir:     defDataDir,
-		TmpDir:      defDataDir + "/tmp",
-		CacheDir:    defDataDir + "/tmp/cache",
-		ConfigDir:   defDataDir + "/config",
-		ResourceDir: defDataDir + "/resource",
-	}
 }
 
 func (c *Config) ensurePaths() {
@@ -154,6 +144,16 @@ func (c *Config) PathResolve(path string) string {
 		return sysutil.HomeDir() + other
 	}
 	return path
+}
+
+// DotenvFile path
+func (c *Config) DotenvFile() string {
+	return c.dotenvFile
+}
+
+// SetDotenvFile path
+func (c *Config) SetDotenvFile(dotenvFile string) {
+	c.dotenvFile = dotenvFile
 }
 
 func joinPath(basePath string, subPaths []string) string {

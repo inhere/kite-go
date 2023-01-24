@@ -1,3 +1,4 @@
 version: 1
 workdir: ''
 timeout: 10m
+metadir: $config/pkgm

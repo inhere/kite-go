@@ -9,7 +9,16 @@ import (
 
 // BootLogger handle
 func BootLogger(ka *app.KiteApp) error {
+	// output log to file
+	logger := slog.New()
+	app.Add(app.ObjLog, logger)
+
 	confMap := app.Cfg().SubDataMap("logger")
+	if len(confMap) == 0 {
+		initlog.L.Info("skip init the kite logger, not found config")
+		return nil
+	}
+
 	logCfg := handler.NewConfig(
 		handler.WithLogLevel(slog.LevelByName(confMap.Str("level"))),
 		handler.WithLogfile(ka.PathResolve(confMap.Str("logfile"))),
@@ -18,11 +27,6 @@ func BootLogger(ka *app.KiteApp) error {
 	)
 
 	initlog.L.Infof("init the kite logger, logfile: %s", logCfg.Logfile)
-
-	// output log to file
-	logger := slog.NewWithConfig(func(l *slog.Logger) {
-
-	})
 
 	h1, err := logCfg.CreateHandler()
 	if err != nil {
@@ -36,6 +40,5 @@ func BootLogger(ka *app.KiteApp) error {
 		logger.MustFlush()
 	})
 
-	app.Add(app.ObjLog, logger)
 	return nil
 }

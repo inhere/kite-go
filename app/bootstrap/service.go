@@ -9,7 +9,7 @@ import (
 func addServiceBoot(ka *app.KiteApp) {
 	ka.AddLoader(app.NewStdLoader(func(ka *app.KiteApp) error {
 		glab := gitlab.New()
-		err := app.Cfg().MapStruct("gitlab", glab)
+		err := app.Cfg().MapOnExists("gitlab", glab)
 		if err != nil {
 			return err
 		}

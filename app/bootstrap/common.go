@@ -11,7 +11,6 @@ import (
 
 // BootI18n info
 func BootI18n(ka *app.KiteApp) error {
-
 	langConf := app.Cfg().SubDataMap("language")
 
 	// lang
@@ -35,7 +34,7 @@ func BootAppInfo(ka *app.KiteApp) error {
 		UpdatedAt: kite.UpdatedAt,
 	}
 
-	initlog.L.Info("init kite application info config:", structs.ToString(ka.Info))
+	initlog.L.Info("init kite application info:", structs.ToString(ka.Info))
 
 	return nil
 }

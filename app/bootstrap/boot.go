@@ -2,7 +2,6 @@ package bootstrap
 
 import (
 	"github.com/gookit/goutil"
-	"github.com/gookit/slog"
 	"github.com/inhere/kite/app"
 	"github.com/inhere/kite/internal/initlog"
 )
@@ -14,11 +13,11 @@ func MustBoot(ka *app.KiteApp) {
 
 // Boot app
 func Boot(ka *app.KiteApp) error {
-	initlog.L.Info("bootstrap the kite application, register boot loaders")
+	initlog.L.Info("bootstrap the kite application, register boot loaders and run")
 
 	ka.AddBootFuncs(
-		BootEnv,
 		BootAppInfo,
+		BootEnv,
 		BootConfig,
 		BootLogger,
 		BootI18n,
@@ -28,16 +27,4 @@ func Boot(ka *app.KiteApp) error {
 	addServiceBoot(ka)
 
 	return ka.Boot()
-}
-
-func configSlog() {
-	// slog
-	slog.Configure(func(logger *slog.SugaredLogger) {
-		logger.Level = slog.WarnLevel
-
-		f := logger.Formatter.(*slog.TextFormatter)
-		f.SetTemplate("[{{datetime}}] [{{level}}] {{message}} {{data}}\n")
-	})
-
-	slog.SetLogLevel(slog.LevelByName(app.KiteVerbose))
 }

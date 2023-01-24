@@ -4,23 +4,28 @@ import (
 	"github.com/gookit/config/v2"
 	"github.com/gookit/config/v2/yamlv3"
 	"github.com/gookit/goutil/dump"
+	"github.com/gookit/goutil/envutil"
+	"github.com/gookit/goutil/fsutil"
+	"github.com/gookit/goutil/sysutil"
 	"github.com/inhere/kite/app"
 	"github.com/inhere/kite/internal/appconst"
 	"github.com/inhere/kite/internal/initlog"
 )
 
+// BootConfig for kite
 func BootConfig(ka *app.KiteApp) error {
 	cfg := config.NewWith("kite", func(c *config.Config) {
 		c.AddDriver(yamlv3.Driver)
-		c.WithOptions(func(opt *config.Options) {
+		c.WithOptions(config.WithTagName("json"), func(opt *config.Options) {
 			opt.ParseEnv = true
-			opt.DecoderConfig.TagName = "json"
+			opt.ParseDefault = true
 		})
 	})
 
-	confFile := ka.ConfFile()
+	confFile := findConfFile(ka, appconst.KiteConfigName)
 	if confFile != "" {
-		initlog.L.Info("load and init kite config file:", confFile)
+		ka.SetConfFile(confFile)
+		initlog.L.Info("load the kite main config file:", confFile)
 		if err := cfg.LoadFiles(confFile); err != nil {
 			return err
 		}
@@ -44,6 +49,23 @@ func BootConfig(ka *app.KiteApp) error {
 	return nil
 }
 
+// findConfFile find main config file
+func findConfFile(ka *app.KiteApp, fileName string) string {
+	confFile := envutil.Getenv(appconst.EnvKiteConfig, sysutil.ExpandPath(appconst.KiteDefaultConfDir)+"/"+fileName)
+	maybeFiles := []string{
+		confFile,
+		ka.WorkDir() + "/" + fileName,
+		ka.BinDir() + "/" + fileName,
+	}
+
+	for _, file := range maybeFiles {
+		if fsutil.IsFile(file) {
+			return file
+		}
+	}
+	return ""
+}
+
 // LoadIncludeConfigs from conf.IncludeConfig
 func mapAppConfig(ka *app.KiteApp, cfg *config.Config) error {
 	err := cfg.MapOnExists(appconst.ConfKeyApp, ka.Config)
@@ -52,6 +74,7 @@ func mapAppConfig(ka *app.KiteApp, cfg *config.Config) error {
 	}
 
 	ka.InitPaths()
+	initlog.L.Debug("app.Config init ok, kite base_dir is", ka.BaseDir)
 	return nil
 }
 

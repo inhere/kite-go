@@ -4,7 +4,6 @@ import (
 	"sync"
 
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/envutil"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/slog"
@@ -75,7 +74,7 @@ func (ka *KiteApp) Boot() error {
 		}
 
 		if err := loader.Boot(ka); err != nil {
-			return errorx.Wrap(err, "boot loader fail on "+goutil.FuncName(loader))
+			return errorx.Wrapf(err, "boot loader fail on %#v", loader)
 		}
 	}
 	return nil
@@ -101,7 +100,7 @@ func App() *KiteApp {
 		kiteApp = &KiteApp{
 			Context: gcli.GCtx(),
 			// Info: info,
-			Config: newDefaultConf(),
+			Config: &Config{},
 		}
 	})
 
