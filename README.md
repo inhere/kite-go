@@ -15,17 +15,35 @@
 
 ## Install
 
+### Quick install
+
+```shell
+curl xyz | bash
+```
+
+### Install by go
+
 ```bash
-go get github.com/inhere/kite
+go install github.com/inhere/kite/cmd/kite
 ```
 
 ## Build
 
 ```bash
-go build -o kite
+make install
+# or
+go build -o $GOPAHT/bin/kite ./cmd/kite
 ```
 
-### Local dev
+## Develop
+
+### Dev build
+
+```shell
+KITE_INIT_LOG=debug go run ./cmd/kite
+```
+
+### Install to GOBIN
 
 ```bash
 make kit2gobin

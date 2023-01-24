@@ -86,11 +86,15 @@ build: $(GO_DEPENDENCIES) clean ## Build jx-labs binary for current OS
 	go mod download
 	CGO_ENABLED=$(CGO_ENABLED) $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME) $(MAIN_SRC_FILE)
 
-label: $(GO_DEPENDENCIES)
-	CGO_ENABLED=$(CGO_ENABLED) $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/jx-label fns/label/main.go
+install: $(GO_DEPENDENCIES) ## Install the kite binary to gopath/bin
+	GOBIN=${GOPATH}/bin $(GO) install $(BUILDFLAGS) $(MAIN_SRC_FILE)
 
-build-all: $(GO_DEPENDENCIES) build make-reports-dir ## Build all files - runtime, all tests etc.
-	CGO_ENABLED=$(CGO_ENABLED) $(GOTEST) -run=nope -tags=integration -failfast -short ./... $(BUILDFLAGS)
+install2: $(GO_DEPENDENCIES) ## Install the kit binary to gopath/bin
+	GOBIN=${GOPATH}/bin $(GO) install $(BUILDFLAGS) ./cmd/kit
+
+dev2gobin:  ## build cmd/kit to go bin dir(local dev)
+	go build $(BUILDFLAGS) -o $(GOPATH)/bin/kit ./cmd/kit
+	chmod a+x $(GOPATH)/bin/kit
 
 kit2gobin:  ## build cmd/kit to go bin dir
 	go mod tidy
@@ -128,23 +132,26 @@ test-report: make-reports-dir get-test-deps test-coverage ## Create the test rep
 test-report-html: make-reports-dir get-test-deps test-coverage ## Create the test report in HTML format
 	@gocov convert $(COVER_OUT) | gocov-html > $(REPORTS_DIR)/cover.html && open $(REPORTS_DIR)/cover.html
 
-install: $(GO_DEPENDENCIES) ## Install the binary
-	GOBIN=${GOPATH}/bin $(GO) install $(BUILDFLAGS) $(MAIN_SRC_FILE)
+build-all:linux linux-arm win darwin darwin-arm ## Build for Linux,OSX,Windows platform
 
 linux: ## Build for Linux
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=linux GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/linux/$(NAME) $(MAIN_SRC_FILE)
-	chmod +x build/linux/$(NAME)
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=linux GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-linux-amd64 $(MAIN_SRC_FILE)
+	chmod +x build/$(NAME)-linux-amd64
 
-arm: ## Build for ARM
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=linux GOARCH=arm $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/arm/$(NAME) $(MAIN_SRC_FILE)
-	chmod +x build/arm/$(NAME)
+linux-arm: ## Build for Linux ARM64
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=linux GOARCH=arm $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-linux-arm $(MAIN_SRC_FILE)
+	chmod +x build/$(NAME)-linux-arm
 
 win: ## Build for Windows
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=windows GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/win/$(NAME)-windows-amd64.exe $(MAIN_SRC_FILE)
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=windows GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-windows-amd64.exe $(MAIN_SRC_FILE)
 
-darwin: ## Build for OSX
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=darwin GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/darwin/$(NAME) $(MAIN_SRC_FILE)
-	chmod +x build/darwin/$(NAME)
+darwin: ## Build for OSX AMD
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=darwin GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-darwin-amd64 $(MAIN_SRC_FILE)
+	chmod +x build/$(NAME)-darwin-amd64
+
+darwin-arm: ## Build for OSX ARM64
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=darwin GOARCH=arm $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-darwin-arm $(MAIN_SRC_FILE)
+	chmod +x build/$(NAME)-darwin-arm
 
 .PHONY: release
 release: clean linux test
@@ -185,24 +192,6 @@ lint: ## Lint the code
 	./hack/gofmt.sh
 	./hack/linter.sh
 	./hack/generate.sh
-
-.PHONY: all
-all: fmt build test lint generate-refdocs
-
-install-refdocs:
-	$(GO) get github.com/jenkins-x/gen-crd-api-reference-docs
-
-generate-refdocs: install-refdocs
-	gen-crd-api-reference-docs -config "hack/configdocs/config.json" \
-	-template-dir hack/configdocs/templates \
-    -api-dir "./pkg/apis/gitops/v1alpha1" \
-    -out-file docs/config.md
-
-generate-scheduler-refdocs: install-refdocs
-	gen-crd-api-reference-docs -config "hack/configdocs/config.json" \
-	-template-dir hack/configdocs/templates \
-    -api-dir "./pkg/apis/scheduler/v1alpha1" \
-    -out-file docs/scheduler-config.md
 
 bin/docs:
 	go build $(LDFLAGS) -v -o bin/docs cmd/docs/*.go

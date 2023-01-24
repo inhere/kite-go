@@ -10,10 +10,6 @@ jobs:
     name: Release new version
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    strategy:
-      fail-fast: true
-      matrix:
-        go_version: [1.17]
 
     steps:
       - name: Checkout
@@ -25,7 +21,7 @@ jobs:
         uses: WillAbides/setup-go-faster@v1.8.0
         timeout-minutes: 3
         with:
-          go-version: ${{ matrix.go_version }}
+          go-version: 1.19
 
       - name: Setup ENV
         # https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
@@ -36,7 +32,10 @@ jobs:
       - name: Generate changelog
         run: |
           go install github.com/gookit/gitw/cmd/chlog@latest
-          chlog -config .github/changelog.yml -output changelog.md prev last 
+          chlog -config .github/changelog.yml -output changelog.md prev last
+
+      - name: Build bin packages
+        run: make build-all
 
       # https://github.com/softprops/action-gh-release
       - name: Create release and upload assets
@@ -48,4 +47,8 @@ jobs:
           tag_name: ${{ env.RELEASE_TAG }}
           body_path: changelog.md
           token: ${{ secrets.GITHUB_TOKEN }}
-#          files: macos-chlog.exe
+          files: |
+            build/kite-darwin-amd64
+            build/kite-linux-amd64
+            build/kite-linux-arm
+            build/kite-windows-amd64.exe
