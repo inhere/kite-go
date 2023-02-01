@@ -18,8 +18,7 @@ var GitLabCmd = &gcli.Command{
 	Subs: []*gcli.Command{
 		gitflow.UpdateCmd,
 		gitflow.UpdatePushCmd,
-		// gitx.NewOpenRemoteCmd(app.Cfg().String("gitlab.host_url")),
-		gitx.NewOpenRemoteCmd(os.Getenv("KITE_GLAB_HOST")),
+		gitx.NewOpenRemoteCmd(os.Getenv("KITE_GLAB_HOST"), "gitlab.host_url"),
 		MergeRequestCmd,
 		gitcmd.AddCommitPush,
 		gitcmd.AddCommitNotPush,

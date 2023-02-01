@@ -13,7 +13,7 @@ var GithubCmd = &gcli.Command{
 	Aliases: []string{"gh", "gith", "hub", "ghub"},
 	Desc:    "useful tools for use github",
 	Subs: []*gcli.Command{
-		gitx.NewOpenRemoteCmd(gitx.GithubHost),
+		gitx.NewOpenRemoteCmd(gitx.GithubHost, ""), // github.host_url
 		gitflow.UpdateCmd,
 		gitflow.UpdatePushCmd,
 	},

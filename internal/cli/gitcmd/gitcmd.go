@@ -8,12 +8,17 @@ import (
 )
 
 var (
-	dryRun  bool
-	yesRun  bool // Direct execution without confirmation
-	workdir string
+	dryRun bool
+	yesRun bool // Direct execution without confirmation
 
 	confirm bool // interactively ask before executing command
+	workdir string
 )
+
+func BindCommonOpts(c *gcli.Command) {
+	c.BoolOpt(&dryRun, "dry-run", "dry", false, "Dry-run the workflow, dont real execute")
+	c.BoolOpt(&yesRun, "yes", "y", false, "Direct execution without confirmation")
+}
 
 // GitCommands commands for use git
 var GitCommands = &gcli.Command{
@@ -27,7 +32,7 @@ var GitCommands = &gcli.Command{
 		AddCommitNotPush,
 		TagCmd,
 		UpdateCmd,
-		gitx.NewOpenRemoteCmd(""),
+		gitx.NewOpenRemoteCmd("", ""),
 		CreatePRLink,
 		BatchCmd,
 		Changelog,
@@ -40,8 +45,7 @@ var GitCommands = &gcli.Command{
 	Config: func(c *gcli.Command) {
 		addListener(c)
 
-		c.BoolOpt(&dryRun, "dry-run", "", false, "Dry-run the workflow, dont real execute")
-		c.BoolOpt(&yesRun, "yes", "y", false, "Direct execution without confirmation")
+		BindCommonOpts(c)
 	},
 }
 

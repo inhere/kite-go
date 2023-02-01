@@ -19,8 +19,7 @@ var GitFlow = &gcli.Command{
 
 	Aliases: []string{"gflow", "gf"},
 	Config: func(c *gcli.Command) {
-		c.BoolOpt(&dryRun, "dry-run", "", false, "Dry-run the workflow, dont real execute")
-		c.BoolOpt(&yesRun, "yes", "y", false, "Direct execution without confirmation")
+		BindCommonOpts(c)
 	},
 }
 

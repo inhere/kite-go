@@ -30,8 +30,8 @@ func NewPRLinkQuery(srcPid, srcBr, dstPid, dstBr string) *PRLinkQuery {
 	return &PRLinkQuery{
 		SourceProjectId: srcPid,
 		SourceBranch:    srcBr,
-		TargetProjectId: strutil.OrElse(srcPid, dstPid),
-		TargetBranch:    strutil.OrElse(srcBr, dstBr),
+		TargetProjectId: strutil.Valid(dstPid, srcPid),
+		TargetBranch:    strutil.Valid(dstBr, srcBr),
 	}
 }
 
@@ -56,6 +56,7 @@ func (b *PRLinkQuery) BuildURL(hostUrl string) string {
 	sb.WriteString(hostUrl)
 	sb.WriteByte('/')
 	sb.WriteString(b.RepoPath)
+	sb.WriteString("/merge_requests/new")
 	sb.WriteByte('?')
 	sb.WriteString(b.QueryString())
 

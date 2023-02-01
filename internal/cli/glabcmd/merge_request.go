@@ -69,7 +69,7 @@ Special:
 			glp := gitlab.NewGlProject(workdir, gl)
 
 			if gl.HostUrl == "" {
-				c.Println("TIP: gitlab.host_url is empty, try fetch from git remote")
+				c.Infoln("TIP: config gitlab.host_url is empty, try fetch from git remote")
 				gl.HostUrl = glp.Repo().DefaultRemoteInfo().HTTPHost()
 			}
 
@@ -79,7 +79,7 @@ Special:
 					repoPath = glp.Repo().DefaultRemoteInfo().Path()
 				}
 
-				link := gl.HostUrl + "/" + repoPath
+				link := gl.HostUrl + "/" + repoPath + "/merge_requests/new"
 				return sysutil.OpenBrowser(link)
 			}
 
@@ -117,12 +117,16 @@ Special:
 					srcPid = glp.ForkProjectId()
 				}
 
-				repoPath = glp.MainRmtInfo().Path()
+				if mrOpts.direct || mrOpts.target == mrOpts.source {
+					repoPath = glp.ForkRmtInfo().Path()
+				} else {
+					repoPath = glp.MainRmtInfo().Path()
+				}
 			}
 
-			show.AList("Some Options Info", maputil.Data{
-				"direct from fork": mrOpts.direct,
-				"open page link":   mrOpts.openIt,
+			show.AList("Current Options Info", maputil.Data{
+				"Direct from fork":  mrOpts.direct,
+				"Open browser link": mrOpts.openIt,
 			})
 
 			mrInfo = gitlab.NewPRLinkQuery(srcPid, mrOpts.source, dstPid, mrOpts.target)
@@ -132,8 +136,8 @@ Special:
 
 			// link := glp.MargeRequestURL(mrInfo)
 			link := mrInfo.BuildURL(gl.HostUrl)
-			c.Infoln("Merge Request Link:")
-			c.Println("   ", link)
+			c.Warnln("Merge Request Link:")
+			c.Println("  ", link)
 
 			if mrOpts.openIt {
 				err = sysutil.OpenBrowser(link)

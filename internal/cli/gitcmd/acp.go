@@ -44,23 +44,22 @@ var AddCommitNotPush = &gcli.Command{
 	},
 }
 
-var acpHandleFunc = func(c *gcli.Command, args []string) error {
+func acpHandleFunc(c *gcli.Command, args []string) error {
 	runPush := acpOpts.notPush == false
 	if c.Name == "ac" {
 		runPush = false // not push
 	}
 
 	rr := cmdutil.NewRunner(func(rr *cmdutil.Runner) {
-		rr.DryRun = dryRun
+		rr.DryRun = acpOpts.DryRun
 		rr.Confirm = confirm
+		rr.OutToStd = true
 	})
 
 	if len(args) > 0 {
-		rr.GitCmd("status", args...).
-			GitCmd("add", args...)
+		rr.GitCmd("status", args...).GitCmd("add", args...)
 	} else { // add all changed files
-		rr.GitCmd("status").
-			GitCmd("add", ".")
+		rr.GitCmd("status").GitCmd("add", ".")
 	}
 
 	rr.GitCmd("commit", "-m", acpOpts.message)
