@@ -1,12 +1,14 @@
 #
-# config file for kite
-# author: https://github.com/inhere
-# homepage: https://github.com/inhere/kite
+# Config file for kite
+#
+# Author  : https://github.com/inhere
+# Homepage: https://github.com/inhere/kite
 #
 
 app:
-  base_dir: ~/.kite
+  # base_dir: ~/.kite-go
   tmp_dir: $base/tmp
+  data_dir: $base/data
   cache_dir: $base/tmp/caches
   config_dir: $base/config
   resource_dir: $base/resource

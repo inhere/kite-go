@@ -1,5 +1,7 @@
 package kite
 
+import "embed"
+
 var (
 	Version  = "0.1.0"
 	Branch   string
@@ -8,10 +10,14 @@ var (
 	GoVersion string
 	BuildDate string
 
-	PublishAt = "2021-02-14 13:14"
-	UpdatedAt = "2021-02-14 13:14"
+	PublishAt  = "2021-02-14 13:14"
+	UpdatedAt  = "2021-02-14 13:14"
+	GithubRepo = "https://github.com/inhere/kite-go"
 )
 
 var (
 // httproute
 )
+
+//go:embed README.md kite.example.yml config/*.yml
+var EmbedFs embed.FS

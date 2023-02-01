@@ -2,6 +2,8 @@
 
 `Kite` - A CLI tools package.
 
+> Github: https://github.com/inhere/kite-go
+
 ## Features
 
 - quick create new project

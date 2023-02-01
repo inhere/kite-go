@@ -6,7 +6,6 @@ import (
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/envutil"
 	"github.com/gookit/goutil/fsutil"
-	"github.com/gookit/goutil/sysutil"
 	"github.com/inhere/kite/app"
 	"github.com/inhere/kite/internal/appconst"
 	"github.com/inhere/kite/internal/initlog"
@@ -22,13 +21,15 @@ func BootConfig(ka *app.KiteApp) error {
 		})
 	})
 
-	confFile := findConfFile(ka, appconst.KiteConfigName)
+	confFile := findMainConfFile(ka, appconst.KiteConfigName)
 	if confFile != "" {
 		ka.SetConfFile(confFile)
 		initlog.L.Info("load the kite main config file:", confFile)
 		if err := cfg.LoadFiles(confFile); err != nil {
 			return err
 		}
+	} else {
+		initlog.L.Warn("the kite main config file not found")
 	}
 
 	// map app config
@@ -50,8 +51,8 @@ func BootConfig(ka *app.KiteApp) error {
 }
 
 // findConfFile find main config file
-func findConfFile(ka *app.KiteApp, fileName string) string {
-	confFile := envutil.Getenv(appconst.EnvKiteConfig, sysutil.ExpandPath(appconst.KiteDefaultConfDir)+"/"+fileName)
+func findMainConfFile(ka *app.KiteApp, fileName string) string {
+	confFile := envutil.Getenv(appconst.EnvKiteConfig, defaultBaseDir+"/"+fileName)
 	maybeFiles := []string{
 		confFile,
 		ka.WorkDir() + "/" + fileName,

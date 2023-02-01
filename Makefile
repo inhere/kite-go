@@ -88,13 +88,11 @@ build: $(GO_DEPENDENCIES) clean ## Build jx-labs binary for current OS
 
 install: $(GO_DEPENDENCIES) ## Install the kite binary to gopath/bin
 	GOBIN=${GOPATH}/bin $(GO) install $(BUILDFLAGS) $(MAIN_SRC_FILE)
+	ls -alh ${GOPATH}/bin/kit
 
 install2: $(GO_DEPENDENCIES) ## Install the kit binary to gopath/bin
 	GOBIN=${GOPATH}/bin $(GO) install $(BUILDFLAGS) ./cmd/kit
-
-dev2gobin:  ## build cmd/kit to go bin dir(local dev)
-	go build $(BUILDFLAGS) -o $(GOPATH)/bin/kit ./cmd/kit
-	chmod a+x $(GOPATH)/bin/kit
+	ls -alh ${GOPATH}/bin/kit
 
 kit2gobin:  ## build cmd/kit to go bin dir
 	go mod tidy

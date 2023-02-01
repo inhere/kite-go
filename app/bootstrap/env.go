@@ -3,7 +3,6 @@ package bootstrap
 import (
 	"github.com/gookit/goutil/envutil"
 	"github.com/gookit/goutil/fsutil"
-	"github.com/gookit/goutil/sysutil"
 	"github.com/gookit/ini/v2/dotenv"
 	"github.com/inhere/kite/app"
 	"github.com/inhere/kite/internal/appconst"
@@ -27,7 +26,7 @@ func BootEnv(ka *app.KiteApp) error {
 // findDotEnvFile find .env config file
 func findDotEnvFile(ka *app.KiteApp) string {
 	fileName := appconst.DotEnvFileName
-	confFile := envutil.Getenv(appconst.EnvKiteDotEnv, sysutil.ExpandPath(appconst.KiteDefaultDataDir)+"/"+fileName)
+	confFile := envutil.Getenv(appconst.EnvKiteDotEnv, defaultBaseDir+"/"+fileName)
 
 	maybeFiles := []string{
 		confFile,

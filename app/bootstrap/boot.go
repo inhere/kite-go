@@ -2,9 +2,13 @@ package bootstrap
 
 import (
 	"github.com/gookit/goutil"
+	"github.com/gookit/goutil/sysutil"
 	"github.com/inhere/kite/app"
+	"github.com/inhere/kite/internal/appconst"
 	"github.com/inhere/kite/internal/initlog"
 )
+
+var defaultBaseDir = sysutil.ExpandPath(appconst.KiteDefaultDataDir)
 
 // MustBoot app
 func MustBoot(ka *app.KiteApp) {

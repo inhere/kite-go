@@ -4,6 +4,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/inhere/kite/internal/appconst"
 )
@@ -41,6 +42,8 @@ type Config struct {
 	BaseDir string `json:"base_dir" default:"${KITE_BASE_DIR}"`
 	// TmpDir tmp dir
 	TmpDir string `json:"tmp_dir"`
+	// DataDir tmp dir
+	DataDir string `json:"data_dir"`
 	// CacheDir cache dir
 	CacheDir string `json:"cache_dir"`
 	// ConfigDir config dir
@@ -65,27 +68,24 @@ func (c *Config) ensurePaths() {
 	// expand base dir. eg "~"
 	c.BaseDir = sysutil.ExpandPath(c.BaseDir)
 
-	if c.TmpDir == "" {
-		c.TmpDir = c.BaseDir + "/tmp"
-	} else if c.TmpDir[0] == PathAliasPrefix {
-		c.TmpDir = c.PathResolve(c.TmpDir)
-	}
+	c.TmpDir = goutil.OrValue(c.TmpDir == "", c.BaseDir+"/tmp", c.PathResolve(c.TmpDir))
+	c.DataDir = goutil.OrValue(c.DataDir == "", c.BaseDir+"/data", c.PathResolve(c.DataDir))
 
 	if c.CacheDir == "" {
 		c.CacheDir = c.BaseDir + "/tmp/cache"
-	} else if c.CacheDir[0] == PathAliasPrefix {
+	} else {
 		c.CacheDir = c.PathResolve(c.CacheDir)
 	}
 
 	if c.ConfigDir == "" {
 		c.ConfigDir = c.BaseDir + "/config"
-	} else if c.ConfigDir[0] == PathAliasPrefix {
+	} else {
 		c.ConfigDir = c.PathResolve(c.ConfigDir)
 	}
 
 	if c.ResourceDir == "" {
 		c.ResourceDir = c.BaseDir + "/resource"
-	} else if c.ResourceDir[0] == PathAliasPrefix {
+	} else {
 		c.ResourceDir = c.PathResolve(c.ResourceDir)
 	}
 }
