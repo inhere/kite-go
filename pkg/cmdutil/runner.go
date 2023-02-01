@@ -33,6 +33,19 @@ func (r *Runner) Run() error {
 		color.Magentaf("# Run All Tasks(%d steps):\n", r.Len())
 	}
 
+	r.BeforeRun = func(cr *cmdr.Runner, t *cmdr.Task) bool {
+		if r.Confirm {
+			if !interact.Unconfirmed("continue run?", true) {
+				return false
+			}
+		}
+
+		if !r.Silent {
+			color.Yellowf("Task#%d > %s\n", t.Index()+1, t.Cmdline())
+		}
+		return true
+	}
+
 	err := r.Runner.Run()
 
 	if !r.Silent && err == nil {
@@ -40,19 +53,4 @@ func (r *Runner) Run() error {
 	}
 
 	return err
-}
-
-// RunTask command
-func (r *Runner) RunTask(task *cmdr.Task) bool {
-	if r.Confirm {
-		if interact.Unconfirmed("continue run?", true) {
-			return true
-		}
-	}
-
-	if !r.Silent {
-		color.Infof("Task #%d: %s", task.Index()+1, task.Cmdline())
-	}
-
-	return r.Runner.RunTask(task)
 }
