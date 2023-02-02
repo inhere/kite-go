@@ -1,8 +1,4 @@
 
-plugins_dir:
-  - ./plugins
-  - ${GOPATH}/bin
-plugins:
-  - name: pgit
-    bin: ggit
-    desc: a lite git wrapper command tool
+- name: pgit
+  bin: ggit
+  desc: a lite git wrapper command tool

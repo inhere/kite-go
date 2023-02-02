@@ -19,5 +19,5 @@ var (
 // httproute
 )
 
-//go:embed README.md kite.example.yml config/*.yml
+//go:embed README.md .env.example kite.example.yml config/*.yml
 var EmbedFs embed.FS

@@ -17,6 +17,14 @@ app:
     - aliases.yml
     - tasks.yml
 
+# aliases for kite
+aliases:
+  ac: git ac
+  acp: git acp
+  updateself: self update
+  update-self: self update
+  self-update: self update
+
 logger:
   log_dir: $tmp/logs
   log_file: kite-go.log
@@ -34,18 +42,6 @@ packageManager:
 
 scriptManager:
   main_config: $config/scripts.yml
-
-gitlab:
-  main_remote: upstream
-  fork_remote: origin
-  git_url: git@gitlab.your.com
-  host_url: http://gitlab.your.com/
-  branch_aliases:
-    h: head
-    m: master
-  # from /profile/personal_access_tokens
-  token: '{$GITLAB_PA_TOKEN}'
-  base_api: http://gitlab.your.com/api/v4
 
 # define some command flags value
 swag:browse:

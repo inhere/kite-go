@@ -1,6 +1,10 @@
 proxy_cmd:
+  # export http_proxy=http://127.0.0.1:1081;export https_proxy=http://127.0.0.1:1081;
+  env:
+    http_proxy: ${PROXY_SERVE}
+    https_proxy: ${PROXY_SERVE}
   command_ids:
-    - 'php:gh-pkg'
+    - 'github:tag:delete'
   group_limits:
     github: [acp, push, update]
 

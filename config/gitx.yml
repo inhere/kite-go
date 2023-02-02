@@ -1,4 +1,17 @@
 
+gitx:
+  auto_sign: false
+  # gitflow
+  main_remote: main
+  fork_remote: origin
+
+github:
+  #
+  # github api config
+  #
+  # person access token
+  token: ${GITHUB_PA_TOKEN}
+
 gitlab:
   main_remote: upstream
   fork_remote: origin
@@ -10,4 +23,3 @@ gitlab:
   # from /profile/personal_access_tokens
   token: '{$GITLAB_PA_TOKEN}'
   base_api: http://gitlab.your.com/api/v4
-

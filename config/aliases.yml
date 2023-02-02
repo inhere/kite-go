@@ -1,7 +1,0 @@
-
-aliases:
-  ac: git ac
-  acp: git acp
-  updateself: self update
-  update-self: self update
-  self-update: self update
