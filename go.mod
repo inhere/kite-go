@@ -13,7 +13,8 @@ require (
 	github.com/gookit/event v1.0.6
 	github.com/gookit/gcli/v3 v3.1.1
 	github.com/gookit/gitw v0.3.0
-	github.com/gookit/goutil v0.6.1
+	github.com/gookit/goutil v0.6.2
+	github.com/gookit/greq v0.2.0
 	github.com/gookit/i18n v1.1.4
 	github.com/gookit/ini/v2 v2.1.3
 	github.com/gookit/rux v1.3.4
@@ -41,6 +42,6 @@ require (
 	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.0.0-20221013171732-95e765b1cc43 // indirect
 	golang.org/x/term v0.0.0-20220919170432-7a66f970e087 // indirect
-	golang.org/x/text v0.5.0 // indirect
+	golang.org/x/text v0.6.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
