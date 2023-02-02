@@ -23,6 +23,11 @@ func Has(name string) bool {
 	return ok
 }
 
+// GetAny value from box
+func GetAny(name string) any {
+	return box[name]
+}
+
 // Get object by name, if not exists will panic
 func Get[T any](name string) T {
 	obj, ok := box[name]

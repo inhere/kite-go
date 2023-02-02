@@ -34,6 +34,10 @@ var KiteConfCmd = &gcli.Command{
 			case "app":
 				data = app.App().Config
 			}
+
+			if app.Has(key) {
+				data = app.GetAny(key)
+			}
 		}
 
 		if data == nil {

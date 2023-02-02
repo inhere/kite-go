@@ -9,6 +9,6 @@ var MkDownCmd = &gcli.Command{
 	Desc:    "some tool for markdown",
 	Aliases: []string{"md", "mdown", "markdown"},
 	Subs: []*gcli.Command{
-		Markdown2HTML, Markdown2SQL,
+		Markdown2HTML, Markdown2SQL, MarkdownServeCmd,
 	},
 }

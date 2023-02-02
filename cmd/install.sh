@@ -3,7 +3,9 @@
 # This is an script for install inhere/kite-go
 # More please see https://github.com/inhere/kite-go
 #
-# local run: bash ./cmd/install.sh
+# Local run:
+#   bash ./cmd/install.sh
+#
 set -e
 
 # check OS info

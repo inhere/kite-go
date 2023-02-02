@@ -15,20 +15,6 @@ import (
 	"github.com/inhere/kite/internal/appconst"
 )
 
-var initDotenv = `
-# Custom ENV settings for kite
-#
-# Author: https://github.com/inhere
-# Github: https://github.com/inhere/kite-go
-#
-
-KITE_VERBOSE = debug
-KITE_INIT_LOG = debug
-KITE_GLAB_HOST = http://gitlab.your.com
-# KITE_BASE_DIR = ~/.kite-go
-
-`
-
 var ikOpts = struct {
 	dryRun bool
 	force  bool
@@ -74,7 +60,8 @@ var KiteInitCmd = &gcli.Command{
 				return nil
 			}
 
-			_, err := fsutil.PutContents(dotenvFile, initDotenv, fsutil.FsCWTFlags)
+			text := byteutil.SafeString(kite.EmbedFs.ReadFile(".env.example"))
+			_, err := fsutil.PutContents(dotenvFile, text, fsutil.FsCWTFlags)
 			return err
 		}, func(ctx *structs.Data) error {
 			c.Infoln("- Init the main config file:", confFile)
