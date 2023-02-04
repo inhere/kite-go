@@ -63,6 +63,7 @@ func Register(app *gcli.App) {
 	// app.Add(filewatcher.FileWatcher(nil))
 	app.Add(pacutil.PacTools.WithHidden())
 
+	// built in alias
 	app.AddAliases("app:init", "init")
 	app.AddAliases("app:info", "info")
 	app.AddAliases("app:config", "conf", "config")
@@ -86,6 +87,8 @@ func addListener(cli *gcli.App) {
 
 	cli.On(gcli.EvtCmdNotFound, func(ctx *gcli.HookCtx) bool {
 		app.Log().Infof("kite cli app event: %s, TODO handle", ctx.Name())
+
+		gcli.Println("fire not found command:", ctx.Name())
 
 		// TODO
 		return false
