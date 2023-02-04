@@ -11,7 +11,7 @@ import (
 func BootCli(_ *app.KiteApp) error {
 	cliApp := gcli.NewApp(func(a *gcli.App) {
 		a.Name = "Kite"
-		a.Desc = "Kite CLI tool application"
+		a.Desc = "Accessibility Apps for Developers"
 		a.Version = kite.Version
 	})
 	// some info
