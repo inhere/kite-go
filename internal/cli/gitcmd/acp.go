@@ -2,6 +2,7 @@ package gitcmd
 
 import (
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/gcli/v3/gflag"
 	"github.com/inhere/kite/pkg/cmdutil"
 	"github.com/inhere/kite/pkg/gitx"
 )
@@ -12,11 +13,25 @@ var acpOpts = struct {
 	notPush bool
 }{}
 
+const acpHelp = `  Commit types:
+ build     "Build system"
+ chore     "Chore"
+ ci        "CI"
+ docs      "Documentation"
+ feat      "Features"
+ fix       "Bug fixes"
+ perf      "Performance"
+ refactor  "Refactor"
+ style     "Style"
+ test      "Testing"
+`
+
 // AddCommitPush command
 var AddCommitPush = &gcli.Command{
 	Name: "acp",
 	Desc: "run `git add/commit/push` at once command",
 	Func: acpHandleFunc,
+	Help: acpHelp,
 	Config: func(c *gcli.Command) {
 		AddCommitNotPush.Config(c)
 
@@ -28,13 +43,13 @@ var AddCommitPush = &gcli.Command{
 var AddCommitNotPush = &gcli.Command{
 	Name: "ac",
 	Desc: "run git add/commit at once command",
+	Help: acpHelp,
 	Func: acpHandleFunc,
 	Config: func(c *gcli.Command) {
 		acpOpts.BindCommonFlags(c)
 
 		c.BoolOpt(&confirm, "interactive", "i", false, "confirm ask before executing command")
-		c.StrOpt(&acpOpts.message, "message", "m", "", "the commit message")
-		c.Required("message")
+		c.StrOpt2(&acpOpts.message, "message,m", "the git commit message", gflag.WithRequired())
 
 		c.BindArg(&gcli.CliArg{
 			Name:    "files",

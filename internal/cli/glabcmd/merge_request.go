@@ -103,7 +103,7 @@ Special:
 
 				srcPid = gitlab.BuildProjectID(group, name)
 			} else {
-				if err := glp.CheckForkRemote(); err != nil {
+				if err := glp.CheckRemote(); err != nil {
 					return err
 				}
 

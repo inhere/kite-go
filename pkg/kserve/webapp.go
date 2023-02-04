@@ -1,4 +1,4 @@
-package gweb
+package kserve
 
 import "github.com/gookit/rux"
 

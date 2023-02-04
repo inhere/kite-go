@@ -17,6 +17,7 @@ var ManageCmd = &gcli.Command{
 		KiteConfCmd,
 		ReadmeCmd,
 		KitePathCmd,
+		BackendServeCmd,
 	},
 }
 

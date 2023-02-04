@@ -1,4 +1,4 @@
-package gweb
+package kserve
 
 import (
 	"context"
@@ -92,7 +92,7 @@ func (s *HTTPServer) Start() error {
 	return removePidFile(s.pidFile)
 }
 
-// Stop by send signal to exists process
+// Stop by send signal to exist process
 func (s *HTTPServer) Stop(timeout int) error {
 	if s.srv != nil {
 		return s.Shutdown(timeout)
@@ -146,7 +146,7 @@ func (s *HTTPServer) IsRunning() bool {
 	}
 
 	// Get pid from file
-	bts, err := ioutil.ReadFile(s.pidFile)
+	bts, err := os.ReadFile(s.pidFile)
 	if err != nil {
 		// panic(err)
 		return false

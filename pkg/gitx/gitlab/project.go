@@ -51,19 +51,15 @@ func (p *GlProject) CheckRemote() error {
 }
 
 func (p *GlProject) CheckForkRemote() error {
-	defRmt := p.Repo().DefaultRemoteInfo()
-
 	if !p.Repo().HasRemote(p.DefaultRemote) {
-		return errorx.Newf("the fork remote '%s' is not found on %s", p.DefaultRemote, defRmt.Path())
+		return errorx.Newf("the fork remote '%s' is not found(config:gitlab.fork_remote)", p.DefaultRemote)
 	}
 	return nil
 }
 
 func (p *GlProject) CheckMainRemote() error {
-	defRmt := p.Repo().DefaultRemoteInfo()
-
 	if !p.Repo().HasRemote(p.UpstreamRemote) {
-		return errorx.Newf("the main remote '%s' is not found on %s", p.UpstreamRemote, defRmt.Path())
+		return errorx.Newf("the main remote '%s' is not found(config:gitlab.main_remote)", p.UpstreamRemote)
 	}
 	return nil
 }

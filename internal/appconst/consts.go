@@ -1,6 +1,8 @@
 package appconst
 
 const (
+	// EnvInitLogLevel key
+	EnvInitLogLevel = "KITE_INIT_LOG"
 	// EnvKiteVerbose level.
 	EnvKiteVerbose = "KITE_VERBOSE"
 	// EnvKiteConfig main config file env name

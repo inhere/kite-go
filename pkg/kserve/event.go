@@ -1,4 +1,4 @@
-package gweb
+package kserve
 
 const (
 	OnBeforeRoute = "app.route.before"

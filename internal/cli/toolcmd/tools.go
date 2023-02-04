@@ -14,6 +14,7 @@ var ToolsCmd = &gcli.Command{
 		swagger.SwaggerCmd,
 		BatchRunCmd,
 		EnvInfoCmd,
+		AutoJumpCmd,
 	},
 	Config: func(c *gcli.Command) {
 
