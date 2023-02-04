@@ -10,24 +10,27 @@ import (
 
 var defaultBaseDir = sysutil.ExpandPath(appconst.KiteDefaultDataDir)
 
-// MustBoot app
-func MustBoot(ka *app.KiteApp) {
+// MustRun boot and run app
+func MustRun(ka *app.KiteApp) {
 	goutil.MustOK(Boot(ka))
+
+	// to run
+	app.Run()
 }
 
 // Boot app
 func Boot(ka *app.KiteApp) error {
-	initlog.L.Info("bootstrap the kite application, register boot loaders and run")
+	ka.AddPreLoader(BootEnv, func(ka *app.KiteApp) error {
+		return initlog.Init(appconst.EnvInitLogLevel)
+	})
 
 	ka.AddBootFuncs(
 		BootAppInfo,
-		BootEnv,
 		BootConfig,
 		BootLogger,
 		BootI18n,
 		BootCli,
 	)
-
 	addServiceBoot(ka)
 
 	return ka.Boot()

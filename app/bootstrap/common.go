@@ -25,6 +25,10 @@ func BootI18n(ka *app.KiteApp) error {
 
 // BootAppInfo info
 func BootAppInfo(ka *app.KiteApp) error {
+	if ka.DotenvFile() != "" {
+		initlog.L.Info("the loaded dotenv file:", ka.DotenvFile())
+	}
+
 	ka.Info = &app.Info{
 		Branch:    kite.Branch,
 		Version:   kite.Version,

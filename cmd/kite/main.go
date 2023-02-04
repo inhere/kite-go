@@ -14,8 +14,6 @@ import (
 //
 //	go install ./cmd/kite
 func main() {
-	bootstrap.MustBoot(app.App())
-
-	// do run
-	app.Run()
+	// boot and run app
+	bootstrap.MustRun(app.App())
 }

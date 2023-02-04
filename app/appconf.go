@@ -55,11 +55,6 @@ type Config struct {
 	IncludeConfig []string `json:"include_config"`
 }
 
-// ConfFile config
-func (c *Config) ConfFile() string {
-	return c.confFile
-}
-
 func (c *Config) ensurePaths() {
 	if c.BaseDir == "" {
 		c.BaseDir = appconst.KiteDefaultDataDir
@@ -67,32 +62,13 @@ func (c *Config) ensurePaths() {
 
 	// expand base dir. eg "~"
 	c.BaseDir = sysutil.ExpandPath(c.BaseDir)
-
 	c.TmpDir = goutil.OrValue(c.TmpDir == "", c.BaseDir+"/tmp", c.PathResolve(c.TmpDir))
 	c.DataDir = goutil.OrValue(c.DataDir == "", c.BaseDir+"/data", c.PathResolve(c.DataDir))
 
-	if c.CacheDir == "" {
-		c.CacheDir = c.BaseDir + "/tmp/cache"
-	} else {
-		c.CacheDir = c.PathResolve(c.CacheDir)
-	}
+	c.CacheDir = goutil.OrValue(c.CacheDir == "", c.BaseDir+"/tmp/cache", c.PathResolve(c.CacheDir))
+	c.ConfigDir = goutil.OrValue(c.ConfigDir == "", c.BaseDir+"/config", c.PathResolve(c.ConfigDir))
 
-	if c.ConfigDir == "" {
-		c.ConfigDir = c.BaseDir + "/config"
-	} else {
-		c.ConfigDir = c.PathResolve(c.ConfigDir)
-	}
-
-	if c.ResourceDir == "" {
-		c.ResourceDir = c.BaseDir + "/resource"
-	} else {
-		c.ResourceDir = c.PathResolve(c.ResourceDir)
-	}
-}
-
-// CfgFile get main config file
-func (c *Config) CfgFile() string {
-	return c.confFile
+	c.ResourceDir = goutil.OrValue(c.ResourceDir == "", c.BaseDir+"/resource", c.PathResolve(c.ResourceDir))
 }
 
 // Path build and get full path relative the base dir.
@@ -144,6 +120,11 @@ func (c *Config) PathResolve(path string) string {
 		return sysutil.HomeDir() + other
 	}
 	return path
+}
+
+// ConfFile get main config file
+func (c *Config) ConfFile() string {
+	return c.confFile
 }
 
 // DotenvFile path

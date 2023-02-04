@@ -6,13 +6,11 @@ import (
 	"github.com/gookit/ini/v2/dotenv"
 	"github.com/inhere/kite/app"
 	"github.com/inhere/kite/internal/appconst"
-	"github.com/inhere/kite/internal/initlog"
 )
 
 // BootEnv config for kite
 func BootEnv(ka *app.KiteApp) error {
 	if dotenvFile := findDotEnvFile(ka); dotenvFile != "" {
-		initlog.L.Info("find and load kite .env file:", dotenvFile)
 		ka.SetDotenvFile(dotenvFile)
 
 		if err := dotenv.LoadFiles(dotenvFile); err != nil {

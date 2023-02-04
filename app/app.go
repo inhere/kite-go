@@ -35,7 +35,11 @@ type KiteApp struct {
 	*Config
 	*gcli.Context
 
-	loaders  []BootLoader
+	// pre-bootloaders
+	preLoaders []BootLoader
+	// app bootloaders
+	bootloaders []BootLoader
+	// shutdown callback functions
 	shutdown []func()
 }
 
@@ -44,28 +48,46 @@ func (ka *KiteApp) InitPaths() {
 	ka.ensurePaths()
 }
 
+// AddPreLoader to app
+func (ka *KiteApp) AddPreLoader(bfs ...BootFunc) *KiteApp {
+	for _, bf := range bfs {
+		ka.preLoaders = append(ka.preLoaders, bf)
+	}
+	return ka
+}
+
 // AddBootFuncs to app
 func (ka *KiteApp) AddBootFuncs(bfs ...BootFunc) {
 	for _, bf := range bfs {
-		ka.loaders = append(ka.loaders, bf)
+		ka.bootloaders = append(ka.bootloaders, bf)
 	}
 }
 
 // AddLoaders to app
 func (ka *KiteApp) AddLoaders(bls ...BootLoader) *KiteApp {
-	ka.loaders = append(ka.loaders, bls...)
+	ka.bootloaders = append(ka.bootloaders, bls...)
 	return ka
 }
 
 // AddLoader to app
 func (ka *KiteApp) AddLoader(bl BootLoader) *KiteApp {
-	ka.loaders = append(ka.loaders, bl)
+	ka.bootloaders = append(ka.bootloaders, bl)
 	return ka
 }
 
 // Boot app start
 func (ka *KiteApp) Boot() error {
-	for _, loader := range ka.loaders {
+	err := ka.runBootloaders(ka.preLoaders)
+	if err != nil {
+		return err
+	}
+
+	return ka.runBootloaders(ka.bootloaders)
+}
+
+// SetConfFile path.
+func (ka *KiteApp) runBootloaders(loaders []BootLoader) error {
+	for _, loader := range loaders {
 		if bc, ok := loader.(BootChecker); ok {
 			if !bc.BeforeBoot() {
 				initlog.L.Debugf("skip boot on %v.BeforeBoot() return false", bc)
@@ -74,7 +96,7 @@ func (ka *KiteApp) Boot() error {
 		}
 
 		if err := loader.Boot(ka); err != nil {
-			return errorx.Wrapf(err, "boot loader fail on %#v", loader)
+			return errorx.Wrapf(err, "bootloader run fail on %#v", loader)
 		}
 	}
 	return nil

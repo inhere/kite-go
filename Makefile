@@ -2,15 +2,15 @@
 # from https://github.com/jenkins-x-plugins/jx-gitops/blob/main/Makefile
 rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 
-NAME := kite
 SHELL := /bin/bash
 BUILD_TARGET = build
 MAIN_SRC_FILE=cmd/kite/main.go
 
 GO := go
-GO_NOMOD :=GO111MODULE=off go
 REV := $(shell git rev-parse --short HEAD 2> /dev/null || echo 'unknown')
 ORG := inhere
+NAME := kite
+
 ORG_REPO := $(ORG)/$(NAME)
 RELEASE_ORG_REPO := $(ORG_REPO)
 ROOT_PACKAGE := github.com/$(ORG_REPO)
@@ -76,8 +76,8 @@ help:
 full: check ## Build and run the tests
 check: build test ## Build and run the tests
 get-test-deps: ## Install test dependencies
-	$(GO_NOMOD) get github.com/axw/gocov/gocov
-	$(GO_NOMOD) get -u gopkg.in/matm/v1/gocov-html
+	get install github.com/axw/gocov/gocov
+	get install gopkg.in/matm/v1/gocov-html
 
 print-version: ## Print version
 	@echo $(VERSION)
@@ -88,20 +88,20 @@ build: $(GO_DEPENDENCIES) clean ## Build jx-labs binary for current OS
 
 install: $(GO_DEPENDENCIES) ## Install the kite binary to gopath/bin
 	GOBIN=${GOPATH}/bin $(GO) install $(BUILDFLAGS) $(MAIN_SRC_FILE)
-	ls -alh ${GOPATH}/bin/kit
+	ls -alh ${GOPATH}/bin/kite
 
 install2: $(GO_DEPENDENCIES) ## Install the kit binary to gopath/bin
-	GOBIN=${GOPATH}/bin $(GO) install $(BUILDFLAGS) ./cmd/kit
-	ls -alh ${GOPATH}/bin/kit
+	go build $(BUILDFLAGS) -o $(GOPATH)/bin/kit ./cmd/kite
+	@ls -alh ${GOPATH}/bin/kit
 
 kit2gobin:  ## build cmd/kit to go bin dir
 	go mod tidy
-	go build $(BUILDFLAGS) -o $(GOPATH)/bin/kit ./cmd/kit
+	go build $(BUILDFLAGS) -o $(GOPATH)/bin/kit ./cmd/kite
 	chmod a+x $(GOPATH)/bin/kit
 
 kite2gobin: ## build cmd/kite to go bin dir
 	go mod tidy
-	go build $(BUILDFLAGS) -o $(GOPATH)/bin/kit ./cmd/kite
+	go build $(BUILDFLAGS) -o $(GOPATH)/bin/kite ./cmd/kite
 	chmod a+x $(GOPATH)/bin/kite
 
 tidy-deps: ## Cleans up dependencies
@@ -148,8 +148,8 @@ darwin: ## Build for OSX AMD
 	chmod +x build/$(NAME)-darwin-amd64
 
 darwin-arm: ## Build for OSX ARM64
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=darwin GOARCH=arm $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-darwin-arm $(MAIN_SRC_FILE)
-	chmod +x build/$(NAME)-darwin-arm
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=darwin GOARCH=arm64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-darwin-arm64 $(MAIN_SRC_FILE)
+	chmod +x build/$(NAME)-darwin-arm64
 
 .PHONY: release
 release: clean linux test
@@ -168,7 +168,7 @@ clean: ## Clean the generated artifacts
 	rm -rf build release dist
 
 get-fmt-deps: ## Install test dependencies
-	$(GO_NOMOD) get golang.org/x/tools/cmd/goimports
+	get install golang.org/x/tools/cmd/goimports
 
 .PHONY: fmt
 fmt: importfmt ## Format the code
@@ -190,13 +190,3 @@ lint: ## Lint the code
 	./hack/gofmt.sh
 	./hack/linter.sh
 	./hack/generate.sh
-
-bin/docs:
-	go build $(LDFLAGS) -v -o bin/docs cmd/docs/*.go
-
-.PHONY: docs
-docs: bin/docs generate-refdocs generate-scheduler-refdocs ## update docs
-	@echo "Generating docs"
-	@./bin/docs --target=./docs/cmd
-	@./bin/docs --target=./docs/man/man1 --kind=man
-	@rm -f ./bin/docs
