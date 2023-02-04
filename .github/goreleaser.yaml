@@ -29,7 +29,7 @@ dockers:
 
 nfpms:
     - maintainer: Inhere <in.798@qq.com>
-      description: A personal tools application.
+      description: A personal developer tools application.
       homepage: https://github.com/inhere/kite
       license: MIT
       formats:

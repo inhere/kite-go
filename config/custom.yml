@@ -4,4 +4,4 @@ swag:browse:
   swagger_file: testdata/swagger.json
 
 swag:gocode:
-  template_dir: $resource/templates
+  template_dir: $data/templates

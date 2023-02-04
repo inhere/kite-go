@@ -16,7 +16,7 @@ logger:
   level_mode: 1
 
 language:
-  lang_dir: $resource/language
+  lang_dir: $data/language
   def_lang: zh-CN
   lang_map:
     en: English

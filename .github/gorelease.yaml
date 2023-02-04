@@ -3,7 +3,6 @@
 project_name: kite
 proxy: true
 env:
-  - GO111MODULE=on
   - GOPROXY=https://goproxy.cn,direct
 before:
   hooks:
@@ -14,14 +13,14 @@ before:
 builds:
   - id: build-darwin-amd64
     binary: kite
-    main: ./bin/kite/main.go
+    main: ./cmd/kite/main.go
     goos:
       - darwin
     goarch:
       - amd64
   - id: build-linux-amd64
     binary: kite
-    main: ./bin/kite/main.go
+    main: ./cmd/kite/main.go
     goos:
       - linux
     goarch:
@@ -40,3 +39,13 @@ checksum:
   name_template: '{{ .ProjectName }}_checksums.txt'
 snapshot:
   name_template: SNAPSHOT-{{.ShortCommit}}
+
+nfpms:
+  - maintainer: Inhere <in.798@qq.com>
+    description: A personal developer tools application.
+    homepage: https://github.com/inhere/kite
+    license: MIT
+    formats:
+      - deb
+      - rpm
+      - apk
