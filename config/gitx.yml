@@ -13,13 +13,16 @@ github:
   token: ${GITHUB_PA_TOKEN}
 
 gitlab:
-  main_remote: upstream
+  main_remote: main
   fork_remote: origin
-  git_url: git@gitlab.your.com
-  host_url: http://gitlab.your.com/
+  git_url: git@${GITLAB_HOST}
+  host_url: http://${GITLAB_HOST}
   branch_aliases:
     h: head
+    t: testing
+    q: qa
+    p: pre
     m: master
   # from /profile/personal_access_tokens
-  token: '{$GITLAB_PA_TOKEN}'
-  base_api: http://gitlab.your.com/api/v4
+  token: ${GITLAB_PA_TOKEN}
+  base_api: http://${GITLAB_HOST}/api/v4

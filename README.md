@@ -19,8 +19,8 @@
 
 ### Quick install
 
-```shell
-curl xyz | bash
+```bash
+curl https://raw.githubusercontent.com/inhere/kite-go/main/cmd/install.sh | bash
 ```
 
 ### Install by go

@@ -10,3 +10,4 @@
 /tmp
 /custom
 kite.yml
+build/kite-*

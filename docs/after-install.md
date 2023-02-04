@@ -1,7 +1,10 @@
-# Kite Usage
+# Quick Start
 
 ## Config shell aliases
 
-```shell
+Config shell aliases in your `~/.zshrc` or `~/.bashrc`
 
+```shell
+alias kgl="kite gitlab"
+alias kj="kite json"
 ```

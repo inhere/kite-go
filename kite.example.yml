@@ -5,47 +5,35 @@
 # Homepage: https://github.com/inhere/kite
 #
 
+# for kite.app
 app:
-  # base_dir: ~/.kite-go
+  # base_dir: ~/.kite
   tmp_dir: $base/tmp
-  data_dir: $base/data
   cache_dir: $base/tmp/caches
   config_dir: $base/config
   resource_dir: $base/resource
   include_config:
     - common.yml
-    - aliases.yml
+    - extra.yml
     - tasks.yml
+    - gitx.yml
+    - custom.yml
 
-# aliases for kite
+backend_srv:
+  enable: true
+  port: 9092
+
+# for gcli.app
+cliapp:
+  run_syscmd_on_notfound: true
+
+# for web app
+webapp:
+  port: 9091
+
 aliases:
   ac: git ac
   acp: git acp
   updateself: self update
   update-self: self update
   self-update: self update
-
-logger:
-  log_dir: $tmp/logs
-  log_file: kite-go.log
-  level: debug
-
-language:
-  langDir: $resource/language
-
-pluginManager:
-  main_config: 'plugins.yml'
-
-packageManager:
-  config_dir: $config/tools
-  main_config: pkgs.yml
-
-scriptManager:
-  main_config: $config/scripts.yml
-
-# define some command flags value
-swag:browse:
-  swagger_file: testdata/swagger.json
-
-swag:gocode:
-  template_dir: $resource/templates
