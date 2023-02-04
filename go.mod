@@ -16,7 +16,7 @@ require (
 	github.com/gookit/goutil v0.6.2
 	github.com/gookit/greq v0.2.0
 	github.com/gookit/i18n v1.1.4
-	github.com/gookit/ini/v2 v2.1.3
+	github.com/gookit/ini/v2 v2.2.0
 	github.com/gookit/rux v1.3.4
 	github.com/gookit/slog v0.4.0
 	github.com/gookit/view v1.0.2
