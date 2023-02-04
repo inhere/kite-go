@@ -15,9 +15,22 @@ var (
 	GithubRepo = "https://github.com/inhere/kite-go"
 )
 
-var (
-// httproute
-)
+// Banner text
+// from http://patorjk.com/software/taag/#p=testall&f=Graffiti&t=Kite
+// font: Doom,Graffiti,Isometric1 - Isometric3, Ogre, Slant
+var Banner = `
+      ___                                   ___
+     /__/|        ___           ___        /  /\
+    |  |:|       /  /\         /  /\      /  /:/_
+    |  |:|      /  /:/        /  /:/     /  /:/ /\
+  __|  |:|     /__/::\       /  /:/     /  /:/ /:/_
+ /__/\_|:|____ \__\/\:\__   /  /::\    /__/:/ /:/ /\
+ \  \:\/:::::/    \  \:\/\ /__/:/\:\   \  \:\/:/ /:/
+  \  \::/~~~~      \__\::/ \__\/  \:\   \  \::/ /:/
+   \  \:\          /__/:/       \  \:\   \  \:\/:/
+    \  \:\         \__\/         \__\/    \  \::/
+     \__\/                                 \__\/
+`
 
 //go:embed README.md .env.example kite.example.yml config/*.yml
 var EmbedFs embed.FS
