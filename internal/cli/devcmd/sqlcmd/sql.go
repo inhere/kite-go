@@ -2,7 +2,8 @@ package sqlcmd
 
 import "github.com/gookit/gcli/v3"
 
-var SQLCmd = &gcli.Command{
+// SQLToolCmd instance
+var SQLToolCmd = &gcli.Command{
 	Name: "sql",
 	Desc: "SQL tools",
 	Subs: []*gcli.Command{

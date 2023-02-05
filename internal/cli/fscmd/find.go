@@ -6,8 +6,8 @@ import (
 	"github.com/gookit/gcli/v3"
 )
 
-// FileFinder command
-var FileFinder = &gcli.Command{
+// FileFindCmd command
+var FileFindCmd = &gcli.Command{
 	Name:    "find",
 	Desc:    "hot reload serve on files modified",
 	Aliases: []string{"glob"},

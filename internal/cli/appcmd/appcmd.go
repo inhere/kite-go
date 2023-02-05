@@ -13,10 +13,13 @@ var ManageCmd = &gcli.Command{
 		AppCheckCmd,
 		KiteInitCmd,
 		KiteInfoCmd,
+		KiteObjectCmd,
 		UpdateSelfCmd,
 		KiteConfCmd,
 		ReadmeCmd,
 		KitePathCmd,
+		PathAliasCmd,
+		KiteAliasCmd,
 		BackendServeCmd,
 	},
 }

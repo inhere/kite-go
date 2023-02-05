@@ -11,7 +11,7 @@ import (
 	"github.com/gookit/goutil/structs"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/inhere/kite"
-	"github.com/inhere/kite/app"
+	"github.com/inhere/kite/internal/app"
 	"github.com/inhere/kite/internal/appconst"
 )
 

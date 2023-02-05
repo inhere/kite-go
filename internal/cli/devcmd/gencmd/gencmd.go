@@ -1,4 +1,4 @@
-package codegen
+package gencmd
 
 import (
 	"bytes"
@@ -13,7 +13,8 @@ import (
 	"github.com/gookit/ini/v2"
 )
 
-var CodeGen = &gcli.Command{
+// CodeGenCmd instance
+var CodeGenCmd = &gcli.Command{
 	Name: "cgen",
 	Desc: "code generate",
 	Subs: []*gcli.Command{

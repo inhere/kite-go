@@ -6,6 +6,7 @@ import (
 	"github.com/gookit/gcli/v3"
 )
 
+// HotReloadServe instance
 var HotReloadServe = &gcli.Command{
 	Name:    "hot-reload",
 	Aliases: []string{"hotreload", "hotr"},

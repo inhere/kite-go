@@ -9,7 +9,7 @@ import (
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/inhere/kite"
-	"github.com/inhere/kite/app"
+	"github.com/inhere/kite/internal/app"
 )
 
 // KiteInfoCmd instance
@@ -82,5 +82,103 @@ var KitePathCmd = &gcli.Command{
 
 		fmt.Println(path)
 		return nil
+	},
+}
+
+// KiteObjectCmd command
+var KiteObjectCmd = &gcli.Command{
+	Name:    "object",
+	Aliases: []string{"obj"},
+	Desc:    "custom path aliases mapping info",
+	Config: func(c *gcli.Command) {
+		c.AddArg("name", "show info for the object name")
+	},
+	Func: func(c *gcli.Command, args []string) error {
+		var data any
+		key := c.Arg("key").String()
+		switch key {
+		case "app":
+			data = app.App().Config
+		default:
+			if app.Has(key) {
+				data = app.GetAny(key)
+			}
+		}
+
+		if data == nil {
+			return c.NewErrf("not found object for %q", key)
+		}
+
+		c.Infoln("Object info:", key)
+		dump.Clear(data)
+		return errorx.New("todo")
+	},
+}
+
+var confOpts = struct {
+	search string
+	raw    bool
+	keys   bool
+}{}
+
+// KiteConfCmd command
+var KiteConfCmd = &gcli.Command{
+	Name:    "config",
+	Aliases: []string{"conf", "cfg"},
+	Desc:    "display kite config information",
+	Config: func(c *gcli.Command) {
+		c.BoolOpt(&confOpts.raw, "raw", "r", false, "display raw config data")
+		c.BoolOpt2(&confOpts.keys, "keys", "display raw config data")
+		c.StrOpt2(&confOpts.search, "search,s", "search top key by input keywords")
+
+		c.AddArg("key", "show config for the key")
+	},
+	Func: func(c *gcli.Command, args []string) error {
+		if confOpts.keys {
+			names := make([]string, 16)
+			for name := range app.Cfg().Data() {
+				names = append(names, name)
+			}
+
+			c.Infoln("All Config Keys:")
+			dump.Clear(names)
+			return nil
+		}
+
+		key := c.Arg("key").String()
+		if key == "" {
+			c.Infoln("All Config Data:")
+			dump.Clear(app.Cfg().Data())
+			return nil
+		}
+
+		data, ok := app.Cfg().GetValue(key)
+		if !ok {
+			return c.NewErrf("not found config for key: %s", key)
+		}
+
+		c.Infoln("Config for key:", key)
+		dump.Clear(data)
+		return nil
+	},
+}
+
+// PathAliasCmd command
+var PathAliasCmd = &gcli.Command{
+	Name:    "pathmap",
+	Aliases: []string{"path-alias"},
+	Desc:    "custom path aliases mapping in kite",
+	Func: func(c *gcli.Command, args []string) error {
+		return errorx.New("todo")
+	},
+}
+
+// KiteAliasCmd command
+var KiteAliasCmd = &gcli.Command{
+	Name:    "alias",
+	Aliases: []string{"aliases"},
+	Desc:    "display custom command aliases for kite",
+	Func: func(c *gcli.Command, args []string) error {
+		return errorx.New("todo")
 	},
 }

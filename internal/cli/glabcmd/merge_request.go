@@ -7,7 +7,7 @@ import (
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/sysutil"
-	"github.com/inhere/kite/app"
+	"github.com/inhere/kite/internal/app"
 	"github.com/inhere/kite/pkg/gitx"
 	"github.com/inhere/kite/pkg/gitx/gitlab"
 )

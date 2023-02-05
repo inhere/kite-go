@@ -6,10 +6,11 @@ import (
 	"github.com/gookit/gcli/v3"
 )
 
-var FileCat = &gcli.Command{
-	Name:    "cat",
-	Aliases: []string{"see", "bat"},
-	Desc:    "hot reload serve on files modified",
+// ListFilesCmd instance
+var ListFilesCmd = &gcli.Command{
+	Name:    "ls",
+	Aliases: []string{"list"},
+	Desc:    "list files or dirs like `ls` command",
 	Config: func(c *gcli.Command) {
 
 	},

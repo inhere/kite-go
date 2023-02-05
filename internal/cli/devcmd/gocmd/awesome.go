@@ -12,7 +12,7 @@ import (
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/strutil/textutil"
 	"github.com/gookit/greq"
-	"github.com/inhere/kite/app"
+	"github.com/inhere/kite/internal/app"
 )
 
 var (
