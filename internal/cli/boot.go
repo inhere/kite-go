@@ -4,69 +4,61 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/builtin"
 	"github.com/gookit/gcli/v3/events"
-	"github.com/inhere/kite/app"
+	"github.com/inhere/kite/internal/app"
 	"github.com/inhere/kite/internal/cli/appcmd"
-	"github.com/inhere/kite/internal/cli/codegen"
 	"github.com/inhere/kite/internal/cli/devcmd"
-	"github.com/inhere/kite/internal/cli/doctool"
 	"github.com/inhere/kite/internal/cli/fscmd"
 	"github.com/inhere/kite/internal/cli/ghubcmd"
 	"github.com/inhere/kite/internal/cli/gitcmd"
 	"github.com/inhere/kite/internal/cli/glabcmd"
-	"github.com/inhere/kite/internal/cli/gocmd"
 	"github.com/inhere/kite/internal/cli/httpcmd"
-	"github.com/inhere/kite/internal/cli/javacmd"
-	"github.com/inhere/kite/internal/cli/mdcmd"
-	"github.com/inhere/kite/internal/cli/phpcmd"
-	"github.com/inhere/kite/internal/cli/pkgmanage"
-	"github.com/inhere/kite/internal/cli/sqlcmd"
+	"github.com/inhere/kite/internal/cli/pkgcmd"
 	"github.com/inhere/kite/internal/cli/strcmd"
+	"github.com/inhere/kite/internal/cli/syscmd"
 	"github.com/inhere/kite/internal/cli/taskx"
 	"github.com/inhere/kite/internal/cli/toolcmd"
 	"github.com/inhere/kite/pkg/pacutil"
 )
 
 // Boot commands to gcli.App
-func Boot(app *gcli.App) {
-	addListener(app)
+func Boot(cli *gcli.App) {
+	addListener(cli)
 
-	Register(app)
+	addCommands(cli)
+
+	addAliases(cli)
 }
 
-// Register commands to gcli.App
-func Register(app *gcli.App) {
-	app.Add(
-		codegen.CodeGen,
+// addCommands commands to gcli.App
+func addCommands(cli *gcli.App) {
+	cli.Add(
 		devcmd.DevToolsCmd,
-		doctool.DocumentCmd,
 		fscmd.FsCmd,
 		gitcmd.GitCommands,
 		ghubcmd.GithubCmd,
 		glabcmd.GitLabCmd,
 		httpcmd.HttpCmd,
-		gocmd.GoToolsCmd,
-		phpcmd.PhpToolsCmd,
-		javacmd.JavaToolCmd,
-		mdcmd.MkDownCmd,
-		pkgmanage.ManageCmd,
+		pkgcmd.PkgManageCmd,
 		strcmd.StringCmd,
+		syscmd.SysCmd,
 		appcmd.ManageCmd,
 		taskx.TaskManage,
-		sqlcmd.SQLCmd,
 		toolcmd.ToolsCmd,
-		toolcmd.RunScripts,
+		toolcmd.RunAnyCmd,
 		builtin.GenAutoComplete(func(c *gcli.Command) {
 			c.Hidden = true
 		}),
 	)
 
 	// app.Add(filewatcher.FileWatcher(nil))
-	app.Add(pacutil.PacTools.WithHidden())
+	cli.Add(pacutil.PacTools.WithHidden())
+}
 
+func addAliases(cli *gcli.App) {
 	// built in alias
-	app.AddAliases("app:init", "init")
-	app.AddAliases("app:info", "info")
-	app.AddAliases("app:config", "conf", "config")
+	cli.AddAliases("app:init", "init")
+	cli.AddAliases("app:info", "info")
+	cli.AddAliases("app:config", "conf", "config")
 }
 
 func addListener(cli *gcli.App) {
@@ -85,12 +77,14 @@ func addListener(cli *gcli.App) {
 		return
 	})
 
-	cli.On(gcli.EvtCmdNotFound, func(ctx *gcli.HookCtx) bool {
-		app.Log().Infof("kite cli app event: %s, TODO handle", ctx.Name())
+	cli.On(events.OnCmdNotFound, cmdNotFund)
+}
 
-		gcli.Println("fire not found command:", ctx.Name())
+func cmdNotFund(ctx *gcli.HookCtx) (stop bool) {
+	app.Log().Infof("kite cli app event: %s, TODO handle", ctx.Name())
 
-		// TODO
-		return false
-	})
+	gcli.Println("fire not found command:", ctx.Name())
+
+	// TODO runAny.Run()
+	return
 }

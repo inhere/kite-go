@@ -5,7 +5,7 @@ import (
 	"github.com/gookit/gitw"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/sysutil"
-	"github.com/inhere/kite/app"
+	"github.com/inhere/kite/internal/app"
 )
 
 // CommonOpts some common vars struct
