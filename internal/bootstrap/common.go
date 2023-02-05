@@ -7,6 +7,7 @@ import (
 	"github.com/inhere/kite"
 	"github.com/inhere/kite/app"
 	"github.com/inhere/kite/internal/initlog"
+	"github.com/inhere/kite/pkg/lcproxy"
 )
 
 // BootI18n info
@@ -39,6 +40,12 @@ func BootAppInfo(ka *app.KiteApp) error {
 	}
 
 	initlog.L.Info("init kite application info:", structs.ToString(ka.Info))
+
+	ka.Lcp = lcproxy.NewLocalProxy()
+	err := app.Cfg().MapOnExists("local_proxy", ka.Lcp)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

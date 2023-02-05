@@ -15,6 +15,9 @@ const (
 	ObjConf = "config"
 	ObjLog  = "logger"
 
+	ObjPlugin = "plugin"
+	ObjScript = "script"
+
 	ObjGit  = "gitloc"
 	ObjGlab = "gitlab"
 	ObjGhub = "github"

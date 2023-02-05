@@ -25,8 +25,8 @@ func Boot(ka *app.KiteApp) error {
 	})
 
 	ka.AddBootFuncs(
-		BootAppInfo,
 		BootConfig,
+		BootAppInfo,
 		BootLogger,
 		BootI18n,
 		BootCli,

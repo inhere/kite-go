@@ -91,6 +91,11 @@ func (c *Config) ConfigPath(subPaths ...string) string {
 	return joinPath(c.ConfigDir, subPaths)
 }
 
+// ResolvePath alias
+func (c *Config) ResolvePath(path string) string {
+	return c.PathResolve(path)
+}
+
 // PathResolve resolve path alias. "$base/tmp" => "path/to/base_dir/tmp"
 func (c *Config) PathResolve(path string) string {
 	if path == "" || path[0] != PathAliasPrefix {
