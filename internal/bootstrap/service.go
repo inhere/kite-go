@@ -1,7 +1,7 @@
 package bootstrap
 
 import (
-	"github.com/inhere/kite/app"
+	"github.com/inhere/kite/internal/app"
 	"github.com/inhere/kite/pkg/gitx/gitlab"
 	"github.com/inhere/kite/pkg/kiteext"
 )

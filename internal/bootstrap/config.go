@@ -6,7 +6,7 @@ import (
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/envutil"
 	"github.com/gookit/goutil/fsutil"
-	"github.com/inhere/kite/app"
+	"github.com/inhere/kite/internal/app"
 	"github.com/inhere/kite/internal/appconst"
 	"github.com/inhere/kite/internal/initlog"
 )

@@ -4,6 +4,7 @@ import "github.com/gookit/gcli/v3"
 
 // https://github.com/MichaelMure/go-term-markdown
 
+// MkDownCmd instance
 var MkDownCmd = &gcli.Command{
 	Name:    "mkdown",
 	Desc:    "some tool for markdown",

@@ -3,7 +3,7 @@ package bootstrap
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/inhere/kite"
-	"github.com/inhere/kite/app"
+	"github.com/inhere/kite/internal/app"
 	"github.com/inhere/kite/internal/cli"
 )
 

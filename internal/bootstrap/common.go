@@ -5,7 +5,7 @@ import (
 	"github.com/gookit/goutil/structs"
 	"github.com/gookit/i18n"
 	"github.com/inhere/kite"
-	"github.com/inhere/kite/app"
+	"github.com/inhere/kite/internal/app"
 	"github.com/inhere/kite/internal/initlog"
 	"github.com/inhere/kite/pkg/lcproxy"
 )
