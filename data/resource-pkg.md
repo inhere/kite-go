@@ -33,9 +33,8 @@ data file: /dist/data.json
 
 **syntax highlight**
 
-- https://github.com/alecthomas/chroma A general purpose syntax highlighter in pure Go
-- https://github.com/zyedidia/highlight
 - https://github.com/alecthomas/chroma 用 golang 写的语法高亮引擎
+- https://github.com/zyedidia/highlight
 
 **Markdown parser**
 

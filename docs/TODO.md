@@ -4,6 +4,10 @@
 
 - [ ] generate metadata file for kite
 
+## run anything
+
+- [ ] scripts manage and run 
+
 ## backend serve
 
 - [ ] cache metadata, provide quick command search
