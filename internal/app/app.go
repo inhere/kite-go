@@ -1,6 +1,7 @@
 package app
 
 import (
+	"os"
 	"sync"
 
 	"github.com/gookit/gcli/v3"
@@ -59,10 +60,11 @@ func (ka *KiteApp) AddPreLoader(bfs ...BootFunc) *KiteApp {
 }
 
 // AddBootFuncs to app
-func (ka *KiteApp) AddBootFuncs(bfs ...BootFunc) {
+func (ka *KiteApp) AddBootFuncs(bfs ...BootFunc) *KiteApp {
 	for _, bf := range bfs {
 		ka.bootloaders = append(ka.bootloaders, bf)
 	}
+	return ka
 }
 
 // AddLoaders to app
@@ -133,9 +135,10 @@ func App() *KiteApp {
 
 // Run app
 func Run() {
-	Cli().Run(nil)
+	code := Cli().Run(nil)
 
 	for _, fn := range kiteApp.shutdown {
 		fn()
 	}
+	os.Exit(code)
 }

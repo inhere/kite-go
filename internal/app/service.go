@@ -5,6 +5,7 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/rux"
 	"github.com/gookit/slog"
+	"github.com/inhere/kite/pkg/gitx"
 	"github.com/inhere/kite/pkg/gitx/gitlab"
 )
 
@@ -18,7 +19,7 @@ const (
 	ObjPlugin = "plugin"
 	ObjScript = "script"
 
-	ObjGit  = "gitloc"
+	ObjGitx = "gitloc"
 	ObjGlab = "gitlab"
 	ObjGhub = "github"
 )
@@ -46,4 +47,9 @@ func Log() *slog.Logger {
 // Glab get
 func Glab() *gitlab.GitLab {
 	return Get[*gitlab.GitLab](ObjGlab)
+}
+
+// Gitx get
+func Gitx() *gitx.Config {
+	return Get[*gitx.Config](ObjGitx)
 }

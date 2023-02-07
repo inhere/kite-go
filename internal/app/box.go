@@ -44,3 +44,12 @@ func Lookup[T any](name string) (v T, ok bool) {
 	}
 	return
 }
+
+// Names object name list from box
+func Names() []string {
+	names := make([]string, 0, len(box))
+	for name := range box {
+		names = append(names, name)
+	}
+	return names
+}
