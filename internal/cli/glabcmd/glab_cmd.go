@@ -1,13 +1,12 @@
 package glabcmd
 
 import (
-	"os"
-
-	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/gcli/v3/events"
+	"github.com/gookit/goutil/envutil"
+	"github.com/inhere/kite/internal/app"
 	"github.com/inhere/kite/internal/cli/gitcmd"
 	"github.com/inhere/kite/pkg/gitx"
-	"github.com/inhere/kite/pkg/gitx/gitflow"
 )
 
 // GitLabCmd commands
@@ -16,17 +15,21 @@ var GitLabCmd = &gcli.Command{
 	Desc:    "useful tool commands for use gitlab",
 	Aliases: []string{"gl", "glab"},
 	Subs: []*gcli.Command{
-		gitflow.UpdateCmd,
-		gitflow.UpdatePushCmd,
-		gitx.NewOpenRemoteCmd(os.Getenv("KITE_GLAB_HOST"), "gitlab.host_url"),
 		MergeRequestCmd,
+		gitcmd.UpdateCmd,
+		gitcmd.UpdatePushCmd,
 		gitcmd.AddCommitPush,
 		gitcmd.AddCommitNotPush,
+		gitx.NewOpenRemoteCmd(func() string {
+			return envutil.Getenv("KITE_GLAB_HOST", app.Cfg().String("gitlab.host_url"))
+		}),
 	},
 	Config: func(c *gcli.Command) {
 		c.On(gcli.EvtCmdRunBefore, func(ctx *gcli.HookCtx) (stop bool) {
-			color.Info.Println("Current workdir:", c.WorkDir())
+			c.Infoln("[GLab] Workdir:", c.WorkDir())
 			return false
 		})
+
+		c.On(events.OnCmdSubNotFound, gitcmd.RedirectToGit)
 	},
 }

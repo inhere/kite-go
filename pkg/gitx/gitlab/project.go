@@ -5,13 +5,13 @@ import (
 	"strings"
 
 	"github.com/gookit/gitw"
+	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/errorx"
 )
 
 // GlProject struct
 type GlProject struct {
 	*GitLab
-	err error
 	// dir for the project
 	dir  string
 	repo *gitw.Repo
@@ -31,11 +31,6 @@ func NewGlProject(dir string, gl *GitLab) *GlProject {
 	}
 }
 
-// Err get
-func (p *GlProject) Err() error {
-	return p.err
-}
-
 func (p *GlProject) Repo() *gitw.Repo {
 	if p.repo == nil {
 		p.repo = gitw.NewRepo(p.dir)
@@ -44,29 +39,29 @@ func (p *GlProject) Repo() *gitw.Repo {
 }
 
 func (p *GlProject) CheckRemote() error {
-	if err := p.CheckForkRemote(); err != nil {
+	if err := p.CheckDefaultRemote(); err != nil {
 		return err
 	}
-	return p.CheckMainRemote()
+	return p.CheckSourceRemote()
 }
 
-func (p *GlProject) CheckForkRemote() error {
+func (p *GlProject) CheckDefaultRemote() error {
 	if !p.Repo().HasRemote(p.DefaultRemote) {
-		return errorx.Newf("the fork remote '%s' is not found(config:gitlab.fork_remote)", p.DefaultRemote)
+		return errorx.Newf("the fork remote '%s' is not found(config:gitlab.default_remote)", p.DefaultRemote)
 	}
 	return nil
 }
 
-func (p *GlProject) CheckMainRemote() error {
-	if !p.Repo().HasRemote(p.UpstreamRemote) {
-		return errorx.Newf("the main remote '%s' is not found(config:gitlab.main_remote)", p.UpstreamRemote)
+func (p *GlProject) CheckSourceRemote() error {
+	if !p.Repo().HasRemote(p.SourceRemote) {
+		return errorx.Newf("the main remote '%s' is not found(config:gitlab.source_remote)", p.SourceRemote)
 	}
 	return nil
 }
 
 func (p *GlProject) ForkRmtInfo() *gitw.RemoteInfo {
 	if p.forkRemoteInfo == nil {
-		p.addError(p.CheckForkRemote())
+		goutil.PanicErr(p.CheckDefaultRemote())
 		p.forkRemoteInfo = p.Repo().RemoteInfo(p.DefaultRemote)
 	}
 	return p.forkRemoteInfo
@@ -74,8 +69,8 @@ func (p *GlProject) ForkRmtInfo() *gitw.RemoteInfo {
 
 func (p *GlProject) MainRmtInfo() *gitw.RemoteInfo {
 	if p.mainRemoteInfo == nil {
-		p.addError(p.CheckForkRemote())
-		p.mainRemoteInfo = p.Repo().RemoteInfo(p.UpstreamRemote)
+		goutil.PanicErr(p.CheckDefaultRemote())
+		p.mainRemoteInfo = p.Repo().RemoteInfo(p.SourceRemote)
 	}
 	return p.mainRemoteInfo
 }
@@ -105,10 +100,4 @@ func (p *GlProject) ForkProjectId() string {
 
 func (p *GlProject) SetMainProjId(mainProjId string) {
 	p.mainProjId = mainProjId
-}
-
-func (p *GlProject) addError(err error) {
-	if err != nil {
-		p.err = err
-	}
 }
