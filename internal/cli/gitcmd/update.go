@@ -1,8 +1,10 @@
-package gitflow
+package gitcmd
 
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gitw"
+	"github.com/inhere/kite/internal/app"
+	"github.com/inhere/kite/pkg/cmdutil"
 	"github.com/inhere/kite/pkg/gitx"
 )
 
@@ -29,6 +31,19 @@ var UpdatePushCmd = &gcli.Command{
 		pull := gitw.Cmd("pull", args...)
 		pull.WithWorkDir(upOpts.Workdir)
 		pull.OnBeforeExec(gitw.PrintCmdline)
+
+		rr := cmdutil.NewRunner(func(rr *cmdutil.Runner) {
+			rr.DryRun = upOpts.DryRun
+			// rr.Confirm = confirm
+			rr.OutToStd = true
+		})
+
+		gl := app.Gitx().LoadRepo(upOpts.Workdir)
+		gl.DefRemoteInfo()
+		gl.Repo().FollowedRemote()
+
+		rr.GitCmd("pull", "-np").
+			GitCmd("pull")
 
 		return pull.Run()
 	},

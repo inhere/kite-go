@@ -6,16 +6,29 @@ import (
 	"github.com/gookit/gcli/v3"
 )
 
+// TagCmd instance
 var TagCmd = &gcli.Command{
 	Name: "tag",
 	Desc: "git tag commands",
 	Subs: []*gcli.Command{
-		TagCreate,
-		TagDelete,
+		TagListCmd,
+		TagCreateCmd,
+		TagDeleteCmd,
 	},
 }
 
-var TagCreate = &gcli.Command{
+// TagListCmd instance
+var TagListCmd = &gcli.Command{
+	Name:    "list",
+	Aliases: []string{"ls"},
+	Desc:    "list tags for the git repository",
+	Func: func(c *gcli.Command, args []string) error {
+		return errors.New("TODO")
+	},
+}
+
+// TagCreateCmd instance
+var TagCreateCmd = &gcli.Command{
 	Name:    "create",
 	Aliases: []string{"new"},
 	Desc:    "create new tag by `git tag`",
@@ -24,7 +37,8 @@ var TagCreate = &gcli.Command{
 	},
 }
 
-var TagDelete = &gcli.Command{
+// TagDeleteCmd instance
+var TagDeleteCmd = &gcli.Command{
 	Name:    "delete",
 	Aliases: []string{"del", "rm", "remove"},
 	Desc:    "delete exists tags by `git tag`",

@@ -18,15 +18,13 @@ var (
 		Exclude   gcli.String `flag:"exclude contains given sub-string. multi by comma split."`
 	}{}
 
-	ShowLog = &gcli.Command{
+	ShowLogCmd = &gcli.Command{
 		Name: "log",
 		Desc: "display recently git commits information by `git log`",
 		// Aliases: []string{"cl", "clog", "changelog"},
 		Config: func(c *gcli.Command) {
 			c.UseSimpleRule()
-
-			// goutil.PanicIfErr(c.FromStruct(&logOpts))
-			goutil.PanicIfErr(c.FromStruct(&logOpts))
+			goutil.PanicErr(c.FromStruct(&logOpts))
 
 			c.StrOpt(&logOpts.Format, "format", "", "",
 				"The git log option '--pretty' value.\n"+
@@ -37,6 +35,10 @@ var (
 		},
 		Func: func(c *gcli.Command, args []string) error {
 			maxNum := c.Arg("maxCommit").Int()
+			if maxNum < 1 {
+				maxNum = logOpts.MaxCommit
+			}
+
 			// git log --color --graph --pretty=format:'%Cred%h%Creset:%C(ul yellow)%d%Creset %s (%Cgreen%cr%Creset, %C(bold blue)%an%Creset)' --abbrev-commit -10
 			gitLog := gitw.New("log", "--graph")
 			gitLog.OnBeforeExec(gitw.PrintCmdline)

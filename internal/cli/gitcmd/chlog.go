@@ -22,7 +22,7 @@ var (
 		fetchTags bool
 	}{}
 
-	Changelog = &gcli.Command{
+	ChangelogCmd = &gcli.Command{
 		Name:    "chlog",
 		Desc:    "batch pull multi git directory by `git pull`",
 		Aliases: []string{"cl", "clog", "changelog"},
@@ -46,8 +46,8 @@ var (
 				})
 
 			c.VarOpt(&chlogOpts.limit, "limit", "", "limit update the given dir names")
-			c.StrOpt(&chlogOpts.dstFile, "file", "", "", "Export changelog message to the file, default dump to stdout")
-			c.StrOpt(&chlogOpts.repoUrl, "repo-url", "", "", `
+			c.StrOpt2(&chlogOpts.dstFile, "file", "Export changelog message to the file, default dump to stdout")
+			c.StrOpt2(&chlogOpts.repoUrl, "repo-url", `
 The git repo URL address. eg: https://github.com/inhere/kite
  default will auto use current git origin remote url
 `)
@@ -55,9 +55,9 @@ The git repo URL address. eg: https://github.com/inhere/kite
 The style for generate for changelog.
  allow: markdown(md), simple, gh-release(ghr)
 `)
-			c.BoolOpt(&chlogOpts.fetchTags, "fetch-tags", "", false, "Update repo tags list by 'git fetch --tags'")
-			c.BoolOpt(&chlogOpts.noMerges, "no-merges", "", false, "dont contains merge request logs")
-			c.BoolOpt(&chlogOpts.unShallow, "unshallow", "", false, "Convert to a complete warehouse, useful on GitHub Action.")
+			c.BoolOpt2(&chlogOpts.fetchTags, "fetch-tags", "Update repo tags list by 'git fetch --tags'")
+			c.BoolOpt2(&chlogOpts.noMerges, "no-merges", "dont contains merge request logs")
+			c.BoolOpt2(&chlogOpts.unShallow, "unshallow", "Convert to a complete warehouse, useful on GitHub Action.")
 		},
 		Func: func(c *gcli.Command, args []string) error {
 			baseDir := c.Arg("baseDir").String()
@@ -91,7 +91,6 @@ The style for generate for changelog.
 			}
 
 			dump.P(cl.Changelog())
-
 			return nil
 		},
 	}

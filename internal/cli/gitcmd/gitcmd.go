@@ -1,24 +1,23 @@
 package gitcmd
 
 import (
+	"fmt"
+	"os/exec"
+	"syscall"
+
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/gitw"
+	"github.com/gookit/gcli/v3/events"
+	"github.com/gookit/goutil/cliutil"
+	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/sysutil/cmdr"
 	"github.com/inhere/kite/pkg/gitx"
 )
 
 var (
-	dryRun bool
-	yesRun bool // Direct execution without confirmation
-
 	confirm bool // interactively ask before executing command
-	workdir string
 )
 
-func BindCommonOpts(c *gcli.Command) {
-	c.BoolOpt(&dryRun, "dry-run", "dry", false, "Dry-run the workflow, dont real execute")
-	c.BoolOpt(&yesRun, "yes", "y", false, "Direct execution without confirmation")
-}
+var gitOpts = gitx.CommonOpts{}
 
 // GitCommands commands for use git
 var GitCommands = &gcli.Command{
@@ -26,59 +25,77 @@ var GitCommands = &gcli.Command{
 	Desc:    "tools for quick use `git` and more extra commands",
 	Aliases: []string{"g"},
 	Subs: []*gcli.Command{
-		StatusInfo,
-		RemoteInfo,
+		RepoInfoCmd,
+		StatusInfoCmd,
+		RemoteInfoCmd,
 		AddCommitPush,
 		AddCommitNotPush,
-		TagCmd,
 		UpdateCmd,
-		gitx.NewOpenRemoteCmd("", ""),
-		CreatePRLink,
-		BatchCmd,
-		Changelog,
-		ShowLog,
+		UpdatePushCmd,
+		gitx.NewOpenRemoteCmd(nil),
 		InitFlow,
-		UpdateNoPush,
-		UpdateAndPush,
-		BranchOperateEx,
+		CreatePRLink,
+		ShowLogCmd,
+		ChangelogCmd,
+		TagCmd,
+		BatchCmd,
+		BranchCmd,
 	},
 	Config: func(c *gcli.Command) {
-		addListener(c)
+		gitOpts.BindCommonFlags(c)
 
-		BindCommonOpts(c)
+		c.On(events.OnCmdSubNotFound, SubCmdNotFound)
+		c.On(gcli.EvtCmdOptParsed, func(ctx *gcli.HookCtx) bool {
+			c.Infoln("[GIT] Workdir:", c.WorkDir())
+			return false
+		})
 	},
 }
 
-func addListener(c *gcli.Command) {
-	c.On(gcli.EvtCmdOptParsed, func(ctx *gcli.HookCtx) bool {
-		c.Infoln("Workdir:", c.WorkDir())
-		return false
-	})
-	c.On(gcli.EvtCmdSubNotFound, func(ctx *gcli.HookCtx) (stop bool) {
-		c.Errorln(ctx.Str("name"), "- the git subcommand is not exists, will call system command(TODO)")
-		return true
-	})
-}
+// SubCmdNotFound handle
+func SubCmdNotFound(ctx *gcli.HookCtx) (stop bool) {
+	pName := ctx.Cmd.Name
+	name := ctx.Str("name")
+	args := ctx.Strings("args")
 
-var StatusInfo = &gcli.Command{
-	Name:    "status",
-	Aliases: []string{"st"},
-	Desc:    "git status command",
-	Func: func(c *gcli.Command, args []string) error {
-		return cmdr.NewGitCmd("status").Run()
-	},
-}
+	if name[0] == '@' {
+		rawNa := name
+		name = name[1:]
+		cliutil.Warnf("%s: %s - start with @, will be direct call `git %s` on system\n", pName, rawNa, name)
+	} else {
+		cliutil.Warnf("%s: subcommand %q is not found, will call `git %s` on system\n", pName, name, name)
+	}
 
-var RemoteInfo = &gcli.Command{
-	Name:    "remote",
-	Aliases: []string{"rmt"},
-	Desc:    "git remote command",
-	Func: func(c *gcli.Command, args []string) error {
-		err := gitw.New("remote", "-v").Run()
-		if err != nil {
-			return err
+	stop = true
+	err := cmdr.NewGitCmd(name, args...).ToOSStdout().Run()
+	if err != nil {
+		ee, ok := err.(*exec.ExitError)
+		if ok && ee.ProcessState != nil {
+			st := ee.Sys().(syscall.WaitStatus)
+			if st.Signaled() {
+				fmt.Println("Quited.")
+				return
+			}
 		}
 
-		return nil
-	},
+		cliutil.Errorln("Exec Error:", err)
+	}
+	return
+}
+
+// RedirectToGit handle
+func RedirectToGit(ctx *gcli.HookCtx) (stop bool) {
+	if ctx.App == nil {
+		return
+	}
+
+	pName := ctx.Cmd.Name
+	sName := ctx.Str("name")
+	cliutil.Infof("%s: subcommand '%s' not found, will redirect to run `kite git %s`\n", pName, sName, sName)
+
+	dump.P(ctx.App.CommandNames(), ctx.App.HasCommand("git"))
+
+	code := ctx.App.RunCmd("git", ctx.Cmd.RawArgs())
+	dump.P(code)
+	return true
 }
