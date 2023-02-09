@@ -5,20 +5,23 @@ import (
 	"github.com/gookit/gitw"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/sysutil"
-	"github.com/inhere/kite/internal/app"
 )
 
 // CommonOpts some common vars struct
 type CommonOpts struct {
+	Proxy   bool
 	DryRun  bool
+	Confirm bool
 	Workdir string
 	GitHost string
 }
 
 // BindCommonFlags for some git commands
-func (co CommonOpts) BindCommonFlags(c *gcli.Command) {
+func (co *CommonOpts) BindCommonFlags(c *gcli.Command) {
 	c.BoolOpt(&co.DryRun, "dry-run", "dry", false, "run workflow, but dont real execute command")
+	c.BoolOpt2(&co.Proxy, "proxy,p", "manual enable set proxy ENV config")
 	c.StrOpt(&co.Workdir, "workdir", "w", "", "the command workdir path")
+	c.BoolOpt2(&co.Confirm, "confirm", "confirm ask before executing command")
 }
 
 var orOpts = struct {
@@ -26,7 +29,7 @@ var orOpts = struct {
 }{}
 
 // NewOpenRemoteCmd instance
-func NewOpenRemoteCmd(hostUrl, confKeyPath string) *gcli.Command {
+func NewOpenRemoteCmd(hostUrlGetter func() string) *gcli.Command {
 	return &gcli.Command{
 		Name: "open",
 		Desc: "open the git remote repo address on browser",
@@ -40,8 +43,9 @@ func NewOpenRemoteCmd(hostUrl, confKeyPath string) *gcli.Command {
 
 			var repoUrl string
 			if strutil.IsNotBlank(repoPath) {
-				if confKeyPath != "" {
-					hostUrl = app.Cfg().String(confKeyPath)
+				var hostUrl string
+				if hostUrlGetter != nil {
+					hostUrl = hostUrlGetter()
 				}
 
 				if hostUrl != "" {
@@ -59,5 +63,4 @@ func NewOpenRemoteCmd(hostUrl, confKeyPath string) *gcli.Command {
 			return sysutil.OpenBrowser(repoUrl)
 		},
 	}
-
 }

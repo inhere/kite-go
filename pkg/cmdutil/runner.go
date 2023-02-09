@@ -30,7 +30,7 @@ func NewRunner(fns ...func(rr *Runner)) *Runner {
 // Run all tasks
 func (r *Runner) Run() error {
 	if !r.Silent {
-		color.Magentaf("# Run All Tasks(%d steps):\n", r.Len())
+		color.Magentaf("\n# Run All Tasks(%d steps):\n", r.Len())
 	}
 
 	r.BeforeRun = func(cr *cmdr.Runner, t *cmdr.Task) bool {
@@ -41,7 +41,7 @@ func (r *Runner) Run() error {
 		}
 
 		if !r.Silent {
-			color.Yellowf("Task#%d > %s\n", t.Index()+1, t.Cmdline())
+			color.Yellowf("Step#%d> %s\n", t.Index()+1, t.Cmdline())
 		}
 		return true
 	}
@@ -49,8 +49,7 @@ func (r *Runner) Run() error {
 	err := r.Runner.Run()
 
 	if !r.Silent && err == nil {
-		color.Successln("Run Completed")
+		color.Successln("✅  All Tasks Run Completed")
 	}
-
 	return err
 }
