@@ -17,23 +17,43 @@ app:
     - extra.yml
     - tasks.yml
     - gitx.yml
-    - custom.yml
+    - commands.yml
 
-backend_srv:
+# kite backend server
+server:
   enable: true
   port: 9092
+  pidfile: $data/kite-serve.pid
 
 # for gcli.app
 cliapp:
-  run_syscmd_on_notfound: true
+  # try run syscmd or script or plugin on command not found
+  smart_handle: true
+  enable_plugin: true
+  enable_script: true
+  # auto find cmd on os path and run it
+  enable_syscmd: true
+  # backend server addr
+#  server_addr: 127.0.0.1:9092
 
 # for web app
 webapp:
   port: 9091
 
+# path aliases map
+pathmap:
+  home: ~
+  gobin: ${GOPATH}/bin
+
+quick_open:
+  feishu-page: https://${FEISHU_DOMAIN_ID}.feishu.cn/drive/home/
+
+# aliases map for kite commands
+# can be use for quick run a subcommand, and allow with flags
 aliases:
   ac: git ac
   acp: git acp
+  script: tool run --script
   updateself: self update
   update-self: self update
   self-update: self update

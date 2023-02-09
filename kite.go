@@ -15,7 +15,7 @@ var (
 	GithubRepo = "https://github.com/inhere/kite-go"
 )
 
-//go:embed README.md .env.example kite.example.yml config/*.yml
+//go:embed README.md .example.env kite.example.yml config/*.yml
 var EmbedFs embed.FS
 
 // Banner text

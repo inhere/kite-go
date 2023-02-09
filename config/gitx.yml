@@ -1,28 +1,46 @@
 
+# default git config.
 gitx:
+  # auto sign on commit
   auto_sign: false
-  # gitflow
-  main_remote: main
-  fork_remote: origin
+  default_branch: main
+  # gitflow git fork mode for develop.
+  fork_mode: false
+  source_remote: main
+  default_remote: origin
 
+# GitHub config, will extend common info from gitx
 github:
+  username: ${GITHUB_USER}
+  # GitHub 文件, Releases, archive, gist, raw.githubusercontent.com 文件代理加速下载服务.
+  proxy_host: https://ghproxy.com
   #
   # github api config
   #
   # person access token
   token: ${GITHUB_PA_TOKEN}
+  base_api: ''
+  # branch
+  default_branch: main
 
+# gitlab config, will extend common info from gitx
 gitlab:
-  main_remote: main
-  fork_remote: origin
   git_url: git@${GITLAB_HOST}
   host_url: http://${GITLAB_HOST}
+  # gitflow git fork mode for develop.
+  fork_mode: true
+  # the source remote name.
+  source_remote: ${GITLAB_SRC_REMOTE}
+  # the default upstream remote name. default is origin.
+  default_remote: origin
+  default_branch: master
+  # branch alias for quick usage.
   branch_aliases:
     h: head
     t: testing
     q: qa
     p: pre
     m: master
-  # from /profile/personal_access_tokens
+  # from GITLAB_HOST/profile/personal_access_tokens
   token: ${GITLAB_PA_TOKEN}
   base_api: http://${GITLAB_HOST}/api/v4

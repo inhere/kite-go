@@ -1,0 +1,30 @@
+#
+# config for special kite commands
+#
+
+# define some command flags value
+cmd_swag_browse:
+  swagger_file: testdata/swagger.json
+
+cmd_swag_gocode:
+  template_dir: $data/templates
+
+cmd_http_serve:
+  port: 9095
+
+cmd_fs_list:
+  alias: 9095
+
+# config for command git:acp
+cmd_git_acp:
+  template: ''
+  after_tip: please do something on next step
+  validator:
+    - name: min-len
+      value: 12
+    - name: min-words
+      value: 2
+
+# config for command gitlab:acp
+cmd_gitlab_acp:
+  template: '{branch} {message}'

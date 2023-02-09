@@ -1,23 +1,33 @@
 
-pluginManager:
-  enable: true
-  plugins_dir:
+# plugins for kite
+plugin:
+  # deny plugin names
+  deny_names: []
+  config_file: $config/modules/plugins.yml
+  # plugin bin search dirs
+  plugin_dirs:
     - plugins # relative base dir.
     - ${GOPATH}/bin
-  data_config: $config/modules/plugins.yml
 
-packageManager:
+# scripts for kite
+script:
+  script_dirs:
+    - scripts # relative base dir.
+  define_files:
+    - $config/modules/scripts.yml
+
+# quick package manage
+package:
   version: 1
   workdir: ''
   timeout: 10m
   metadir: $config/pkgm
 
-scriptManager:
-  enable: true
-  scripts_dir:
-    - scripts # relative base dir.
-  data_config: $config/modules/scripts.yml
-
 jenkins:
   host_url: xyz
   api_token:
+
+quick_jump:
+  data_dir: $data
+  aliases:
+    home: ~
