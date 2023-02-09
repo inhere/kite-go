@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/builtin"
 	"github.com/gookit/gcli/v3/events"
@@ -81,9 +82,12 @@ func addListener(cli *gcli.App) {
 }
 
 func cmdNotFund(ctx *gcli.HookCtx) (stop bool) {
-	app.Log().Infof("kite cli app event: %s, TODO handle", ctx.Name())
+	name := ctx.Str("name")
+	app.Log().Infof("kite cli event: %s, not found: %s", ctx.Name(), name)
 
-	gcli.Println("fire not found command:", ctx.Name())
+	color.Infoln("fire not found event:", ctx.Name(),
+		", name:", name, ",args:", ctx.Strings("args"),
+	)
 
 	// TODO runAny.Run()
 	return

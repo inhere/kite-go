@@ -15,22 +15,19 @@ var (
 	GithubRepo = "https://github.com/inhere/kite-go"
 )
 
-//go:embed README.md .example.env kite.example.yml config/*.yml
+//go:embed README.md .example.env kite.example.yml config
 var EmbedFs embed.FS
 
 // Banner text
 // from http://patorjk.com/software/taag/#p=testall&f=Graffiti&t=Kite
 // font: Doom,Graffiti,Isometric1 - Isometric3, Ogre, Slant
 var Banner = `
-      ___                                   ___
-     /__/|        ___           ___        /  /\
-    |  |:|       /  /\         /  /\      /  /:/_
-    |  |:|      /  /:/        /  /:/     /  /:/ /\
-  __|  |:|     /__/::\       /  /:/     /  /:/ /:/_
- /__/\_|:|____ \__\/\:\__   /  /::\    /__/:/ /:/ /\
- \  \:\/:::::/    \  \:\/\ /__/:/\:\   \  \:\/:/ /:/
-  \  \::/~~~~      \__\::/ \__\/  \:\   \  \::/ /:/
-   \  \:\          /__/:/       \  \:\   \  \:\/:/
-    \  \:\         \__\/         \__\/    \  \::/
-     \__\/                                 \__\/
+ __  __     __     ______   ______
+/\ \/ /    /\ \   /\__  _\ /\  ___\
+\ \  _"-.  \ \ \  \/_/\ \/ \ \  __\
+ \ \_\ \_\  \ \_\    \ \_\  \ \_____\
+  \/_/\/_/   \/_/     \/_/   \/_____/
+
+Auther  : https://github.com/inhere
+Homepage: https://github.com/inhere/kite-go
 `

@@ -6,6 +6,7 @@ import (
 	"github.com/gookit/rux"
 	"github.com/gookit/slog"
 	"github.com/inhere/kite/pkg/gitx"
+	"github.com/inhere/kite/pkg/gitx/github"
 	"github.com/inhere/kite/pkg/gitx/gitlab"
 )
 
@@ -19,7 +20,7 @@ const (
 	ObjPlugin = "plugin"
 	ObjScript = "script"
 
-	ObjGitx = "gitloc"
+	ObjGit  = "git"
 	ObjGlab = "gitlab"
 	ObjGhub = "github"
 )
@@ -49,7 +50,12 @@ func Glab() *gitlab.GitLab {
 	return Get[*gitlab.GitLab](ObjGlab)
 }
 
+// Ghub get
+func Ghub() *github.GitHub {
+	return Get[*github.GitHub](ObjGhub)
+}
+
 // Gitx get
 func Gitx() *gitx.Config {
-	return Get[*gitx.Config](ObjGitx)
+	return Get[*gitx.Config](ObjGit)
 }
