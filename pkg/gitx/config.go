@@ -6,9 +6,9 @@ import (
 )
 
 const (
-	HostGitHub = "github"
-	HostGitlab = "gitlab"
-	HostOther  = "other"
+	HostGitHub  = "github"
+	HostGitlab  = "gitlab"
+	HostDefault = "git"
 )
 
 // ConfigProviderFn type
@@ -41,7 +41,7 @@ type Config struct {
 // NewConfig instance
 func NewConfig() *Config {
 	return &Config{
-		HostType: HostOther,
+		HostType: HostDefault,
 		// remote
 		SourceRemote:  DefaultSrcRemote,
 		DefaultRemote: gitw.DefaultRemoteName,

@@ -10,28 +10,26 @@ import (
 	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/sysutil/cmdr"
+	"github.com/inhere/kite/internal/app"
 	"github.com/inhere/kite/pkg/gitx"
 )
 
-var (
-	confirm bool // interactively ask before executing command
-)
-
-var gitOpts = gitx.CommonOpts{}
+// GitOpts object
+var GitOpts = gitx.CommonOpts{}
 
 // GitCommands commands for use git
 var GitCommands = &gcli.Command{
 	Name:    "git",
 	Desc:    "tools for quick use `git` and more extra commands",
-	Aliases: []string{"g"},
+	Aliases: []string{"g", "gitx"},
 	Subs: []*gcli.Command{
 		RepoInfoCmd,
 		StatusInfoCmd,
 		RemoteInfoCmd,
-		AddCommitPush,
-		AddCommitNotPush,
-		UpdateCmd,
-		UpdatePushCmd,
+		NewAddCommitPush(configProvider),
+		NewAddCommitCmd(configProvider),
+		NewUpdateCmd(configProvider),
+		NewUpdatePushCmd(configProvider),
 		gitx.NewOpenRemoteCmd(nil),
 		InitFlow,
 		CreatePRLink,
@@ -42,7 +40,7 @@ var GitCommands = &gcli.Command{
 		BranchCmd,
 	},
 	Config: func(c *gcli.Command) {
-		gitOpts.BindCommonFlags(c)
+		GitOpts.BindCommonFlags(c)
 
 		c.On(events.OnCmdSubNotFound, SubCmdNotFound)
 		c.On(gcli.EvtCmdOptParsed, func(ctx *gcli.HookCtx) bool {
@@ -50,6 +48,10 @@ var GitCommands = &gcli.Command{
 			return false
 		})
 	},
+}
+
+func configProvider() *gitx.Config {
+	return app.Gitx()
 }
 
 // SubCmdNotFound handle
@@ -83,8 +85,8 @@ func SubCmdNotFound(ctx *gcli.HookCtx) (stop bool) {
 	return
 }
 
-// RedirectToGit handle
-func RedirectToGit(ctx *gcli.HookCtx) (stop bool) {
+// RedirectToGitx handle
+func RedirectToGitx(ctx *gcli.HookCtx) (stop bool) {
 	if ctx.App == nil {
 		return
 	}

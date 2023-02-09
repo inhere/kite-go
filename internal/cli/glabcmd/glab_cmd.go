@@ -16,10 +16,10 @@ var GitLabCmd = &gcli.Command{
 	Aliases: []string{"gl", "glab"},
 	Subs: []*gcli.Command{
 		MergeRequestCmd,
-		gitcmd.UpdateCmd,
-		gitcmd.UpdatePushCmd,
-		gitcmd.AddCommitPush,
-		gitcmd.AddCommitNotPush,
+		gitcmd.NewUpdateCmd(configProvider),
+		gitcmd.NewUpdatePushCmd(configProvider),
+		gitcmd.NewAddCommitPush(configProvider),
+		gitcmd.NewAddCommitCmd(configProvider),
 		gitx.NewOpenRemoteCmd(func() string {
 			return envutil.Getenv("KITE_GLAB_HOST", app.Cfg().String("gitlab.host_url"))
 		}),
@@ -30,6 +30,10 @@ var GitLabCmd = &gcli.Command{
 			return false
 		})
 
-		c.On(events.OnCmdSubNotFound, gitcmd.RedirectToGit)
+		c.On(events.OnCmdSubNotFound, gitcmd.RedirectToGitx)
 	},
+}
+
+func configProvider() *gitx.Config {
+	return app.Glab().Config
 }

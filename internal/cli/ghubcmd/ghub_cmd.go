@@ -3,6 +3,7 @@ package ghubcmd
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/events"
+	"github.com/inhere/kite/internal/app"
 	"github.com/inhere/kite/internal/cli/gitcmd"
 	"github.com/inhere/kite/pkg/gitx"
 )
@@ -10,11 +11,13 @@ import (
 // GithubCmd commands
 var GithubCmd = &gcli.Command{
 	Name:    "github",
-	Aliases: []string{"gh", "gith", "hub", "ghub"},
+	Aliases: []string{"gh", "hub", "ghub"},
 	Desc:    "useful tools for use github",
 	Subs: []*gcli.Command{
-		gitcmd.UpdateCmd,
-		gitcmd.UpdatePushCmd,
+		gitcmd.NewAddCommitCmd(configProvider),
+		gitcmd.NewAddCommitPush(configProvider),
+		gitcmd.NewUpdateCmd(configProvider),
+		gitcmd.NewUpdatePushCmd(configProvider),
 		gitx.NewOpenRemoteCmd(func() string {
 			return gitx.GithubHost // github.host_url
 		}),
@@ -25,11 +28,10 @@ var GithubCmd = &gcli.Command{
 			return false
 		})
 
-		c.On(events.OnCmdSubNotFound, gitcmd.RedirectToGit)
+		c.On(events.OnCmdSubNotFound, gitcmd.RedirectToGitx)
 	},
-	// Hooks: map[string]gcli.HookFunc{
-	// 	"": func(data ...interface{}) (stop bool) {
-	// 		return false
-	// 	},
-	// },
+}
+
+func configProvider() *gitx.Config {
+	return app.Ghub().Config
 }
