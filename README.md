@@ -1,6 +1,6 @@
 # Kite
 
-`Kite` - A CLI tools package.
+`kite` - Personal developer tool command application.
 
 > Github: https://github.com/inhere/kite-go
 

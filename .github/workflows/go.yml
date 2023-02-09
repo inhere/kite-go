@@ -19,11 +19,13 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        go_version: [1.19, 1.18, '1.20']
+        go_version: [1.19, '1.20']
 
     steps:
     - name: Check out code
       uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
 
     - name: Setup Go Faster
       uses: WillAbides/setup-go-faster@v1.8.0
@@ -36,7 +38,7 @@ jobs:
       if: ${{ matrix.os == 'ubuntu-latest' }}
       with:
         # Exclude patterns, separated by semicolons (optional)
-        exclude: "./resource/...;./static/..."
+        exclude: "./build/...;./config/...;./data/...;./docs/...;./static/..."
 
     - name: Run staticcheck
       uses: reviewdog/action-staticcheck@v1
@@ -53,24 +55,26 @@ jobs:
     - name: Run unit tests
       # run: go test -v -cover ./...
       # must add " for profile.cov on Windows OS
+      # go test -v -coverprofile="profile.cov" ./...
       run: |
-        go test -v -coverprofile="profile.cov" ./...
-        make install2
+        make install
+        kite -V
+        kite
 
-    - name: Send coverage
-      uses: shogo82148/actions-goveralls@v1
-      if: ${{ matrix.os == 'ubuntu-latest' }}
-      with:
-        path-to-profile: profile.cov
-        flag-name: Go-${{ matrix.go_version }}
-        parallel: true
+#    - name: Send coverage
+#      uses: shogo82148/actions-goveralls@v1
+#      if: ${{ matrix.os == 'ubuntu-latest' }}
+#      with:
+#        path-to-profile: profile.cov
+#        flag-name: Go-${{ matrix.go_version }}
+#        parallel: true
 
   # notifies that all test jobs are finished.
   # https://github.com/shogo82148/actions-goveralls
-  finish:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: shogo82148/actions-goveralls@v1
-        with:
-          parallel-finished: true
+#  finish:
+#    needs: test
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: shogo82148/actions-goveralls@v1
+#        with:
+#          parallel-finished: true

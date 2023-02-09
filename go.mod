@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/fsnotify/fsnotify v1.6.0
-	github.com/getkin/kin-openapi v0.113.0
+	github.com/getkin/kin-openapi v0.114.0
 	github.com/go-openapi/spec v0.20.8
 	github.com/go-openapi/swag v0.22.3
 	github.com/gomarkdown/markdown v0.0.0-20221013030248-663e2500819c
@@ -16,7 +16,7 @@ require (
 	github.com/gookit/goutil v0.6.2
 	github.com/gookit/greq v0.2.0
 	github.com/gookit/i18n v1.1.4
-	github.com/gookit/ini/v2 v2.1.3
+	github.com/gookit/ini/v2 v2.2.0
 	github.com/gookit/rux v1.3.4
 	github.com/gookit/slog v0.4.0
 	github.com/gookit/view v1.0.2

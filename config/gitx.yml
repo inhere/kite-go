@@ -1,6 +1,6 @@
 
 # default git config.
-gitx:
+git:
   # auto sign on commit
   auto_sign: false
   default_branch: main
@@ -9,7 +9,7 @@ gitx:
   source_remote: main
   default_remote: origin
 
-# GitHub config, will extend common info from gitx
+# GitHub config, will extend common info from git.
 github:
   username: ${GITHUB_USER}
   # GitHub 文件, Releases, archive, gist, raw.githubusercontent.com 文件代理加速下载服务.
