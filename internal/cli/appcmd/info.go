@@ -89,16 +89,20 @@ var KitePathCmd = &gcli.Command{
 var KiteObjectCmd = &gcli.Command{
 	Name:    "object",
 	Aliases: []string{"obj"},
-	Desc:    "custom path aliases mapping info",
+	Desc:    "display service object config struct on kite",
 	Config: func(c *gcli.Command) {
-		c.AddArg("name", "show info for the object name")
+		c.AddArg("name", "show info for the object")
 	},
 	Func: func(c *gcli.Command, args []string) error {
 		var data any
-		key := c.Arg("key").String()
+		key := c.Arg("name").String()
 		switch key {
-		case "app":
+		case "app", "kite":
 			data = app.App().Config
+		case "git", "gitx":
+			data = app.Gitx()
+		case "glab", "gitlab":
+			data = app.Glab()
 		default:
 			if app.Has(key) {
 				data = app.GetAny(key)
@@ -109,9 +113,9 @@ var KiteObjectCmd = &gcli.Command{
 			return c.NewErrf("not found object for %q", key)
 		}
 
-		c.Infoln("Object info:", key)
+		c.Warnln("Object info for", key)
 		dump.Clear(data)
-		return errorx.New("todo")
+		return nil
 	},
 }
 
@@ -152,6 +156,15 @@ var KiteConfCmd = &gcli.Command{
 			return nil
 		}
 
+		switch key {
+		case "git":
+			key = app.ObjGit
+		case "glab":
+			key = app.ObjGlab
+		case "hub", "ghub":
+			key = app.ObjGhub
+		}
+
 		data, ok := app.Cfg().GetValue(key)
 		if !ok {
 			return c.NewErrf("not found config for key: %s", key)
@@ -178,6 +191,16 @@ var KiteAliasCmd = &gcli.Command{
 	Name:    "alias",
 	Aliases: []string{"aliases"},
 	Desc:    "display custom command aliases for kite",
+	Func: func(c *gcli.Command, args []string) error {
+		return errorx.New("todo")
+	},
+}
+
+// CommandMapCmd command
+var CommandMapCmd = &gcli.Command{
+	Name:    "cmd-map",
+	Aliases: []string{"cmdmap"},
+	Desc:    "display all console commands info for kite",
 	Func: func(c *gcli.Command, args []string) error {
 		return errorx.New("todo")
 	},

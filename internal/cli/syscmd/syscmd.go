@@ -28,7 +28,7 @@ var WhichExeCmd = &gcli.Command{
 		c.AddArg("name", "executable name for match", true)
 	},
 	Func: func(c *gcli.Command, _ []string) error {
-		name := c.Arg("keyword").String()
+		name := c.Arg("name").String()
 		file, err := sysutil.Executable(name)
 		if err != nil {
 			return err
@@ -50,7 +50,7 @@ var SearchExeCmd = &gcli.Command{
 	Func: func(c *gcli.Command, _ []string) error {
 		files := sysutil.SearchPath(c.Arg("keyword").String(), 10)
 
-		show.AList("Matched files:", files)
+		show.AList("Matched exe files:", files)
 		return nil
 	},
 }

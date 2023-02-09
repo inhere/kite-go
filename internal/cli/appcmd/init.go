@@ -1,6 +1,7 @@
 package appcmd
 
 import (
+	"embed"
 	"fmt"
 
 	"github.com/gookit/gcli/v3"
@@ -29,6 +30,7 @@ var KiteInitCmd = &gcli.Command{
 		c.BoolOpt2(&ikOpts.force, "force, f", "force re-init kite app config")
 	},
 	Func: func(c *gcli.Command, args []string) error {
+		c.Warnln("Pre-check:")
 		uHome := sysutil.UserHomeDir()
 		c.Infoln("Found user home dir:", uHome)
 
@@ -43,34 +45,37 @@ var KiteInitCmd = &gcli.Command{
 
 		qr := goutil.NewQuickRun()
 		qr.Add(func(ctx *structs.Data) error {
-			c.Infoln("- Make the kite base dir:", baseDir)
+			idx := ctx.IntVal("index") + 1
+			c.Infof("%d. Make the kite base dir: %s\n", idx, baseDir)
 			if ikOpts.dryRun {
 				return nil
 			}
 
 			return fsutil.Mkdir(baseDir, fsutil.DefaultDirPerm)
 		}, func(ctx *structs.Data) error {
-			c.Infoln("- Init the .env file:", dotenvFile)
+			idx := ctx.IntVal("index") + 1
+			c.Infof("%d. Init the .env file: %s\n", idx, dotenvFile)
 			if ikOpts.dryRun {
 				return nil
 			}
 
 			if !ikOpts.force && fsutil.IsFile(dotenvFile) {
-				c.Warnln("  Exists, skip write!")
+				c.Warnln("   Exists, skip write!")
 				return nil
 			}
 
-			text := byteutil.SafeString(kite.EmbedFs.ReadFile(".env.example"))
+			text := byteutil.SafeString(kite.EmbedFs.ReadFile(".example.env"))
 			_, err := fsutil.PutContents(dotenvFile, text, fsutil.FsCWTFlags)
 			return err
 		}, func(ctx *structs.Data) error {
-			c.Infoln("- Init the main config file:", confFile)
+			idx := ctx.IntVal("index") + 1
+			c.Infof("%d. Init the main config file: %s\n", idx, confFile)
 			if ikOpts.dryRun {
 				return nil
 			}
 
 			if !ikOpts.force && fsutil.IsFile(confFile) {
-				c.Warnln("  Exists, skip write!")
+				c.Warnln("   Exists, skip write!")
 				return nil
 			}
 
@@ -78,48 +83,65 @@ var KiteInitCmd = &gcli.Command{
 			_, err := fsutil.PutContents(confFile, text, fsutil.FsCWTFlags)
 			return err
 		}, func(ctx *structs.Data) error {
-			subDirs := []string{"config", "data", "scripts", "plugins"}
-			c.Infof("- Init data dirs in %s: %v\n", baseDir, subDirs)
+			subDirs := []string{"config", "data", "scripts", "plugins", "tmp"}
+			idx := ctx.IntVal("index") + 1
+			c.Infof("%d. Init subdir in %s: %v\n", idx, baseDir, subDirs)
 			if ikOpts.dryRun {
 				return nil
 			}
 
 			return fsutil.MkSubDirs(fsutil.DefaultDirPerm, baseDir, subDirs...)
 		}, func(ctx *structs.Data) error {
-			c.Infof("- Init kite config files to %s/config\n", baseDir)
+			idx := ctx.IntVal("index") + 1
+			c.Infof("%d. Init kite config files to %s/config\n", idx, baseDir)
 			if ikOpts.dryRun {
 				return nil
 			}
 
-			entries, err := kite.EmbedFs.ReadDir("config")
-			if err != nil {
-				return err
-			}
-
-			for _, entry := range entries {
-				path := "config/" + entry.Name()
-				fmt.Println("  Init write the", path)
-
-				dstFile := baseDir + "/" + path
-				if !ikOpts.force && fsutil.IsFile(dstFile) {
-					c.Warnln("   Exists, skip write!")
-					continue
-				}
-
-				text := byteutil.SafeString(kite.EmbedFs.ReadFile(path))
-				_, err = fsutil.PutContents(dstFile, text, fsutil.FsCWTFlags)
-				if err != nil {
-					return err
-				}
-			}
-
-			return err
+			return exportEmbedDir(kite.EmbedFs, "config", baseDir+"/config", true)
 		})
 
+		cliutil.Warnln("\nStarting init:")
 		err := qr.Run()
 		if err == nil {
-			cliutil.Successln(" ✅ Init Completed")
+			cliutil.Successln("✅  Init Completed")
 		}
 		return err
 	},
+}
+
+func exportEmbedDir(efs embed.FS, dirPath, dstDir string, exportSub bool) error {
+	entries, err := efs.ReadDir(dirPath)
+	if err != nil {
+		return err
+	}
+
+	for _, entry := range entries {
+		name := entry.Name()
+		path := dirPath + "/" + name
+
+		if entry.IsDir() {
+			if exportSub {
+				err = exportEmbedDir(efs, path, dstDir+"/"+name, exportSub)
+			}
+			continue
+		}
+
+		fmt.Print("   Read and init the ", path)
+		dstFile := dstDir + "/" + name
+		if !ikOpts.force && fsutil.IsFile(dstFile) {
+			cliutil.Warnln("   Exists")
+			continue
+		}
+
+		text := byteutil.SafeString(kite.EmbedFs.ReadFile(path))
+		_, err = fsutil.PutContents(dstFile, text, fsutil.FsCWTFlags)
+		if err != nil {
+			cliutil.Errorln("   ERROR")
+			return err
+		}
+		cliutil.Successln("   OK")
+	}
+
+	return nil
 }

@@ -2,10 +2,13 @@ package toolcmd
 
 import (
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/goutil/dump"
+	"github.com/gookit/goutil/envutil"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/sysutil/cmdr"
 	"github.com/inhere/kite/internal/app"
+	"github.com/inhere/kite/pkg/lcproxy"
 )
 
 var runOpts = struct {
@@ -51,8 +54,9 @@ examples:
 func runAnything(c *gcli.Command, args []string) error {
 	// set proxy ENV
 	if runOpts.proxy {
+		dump.P(app.App().Lcp)
 		app.App().Lcp.Apply(func() {
-			c.Infoln("TIP: enabled to set proxy ENV vars")
+			c.Infoln("TIP: enabled to set proxy ENV vars, by", envutil.Getenv(lcproxy.HttpKey))
 		})
 	}
 

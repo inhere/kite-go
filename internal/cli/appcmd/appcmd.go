@@ -21,6 +21,7 @@ var ManageCmd = &gcli.Command{
 		PathAliasCmd,
 		KiteAliasCmd,
 		BackendServeCmd,
+		CommandMapCmd,
 	},
 }
 
