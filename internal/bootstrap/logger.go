@@ -11,9 +11,10 @@ import (
 func BootLogger(ka *app.KiteApp) error {
 	// output log to file
 	logger := slog.New()
+	logger.CallerFlag = slog.CallerFlagFull
 	app.Add(app.ObjLog, logger)
 
-	confMap := app.Cfg().SubDataMap("logger")
+	confMap := app.Cfg().SubDataMap(app.ObjLog)
 	if len(confMap) == 0 {
 		initlog.L.Info("skip init the kite logger, not found config")
 		return nil
@@ -40,5 +41,9 @@ func BootLogger(ka *app.KiteApp) error {
 		logger.MustFlush()
 	})
 
+	return nil
+}
+
+func BootSrvLogger(ka *app.KiteApp) error {
 	return nil
 }

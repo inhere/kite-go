@@ -25,6 +25,12 @@ const (
 	ObjGhub = "github"
 )
 
+// L kite logger
+var L *slog.Logger
+
+// SL server logger
+var SL *slog.Logger
+
 // Cfg get the config object
 func Cfg() *config.Config {
 	return Get[*config.Config](ObjConf)

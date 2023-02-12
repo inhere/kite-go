@@ -33,7 +33,7 @@ VERSION ?= $(shell echo "$$(git for-each-ref refs/tags/ --count=1 --sort=-versio
 
 # Full build flags used when building binaries. Not used for test compilation/execution.
 BUILDFLAGS := -ldflags \
-  " -X $(ROOT_PACKAGE).Version=$(VERSION)\
+  " -s -w -X $(ROOT_PACKAGE).Version=$(VERSION)\
 		-X $(ROOT_PACKAGE).Revision=$(REV)\
 		-X $(ROOT_PACKAGE).Branch=$(BRANCH)\
 		-X $(ROOT_PACKAGE).BuildDate=$(BUILD_DATE)\
@@ -88,7 +88,7 @@ build: $(GO_DEPENDENCIES) clean ## Build jx-labs binary for current OS
 
 install: $(GO_DEPENDENCIES) ## Install the kite binary to gopath/bin
 	GOBIN=${GOPATH}/bin $(GO) install $(BUILDFLAGS) $(MAIN_SRC_FILE)
-	ls -alh ${GOPATH}/bin/kite
+	@ls -alh ${GOPATH}/bin/kite
 
 install2: $(GO_DEPENDENCIES) ## Install the kit binary to gopath/bin
 	go build $(BUILDFLAGS) -o $(GOPATH)/bin/kit ./cmd/kite
@@ -133,22 +133,22 @@ test-report-html: make-reports-dir get-test-deps test-coverage ## Create the tes
 build-all:linux linux-arm win darwin darwin-arm ## Build for Linux,OSX,Windows platform
 
 linux: ## Build for Linux
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=linux GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-linux-amd64 $(MAIN_SRC_FILE)
+	GOOS=linux GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-linux-amd64 $(MAIN_SRC_FILE)
 	chmod +x build/$(NAME)-linux-amd64
 
 linux-arm: ## Build for Linux ARM64
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=linux GOARCH=arm $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-linux-arm $(MAIN_SRC_FILE)
+	GOOS=linux GOARCH=arm $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-linux-arm $(MAIN_SRC_FILE)
 	chmod +x build/$(NAME)-linux-arm
 
 win: ## Build for Windows
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=windows GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-windows-amd64.exe $(MAIN_SRC_FILE)
+	GOOS=windows GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-windows-amd64.exe $(MAIN_SRC_FILE)
 
 darwin: ## Build for OSX AMD
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=darwin GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-darwin-amd64 $(MAIN_SRC_FILE)
+	GOOS=darwin GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-darwin-amd64 $(MAIN_SRC_FILE)
 	chmod +x build/$(NAME)-darwin-amd64
 
 darwin-arm: ## Build for OSX ARM64
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=darwin GOARCH=arm64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-darwin-arm64 $(MAIN_SRC_FILE)
+	GOOS=darwin GOARCH=arm64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-darwin-arm64 $(MAIN_SRC_FILE)
 	chmod +x build/$(NAME)-darwin-arm64
 
 .PHONY: release

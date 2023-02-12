@@ -28,6 +28,7 @@ func Boot(ka *app.KiteApp) error {
 		BootConfig,
 		BootAppInfo,
 		BootLogger,
+		BootSrvLogger,
 		BootI18n,
 		BootCli,
 	)
