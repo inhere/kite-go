@@ -69,12 +69,12 @@ func addListener(cli *gcli.App) {
 	})
 
 	cli.On(events.OnCmdRunBefore, func(ctx *gcli.HookCtx) (stop bool) {
-		app.Log().Info("will run the command: %s with args: %v", ctx.Cmd.ID(), ctx.Get("args"))
+		app.Log().Infof("will run the command: %s with args: %v", ctx.Cmd.ID(), ctx.Cmd.RawArgs())
 		return
 	})
 
 	cli.On(events.OnCmdRunAfter, func(ctx *gcli.HookCtx) (stop bool) {
-		app.Log().Info("kite cli app command: %s run completed", ctx.Cmd.ID())
+		app.Log().Infof("kite cli app command: %s run completed", ctx.Cmd.ID())
 		return
 	})
 

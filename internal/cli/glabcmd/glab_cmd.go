@@ -15,6 +15,7 @@ var GitLabCmd = &gcli.Command{
 	Desc:    "useful tool commands for use gitlab",
 	Aliases: []string{"gl", "glab"},
 	Subs: []*gcli.Command{
+		ResolveConflictCmd,
 		MergeRequestCmd,
 		gitcmd.NewUpdateCmd(configProvider),
 		gitcmd.NewUpdatePushCmd(configProvider),

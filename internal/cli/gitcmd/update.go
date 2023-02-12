@@ -24,7 +24,7 @@ On fork_mode=true:
 func NewUpdatePushCmd(cfgGetter gitx.ConfigProviderFn) *gcli.Command {
 	return &gcli.Command{
 		Name:    "update-push",
-		Desc:    "Update from origin and main remote, then push to origin remote",
+		Desc:    "Update code from remotes, then push to default remote",
 		Help:    upHelp,
 		Aliases: []string{"up-push", "upp"},
 		Config: func(c *gcli.Command) {
@@ -46,7 +46,7 @@ func NewUpdatePushCmd(cfgGetter gitx.ConfigProviderFn) *gcli.Command {
 func NewUpdateCmd(cfgGetter gitx.ConfigProviderFn) *gcli.Command {
 	return &gcli.Command{
 		Name:    "update",
-		Desc:    "Update code from upstream and source remote repositories",
+		Desc:    "Update code from remote repositories",
 		Help:    upHelp,
 		Aliases: []string{"up"},
 		Config: func(c *gcli.Command) {

@@ -44,7 +44,9 @@ var GitCommands = &gcli.Command{
 
 		c.On(events.OnCmdSubNotFound, SubCmdNotFound)
 		c.On(gcli.EvtCmdOptParsed, func(ctx *gcli.HookCtx) bool {
-			c.Infoln("[GIT] Workdir:", c.WorkDir())
+			if ctx.Cmd.Name == c.Name {
+				c.Infoln("[GIT] Workdir:", c.WorkDir())
+			}
 			return false
 		})
 	},
