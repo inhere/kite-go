@@ -46,7 +46,7 @@ pathmap:
   gobin: ${GOPATH}/bin
 
 quick_open:
-  feishu-page: https://${FEISHU_DOMAIN_ID}.feishu.cn/drive/home/
+  gh: https://github.com
 
 # aliases map for kite commands
 # can be use for quick run a subcommand, and allow with flags

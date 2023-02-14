@@ -4,7 +4,7 @@ jobs:
     steps:
       - name: step1
         timeout-minutes: 1
-        work-dir: /data/www/inhere.xyz
+        work-dir: /data/www/inhere
         run: |
           git checkout .
           git pull -f

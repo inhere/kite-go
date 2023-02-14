@@ -18,13 +18,19 @@ cmd_fs_list:
 # config for command git:acp
 cmd_git_acp:
   template: ''
-  after_tip: please do something on next step
+  after_tip: please do something on next step..
+
+# config for command gitlab:acp
+cmd_gitlab_acp:
+  template: '{branch} {message}'
+  after_tip: please do something on next step.
   validator:
     - name: min-len
       value: 12
     - name: min-words
       value: 2
 
-# config for command gitlab:acp
-cmd_gitlab_acp:
-  template: '{branch} {message}'
+# config for command github:acp
+cmd_github_acp:
+  template: '{emoji} {type}:{message}'
+  after_tip: please do something on next step..

@@ -7,6 +7,7 @@ BUILD_TARGET = build
 MAIN_SRC_FILE=cmd/kite/main.go
 
 GO := go
+# short commit id
 REV := $(shell git rev-parse --short HEAD 2> /dev/null || echo 'unknown')
 ORG := inhere
 NAME := kite
@@ -130,7 +131,7 @@ test-report: make-reports-dir get-test-deps test-coverage ## Create the test rep
 test-report-html: make-reports-dir get-test-deps test-coverage ## Create the test report in HTML format
 	@gocov convert $(COVER_OUT) | gocov-html > $(REPORTS_DIR)/cover.html && open $(REPORTS_DIR)/cover.html
 
-build-all:linux linux-arm win darwin darwin-arm ## Build for Linux,OSX,Windows platform
+build-all:linux linux-arm win win-arm darwin darwin-arm ## Build for Linux,OSX,Windows platform
 
 linux: ## Build for Linux
 	GOOS=linux GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-linux-amd64 $(MAIN_SRC_FILE)
@@ -142,6 +143,10 @@ linux-arm: ## Build for Linux ARM64
 
 win: ## Build for Windows
 	GOOS=windows GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-windows-amd64.exe $(MAIN_SRC_FILE)
+	chmod +x build/$(NAME)-linux-amd64.exe
+
+win-arm: ## Build for Windows arm64
+	GOOS=windows GOARCH=arm64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-windows-arm64.exe $(MAIN_SRC_FILE)
 
 darwin: ## Build for OSX AMD
 	GOOS=darwin GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-darwin-amd64 $(MAIN_SRC_FILE)
