@@ -2,10 +2,13 @@ package syscmd
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/sysutil"
+	"github.com/inhere/kite/internal/app"
+	"github.com/inhere/kite/pkg/gitx"
 )
 
 // SysCmd command
@@ -14,6 +17,7 @@ var SysCmd = &gcli.Command{
 	Aliases: []string{"os", "system"},
 	Desc:    "provide some useful system commands",
 	Subs: []*gcli.Command{
+		QuickOpenCmd,
 		SearchExeCmd,
 		WhichExeCmd,
 	},
@@ -52,5 +56,34 @@ var SearchExeCmd = &gcli.Command{
 
 		show.AList("Matched exe files:", files)
 		return nil
+	},
+}
+
+// QuickOpenCmd command
+var QuickOpenCmd = &gcli.Command{
+	Name:    "open",
+	Aliases: []string{"open-exe"},
+	Desc:    "open input file or dir or remote URL address",
+	Config: func(c *gcli.Command) {
+		c.AddArg("name", "bin name or URL address", true)
+	},
+	Func: func(c *gcli.Command, _ []string) error {
+		name := c.Arg("name").String()
+
+		var dstFile = name
+		if strings.Contains(name, "/") {
+			// special github url
+			if strings.HasPrefix(name, gitx.GitHubHost) {
+				dstFile = "https://" + name
+				// } else if fsutil.PathExists(name) {
+				// 	// nothing ...
+				// } else if validate.IsURL(name) {
+			}
+		} else if app.OpenMap.HasAlias(name) {
+			dstFile = app.OpenMap.ResolveAlias(name)
+		}
+
+		c.Infoln("Will Open the:", dstFile)
+		return sysutil.Open(dstFile)
 	},
 }

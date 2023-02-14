@@ -51,6 +51,11 @@ var KiteInitCmd = &gcli.Command{
 				return nil
 			}
 
+			if !ikOpts.force && fsutil.IsFile(baseDir) {
+				c.Warnln("   Exists, skip write!")
+				return nil
+			}
+
 			return fsutil.Mkdir(baseDir, fsutil.DefaultDirPerm)
 		}, func(ctx *structs.Data) error {
 			idx := ctx.IntVal("index") + 1

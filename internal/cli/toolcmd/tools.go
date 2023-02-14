@@ -2,6 +2,7 @@ package toolcmd
 
 import (
 	"github.com/gookit/gcli/v3"
+	"github.com/inhere/kite/internal/cli/syscmd"
 	"github.com/inhere/kite/internal/cli/toolcmd/doctool"
 	"github.com/inhere/kite/internal/cli/toolcmd/mdcmd"
 	"github.com/inhere/kite/internal/cli/toolcmd/swagger"
@@ -20,6 +21,7 @@ var ToolsCmd = &gcli.Command{
 		RunAnyCmd,
 		doctool.DocumentCmd,
 		mdcmd.MkDownCmd,
+		syscmd.QuickOpenCmd,
 	},
 	Config: func(c *gcli.Command) {
 

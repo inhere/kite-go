@@ -24,9 +24,9 @@ func NewLocalProxy() *LocalProxy {
 }
 
 // Apply proxy ENV setting.
-func (lp *LocalProxy) Apply(beforeFn func()) {
+func (lp *LocalProxy) Apply(beforeFn func(lp *LocalProxy)) {
 	if !lp.IsEmpty() {
-		beforeFn()
+		beforeFn(lp)
 		envutil.SetEnvs(HttpKey, lp.HttpProxy, HttpsKey, lp.HttpsProxy)
 	}
 }

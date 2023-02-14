@@ -1,12 +1,18 @@
 package apputil
 
 import (
-	"os"
+	"strings"
+
+	"github.com/gookit/goutil/maputil"
+	"github.com/inhere/kite/internal/app"
 )
 
-// SetEnvs to os
-func SetEnvs(mp map[string]string) {
-	for key, value := range mp {
-		_ = os.Setenv(key, value)
-	}
+// CmdConfigKey build
+func CmdConfigKey(nodes ...string) string {
+	return "cmd_" + strings.Join(nodes, "_")
+}
+
+// CmdConfigData find
+func CmdConfigData(nodes ...string) maputil.Data {
+	return app.Cfg().SubDataMap(CmdConfigKey(nodes...))
 }
