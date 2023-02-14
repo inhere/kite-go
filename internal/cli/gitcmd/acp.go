@@ -1,24 +1,61 @@
 package gitcmd
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
-	"github.com/gookit/goutil/dump"
+	"github.com/gookit/gcli/v3/show"
+	"github.com/gookit/gitw"
+	"github.com/gookit/gitw/gitutil"
 	"github.com/gookit/goutil/strutil"
+	"github.com/gookit/goutil/strutil/textutil"
 	"github.com/inhere/kite/internal/app"
+	"github.com/inhere/kite/internal/appconst"
+	"github.com/inhere/kite/internal/apputil"
 	"github.com/inhere/kite/pkg/cmdutil"
 	"github.com/inhere/kite/pkg/gitx"
 )
 
-var acpOpts = struct {
+type acpOptModel struct {
 	gitx.CommonOpts
 	template string
 	message  string
-	notPush  bool
-}{}
+
+	notPush    bool
+	noTemplate bool
+	autoEmoji  bool
+	autoType   bool
+	autoSign   bool
+}
+
+func (m *acpOptModel) buildMsg(tpl, brName string) string {
+	if m.noTemplate {
+		return m.message
+	}
+
+	tpl = strutil.OrElse(m.template, tpl)
+	if tpl == "" {
+		return m.message
+	}
+
+	msgVar := "{message}"
+	if !strings.Contains(tpl, msgVar) {
+		tpl = fmt.Sprintf("%s %s", tpl, msgVar)
+	}
+
+	vars := map[string]any{
+		"branch":  brName,
+		"message": m.message,
+		"emoji":   gitutil.ParseCommitType(m.message),
+	}
+
+	return textutil.ReplaceVars(tpl, vars, appconst.VarFormat)
+}
 
 const acpHelp = `
-Commit types:
+<b>Commit types</>:
  build     "Build system"
  chore     "Chore"
  ci        "CI"
@@ -29,13 +66,30 @@ Commit types:
  refactor  "Refactor"
  style     "Style"
  test      "Testing"
+
+<b>Template variables</>:
+> variables can use for message template
+
+emoji   - auto add git-emoji
+type    - auto add commit type
+branch  - current branch name
+message - input commit message
+
+Examples:
+
+{$fullCmd} -t '{emoji} {message}' -m "fix: fix an error"
+> Will run: <cyan>git -m ":bug: fix: fix an error"</>
 `
+
+var acpOpts = acpOptModel{}
 
 func acpConfigFunc(c *gcli.Command, bindNp bool) {
 	acpOpts.BindCommonFlags(c)
 
 	c.StrOpt2(&acpOpts.message, "message,m", "the git commit message", gflag.WithRequired())
 	c.StrOpt2(&acpOpts.template, "template,t", "the git commit template")
+	c.BoolOpt(&acpOpts.noTemplate, "no-template", "nt", false, "disable the commit template")
+	c.BoolOpt(&acpOpts.autoEmoji, "auto-emoji", "ae,emoji", false, "auto prepend git-emoji to commit template")
 
 	if bindNp {
 		c.BoolOpt(&acpOpts.notPush, "not-push", "np", false, "dont execute git push")
@@ -81,10 +135,14 @@ func NewAddCommitCmd(cfgGetter gitx.ConfigProviderFn) *gcli.Command {
 
 func acpHandleFunc(c *gcli.Command, args []string, cfg *gitx.Config) error {
 	runPush := !acpOpts.notPush
-	confKey := strutil.Join("_", "cmd", cfg.HostType, c.Name)
+	confKey := apputil.CmdConfigKey(cfg.HostType, c.Name)
+	cmdConf := app.Cfg().SubDataMap(confKey)
 
-	dump.NoLoc(app.Cfg().Get(confKey))
+	if !cmdConf.IsEmtpy() {
+		show.AList("Command settings", cmdConf)
+	}
 
+	gr := gitw.NewRepo(acpOpts.Workdir)
 	rr := cmdutil.NewRunner(func(rr *cmdutil.Runner) {
 		rr.DryRun = acpOpts.DryRun
 		rr.Confirm = acpOpts.Confirm
@@ -97,11 +155,11 @@ func acpHandleFunc(c *gcli.Command, args []string, cfg *gitx.Config) error {
 		rr.GitCmd("status").GitCmd("add", ".")
 	}
 
-	rr.GitCmd("commit", "-m", acpOpts.message)
+	message := acpOpts.buildMsg(cmdConf.Str("template"), gr.CurBranchName())
+	rr.GitCmd("commit", "-m", message)
 
 	if runPush {
 		rr.GitCmd("push")
 	}
-
 	return rr.Run()
 }

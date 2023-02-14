@@ -1,7 +1,8 @@
 package gitx
 
 const (
-	GithubHost = "https://github.com"
+	GitHubHost = "github.com"
+	GitHubURL  = "https://github.com"
 
 	DefaultSrcRemote = "main"
 	DefaultOriRemote = "origin"

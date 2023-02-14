@@ -1,6 +1,8 @@
 package gitx
 
 import (
+	"strings"
+
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gitw"
 	"github.com/gookit/goutil/strutil"
@@ -43,18 +45,24 @@ func NewOpenRemoteCmd(hostUrlGetter func() string) *gcli.Command {
 
 			var repoUrl string
 			if strutil.IsNotBlank(repoPath) {
-				var hostUrl string
-				if hostUrlGetter != nil {
-					hostUrl = hostUrlGetter()
-				}
-
-				if hostUrl != "" {
-					repoUrl = hostUrl + "/" + repoPath
+				// special github url
+				if strings.HasPrefix(repoPath, GitHubHost) {
+					repoUrl = "https://" + repoPath
 				} else {
-					repo := gitw.NewRepo(c.WorkDir())
-					repoUrl = repo.RemoteInfo(remote).HTTPHost() + "/" + repoPath
+					var hostUrl string
+					if hostUrlGetter != nil {
+						hostUrl = hostUrlGetter()
+					}
+
+					if hostUrl != "" {
+						repoUrl = hostUrl + "/" + repoPath
+					} else {
+						repo := gitw.NewRepo(c.WorkDir())
+						repoUrl = repo.RemoteInfo(remote).HTTPHost() + "/" + repoPath
+					}
 				}
 			} else {
+				// parse from git repo
 				repo := gitw.NewRepo(c.WorkDir())
 				repoUrl = repo.RemoteInfo(remote).URLOrBuild()
 			}
