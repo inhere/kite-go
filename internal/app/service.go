@@ -3,11 +3,13 @@ package app
 import (
 	"github.com/gookit/config/v2"
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/rux"
 	"github.com/gookit/slog"
 	"github.com/inhere/kite/pkg/gitx"
 	"github.com/inhere/kite/pkg/gitx/github"
 	"github.com/inhere/kite/pkg/gitx/gitlab"
+	"github.com/inhere/kite/pkg/kiteext"
 )
 
 const (
@@ -30,6 +32,12 @@ var L *slog.Logger
 
 // SL server logger
 var SL *slog.Logger
+
+var (
+	KARun   *kiteext.KiteAliasRun
+	PathMap *kiteext.PathMap
+	OpenMap maputil.Aliases
+)
 
 // Cfg get the config object
 func Cfg() *config.Config {

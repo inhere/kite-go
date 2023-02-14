@@ -72,4 +72,15 @@ func addServiceBoot(ka *app.KiteApp) {
 		app.Add(app.ObjPlugin, plug)
 		return nil
 	})
+
+	ka.AddBootFuncs(func(ka *app.KiteApp) error {
+		app.OpenMap = app.Cfg().StringMap("quick_open")
+		app.PathMap = &kiteext.PathMap{
+			Map: app.Cfg().StringMap("pathmap"),
+		}
+		app.KARun = &kiteext.KiteAliasRun{
+			Aliases: app.Cfg().StringMap("aliases"),
+		}
+		return nil
+	})
 }
