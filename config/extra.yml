@@ -3,7 +3,7 @@
 plugin:
   # deny plugin names
   deny_names: []
-  config_file: $config/modules/plugins.yml
+  config_file: $config/module/plugins.yml
   # plugin bin search dirs
   plugin_dirs:
     - plugins # relative base dir.
@@ -14,7 +14,7 @@ script:
   script_dirs:
     - scripts # relative base dir.
   define_files:
-    - $config/modules/scripts.yml
+    - $config/module/scripts.yml
 
 # quick package manage
 package:

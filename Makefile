@@ -95,16 +95,6 @@ install2: $(GO_DEPENDENCIES) ## Install the kit binary to gopath/bin
 	go build $(BUILDFLAGS) -o $(GOPATH)/bin/kit ./cmd/kite
 	@ls -alh ${GOPATH}/bin/kit
 
-kit2gobin:  ## build cmd/kit to go bin dir
-	go mod tidy
-	go build $(BUILDFLAGS) -o $(GOPATH)/bin/kit ./cmd/kite
-	chmod a+x $(GOPATH)/bin/kit
-
-kite2gobin: ## build cmd/kite to go bin dir
-	go mod tidy
-	go build $(BUILDFLAGS) -o $(GOPATH)/bin/kite ./cmd/kite
-	chmod a+x $(GOPATH)/bin/kite
-
 tidy-deps: ## Cleans up dependencies
 	$(GO) mod tidy
 	# mod tidy only takes compile dependencies into account, let's make sure we capture tooling dependencies as well
@@ -143,7 +133,6 @@ linux-arm: ## Build for Linux ARM64
 
 win: ## Build for Windows
 	GOOS=windows GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-windows-amd64.exe $(MAIN_SRC_FILE)
-	chmod +x build/$(NAME)-linux-amd64.exe
 
 win-arm: ## Build for Windows arm64
 	GOOS=windows GOARCH=arm64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-windows-arm64.exe $(MAIN_SRC_FILE)

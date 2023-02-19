@@ -60,7 +60,8 @@ func addServiceBoot(ka *app.KiteApp) {
 			return err
 		}
 
-		app.Add(app.ObjScript, sr)
+		app.Scripts = sr
+		// app.Add(app.ObjScript, sr)
 		return nil
 	}, func(ka *app.KiteApp) error {
 		plug := &kiteext.PluginRunner{}
@@ -69,7 +70,8 @@ func addServiceBoot(ka *app.KiteApp) {
 			return err
 		}
 
-		app.Add(app.ObjPlugin, plug)
+		app.Plugins = plug
+		// app.Add(app.ObjPlugin, plug)
 		return nil
 	})
 
@@ -78,9 +80,9 @@ func addServiceBoot(ka *app.KiteApp) {
 		app.PathMap = &kiteext.PathMap{
 			Map: app.Cfg().StringMap("pathmap"),
 		}
-		app.KARun = &kiteext.KiteAliasRun{
-			Aliases: app.Cfg().StringMap("aliases"),
-		}
+		// app.AlsRun = &kiteext.KiteAliasRun{
+		// 	Aliases: app.Cfg().StringMap("aliases"),
+		// }
 		return nil
 	})
 }

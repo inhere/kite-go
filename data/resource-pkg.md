@@ -9,8 +9,8 @@
 data file: /dist/data.json
 
 - https://github.com/jaywcjlove/linux-command
-- https://wangchujiang.com/linux-command/list.html#!kw=ls
-- https://wangchujiang.com/linux-command/hot.html
+  - https://wangchujiang.com/linux-command/list.html#!kw=ls
+  - https://wangchujiang.com/linux-command/hot.html
 
 **tldr**
 
@@ -153,7 +153,7 @@ gitlab:
 
 **yaml**
 
-- https://github.com/go-yaml/yaml `go get gopkg.in/yaml.v3`
+- https://github.com/go-yaml/yaml   gopkg.in/yaml.v3
 - https://github.com/goccy/go-yaml `Y`
 - https://github.com/ghodss/yaml
 

@@ -27,14 +27,22 @@ const (
 	ObjGhub = "github"
 )
 
-// L kite logger
-var L *slog.Logger
-
-// SL server logger
-var SL *slog.Logger
+var (
+	// L kite logger
+	L *slog.Logger
+	// CL kite console logger
+	CL *slog.Logger
+	// SL server logger
+	SL *slog.Logger
+)
 
 var (
-	KARun   *kiteext.KiteAliasRun
+	// AlsRun  *kiteext.KiteAliasRun
+
+	Scripts *kiteext.ScriptRunner
+	Plugins *kiteext.PluginRunner
+
+	// PathMap data
 	PathMap *kiteext.PathMap
 	OpenMap maputil.Aliases
 )
