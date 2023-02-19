@@ -8,6 +8,9 @@
 #
 set -e
 
+# echo $@;
+# exit 0;
+
 # check OS info
 case $(uname | tr '[:upper:]' '[:lower:]') in
   linux*)

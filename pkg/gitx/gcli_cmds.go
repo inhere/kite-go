@@ -20,10 +20,16 @@ type CommonOpts struct {
 
 // BindCommonFlags for some git commands
 func (co *CommonOpts) BindCommonFlags(c *gcli.Command) {
-	c.BoolOpt(&co.DryRun, "dry-run", "dry", false, "run workflow, but dont real execute command")
-	c.BoolOpt2(&co.Proxy, "proxy,p", "manual enable set proxy ENV config")
-	c.StrOpt(&co.Workdir, "workdir", "w", "", "the command workdir path")
+	co.BindCommonFlags1(c)
+
+	c.BoolOpt2(&co.Proxy, "proxy,P", "manual enable set proxy ENV config")
 	c.BoolOpt2(&co.Confirm, "confirm", "confirm ask before executing command")
+}
+
+// BindCommonFlags1 for some git commands
+func (co *CommonOpts) BindCommonFlags1(c *gcli.Command) {
+	c.BoolOpt(&co.DryRun, "dry-run", "dry", false, "run workflow, but dont real execute command")
+	c.StrOpt(&co.Workdir, "workdir", "w", "", "the command workdir path, default is current dir")
 }
 
 var orOpts = struct {
@@ -43,28 +49,31 @@ func NewOpenRemoteCmd(hostUrlGetter func() string) *gcli.Command {
 			remote := orOpts.remote
 			repoPath := c.Arg("repoPath").String()
 
-			var repoUrl string
+			var hostUrl, repoUrl string
+			if hostUrlGetter != nil {
+				hostUrl = hostUrlGetter()
+			}
+
 			if strutil.IsNotBlank(repoPath) {
 				// special github url
 				if strings.HasPrefix(repoPath, GitHubHost) {
 					repoUrl = "https://" + repoPath
+				} else if hostUrl != "" {
+					repoUrl = hostUrl + "/" + repoPath
 				} else {
-					var hostUrl string
-					if hostUrlGetter != nil {
-						hostUrl = hostUrlGetter()
-					}
-
-					if hostUrl != "" {
-						repoUrl = hostUrl + "/" + repoPath
-					} else {
-						repo := gitw.NewRepo(c.WorkDir())
-						repoUrl = repo.RemoteInfo(remote).HTTPHost() + "/" + repoPath
-					}
+					repo := gitw.NewRepo(c.WorkDir())
+					repoUrl = repo.RemoteInfo(remote).HTTPHost() + "/" + repoPath
 				}
 			} else {
 				// parse from git repo
 				repo := gitw.NewRepo(c.WorkDir())
-				repoUrl = repo.RemoteInfo(remote).URLOrBuild()
+				rmt := repo.RemoteInfo(remote)
+
+				if hostUrl != "" {
+					repoUrl = hostUrl + "/" + rmt.RepoPath()
+				} else {
+					repoUrl = rmt.URLOrBuild()
+				}
 			}
 
 			c.Infoln("Open URL:", repoUrl)

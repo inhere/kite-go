@@ -18,7 +18,7 @@ type ConfigProviderFn func() *Config
 type Config struct {
 	// GitUrl git host url
 	GitUrl string `json:"git_url"`
-	// HostUrl http host url
+	// HostUrl http host url. eg: https://gitlab.myself.com
 	HostUrl string `json:"host_url"`
 	// HostType eg: HostGitHub
 	HostType string `json:"host_type"`

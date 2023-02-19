@@ -3,13 +3,14 @@ package gitx
 import (
 	"github.com/gookit/gitw"
 	"github.com/gookit/goutil"
+	"github.com/gookit/goutil/errorx"
 )
 
 // GitLoc repo struct
 type GitLoc struct {
 	*Config
 	// local repo
-	repo *gitw.Repo
+	*gitw.Repo
 }
 
 // NewGitLoc instance
@@ -21,23 +22,23 @@ func NewGitLoc(repoDir string, cfg *Config) *GitLoc {
 	}
 
 	return &GitLoc{
-		repo: gitw.NewRepo(repoDir).PrintCmdOnExec(),
+		Repo: gitw.NewRepo(repoDir).PrintCmdOnExec(),
 		// config
 		Config: cfg,
 	}
 }
 
 func (g *GitLoc) HasDefaultRemote() bool {
-	return g.Repo().HasRemote(g.DefaultRemote)
+	return g.Repo.HasRemote(g.DefaultRemote)
 }
 
 func (g *GitLoc) HasSourceRemote() bool {
-	return g.Repo().HasRemote(g.SourceRemote)
+	return g.Repo.HasRemote(g.SourceRemote)
 }
 
 // DefRemoteInfo data.
 func (g *GitLoc) DefRemoteInfo() *gitw.RemoteInfo {
-	ri := g.Repo().RemoteInfo(g.DefaultRemote)
+	ri := g.Repo.RemoteInfo(g.DefaultRemote)
 	if ri != nil {
 		goutil.Panicf("gitx: default remote %q is not found", g.DefaultRemote)
 	}
@@ -46,7 +47,7 @@ func (g *GitLoc) DefRemoteInfo() *gitw.RemoteInfo {
 
 // SrcRemoteInfo data.
 func (g *GitLoc) SrcRemoteInfo() *gitw.RemoteInfo {
-	ri := g.Repo().RemoteInfo(g.SourceRemote)
+	ri := g.Repo.RemoteInfo(g.SourceRemote)
 	if ri != nil {
 		goutil.Panicf("gitx: main repo remote %q is not found", g.SourceRemote)
 	}
@@ -55,20 +56,26 @@ func (g *GitLoc) SrcRemoteInfo() *gitw.RemoteInfo {
 
 // Check git config.
 func (g *GitLoc) Check() error {
+	if err := g.CheckRemote(); err != nil {
+		return err
+	}
 	return nil
 }
 
-// Repo instance.
-func (g *GitLoc) Repo() *gitw.Repo {
-	return g.repo
+// CheckRemote git config.
+func (g *GitLoc) CheckRemote() error {
+	if !g.HasRemote(g.DefaultRemote) {
+		return errorx.Rawf("the default remote %q is not exists")
+	}
+
+	if g.ForkMode && !g.HasRemote(g.SourceRemote) {
+		return errorx.Rawf("the source remote %q is not exists")
+	}
+
+	return nil
 }
 
 // RepoDir path.
 func (g *GitLoc) RepoDir() string {
-	return g.repo.Dir()
-}
-
-// Cmd create
-func (g *GitLoc) Cmd(name string, args ...string) *gitw.GitWrap {
-	return g.repo.Cmd(name, args...)
+	return g.Repo.Dir()
 }
