@@ -8,13 +8,12 @@ import (
 	"github.com/inhere/kite/internal/app"
 	"github.com/inhere/kite/internal/cli/appcmd"
 	"github.com/inhere/kite/internal/cli/devcmd"
+	"github.com/inhere/kite/internal/cli/devcmd/jsoncmd"
 	"github.com/inhere/kite/internal/cli/fscmd"
 	"github.com/inhere/kite/internal/cli/ghubcmd"
 	"github.com/inhere/kite/internal/cli/gitcmd"
 	"github.com/inhere/kite/internal/cli/glabcmd"
 	"github.com/inhere/kite/internal/cli/httpcmd"
-	"github.com/inhere/kite/internal/cli/pkgcmd"
-	"github.com/inhere/kite/internal/cli/strcmd"
 	"github.com/inhere/kite/internal/cli/syscmd"
 	"github.com/inhere/kite/internal/cli/taskx"
 	"github.com/inhere/kite/internal/cli/toolcmd"
@@ -39,11 +38,10 @@ func addCommands(cli *gcli.App) {
 		ghubcmd.GithubCmd,
 		glabcmd.GitLabCmd,
 		httpcmd.HttpCmd,
-		pkgcmd.PkgManageCmd,
-		strcmd.StringCmd,
 		syscmd.SysCmd,
 		appcmd.ManageCmd,
 		taskx.TaskManage,
+		jsoncmd.JSONToolCmd,
 		toolcmd.ToolsCmd,
 		toolcmd.RunAnyCmd,
 		builtin.GenAutoComplete(func(c *gcli.Command) {

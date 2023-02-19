@@ -7,8 +7,15 @@ type ScriptRunner struct {
 	ScriptDirs  []string `json:"script_dirs"`
 	DefineFiles []string `json:"define_files"`
 
+	defineLoad, dirFileLoad bool
+
 	// loaded from ScriptDirs
 	scriptFiles map[string]string
 	// loaded from DefineFiles
-	scriptMap map[string]string
+	scriptMap map[string]any
+}
+
+// DefineScripts map
+func (sr *ScriptRunner) DefineScripts() {
+
 }

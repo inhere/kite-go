@@ -6,9 +6,9 @@ import (
 
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/show"
+	"github.com/gookit/gitw"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/inhere/kite/internal/app"
-	"github.com/inhere/kite/pkg/gitx"
 )
 
 // SysCmd command
@@ -20,6 +20,7 @@ var SysCmd = &gcli.Command{
 		QuickOpenCmd,
 		SearchExeCmd,
 		WhichExeCmd,
+		NewBatchRunCmd(),
 	},
 }
 
@@ -73,7 +74,7 @@ var QuickOpenCmd = &gcli.Command{
 		var dstFile = name
 		if strings.Contains(name, "/") {
 			// special github url
-			if strings.HasPrefix(name, gitx.GitHubHost) {
+			if strings.HasPrefix(name, gitw.GitHubHost) {
 				dstFile = "https://" + name
 				// } else if fsutil.PathExists(name) {
 				// 	// nothing ...
