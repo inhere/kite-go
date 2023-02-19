@@ -65,7 +65,7 @@ func updateHandleFunc(c *gcli.Command, _ []string, cfg *gitx.Config) (err error)
 
 	defRemote := rp.DefaultRemote
 	srcRemote := rp.SourceRemote
-	curBranch := rp.Repo().CurBranchName()
+	curBranch := rp.CurBranchName()
 
 	if !rp.HasDefaultRemote() {
 		return c.NewErrf(
@@ -73,14 +73,14 @@ func updateHandleFunc(c *gcli.Command, _ []string, cfg *gitx.Config) (err error)
 			defRemote, defRemote)
 	}
 
-	upstream := rp.Repo().UpstreamRemote()
+	upstream := rp.UpstreamRemote()
 
 	if !rp.IsDefaultRemote(upstream) {
 		c.Warnf("TIP: current upstream remote is not %q, will auto update it.\n", defRemote)
-		if !rp.Repo().HasRemoteBranch(curBranch, defRemote) {
+		if !rp.HasRemoteBranch(curBranch, defRemote) {
 			err = rp.Cmd("push", "-u", defRemote).Run()
 		} else {
-			err = rp.Repo().SetUpstreamTo(defRemote, curBranch)
+			err = rp.SetUpstreamTo(defRemote, curBranch)
 		}
 
 		if err != nil {
@@ -90,7 +90,7 @@ func updateHandleFunc(c *gcli.Command, _ []string, cfg *gitx.Config) (err error)
 
 	if !rp.IsForkMode() {
 		c.Infoln("Do update repository data from remote ...")
-		return rp.Repo().Cmd("pull", "-np").Run()
+		return rp.Cmd("pull", "-np").Run()
 	}
 
 	rr := cmdutil.NewRunner(func(rr *cmdutil.Runner) {
@@ -109,7 +109,7 @@ func updateHandleFunc(c *gcli.Command, _ []string, cfg *gitx.Config) (err error)
 		)
 	} else {
 		// update from source remote current_branch
-		if rp.Repo().HasRemoteBranch(curBranch, srcRemote) {
+		if rp.HasRemoteBranch(curBranch, srcRemote) {
 			rr.GitCmd("pull", srcRemote, curBranch)
 		}
 

@@ -9,6 +9,7 @@ import (
 	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/gitw"
 	"github.com/gookit/gitw/gitutil"
+	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/strutil/textutil"
 	"github.com/inhere/kite/internal/app"
@@ -45,10 +46,13 @@ func (m *acpOptModel) buildMsg(tpl, brName string) string {
 		tpl = fmt.Sprintf("%s %s", tpl, msgVar)
 	}
 
+	topics := gitutil.ParseCommitTopic(m.message)
+
 	vars := map[string]any{
 		"branch":  brName,
 		"message": m.message,
-		"emoji":   gitutil.ParseCommitType(m.message),
+		"topic":   arrutil.Strings(topics).First(),
+		"emoji":   "", // TODO
 	}
 
 	return textutil.ReplaceVars(tpl, vars, appconst.VarFormat)
@@ -71,7 +75,7 @@ const acpHelp = `
 > variables can use for message template
 
 emoji   - auto add git-emoji
-type    - auto add commit type
+topic   - auto add commit topic type
 branch  - current branch name
 message - input commit message
 

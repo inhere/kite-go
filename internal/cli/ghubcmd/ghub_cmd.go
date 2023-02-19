@@ -14,6 +14,9 @@ var GithubCmd = &gcli.Command{
 	Aliases: []string{"gh", "hub", "ghub"},
 	Desc:    "useful tools for use github",
 	Subs: []*gcli.Command{
+		gitcmd.BatchCmd,
+		gitcmd.BranchCmd,
+		gitcmd.NewCloneCmd(configProvider),
 		gitcmd.NewAddCommitCmd(configProvider),
 		gitcmd.NewAddCommitPush(configProvider),
 		gitcmd.NewUpdateCmd(configProvider),

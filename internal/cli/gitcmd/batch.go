@@ -5,6 +5,7 @@ import (
 
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/dump"
+	"github.com/inhere/kite/pkg/gitx"
 )
 
 // BatchCmd command
@@ -31,10 +32,23 @@ var BatchStatusCmd = &gcli.Command{
 	Aliases: []string{"st"},
 }
 
+var brOpts = struct {
+	gitx.CommonOpts
+	pDir string
+}{}
 var BatchRunCmd = &gcli.Command{
 	Name:    "run",
 	Desc:    "checkout an new branch for development from `dist` remote",
 	Aliases: []string{"exec"},
+	Config: func(c *gcli.Command) {
+		brOpts.BindCommonFlags(c)
+
+		c.AddArg("dirs", "run command in the given dirs, if empty, run on all subdir")
+	},
+	Func: func(c *gcli.Command, args []string) error {
+
+		return nil
+	},
 }
 
 var bpullOpts = struct {

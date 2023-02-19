@@ -22,6 +22,7 @@ var (
 		fetchTags bool
 	}{}
 
+	// ChangelogCmd instance
 	ChangelogCmd = &gcli.Command{
 		Name:    "chlog",
 		Desc:    "batch pull multi git directory by `git pull`",

@@ -17,6 +17,9 @@ var GitLabCmd = &gcli.Command{
 	Subs: []*gcli.Command{
 		ResolveConflictCmd,
 		MergeRequestCmd,
+		gitcmd.BatchCmd,
+		gitcmd.NewBranchCmd(),
+		gitcmd.NewCloneCmd(configProvider),
 		gitcmd.NewUpdateCmd(configProvider),
 		gitcmd.NewUpdatePushCmd(configProvider),
 		gitcmd.NewAddCommitPush(configProvider),
