@@ -13,11 +13,12 @@ import (
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/sysutil/cmdr"
 	"github.com/inhere/kite/internal/app"
+	"github.com/inhere/kite/internal/biz/cmdbiz"
 	"github.com/inhere/kite/pkg/gitx"
 )
 
 // GitOpts object
-var GitOpts = gitx.CommonOpts{}
+var GitOpts = cmdbiz.CommonOpts{}
 
 // GitCommands commands for use git
 var GitCommands = &gcli.Command{
@@ -26,7 +27,7 @@ var GitCommands = &gcli.Command{
 	Aliases: []string{"g", "gitx"},
 	Subs: []*gcli.Command{
 		RepoInfoCmd,
-		StatusInfoCmd,
+		// StatusInfoCmd,
 		RemoteInfoCmd,
 		NewCloneCmd(configProvider),
 		NewAddCommitPush(configProvider),
@@ -47,10 +48,8 @@ var GitCommands = &gcli.Command{
 		GitOpts.BindCommonFlags(c)
 
 		c.On(events.OnCmdSubNotFound, SubCmdNotFound)
-		c.On(gcli.EvtCmdOptParsed, func(ctx *gcli.HookCtx) bool {
-			if ctx.Cmd.Name == c.Name {
-				c.Infoln("[GIT] Workdir:", c.WorkDir())
-			}
+		c.On(events.OnCmdRunBefore, func(ctx *gcli.HookCtx) bool {
+			c.Infoln("[GIT] Workdir:", c.WorkDir())
 			return false
 		})
 	},
@@ -69,7 +68,6 @@ func getCfgByCmdID(c *gcli.Command) *gitx.Config {
 	if strings.Contains(id, gitw.TypeGitlab) {
 		return app.Glab().Config
 	}
-
 	return app.Gitx()
 }
 

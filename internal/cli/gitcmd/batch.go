@@ -5,7 +5,7 @@ import (
 
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/dump"
-	"github.com/inhere/kite/pkg/gitx"
+	"github.com/inhere/kite/internal/biz/cmdbiz"
 )
 
 // BatchCmd command
@@ -32,8 +32,8 @@ var BatchStatusCmd = &gcli.Command{
 	Aliases: []string{"st"},
 }
 
-var brOpts = struct {
-	gitx.CommonOpts
+var btrOpts = struct {
+	cmdbiz.CommonOpts
 	pDir string
 }{}
 var BatchRunCmd = &gcli.Command{
@@ -41,7 +41,7 @@ var BatchRunCmd = &gcli.Command{
 	Desc:    "checkout an new branch for development from `dist` remote",
 	Aliases: []string{"exec"},
 	Config: func(c *gcli.Command) {
-		brOpts.BindCommonFlags(c)
+		btrOpts.BindCommonFlags(c)
 
 		c.AddArg("dirs", "run command in the given dirs, if empty, run on all subdir")
 	},
@@ -51,7 +51,8 @@ var BatchRunCmd = &gcli.Command{
 	},
 }
 
-var bpullOpts = struct {
+var btpOpts = struct {
+	cmdbiz.CommonOpts
 	dirs gcli.String
 }{}
 
@@ -64,7 +65,7 @@ var BatchPullCmd = &gcli.Command{
 			AddArg("baseDir", "base directory for run batch pull, default is work dir").
 			WithValue("./")
 
-		c.VarOpt(&bpullOpts.dirs, "dirs", "", "limit update the given dir names")
+		c.VarOpt(&btpOpts.dirs, "dirs", "", "limit update the given dir names")
 	},
 	Func: func(c *gcli.Command, args []string) error {
 		baseDir := c.Arg("baseDir").String()
@@ -73,7 +74,7 @@ var BatchPullCmd = &gcli.Command{
 			return err
 		}
 
-		dirNames := bpullOpts.dirs.Split(",")
+		dirNames := btpOpts.dirs.Split(",")
 		// if len(dirNames) > 0 {
 		// 	for _, name := range dirNames {
 		// 		path := filepath.Join(absDir, name)

@@ -4,36 +4,15 @@ import (
 	"strings"
 
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/gitw"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/sysutil"
 )
 
-// CommonOpts some common vars struct
-type CommonOpts struct {
-	Proxy   bool
-	DryRun  bool
-	Confirm bool
-	Workdir string
-	GitHost string
-}
-
-// BindCommonFlags for some git commands
-func (co *CommonOpts) BindCommonFlags(c *gcli.Command) {
-	co.BindCommonFlags1(c)
-
-	c.BoolOpt2(&co.Proxy, "proxy,P", "manual enable set proxy ENV config")
-	c.BoolOpt2(&co.Confirm, "confirm", "confirm ask before executing command")
-}
-
-// BindCommonFlags1 for some git commands
-func (co *CommonOpts) BindCommonFlags1(c *gcli.Command) {
-	c.BoolOpt(&co.DryRun, "dry-run", "dry", false, "run workflow, but dont real execute command")
-	c.StrOpt(&co.Workdir, "workdir", "w", "", "the command workdir path, default is current dir")
-}
-
 var orOpts = struct {
-	remote string
+	remote   string
+	repoPath string
 }{}
 
 // NewOpenRemoteCmd instance
@@ -43,11 +22,15 @@ func NewOpenRemoteCmd(hostUrlGetter func() string) *gcli.Command {
 		Desc: "open the git remote repo address on browser",
 		Config: func(c *gcli.Command) {
 			c.StrOpt(&orOpts.remote, "remote", "r", "the remote name, if not input will use default remote")
-			c.AddArg("repoPath", "the git repo path with name. format: GROUP/NAME")
+			c.AddArg("repoPath", "the git repo path with name. format: GROUP/NAME").WithAfterFn(func(a *gflag.CliArg) error {
+				orOpts.repoPath = a.String()
+				return nil
+			})
 		},
 		Func: func(c *gcli.Command, args []string) error {
 			remote := orOpts.remote
-			repoPath := c.Arg("repoPath").String()
+			// repoPath := c.Arg("repoPath").String()
+			repoPath := orOpts.repoPath
 
 			var hostUrl, repoUrl string
 			if hostUrlGetter != nil {

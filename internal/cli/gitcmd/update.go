@@ -2,12 +2,13 @@ package gitcmd
 
 import (
 	"github.com/gookit/gcli/v3"
+	"github.com/inhere/kite/internal/biz/cmdbiz"
 	"github.com/inhere/kite/pkg/cmdutil"
 	"github.com/inhere/kite/pkg/gitx"
 )
 
 var upOpts = struct {
-	gitx.CommonOpts
+	cmdbiz.CommonOpts
 	notPush bool
 }{}
 
@@ -73,6 +74,7 @@ func updateHandleFunc(c *gcli.Command, _ []string, cfg *gitx.Config) (err error)
 			defRemote, defRemote)
 	}
 
+	defBranch := rp.DefaultBranch
 	upstream := rp.UpstreamRemote()
 
 	if !rp.IsDefaultRemote(upstream) {
@@ -109,12 +111,12 @@ func updateHandleFunc(c *gcli.Command, _ []string, cfg *gitx.Config) (err error)
 		)
 	} else {
 		// update from source remote current_branch
-		if rp.HasRemoteBranch(curBranch, srcRemote) {
+		if curBranch != defBranch && rp.HasRemoteBranch(curBranch, srcRemote) {
 			rr.GitCmd("pull", srcRemote, curBranch)
 		}
 
 		// pull latest from source remote DefaultBranch
-		rr.GitCmd("pull", "-np", srcRemote, rp.DefaultBranch)
+		rr.GitCmd("pull", "-np", srcRemote, defBranch)
 	}
 
 	// push to default remote

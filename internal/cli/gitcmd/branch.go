@@ -3,8 +3,8 @@ package gitcmd
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/errorx"
+	"github.com/inhere/kite/internal/biz/cmdbiz"
 	"github.com/inhere/kite/pkg/cmdutil"
-	"github.com/inhere/kite/pkg/gitx"
 )
 
 // BranchCmd instance
@@ -47,7 +47,7 @@ var BranchListCmd = &gcli.Command{
 }
 
 var bcOpts = struct {
-	gitx.CommonOpts
+	cmdbiz.CommonOpts
 	notToSrc bool
 }{}
 

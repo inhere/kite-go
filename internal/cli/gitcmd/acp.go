@@ -15,12 +15,13 @@ import (
 	"github.com/inhere/kite/internal/app"
 	"github.com/inhere/kite/internal/appconst"
 	"github.com/inhere/kite/internal/apputil"
+	"github.com/inhere/kite/internal/biz/cmdbiz"
 	"github.com/inhere/kite/pkg/cmdutil"
 	"github.com/inhere/kite/pkg/gitx"
 )
 
 type acpOptModel struct {
-	gitx.CommonOpts
+	cmdbiz.CommonOpts
 	template string
 	message  string
 

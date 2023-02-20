@@ -3,10 +3,10 @@ package glabcmd
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/errorx"
-	"github.com/inhere/kite/pkg/gitx"
+	"github.com/inhere/kite/internal/biz/cmdbiz"
 )
 
-var rcOpts gitx.CommonOpts
+var rcOpts cmdbiz.CommonOpts
 
 // ResolveConflictCmd instance
 var ResolveConflictCmd = &gcli.Command{

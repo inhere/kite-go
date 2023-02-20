@@ -4,12 +4,11 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/gitw"
-	"github.com/gookit/goutil/sysutil/cmdr"
-	"github.com/inhere/kite/pkg/gitx"
+	"github.com/inhere/kite/internal/biz/cmdbiz"
 )
 
 var riOpts = struct {
-	gitx.CommonOpts
+	cmdbiz.CommonOpts
 }{}
 
 // RepoInfoCmd instance
@@ -24,18 +23,7 @@ var RepoInfoCmd = &gcli.Command{
 		rp := gitw.NewRepo(riOpts.Workdir)
 
 		show.AList("Information", rp.Info())
-
 		return nil
-	},
-}
-
-// StatusInfoCmd instance
-var StatusInfoCmd = &gcli.Command{
-	Name:    "status",
-	Aliases: []string{"st"},
-	Desc:    "git status command",
-	Func: func(c *gcli.Command, args []string) error {
-		return cmdr.NewGitCmd("status").ToOSStdout().Run()
 	},
 }
 
