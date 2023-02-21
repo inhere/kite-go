@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"github.com/inhere/kite/internal/app"
+	"github.com/inhere/kite/internal/biz/cmdbiz"
 	"github.com/inhere/kite/pkg/gitx"
 	"github.com/inhere/kite/pkg/gitx/github"
 	"github.com/inhere/kite/pkg/gitx/gitlab"
@@ -80,6 +81,8 @@ func addServiceBoot(ka *app.KiteApp) {
 		app.PathMap = &kiteext.PathMap{
 			Map: app.Cfg().StringMap("pathmap"),
 		}
+
+		cmdbiz.Kas = app.Cfg().StringMap("aliases")
 		// app.AlsRun = &kiteext.KiteAliasRun{
 		// 	Aliases: app.Cfg().StringMap("aliases"),
 		// }

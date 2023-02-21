@@ -1,11 +1,12 @@
 package cli
 
 import (
-	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/builtin"
 	"github.com/gookit/gcli/v3/events"
+	"github.com/gookit/goutil/cliutil"
 	"github.com/inhere/kite/internal/app"
+	"github.com/inhere/kite/internal/biz/cmdbiz"
 	"github.com/inhere/kite/internal/cli/appcmd"
 	"github.com/inhere/kite/internal/cli/devcmd"
 	"github.com/inhere/kite/internal/cli/devcmd/jsoncmd"
@@ -76,17 +77,16 @@ func addListener(cli *gcli.App) {
 		return
 	})
 
-	cli.On(events.OnCmdNotFound, cmdNotFund)
-}
+	cli.On(events.OnCmdNotFound, func(ctx *gcli.HookCtx) (stop bool) {
+		name := ctx.Str("name")
+		args := ctx.Strings("args")
+		app.Log().Infof("kite cli event: %s, command not found: %s", ctx.Name(), name)
 
-func cmdNotFund(ctx *gcli.HookCtx) (stop bool) {
-	name := ctx.Str("name")
-	app.Log().Infof("kite cli event: %s, not found: %s", ctx.Name(), name)
-
-	color.Infoln("fire not found event:", ctx.Name(),
-		", name:", name, ",args:", ctx.Strings("args"),
-	)
-
-	// TODO runAny.Run()
-	return
+		if err := cmdbiz.RunAny(name, args); err != nil {
+			cliutil.Errorln("RunAny Error:", err)
+		} else {
+			stop = true
+		}
+		return
+	})
 }
