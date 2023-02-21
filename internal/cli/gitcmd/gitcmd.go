@@ -35,7 +35,7 @@ var GitCommands = &gcli.Command{
 		NewUpdateCmd(configProvider),
 		NewUpdatePushCmd(configProvider),
 		gitx.NewOpenRemoteCmd(nil),
-		InitFlow,
+		InitFlowCmd,
 		CreatePRLink,
 		ShowLogCmd,
 		ChangelogCmd,

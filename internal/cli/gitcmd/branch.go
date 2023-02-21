@@ -3,6 +3,7 @@ package gitcmd
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/errorx"
+	"github.com/inhere/kite/internal/apputil"
 	"github.com/inhere/kite/internal/biz/cmdbiz"
 	"github.com/inhere/kite/pkg/cmdutil"
 )
@@ -69,7 +70,7 @@ var BranchCreateCmd = &gcli.Command{
 		c.AddArg("branch", "the new branch name, allow vars: {ymd}", true)
 	},
 	Func: func(c *gcli.Command, args []string) error {
-		cfg := getCfgByCmdID(c)
+		cfg := apputil.GitCfgByCmdID(c)
 		c.Infof("TIP: auto select git config type: %s(by cmd ID: %s)\n", cfg.HostType, c.ID())
 
 		rp := cfg.LoadRepo(upOpts.Workdir)

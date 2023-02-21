@@ -16,7 +16,7 @@ type ConfigProviderFn func() *Config
 
 // Config for gitx
 type Config struct {
-	// GitUrl git host url
+	// GitUrl ssh git host url
 	GitUrl string `json:"git_url"`
 	// HostUrl http host url. eg: https://gitlab.myself.com
 	HostUrl string `json:"host_url"`
@@ -80,7 +80,15 @@ func (c *Config) IsCenterRemote(remote string) bool {
 }
 
 func (c *Config) IsForkMode() bool {
-	return c.ForkMode
+	return c.ForkMode && c.SourceRemote != ""
+}
+
+// BuildRepoURL build
+func (c *Config) BuildRepoURL(repoPath string, useSsh bool) string {
+	if useSsh {
+		return c.GitUrl + ":" + repoPath
+	}
+	return c.HostUrl + "/" + repoPath
 }
 
 // ResolveAlias branch name

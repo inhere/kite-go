@@ -8,7 +8,6 @@ import (
 	"github.com/gookit/gitw"
 	"github.com/gookit/gitw/gitutil"
 	"github.com/gookit/gitw/gmoji"
-	"github.com/gookit/validate"
 	"github.com/inhere/kite/internal/apputil"
 	"github.com/inhere/kite/internal/biz/cmdbiz"
 	"github.com/inhere/kite/pkg/gitx"
@@ -18,7 +17,7 @@ import (
 func NewCloneCmd(cfgGetter gitx.ConfigProviderFn) *gcli.Command {
 	var clOpts = struct {
 		cmdbiz.CommonOpts
-		gitProto bool
+		useSsh bool
 		// arg
 		repoPath  string
 		localName string
@@ -31,9 +30,8 @@ func NewCloneCmd(cfgGetter gitx.ConfigProviderFn) *gcli.Command {
 		Config: func(c *gcli.Command) {
 			clOpts.BindCommonFlags(c)
 
-			c.BoolOpt2(&clOpts.gitProto, "git, g", "Use git protocol for git clone")
-
-			c.AddArg("repoPath", "repo path or full remote url", true).WithAfterFn(func(a *gflag.CliArg) error {
+			c.BoolOpt2(&clOpts.useSsh, "git, ssh, g", "Use ssh protocol for git clone")
+			c.AddArg("repoPath", "repo path or full remote repository url", true).WithAfterFn(func(a *gflag.CliArg) error {
 				clOpts.repoPath = a.String()
 				return nil
 			})
@@ -44,19 +42,29 @@ func NewCloneCmd(cfgGetter gitx.ConfigProviderFn) *gcli.Command {
 		},
 		Func: func(c *gcli.Command, args []string) error {
 			var remoteURL string
-			if validate.IsFullURL(clOpts.repoPath) {
-				remoteURL = clOpts.repoPath
-			} else if gitutil.IsRepoPath(clOpts.repoPath) {
+			repoPath := clOpts.repoPath
+
+			if gitutil.IsFullURL(repoPath) {
+				remoteURL = repoPath
+			} else if gitutil.IsRepoPath(repoPath) {
 				cfg := cfgGetter()
-				remoteURL = cfg.HostUrl + "/" + clOpts.repoPath
-			} else if ghURL, ok := gitutil.ResolveGhURL(clOpts.repoPath); ok {
+				confMp := apputil.CmdConfigData(cfg.HostType, c.Name)
+				if confMp.Bool("use_ssh") {
+					clOpts.useSsh = true
+				}
+
+				c.Infof("TIP: only input a repoPath %q, will clone from: %s\n", repoPath, cfg.HostUrl)
+				remoteURL = cfg.BuildRepoURL(repoPath, clOpts.useSsh)
+			} else if ghURL, ok := gitutil.ResolveGhURL(repoPath); ok {
+				c.Infof("TIP: input repoPath is start withs %s, will clone from GitHub\n", gitw.GitHubHost)
 				remoteURL = ghURL
 			}
 
 			if remoteURL != "" {
 				return gitw.
-					New("clone", clOpts.repoPath).
+					New("clone", remoteURL).
 					ArgIf(clOpts.localName, clOpts.localName != "").
+					WithDryRun(clOpts.DryRun).
 					PrintCmdline().
 					Run()
 			}
