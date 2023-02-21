@@ -17,10 +17,11 @@ var SysCmd = &gcli.Command{
 	Aliases: []string{"os", "system"},
 	Desc:    "provide some useful system commands",
 	Subs: []*gcli.Command{
-		QuickOpenCmd,
+		NewQuickOpenCmd(),
 		SearchExeCmd,
 		WhichExeCmd,
 		NewBatchRunCmd(),
+		NewEnvInfoCmd(),
 	},
 }
 
@@ -60,31 +61,33 @@ var SearchExeCmd = &gcli.Command{
 	},
 }
 
-// QuickOpenCmd command
-var QuickOpenCmd = &gcli.Command{
-	Name:    "open",
-	Aliases: []string{"open-exe"},
-	Desc:    "open input file or dir or remote URL address",
-	Config: func(c *gcli.Command) {
-		c.AddArg("name", "bin name or URL address", true)
-	},
-	Func: func(c *gcli.Command, _ []string) error {
-		name := c.Arg("name").String()
+// NewQuickOpenCmd command
+func NewQuickOpenCmd() *gcli.Command {
+	return &gcli.Command{
+		Name:    "open",
+		Aliases: []string{"open-exe"},
+		Desc:    "open input file or dir or remote URL address",
+		Config: func(c *gcli.Command) {
+			c.AddArg("name", "bin name or URL address", true)
+		},
+		Func: func(c *gcli.Command, _ []string) error {
+			name := c.Arg("name").String()
 
-		var dstFile = name
-		if strings.Contains(name, "/") {
-			// special github url
-			if strings.HasPrefix(name, gitw.GitHubHost) {
-				dstFile = "https://" + name
-				// } else if fsutil.PathExists(name) {
-				// 	// nothing ...
-				// } else if validate.IsURL(name) {
+			var dstFile = name
+			if strings.Contains(name, "/") {
+				// special github url
+				if strings.HasPrefix(name, gitw.GitHubHost) {
+					dstFile = "https://" + name
+					// } else if fsutil.PathExists(name) {
+					// 	// nothing ...
+					// } else if validate.IsURL(name) {
+				}
+			} else if app.OpenMap.HasAlias(name) {
+				dstFile = app.OpenMap.ResolveAlias(name)
 			}
-		} else if app.OpenMap.HasAlias(name) {
-			dstFile = app.OpenMap.ResolveAlias(name)
-		}
 
-		c.Infoln("Will Open the:", dstFile)
-		return sysutil.Open(dstFile)
-	},
+			c.Infoln("Will Open the:", dstFile)
+			return sysutil.Open(dstFile)
+		},
+	}
 }

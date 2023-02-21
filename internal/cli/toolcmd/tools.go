@@ -15,18 +15,18 @@ import (
 var ToolsCmd = &gcli.Command{
 	Name:    "tool",
 	Aliases: []string{"tools"},
-	Desc:    "provide some useful tools commands",
+	Desc:    "provide some useful help tools commands",
 	Subs: []*gcli.Command{
 		swagger.SwaggerCmd,
 		strcmd.StringCmd,
 		syscmd.NewBatchRunCmd(),
-		EnvInfoCmd,
+		syscmd.NewEnvInfoCmd(),
 		AutoJumpCmd,
 		RunAnyCmd,
 		pkgcmd.PkgManageCmd,
 		doctool.DocumentCmd,
 		mdcmd.MkDownCmd,
-		syscmd.QuickOpenCmd,
+		syscmd.NewQuickOpenCmd(),
 		jsoncmd.JSONToolCmd,
 	},
 	Config: func(c *gcli.Command) {

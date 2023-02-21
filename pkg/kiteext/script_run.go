@@ -19,3 +19,9 @@ type ScriptRunner struct {
 func (sr *ScriptRunner) DefineScripts() {
 
 }
+
+// Run script with args
+func (sr *ScriptRunner) Run(name string, args []string) error {
+
+	return nil
+}

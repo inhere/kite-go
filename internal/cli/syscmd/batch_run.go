@@ -4,6 +4,8 @@ import (
 	"errors"
 
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/gcli/v3/gflag"
+	"github.com/gookit/goutil/errorx"
 	"github.com/inhere/kite/internal/biz/cmdbiz"
 )
 
@@ -27,7 +29,14 @@ func NewBatchRunCmd() *gcli.Command {
 			c.BoolOpt2(&btrOpts.allSub, "all-subdir, all-sub", "run command on the each WORKDIR/subdir")
 			c.VarOpt(&btrOpts.exclude, "exclude", "e", "exclude some subdir on with --all-subdir")
 			c.VarOpt(&btrOpts.inDirs, "dirs", "", "run command on the each WORKDIR/dir, multi by comma")
-			c.StrOpt2(&btrOpts.cmdTpl, "cmd, c", "want execute command line, allow vars")
+			c.StrOpt2(&btrOpts.cmdTpl, "cmd, c", "want execute `command` line, allow vars")
+
+			c.AddArg("cmd", "same of option --cmd, set execute command line, allow vars").WithAfterFn(func(a *gflag.CliArg) error {
+				if btrOpts.cmdTpl == "" {
+					btrOpts.cmdTpl = a.String()
+				}
+				return errorx.Raw("cmd has been bounded from option --cmd")
+			})
 		},
 		Func: func(c *gcli.Command, _ []string) error {
 
