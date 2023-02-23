@@ -5,8 +5,8 @@ import (
 	"sync"
 
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/goutil/envutil"
 	"github.com/gookit/goutil/errorx"
+	"github.com/gookit/goutil/sysutil"
 	"github.com/gookit/slog"
 	"github.com/inhere/kite/internal/appconst"
 	"github.com/inhere/kite/internal/initlog"
@@ -23,7 +23,7 @@ const (
 )
 
 var (
-	KiteVerbose = envutil.Getenv(appconst.EnvKiteVerbose, slog.WarnLevel.LowerName())
+	KiteVerbose = sysutil.Getenv(appconst.EnvKiteVerbose, slog.WarnLevel.LowerName())
 )
 
 // IsDebug mode

@@ -5,6 +5,8 @@ const (
 	EnvInitLogLevel = "KITE_INIT_LOG"
 	// EnvKiteVerbose level.
 	EnvKiteVerbose = "KITE_VERBOSE"
+	// EnvKiteBaseDir for override the KiteDefaultBaseDir
+	EnvKiteBaseDir = "KITE_BASE_DIR"
 	// EnvKiteConfig main config file env name
 	EnvKiteConfig = "KITE_CONFIG_FILE"
 	EnvKiteDotEnv = "KITE_DOTENV_FILE"
@@ -12,10 +14,8 @@ const (
 	DotEnvFileName = ".env"
 	// KiteConfigName default main config filename
 	KiteConfigName = "kite.yml"
-	// KiteDefaultDataDir path for: config, tmp and more
-	KiteDefaultDataDir = "~/.kite-go"
-	// KiteDefaultConfDir path
-	KiteDefaultConfDir = KiteDefaultDataDir + "/config"
+	// KiteDefaultBaseDir path for: config, tmp and more
+	KiteDefaultBaseDir = "~/.kite-go"
 
 	// AppName for the application
 	AppName = "kite"

@@ -57,7 +57,7 @@ type Config struct {
 
 func (c *Config) ensurePaths() {
 	if c.BaseDir == "" {
-		c.BaseDir = appconst.KiteDefaultDataDir
+		c.BaseDir = appconst.KiteDefaultBaseDir
 	}
 
 	// expand base dir. eg "~"

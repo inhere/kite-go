@@ -8,7 +8,7 @@ import (
 	"github.com/inhere/kite/internal/initlog"
 )
 
-var defaultBaseDir = sysutil.ExpandPath(appconst.KiteDefaultDataDir)
+var defaultBaseDir string
 
 // MustRun boot and run app
 func MustRun(ka *app.KiteApp) {
@@ -20,6 +20,8 @@ func MustRun(ka *app.KiteApp) {
 
 // Boot app
 func Boot(ka *app.KiteApp) error {
+	defaultBaseDir = sysutil.ExpandPath(sysutil.Getenv(appconst.EnvKiteBaseDir, appconst.KiteDefaultBaseDir))
+
 	ka.AddPreLoader(BootEnv, func(ka *app.KiteApp) error {
 		return initlog.Init(appconst.EnvInitLogLevel)
 	})
