@@ -11,6 +11,7 @@ var StringCmd = &gcli.Command{
 	Aliases: []string{"str", "string"},
 	Subs: []*gcli.Command{
 		StrCountCmd,
+		StrSplitCmd,
 	},
 }
 
@@ -19,6 +20,19 @@ var StrCountCmd = &gcli.Command{
 	Name:    "length",
 	Aliases: []string{"len", "count"},
 	Desc:    "send http request like curl, ide-http-client",
+	Config: func(c *gcli.Command) {
+
+	},
+	Func: func(c *gcli.Command, _ []string) error {
+		return errorx.New("TODO")
+	},
+}
+
+// StrSplitCmd instance
+var StrSplitCmd = &gcli.Command{
+	Name: "split",
+	// Aliases: []string{"len", "count"},
+	Desc: "send http request like curl, ide-http-client",
 	Config: func(c *gcli.Command) {
 
 	},
