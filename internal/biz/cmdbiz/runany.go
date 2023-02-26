@@ -22,8 +22,15 @@ func RunAny(name string, args []string) error {
 		return RunKiteCmdByAlias(name, args)
 	}
 
-	// TODO is script, plugin
-	// app.Scripts.Run()
+	// try run as script/script-file
+	found, err := app.Scripts.TryRun(name, args, func() {
+		cliutil.Infof("TIP: %q is an script name, will run it with %v\n", name, args)
+	})
+	if found {
+		return err
+	}
+
+	// TODO is plugin
 
 	// maybe is system command name
 	if sysutil.HasExecutable(name) {

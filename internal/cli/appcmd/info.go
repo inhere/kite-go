@@ -19,7 +19,8 @@ var KiteInfoCmd = &gcli.Command{
 	Func: func(c *gcli.Command, args []string) error {
 		show.AList("information", map[string]interface{}{
 			"user home dir": sysutil.UserHomeDir(),
-			"kite bin dir":  c.Ctx.BinDir(),
+			"app bin dir":   c.Ctx.BinDir(),
+			"app bin file":  c.Ctx.BinFile(),
 			"user data dir": app.App().BaseDir,
 			"work dir":      c.Ctx.WorkDir(),
 			"dotenv file":   app.App().DotenvFile(),
@@ -191,16 +192,6 @@ var KiteAliasCmd = &gcli.Command{
 	Name:    "alias",
 	Aliases: []string{"aliases"},
 	Desc:    "display custom command aliases for kite",
-	Func: func(c *gcli.Command, args []string) error {
-		return errorx.New("todo")
-	},
-}
-
-// CommandMapCmd command
-var CommandMapCmd = &gcli.Command{
-	Name:    "cmd-map",
-	Aliases: []string{"cmdmap"},
-	Desc:    "display all console commands info for kite",
 	Func: func(c *gcli.Command, args []string) error {
 		return errorx.New("todo")
 	},
