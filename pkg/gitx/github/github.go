@@ -3,6 +3,7 @@ package github
 import (
 	"fmt"
 
+	"github.com/gookit/gitw"
 	"github.com/inhere/kite/pkg/gitx"
 )
 
@@ -30,6 +31,14 @@ type GitHub struct {
 // New config instance
 func New(cfg *gitx.Config) *GitHub {
 	cfg.HostType = gitx.HostGitHub
+
+	if cfg.HostUrl == "" {
+		cfg.HostUrl = gitw.GitHubURL
+	}
+	if cfg.GitUrl == "" {
+		cfg.GitUrl = gitw.GitHubGit
+	}
+
 	return &GitHub{Config: cfg}
 }
 

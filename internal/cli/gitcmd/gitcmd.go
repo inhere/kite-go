@@ -3,12 +3,10 @@ package gitcmd
 import (
 	"fmt"
 	"os/exec"
-	"strings"
 	"syscall"
 
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/events"
-	"github.com/gookit/gitw"
 	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/sysutil/cmdr"
@@ -35,7 +33,7 @@ var GitCommands = &gcli.Command{
 		NewUpdateCmd(configProvider),
 		NewUpdatePushCmd(configProvider),
 		gitx.NewOpenRemoteCmd(nil),
-		InitFlowCmd,
+		NewInitFlowCmd(),
 		CreatePRLink,
 		ShowLogCmd,
 		ChangelogCmd,
@@ -56,18 +54,6 @@ var GitCommands = &gcli.Command{
 }
 
 func configProvider() *gitx.Config {
-	return app.Gitx()
-}
-
-func getCfgByCmdID(c *gcli.Command) *gitx.Config {
-	id := c.ID()
-	if strings.Contains(id, gitw.TypeGitHub) {
-		return app.Ghub().Config
-	}
-
-	if strings.Contains(id, gitw.TypeGitlab) {
-		return app.Glab().Config
-	}
 	return app.Gitx()
 }
 
@@ -110,10 +96,9 @@ func RedirectToGitx(ctx *gcli.HookCtx) (stop bool) {
 
 	pName := ctx.Cmd.Name
 	sName := ctx.Str("name")
-	cliutil.Infof("%s: subcommand '%s' not found, will redirect to run `kite git %s`\n", pName, sName, sName)
+	cliutil.Warnf("%s: subcommand '%s' not found, will redirect to run `kite git %s`\n", pName, sName, sName)
 
-	dump.P(ctx.App.CommandNames(), ctx.App.HasCommand("git"))
-
+	// dump.P(ctx.App.CommandNames(), ctx.App.HasCommand("git"))
 	err := ctx.App.RunCmd("git", ctx.Cmd.RawArgs())
 	if err != nil {
 		dump.P(err)

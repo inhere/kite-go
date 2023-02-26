@@ -14,16 +14,6 @@ var CreatePRLink = &gcli.Command{
 	Aliases: []string{"pr-link"},
 }
 
-// InitFlowCmd instance
-var InitFlowCmd = &gcli.Command{
-	Name:    "init",
-	Desc:    "init repo remote and other info for current project",
-	Aliases: []string{"setup"},
-	Func: func(c *gcli.Command, args []string) error {
-		return nil
-	},
-}
-
 // NewInitFlowCmd instance
 func NewInitFlowCmd() *gcli.Command {
 	var ifOpts = struct {
