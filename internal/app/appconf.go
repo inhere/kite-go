@@ -73,6 +73,11 @@ func (c *Config) ensurePaths() {
 
 // Path build and get full path relative the base dir.
 func (c *Config) Path(subPaths ...string) string {
+	return c.PathBuild(subPaths...)
+}
+
+// PathBuild build and get full path relative the base dir.
+func (c *Config) PathBuild(subPaths ...string) string {
 	return joinPath(c.BaseDir, subPaths)
 }
 
@@ -89,6 +94,11 @@ func (c *Config) CachePath(subPaths ...string) string {
 // ConfigPath build and get full path relative the config dir.
 func (c *Config) ConfigPath(subPaths ...string) string {
 	return joinPath(c.ConfigDir, subPaths)
+}
+
+// IsAliasPath alias
+func (c *Config) IsAliasPath(path string) bool {
+	return IsAliasPath(path)
 }
 
 // ResolvePath alias

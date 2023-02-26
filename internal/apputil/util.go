@@ -5,6 +5,7 @@ import (
 
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gitw"
+	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/maputil"
 	"github.com/inhere/kite/internal/app"
 	"github.com/inhere/kite/pkg/gitx"
@@ -41,4 +42,16 @@ func GitCfgByCmdID(c *gcli.Command) *gitx.Config {
 		return app.Glab().Config
 	}
 	return app.Gitx()
+}
+
+// ResolvePath for input path
+func ResolvePath(path string) string {
+	if app.IsAliasPath(path) {
+		return app.App().ResolvePath(path)
+	}
+
+	if fsutil.IsAbsPath(path) {
+		return path
+	}
+	return app.App().PathBuild(path)
 }

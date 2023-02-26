@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"github.com/inhere/kite/internal/app"
+	"github.com/inhere/kite/internal/apputil"
 	"github.com/inhere/kite/internal/biz/cmdbiz"
 	"github.com/inhere/kite/pkg/gitx"
 	"github.com/inhere/kite/pkg/gitx/github"
@@ -55,14 +56,17 @@ func addServiceBoot(ka *app.KiteApp) {
 	})
 
 	ka.AddBootFuncs(func(ka *app.KiteApp) error {
-		sr := &kiteext.ScriptRunner{}
+		sr := kiteext.NewScriptRunner(func(sr *kiteext.ScriptRunner) {
+			sr.PathResolver = apputil.ResolvePath
+		})
+
 		err := app.Cfg().MapOnExists(app.ObjScript, sr)
 		if err != nil {
 			return err
 		}
 
-		app.Scripts = sr
 		// app.Add(app.ObjScript, sr)
+		app.Scripts = sr
 		return nil
 	}, func(ka *app.KiteApp) error {
 		plug := &kiteext.PluginRunner{}
