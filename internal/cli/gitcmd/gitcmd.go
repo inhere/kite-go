@@ -39,7 +39,7 @@ var GitCommands = &gcli.Command{
 		ChangelogCmd,
 		TagCmd,
 		BatchCmd,
-		BranchCmd,
+		NewBranchCmd(),
 		NewGitEmojisCmd(),
 	},
 	Config: func(c *gcli.Command) {

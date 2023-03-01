@@ -3,6 +3,7 @@ package ghubcmd
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/events"
+	"github.com/gookit/goutil/errorx"
 	"github.com/inhere/kite/internal/app"
 	"github.com/inhere/kite/internal/cli/gitcmd"
 	"github.com/inhere/kite/pkg/gitx"
@@ -14,8 +15,9 @@ var GithubCmd = &gcli.Command{
 	Aliases: []string{"gh", "hub", "ghub"},
 	Desc:    "useful tools for use github",
 	Subs: []*gcli.Command{
+		DownloadAssetCmd,
 		gitcmd.BatchCmd,
-		gitcmd.BranchCmd,
+		gitcmd.NewBranchCmd(),
 		gitcmd.NewCloneCmd(configProvider),
 		gitcmd.NewAddCommitCmd(configProvider),
 		gitcmd.NewAddCommitPush(configProvider),
@@ -37,4 +39,15 @@ var GithubCmd = &gcli.Command{
 
 func configProvider() *gitx.Config {
 	return app.Ghub().Config
+}
+
+// DownloadAssetCmd instance
+var DownloadAssetCmd = &gcli.Command{
+	Name:    "down",
+	Desc:    "checkout an new branch for development from `source` remote",
+	Aliases: []string{"download"},
+	Func: func(c *gcli.Command, args []string) error {
+
+		return errorx.New("TODO")
+	},
 }

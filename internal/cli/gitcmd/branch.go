@@ -8,19 +8,6 @@ import (
 	"github.com/inhere/kite/pkg/cmdutil"
 )
 
-// BranchCmd instance
-var BranchCmd = &gcli.Command{
-	Name:    "branch",
-	Desc:    "checkout an new branch for development from `source` remote",
-	Aliases: []string{"br"},
-	Subs: []*gcli.Command{
-		BranchDeleteCmd,
-		BranchCreateCmd,
-		BranchListCmd,
-		BranchSetupCmd,
-	},
-}
-
 // NewBranchCmd instance
 func NewBranchCmd() *gcli.Command {
 	return &gcli.Command{

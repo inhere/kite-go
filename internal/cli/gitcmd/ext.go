@@ -24,9 +24,9 @@ func NewCloneCmd(cfgGetter gitx.ConfigProviderFn) *gcli.Command {
 	}{}
 
 	return &gcli.Command{
-		Name:    "clone",
-		Aliases: []string{"down"},
-		Desc:    "quick lone an git repository to local",
+		Name: "clone",
+		// Aliases: []string{"down"},
+		Desc: "quick lone an git repository to local",
 		Config: func(c *gcli.Command) {
 			clOpts.BindCommonFlags(c)
 
