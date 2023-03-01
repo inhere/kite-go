@@ -23,7 +23,7 @@ var ToolsCmd = &gcli.Command{
 		syscmd.NewEnvInfoCmd(),
 		AutoJumpCmd,
 		// RunAnyCmd,
-		ScriptCmd,
+		// ScriptCmd,
 		RandomCmd,
 		MathCalcCmd,
 		pkgcmd.PkgManageCmd,

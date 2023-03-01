@@ -1,6 +1,7 @@
 package cmdbiz
 
 import (
+	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/cliutil/cmdline"
 	"github.com/gookit/goutil/errorx"
@@ -8,6 +9,7 @@ import (
 	"github.com/gookit/goutil/sysutil"
 	"github.com/gookit/goutil/sysutil/cmdr"
 	"github.com/inhere/kite/internal/app"
+	"github.com/inhere/kite/pkg/kiteext"
 )
 
 // Kas map data
@@ -15,17 +17,21 @@ var Kas maputil.Aliases
 
 // RunAny handle.
 // will try alias, script, plugin, system-cmd ...
-func RunAny(name string, args []string) error {
+func RunAny(name string, args []string, ctx *kiteext.RunCtx) error {
 	// maybe is kite command alias
 	if Kas.HasAlias(name) {
 		cliutil.Infof("TIP: %q is an cli command alias, will run it with %v\n", name, args)
 		return RunKiteCmdByAlias(name, args)
 	}
 
+	ctx = kiteext.EnsureCtx(ctx)
+	ctx.BeforeFn = func(si *kiteext.ScriptItem) {
+		cliutil.Infof("TIP: %q is a script name, will run it with %v\n", name, args)
+		show.AList("Script Context", si)
+	}
+
 	// try run as script/script-file
-	found, err := app.Scripts.TryRun(name, args, func() {
-		cliutil.Infof("TIP: %q is an script name, will run it with %v\n", name, args)
-	})
+	found, err := app.Scripts.TryRun(name, args, ctx)
 	if found {
 		return err
 	}

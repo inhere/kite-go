@@ -22,7 +22,7 @@ type CommonOpts struct {
 func (co *CommonOpts) BindCommonFlags(c *gcli.Command) {
 	co.BindCommonFlags1(c)
 
-	c.BoolOpt2(&co.Proxy, "proxy,P", "manual enable set proxy ENV config", gflag.WithValidator(func(val string) error {
+	c.BoolOpt2(&co.Proxy, "proxy,P", "manual enable set proxy ENV config(config:local_proxy)", gflag.WithValidator(func(val string) error {
 		if strutil.QuietBool(val) {
 			app.App().Lcp.Apply(func(lp *lcproxy.LocalProxy) {
 				c.Infoln("TIP: enabled to set proxy ENV vars, will set", lcproxy.HttpKey, lcproxy.HttpsKey)

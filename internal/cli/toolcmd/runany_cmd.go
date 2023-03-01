@@ -2,6 +2,7 @@ package toolcmd
 
 import (
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/dump"
@@ -15,7 +16,8 @@ import (
 )
 
 var runOpts = struct {
-	cmdTyp string
+	cmdbiz.CommonOpts
+	wrapType gflag.EnumString
 
 	listAll, showInfo, search, proxy bool
 
@@ -28,27 +30,21 @@ var RunAnyCmd = &gcli.Command{
 	Desc:    "Run any aliases and scripts, as well as plug-ins and system commands",
 	Aliases: []string{"exec"},
 	Config: func(c *gcli.Command) {
+		runOpts.BindCommonFlags(c)
+		runOpts.wrapType.SetEnum(kiteext.AllowTypes)
+
 		c.BoolOpt2(&runOpts.listAll, "list, l", "List information for all scripts or one script")
 		c.BoolOpt2(&runOpts.showInfo, "show, info, i", "Show information for input alias/script/plugin name")
-
 		c.BoolOpt2(&runOpts.search, "search, s", "Display all matched scripts by the input name")
 		c.BoolOpt2(&runOpts.plugin, "plugin", "dont check and direct run alias command on kite")
 		c.BoolOpt2(&runOpts.alias, "alias", "dont check and direct run alias command on kite")
 		c.BoolOpt2(&runOpts.script, "script", "dont check and direct run user script on kite")
 		c.BoolOpt2(&runOpts.system, "system, sys", "dont check and direct run command on system")
-		c.BoolOpt2(&runOpts.proxy, "proxy,p", "set proxy ENV on run command(config:local_proxy)")
+		c.VarOpt(&runOpts.wrapType, "type", "", "wrap shell type for run input script, allow: "+runOpts.wrapType.EnumString())
 
 		c.AddArg("command", "The command for execute, can be with custom arguments")
 	},
 	Func: runAnything,
-	// Subs: []*gcli.Command{
-	// 	{
-	// 		Name: "script",
-	// 		Func: func(c *gcli.Command, args []string) error {
-	// 			return errorx.Raw("TODO")
-	// 		},
-	// 	},
-	// },
 	Help: `
 ## System command
 
@@ -92,24 +88,35 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 
 	// direct run system command
 	if runOpts.system {
-		c.Infof("(by --system) TIP: will direct run system command %q\n", name)
-		return cmdr.NewCmd(name, args...).FlushRun()
+		c.Infof("TIP: will direct run system command %q (by --system)\n", name)
+		return cmdr.NewCmd(name, args...).WorkDirOnNE(runOpts.Workdir).FlushRun()
 	}
 
 	// direct run as cmd-alias
 	if runOpts.alias {
-		c.Infof("(by --alias) TIP: will direct run app command alias %q\n", name)
+		c.Infof("TIP: will direct run app command alias %q (by --alias)\n", name)
 		return cmdbiz.RunKiteCmdByAlias(name, args)
+	}
+
+	ctx := &kiteext.RunCtx{
+		Workdir: runOpts.Workdir,
+		DryRun:  runOpts.DryRun,
+		Type:    runOpts.wrapType.String(),
 	}
 
 	// direct run as script
 	if runOpts.script {
-		c.Infof("(by --script) TIP: will direct run %q as script name\n", name)
-		return app.Scripts.Run(name, args, nil)
+		c.Infof("TIP: will direct run %q as script name (by --script)\n", name)
+		ctx.BeforeFn = func(si *kiteext.ScriptItem) {
+			// cliutil.Infof("TIP: %q is a script name, will run it with %v\n", name, args)
+			show.AList("Script Context", si)
+		}
+
+		return app.Scripts.Run(name, args, ctx)
 	}
 
 	// try alias, script, ...
-	return cmdbiz.RunAny(name, args)
+	return cmdbiz.RunAny(name, args, ctx)
 }
 
 func showInfo(name string) (err error) {
@@ -182,14 +189,14 @@ func listInfos() (err error) {
 }
 
 // ScriptCmd command
-var ScriptCmd = &gcli.Command{
-	Name: "script",
-	// Aliases: []string{"rand"},
-	Desc: "list the jump storage data in local",
-	Config: func(c *gcli.Command) {
-		// random string(number,alpha,), int(range)
-	},
-	Func: func(c *gcli.Command, _ []string) error {
-		return errorx.New("TODO")
-	},
-}
+// var ScriptCmd = &gcli.Command{
+// 	Name: "script",
+// 	// Aliases: []string{"rand"},
+// 	Desc: "list the jump storage data in local",
+// 	Config: func(c *gcli.Command) {
+// 		// random string(number,alpha,), int(range)
+// 	},
+// 	Func: func(c *gcli.Command, _ []string) error {
+// 		return errorx.New("TODO")
+// 	},
+// }

@@ -82,7 +82,7 @@ func addListener(cli *gcli.App) {
 		args := ctx.Strings("args")
 		app.Log().Infof("kite cli event: %s, command not found: %s", ctx.Name(), name)
 
-		if err := cmdbiz.RunAny(name, args); err != nil {
+		if err := cmdbiz.RunAny(name, args, nil); err != nil {
 			cliutil.Warnln("RunAny Error >", err)
 		}
 		stop = true
