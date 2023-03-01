@@ -8,6 +8,7 @@ import (
 	"github.com/inhere/kite/pkg/gitx/github"
 	"github.com/inhere/kite/pkg/gitx/gitlab"
 	"github.com/inhere/kite/pkg/kiteext"
+	"github.com/inhere/kite/pkg/kscript"
 )
 
 // addServiceBoot handle
@@ -56,7 +57,7 @@ func addServiceBoot(ka *app.KiteApp) {
 	})
 
 	ka.AddBootFuncs(func(ka *app.KiteApp) error {
-		sr := kiteext.NewScriptRunner(func(sr *kiteext.ScriptRunner) {
+		sr := kscript.NewRunner(func(sr *kscript.Runner) {
 			sr.PathResolver = apputil.ResolvePath
 		})
 

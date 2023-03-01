@@ -10,6 +10,7 @@ import (
 	"github.com/inhere/kite/pkg/gitx/github"
 	"github.com/inhere/kite/pkg/gitx/gitlab"
 	"github.com/inhere/kite/pkg/kiteext"
+	"github.com/inhere/kite/pkg/kscript"
 )
 
 const (
@@ -39,7 +40,7 @@ var (
 var (
 	// AlsRun  *kiteext.KiteAliasRun
 
-	Scripts *kiteext.ScriptRunner
+	Scripts *kscript.Runner
 	Plugins *kiteext.PluginRunner
 
 	// PathMap data

@@ -1,4 +1,4 @@
-package kiteext
+package kscript
 
 import (
 	"os"
@@ -17,94 +17,18 @@ import (
 	"github.com/inhere/kite/pkg/cmdutil"
 )
 
-// RunCtx struct
-type RunCtx struct {
-	// Name for script run
-	Name string
-	Type string
-
-	// DryRun script
-	DryRun bool
-	// Workdir for run script
-	Workdir string
-	// Env setting for run
-	Env map[string]string
-
-	// BeforeFn hook
-	BeforeFn func(si *ScriptItem)
-}
-
-// EnsureCtx to
-func EnsureCtx(ctx *RunCtx) *RunCtx {
-	if ctx == nil {
-		return &RunCtx{}
-	}
-	return ctx
-}
-
-func (c *RunCtx) WithName(name string) *RunCtx {
-	c.Name = name
-	return c
-}
-
-// ScriptItem struct
-type ScriptItem struct {
-	// Type wrap for run script. allow: sh, bash, zsh
-	Type string
-
-	// Workdir for run script
-	Workdir string
-
-	// Name for script
-	Name string
-	// Desc message
-	Desc string
-	// Env setting for run
-	Env map[string]string
-	// Args script args definition.
-	Args, ArgNames []string
-	// Cmds commands define in ScriptRunner.DefineFiles
-	Cmds []string
-
-	// File script file path in ScriptRunner.ScriptDirs
-	File string
-	Bin  string
-	Ext  string // eg: .go
-}
-
-// args type: string, strings
-func (si *ScriptItem) loadArgsDefine(args any) error {
-	if args == nil {
-		return nil
-	}
-
-	switch typVal := args.(type) {
-	case string: // desc
-		si.Args = []string{typVal}
-	case []string: // desc list
-		si.Args = typVal
-	case []any: // desc list
-		si.Args = arrutil.SliceToStrings(typVal)
-	// case map[string]string: // name with desc TODO map cannot be ordered
-	// 	si.Args = typVal
-	default:
-		return errorx.Rawf("invalid args config for %q", si.Name)
-	}
-	return nil
-}
-
-// ScriptRunner struct
-type ScriptRunner struct {
+// Runner struct
+type Runner struct {
 	// Scripts config and loaded from DefineFiles.
 	//
 	// format: {name: info, name2: info2, ...}
 	Scripts map[string]any `json:"scripts"`
 	// DefineFiles scripts define files, will read and add to Scripts
 	DefineFiles []string `json:"define_files"`
-	// WrapShell for run each script.
+	// TypeShell wrapper for run each script.
 	//
 	// value like: bash, sh, zsh or empty for direct run command
-	WrapShell string `json:"wrap_shell"`
+	TypeShell string `json:"type_shell"`
 	// ParseEnv var on script command
 	ParseEnv bool `json:"parse_env"`
 
@@ -128,44 +52,6 @@ type ScriptRunner struct {
 	defineLoaded bool
 }
 
-// AllowTypes for run script
-var AllowTypes = []string{"sh", "zsh", "bash"}
-
-// AllowExt list
-var AllowExt = []string{".sh", ".zsh", ".bash", ".php", ".go", ".gop", ".kts", ".java", ".gry", ".groovy"}
-
-// ExtToBinMap data
-//
-// eg:
-//
-//	'#!/usr/bin/env bash'
-//	'#!/usr/bin/env -S go run'
-var ExtToBinMap = map[string]string{
-	".sh":     "sh",
-	".zsh":    "zsh",
-	".bash":   "bash",
-	".php":    "php",
-	".gry":    "groovy",
-	".groovy": "groovy",
-	".go":     "go run",
-}
-
-// NewScriptRunner instance
-func NewScriptRunner(fns ...func(sr *ScriptRunner)) *ScriptRunner {
-	sr := &ScriptRunner{
-		ParseEnv:     true,
-		AllowedExt:   AllowExt,
-		ExtToBinMap:  ExtToBinMap,
-		PathResolver: sysutil.ExpandPath,
-		scriptFiles:  map[string]string{},
-	}
-
-	for _, fn := range fns {
-		fn(sr)
-	}
-	return sr
-}
-
 /*
 -----------
 --------------------------------- Init load ---------------------------------
@@ -173,31 +59,31 @@ func NewScriptRunner(fns ...func(sr *ScriptRunner)) *ScriptRunner {
 */
 
 // InitLoad define scripts and script files.
-func (sr *ScriptRunner) InitLoad() error {
-	if err := sr.LoadDefineScripts(); err != nil {
+func (r *Runner) InitLoad() error {
+	if err := r.LoadDefineScripts(); err != nil {
 		return err
 	}
-	return sr.LoadScriptFiles()
+	return r.LoadScriptFiles()
 }
 
 // LoadDefineScripts from DefineFiles
-func (sr *ScriptRunner) LoadDefineScripts() error {
-	if sr.defineLoaded {
+func (r *Runner) LoadDefineScripts() error {
+	if r.defineLoaded {
 		return nil
 	}
 
-	sr.defineLoaded = true
+	r.defineLoaded = true
 	loader := config.New("loader")
 
-	for _, fpath := range sr.DefineFiles {
-		fpath = sr.PathResolver(fpath)
+	for _, fpath := range r.DefineFiles {
+		fpath = r.PathResolver(fpath)
 
 		err := loader.LoadFiles(fpath)
 		if err != nil {
 			return err
 		}
 
-		sr.Scripts = maputil.SimpleMerge(loader.Data(), sr.Scripts)
+		r.Scripts = maputil.SimpleMerge(loader.Data(), r.Scripts)
 		loader.ClearData()
 	}
 
@@ -205,14 +91,14 @@ func (sr *ScriptRunner) LoadDefineScripts() error {
 }
 
 // LoadScriptFiles from the ScriptDirs
-func (sr *ScriptRunner) LoadScriptFiles() error {
-	if sr.fileLoaded {
+func (r *Runner) LoadScriptFiles() error {
+	if r.fileLoaded {
 		return nil
 	}
-	sr.fileLoaded = true
+	r.fileLoaded = true
 
-	for _, dirPath := range sr.ScriptDirs {
-		dirPath = sr.PathResolver(dirPath)
+	for _, dirPath := range r.ScriptDirs {
+		dirPath = r.PathResolver(dirPath)
 		des, err := os.ReadDir(dirPath)
 		if err != nil {
 			return err
@@ -222,7 +108,7 @@ func (sr *ScriptRunner) LoadScriptFiles() error {
 			fName := ent.Name()
 			if !ent.IsDir() {
 				// add
-				sr.scriptFiles[fName] = dirPath + "/" + fName
+				r.scriptFiles[fName] = dirPath + "/" + fName
 			}
 		}
 	}
@@ -237,8 +123,8 @@ func (sr *ScriptRunner) LoadScriptFiles() error {
 */
 
 // Run script or script-file by name and with args
-func (sr *ScriptRunner) Run(name string, args []string, ctx *RunCtx) error {
-	found, err := sr.TryRun(name, args, ctx)
+func (r *Runner) Run(name string, args []string, ctx *RunCtx) error {
+	found, err := r.TryRun(name, args, ctx)
 	if !found {
 		return errorx.Rawf("script file %q is not exists", name)
 	}
@@ -246,8 +132,8 @@ func (sr *ScriptRunner) Run(name string, args []string, ctx *RunCtx) error {
 }
 
 // TryRun script or script-file by name and with args
-func (sr *ScriptRunner) TryRun(name string, args []string, ctx *RunCtx) (found bool, err error) {
-	if err := sr.InitLoad(); err != nil {
+func (r *Runner) TryRun(name string, args []string, ctx *RunCtx) (found bool, err error) {
+	if err := r.InitLoad(); err != nil {
 		return false, err
 	}
 
@@ -255,63 +141,63 @@ func (sr *ScriptRunner) TryRun(name string, args []string, ctx *RunCtx) (found b
 	ctx = EnsureCtx(ctx).WithName(name)
 
 	// try check is script and run it.
-	si, err := sr.ScriptItem(name)
+	si, err := r.ScriptDefineInfo(name)
 	if err != nil {
 		return found, err
 	}
 	if si != nil {
-		return found, sr.doExecScript(si, args, ctx)
+		return found, r.doExecScript(si, args, ctx)
 	}
 
 	// try check and run script file.
-	si, err = sr.ScriptFileItem(name)
+	si, err = r.ScriptFileInfo(name)
 	if err != nil {
 		return found, err
 	}
 
 	if si != nil {
-		return found, sr.doExecScriptFile(si, args, ctx)
+		return found, r.doExecScriptFile(si, args, ctx)
 	}
 	return false, nil
 }
 
 // RunDefinedScript by input name and with arguments
-func (sr *ScriptRunner) RunDefinedScript(name string, args []string, ctx *RunCtx) error {
-	if err := sr.InitLoad(); err != nil {
+func (r *Runner) RunDefinedScript(name string, args []string, ctx *RunCtx) error {
+	if err := r.InitLoad(); err != nil {
 		return err
 	}
 
-	si, err := sr.ScriptItem(name)
+	si, err := r.ScriptDefineInfo(name)
 	if err != nil {
 		return err
 	}
 
 	if si != nil {
 		ctx = EnsureCtx(ctx).WithName(name)
-		return sr.doExecScript(si, args, ctx)
+		return r.doExecScript(si, args, ctx)
 	}
 	return errorx.Rawf("script %q is not exists", name)
 }
 
 // RunScriptFile by input name and with arguments
-func (sr *ScriptRunner) RunScriptFile(name string, args []string, ctx *RunCtx) error {
-	if err := sr.InitLoad(); err != nil {
+func (r *Runner) RunScriptFile(name string, args []string, ctx *RunCtx) error {
+	if err := r.InitLoad(); err != nil {
 		return err
 	}
 
-	si, err := sr.ScriptFileItem(name)
+	si, err := r.ScriptFileInfo(name)
 	if err != nil {
 		return err
 	}
 
 	if si != nil {
 		ctx = EnsureCtx(ctx).WithName(name)
-		return sr.doExecScriptFile(si, args, ctx)
+		return r.doExecScriptFile(si, args, ctx)
 	}
 	return errorx.Rawf("script file %q is not exists", name)
 }
 
-func (sr *ScriptRunner) doExecScriptFile(si *ScriptItem, inArgs []string, ctx *RunCtx) error {
+func (r *Runner) doExecScriptFile(si *ScriptInfo, inArgs []string, ctx *RunCtx) error {
 	if ctx.BeforeFn != nil {
 		ctx.BeforeFn(si)
 	}
@@ -326,7 +212,7 @@ func (sr *ScriptRunner) doExecScriptFile(si *ScriptItem, inArgs []string, ctx *R
 		FlushRun()
 }
 
-func (sr *ScriptRunner) doExecScript(si *ScriptItem, inArgs []string, ctx *RunCtx) error {
+func (r *Runner) doExecScript(si *ScriptInfo, inArgs []string, ctx *RunCtx) error {
 	if ctx.BeforeFn != nil {
 		ctx.BeforeFn(si)
 	}
@@ -342,7 +228,7 @@ func (sr *ScriptRunner) doExecScript(si *ScriptItem, inArgs []string, ctx *RunCt
 
 	// only one
 	if ln == 1 {
-		line := sr.handleCmdline(si.Cmds[0], inArgs, si)
+		line := r.handleCmdline(si.Cmds[0], inArgs, si)
 		shell := strutil.OrElse(si.Type, ctx.Type)
 
 		var cmd *cmdr.Cmd
@@ -369,7 +255,7 @@ func (sr *ScriptRunner) doExecScript(si *ScriptItem, inArgs []string, ctx *RunCt
 
 	shell := strutil.OrElse(si.Type, ctx.Type)
 	for _, line := range si.Cmds {
-		line = sr.handleCmdline(line, inArgs, si)
+		line = r.handleCmdline(line, inArgs, si)
 
 		if shell != "" {
 			cr.CmdWithArgs(shell, "-c", line)
@@ -381,7 +267,7 @@ func (sr *ScriptRunner) doExecScript(si *ScriptItem, inArgs []string, ctx *RunCt
 }
 
 // process vars and env
-func (sr *ScriptRunner) handleCmdline(line string, args []string, si *ScriptItem) string {
+func (r *Runner) handleCmdline(line string, args []string, si *ScriptInfo) string {
 	argStr := strings.Join(args, " ")
 	vars := map[string]string{
 		"$@": argStr,                // 是一个字符串参数数组
@@ -398,7 +284,7 @@ func (sr *ScriptRunner) handleCmdline(line string, args []string, si *ScriptItem
 	line = strutil.Replaces(line, vars)
 
 	// eg: $SHELL
-	if sr.ParseEnv && strutil.ContainsByte(line, '$') {
+	if r.ParseEnv && strutil.ContainsByte(line, '$') {
 		envs := sysutil.EnvironWith(si.Env)
 		return textutil.RenderSMap(line, envs, "$,")
 	}
@@ -407,24 +293,22 @@ func (sr *ScriptRunner) handleCmdline(line string, args []string, si *ScriptItem
 }
 
 // DefinedScript info get
-func (sr *ScriptRunner) DefinedScript(name string) (any, bool) {
-	info, ok := sr.Scripts[name]
+func (r *Runner) DefinedScript(name string) (any, bool) {
+	info, ok := r.Scripts[name]
 	return info, ok
 }
 
-// ScriptItem get script info as ScriptItem
-func (sr *ScriptRunner) ScriptItem(name string) (*ScriptItem, error) {
-	info, ok := sr.Scripts[name]
+// ScriptDefineInfo get script info as ScriptInfo
+func (r *Runner) ScriptDefineInfo(name string) (*ScriptInfo, error) {
+	info, ok := r.Scripts[name]
 	if !ok {
-		// return nil, errorx.Rawf("script %q is not exists", name)
-		return nil, nil
+		return nil, nil // not found
 	}
-
-	return sr.newDefinedScriptItem(name, info)
+	return r.newDefinedScriptInfo(name, info)
 }
 
-func (sr *ScriptRunner) newDefinedScriptItem(name string, info any) (*ScriptItem, error) {
-	si := &ScriptItem{Name: name}
+func (r *Runner) newDefinedScriptInfo(name string, info any) (*ScriptInfo, error) {
+	si := &ScriptInfo{Name: name}
 
 	switch typVal := info.(type) {
 	case string: // on command
@@ -448,70 +332,62 @@ func (sr *ScriptRunner) newDefinedScriptItem(name string, info any) (*ScriptItem
 		return nil, errorx.Rawf("invalid config of the script %q", name)
 	}
 
-	if sr.WrapShell != "" && si.Type == "" {
-		si.Type = sr.WrapShell
-	}
+	si.InitType(r.TypeShell)
 	return si, nil
 }
 
-// ScriptFileItem info get
-func (sr *ScriptRunner) ScriptFileItem(name string) (*ScriptItem, error) {
+// ScriptFileInfo info get
+func (r *Runner) ScriptFileInfo(name string) (*ScriptInfo, error) {
 	// with ext
 	if inExt := fsutil.FileExt(name); len(inExt) > 0 {
-		fpath, ok := sr.scriptFiles[name]
+		fpath, ok := r.scriptFiles[name]
 		if !ok {
 			return nil, nil
 		}
 
-		return sr.newFileScriptItem(name, fpath, inExt)
+		return r.newFileScriptItem(name, fpath, inExt)
 	}
 
 	// auto check ext
-	for _, ext := range sr.AllowedExt {
-		fpath, ok := sr.scriptFiles[name+ext]
+	for _, ext := range r.AllowedExt {
+		fpath, ok := r.scriptFiles[name+ext]
 		if !ok {
 			continue
 		}
 
-		return sr.newFileScriptItem(name, fpath, ext)
+		return r.newFileScriptItem(name, fpath, ext)
 	}
 
 	// not found
 	return nil, nil
 }
 
-func (sr *ScriptRunner) newFileScriptItem(name, fpath, ext string) (*ScriptItem, error) {
-	si := &ScriptItem{
+func (r *Runner) newFileScriptItem(name, fpath, ext string) (*ScriptInfo, error) {
+	si := &ScriptInfo{
 		Name: name,
 		File: fpath,
 		Ext:  ext,
 		Bin:  ext[1:],
 	}
 
-	if bin, ok := sr.ExtToBinMap[ext]; ok {
+	if bin, ok := r.ExtToBinMap[ext]; ok {
 		si.Bin = bin
 	}
-
 	return si, nil
 }
 
 // IsDefinedScript name
-func (sr *ScriptRunner) IsDefinedScript(name string) bool {
-	_, ok := sr.Scripts[name]
+func (r *Runner) IsDefinedScript(name string) bool {
+	_, ok := r.Scripts[name]
 	return ok
 }
 
 // DefinedScripts map
-func (sr *ScriptRunner) DefinedScripts() map[string]any {
-	return sr.Scripts
+func (r *Runner) DefinedScripts() map[string]any {
+	return r.Scripts
 }
 
 // ScriptFiles file map
-func (sr *ScriptRunner) ScriptFiles() map[string]string {
-	return sr.scriptFiles
-}
-
-func (sr *ScriptRunner) WithConfigFn(fn func(sr *ScriptRunner)) *ScriptRunner {
-	fn(sr)
-	return sr
+func (r *Runner) ScriptFiles() map[string]string {
+	return r.scriptFiles
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/gookit/goutil/sysutil"
 	"github.com/gookit/goutil/sysutil/cmdr"
 	"github.com/inhere/kite/internal/app"
-	"github.com/inhere/kite/pkg/kiteext"
+	"github.com/inhere/kite/pkg/kscript"
 )
 
 // Kas map data
@@ -17,15 +17,15 @@ var Kas maputil.Aliases
 
 // RunAny handle.
 // will try alias, script, plugin, system-cmd ...
-func RunAny(name string, args []string, ctx *kiteext.RunCtx) error {
+func RunAny(name string, args []string, ctx *kscript.RunCtx) error {
 	// maybe is kite command alias
 	if Kas.HasAlias(name) {
 		cliutil.Infof("TIP: %q is an cli command alias, will run it with %v\n", name, args)
 		return RunKiteCmdByAlias(name, args)
 	}
 
-	ctx = kiteext.EnsureCtx(ctx)
-	ctx.BeforeFn = func(si *kiteext.ScriptItem) {
+	ctx = kscript.EnsureCtx(ctx)
+	ctx.BeforeFn = func(si *kscript.ScriptInfo) {
 		cliutil.Infof("TIP: %q is a script name, will run it with %v\n", name, args)
 		show.AList("Script Context", si)
 	}

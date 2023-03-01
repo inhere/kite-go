@@ -11,7 +11,7 @@ import (
 	"github.com/gookit/goutil/sysutil/cmdr"
 	"github.com/inhere/kite/internal/app"
 	"github.com/inhere/kite/internal/biz/cmdbiz"
-	"github.com/inhere/kite/pkg/kiteext"
+	"github.com/inhere/kite/pkg/kscript"
 	"github.com/inhere/kite/pkg/lcproxy"
 )
 
@@ -31,7 +31,7 @@ var RunAnyCmd = &gcli.Command{
 	Aliases: []string{"exec"},
 	Config: func(c *gcli.Command) {
 		runOpts.BindCommonFlags(c)
-		runOpts.wrapType.SetEnum(kiteext.AllowTypes)
+		runOpts.wrapType.SetEnum(kscript.AllowTypes)
 
 		c.BoolOpt2(&runOpts.listAll, "list, l", "List information for all scripts or one script")
 		c.BoolOpt2(&runOpts.showInfo, "show, info, i", "Show information for input alias/script/plugin name")
@@ -98,7 +98,7 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 		return cmdbiz.RunKiteCmdByAlias(name, args)
 	}
 
-	ctx := &kiteext.RunCtx{
+	ctx := &kscript.RunCtx{
 		Workdir: runOpts.Workdir,
 		DryRun:  runOpts.DryRun,
 		Type:    runOpts.wrapType.String(),
@@ -107,7 +107,7 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 	// direct run as script
 	if runOpts.script {
 		c.Infof("TIP: will direct run %q as script name (by --script)\n", name)
-		ctx.BeforeFn = func(si *kiteext.ScriptItem) {
+		ctx.BeforeFn = func(si *kscript.ScriptInfo) {
 			// cliutil.Infof("TIP: %q is a script name, will run it with %v\n", name, args)
 			show.AList("Script Context", si)
 		}
@@ -134,8 +134,8 @@ func showInfo(name string) (err error) {
 			return err
 		}
 
-		var si *kiteext.ScriptItem
-		si, err = app.Scripts.ScriptItem(name)
+		var si *kscript.ScriptInfo
+		si, err = app.Scripts.ScriptDefineInfo(name)
 		if err != nil {
 			return err
 		}
@@ -144,7 +144,7 @@ func showInfo(name string) (err error) {
 			return
 		}
 
-		si, err = app.Scripts.ScriptFileItem(name)
+		si, err = app.Scripts.ScriptFileInfo(name)
 		if err != nil {
 			return err
 		}
