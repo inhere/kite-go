@@ -8,7 +8,7 @@ import (
 	"github.com/inhere/kite/internal/cli/toolcmd/doctool"
 	"github.com/inhere/kite/internal/cli/toolcmd/mdcmd"
 	"github.com/inhere/kite/internal/cli/toolcmd/strcmd"
-	"github.com/inhere/kite/internal/cli/toolcmd/swagger"
+	"github.com/inhere/kite/internal/cli/toolcmd/swagcmd"
 )
 
 // ToolsCmd command
@@ -17,7 +17,7 @@ var ToolsCmd = &gcli.Command{
 	Aliases: []string{"tools"},
 	Desc:    "provide some useful help tools commands",
 	Subs: []*gcli.Command{
-		swagger.SwaggerCmd,
+		swagcmd.SwaggerCmd,
 		strcmd.StringCmd,
 		syscmd.NewBatchRunCmd(),
 		syscmd.NewEnvInfoCmd(),
@@ -26,6 +26,7 @@ var ToolsCmd = &gcli.Command{
 		// ScriptCmd,
 		RandomCmd,
 		MathCalcCmd,
+		syscmd.NewClipboardCmd(),
 		pkgcmd.PkgManageCmd,
 		doctool.DocumentCmd,
 		mdcmd.MkDownCmd,

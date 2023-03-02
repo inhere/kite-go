@@ -1,4 +1,4 @@
-package swagger
+package swagcmd
 
 import (
 	"encoding/json"
@@ -15,6 +15,7 @@ import (
 	"github.com/gookit/goutil/fsutil"
 )
 
+// SwaggerCmd instance
 var SwaggerCmd = &gcli.Command{
 	Name: "swag",
 	Desc: "some tool for use swagger",

@@ -1,4 +1,4 @@
-package swagger
+package swagcmd
 
 import (
 	"fmt"
