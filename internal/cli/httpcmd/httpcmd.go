@@ -13,6 +13,7 @@ var HttpCmd = &gcli.Command{
 	Subs: []*gcli.Command{
 		HttpServeCmd,
 		SendRequestCmd,
+		NewEchoServerCmd(),
 	},
 	Config: func(c *gcli.Command) {
 
