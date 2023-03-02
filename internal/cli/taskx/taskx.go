@@ -2,7 +2,8 @@ package taskx
 
 import "github.com/gookit/gcli/v3"
 
-var TaskManage = &gcli.Command{
+// TaskManageCmd instance
+var TaskManageCmd = &gcli.Command{
 	Name: "task",
 	Desc: "Task manage tools command",
 	Subs: []*gcli.Command{

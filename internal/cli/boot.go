@@ -41,7 +41,7 @@ func addCommands(cli *gcli.App) {
 		httpcmd.HttpCmd,
 		syscmd.SysCmd,
 		appcmd.ManageCmd,
-		taskx.TaskManage,
+		taskx.TaskManageCmd,
 		jsoncmd.JSONToolCmd,
 		toolcmd.ToolsCmd,
 		toolcmd.RunAnyCmd,

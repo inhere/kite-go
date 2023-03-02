@@ -2,6 +2,7 @@ package syscmd
 
 import (
 	"fmt"
+	"runtime"
 	"strings"
 
 	"github.com/gookit/gcli/v3"
@@ -20,6 +21,7 @@ var SysCmd = &gcli.Command{
 		NewQuickOpenCmd(),
 		SearchExeCmd,
 		WhichExeCmd,
+		SysInfoCmd,
 		NewBatchRunCmd(),
 		NewEnvInfoCmd(),
 	},
@@ -57,6 +59,36 @@ var SearchExeCmd = &gcli.Command{
 		files := sysutil.SearchPath(c.Arg("keyword").String(), 10)
 
 		show.AList("Matched exe files:", files)
+		return nil
+	},
+}
+
+// SysInfoCmd command
+var SysInfoCmd = &gcli.Command{
+	Name: "info",
+	// Aliases: []string{"i"},
+	Desc: "display current operation system information",
+	Config: func(c *gcli.Command) {
+		// c.AddArg("keyword", "keywords for search in PATH dirs", true)
+	},
+	Func: func(c *gcli.Command, _ []string) error {
+		info := map[string]any{
+			"os platform": runtime.GOOS,
+			"os arch":     runtime.GOARCH,
+		}
+
+		if sysutil.IsWindows() {
+			if sysutil.IsMSys() {
+				info["hosts file1"] = "/etc/hosts"
+				info["hosts file"] = "/c/Windows/System32/drivers/etc/hosts"
+			} else {
+				info["hosts file"] = "C:\\Windows\\System32\\drivers\\etc\\hosts"
+			}
+		} else {
+			info["hosts file"] = "/etc/hosts"
+		}
+
+		show.AList("System info:", info)
 		return nil
 	},
 }

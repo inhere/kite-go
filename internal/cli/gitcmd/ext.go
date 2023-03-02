@@ -64,6 +64,7 @@ func NewCloneCmd(cfgGetter gitx.ConfigProviderFn) *gcli.Command {
 				return gitw.
 					New("clone", remoteURL).
 					ArgIf(clOpts.localName, clOpts.localName != "").
+					WithWorkDir(clOpts.Workdir).
 					WithDryRun(clOpts.DryRun).
 					PrintCmdline().
 					Run()
