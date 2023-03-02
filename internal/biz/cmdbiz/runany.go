@@ -25,9 +25,14 @@ func RunAny(name string, args []string, ctx *kscript.RunCtx) error {
 	}
 
 	ctx = kscript.EnsureCtx(ctx)
-	ctx.BeforeFn = func(si *kscript.ScriptInfo) {
+	ctx.BeforeFn = func(si *kscript.ScriptInfo, ctx *kscript.RunCtx) {
 		cliutil.Infof("TIP: %q is a script name, will run it with %v\n", name, args)
-		show.AList("Script Context", si)
+		show.AList("Script Info", si)
+		show.AList("Run Context", ctx)
+	}
+
+	if !ctx.Verbose {
+		ctx.BeforeFn = nil
 	}
 
 	// try run as script/script-file

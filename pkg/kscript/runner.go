@@ -5,6 +5,9 @@ import (
 	"strings"
 
 	"github.com/gookit/config/v2"
+	"github.com/gookit/config/v2/ini"
+	"github.com/gookit/config/v2/toml"
+	"github.com/gookit/config/v2/yaml"
 	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
@@ -31,6 +34,8 @@ type Runner struct {
 	TypeShell string `json:"type_shell"`
 	// ParseEnv var on script command
 	ParseEnv bool `json:"parse_env"`
+	// Aliases script name aliases map
+	Aliases map[string]string `json:"aliases"`
 
 	// ScriptDirs script file dirs, allow multi
 	ScriptDirs []string `json:"script_dirs"`
@@ -60,6 +65,10 @@ type Runner struct {
 
 // InitLoad define scripts and script files.
 func (r *Runner) InitLoad() error {
+	if len(r.Aliases) > 0 {
+		// TODO format
+	}
+
 	if err := r.LoadDefineScripts(); err != nil {
 		return err
 	}
@@ -74,6 +83,9 @@ func (r *Runner) LoadDefineScripts() error {
 
 	r.defineLoaded = true
 	loader := config.New("loader")
+	loader.AddDriver(ini.Driver)
+	loader.AddDriver(yaml.Driver)
+	loader.AddDriver(toml.Driver)
 
 	for _, fpath := range r.DefineFiles {
 		fpath = r.PathResolver(fpath)
@@ -199,7 +211,7 @@ func (r *Runner) RunScriptFile(name string, args []string, ctx *RunCtx) error {
 
 func (r *Runner) doExecScriptFile(si *ScriptInfo, inArgs []string, ctx *RunCtx) error {
 	if ctx.BeforeFn != nil {
-		ctx.BeforeFn(si)
+		ctx.BeforeFn(si, ctx)
 	}
 
 	// run script file
@@ -214,7 +226,7 @@ func (r *Runner) doExecScriptFile(si *ScriptInfo, inArgs []string, ctx *RunCtx) 
 
 func (r *Runner) doExecScript(si *ScriptInfo, inArgs []string, ctx *RunCtx) error {
 	if ctx.BeforeFn != nil {
-		ctx.BeforeFn(si)
+		ctx.BeforeFn(si, ctx)
 	}
 
 	ln := len(si.Cmds)
@@ -226,10 +238,12 @@ func (r *Runner) doExecScript(si *ScriptInfo, inArgs []string, ctx *RunCtx) erro
 		return errorx.Rawf("missing required args for run script %q", ctx.Name)
 	}
 
+	shell := strutil.OrElse(ctx.Type, si.Type)
+	workdir := strutil.OrElse(ctx.Workdir, si.Workdir)
+
 	// only one
 	if ln == 1 {
 		line := r.handleCmdline(si.Cmds[0], inArgs, si)
-		shell := strutil.OrElse(si.Type, ctx.Type)
 
 		var cmd *cmdr.Cmd
 		if shell != "" {
@@ -238,22 +252,21 @@ func (r *Runner) doExecScript(si *ScriptInfo, inArgs []string, ctx *RunCtx) erro
 			cmd = cmdr.NewCmdline(line)
 		}
 
-		return cmd.WorkDirOnNE(si.Workdir).
+		return cmd.WorkDirOnNE(workdir).
 			WithDryRun(ctx.DryRun).
-			AppendEnv(si.Env).
+			AppendEnv(ctx.MergeEnv(si.Env)).
 			PrintCmdline().
 			FlushRun()
 	}
 
 	// multi command
 	cr := cmdutil.NewRunner(func(rr *cmdutil.Runner) {
-		rr.Workdir = si.Workdir
-		rr.EnvMap = si.Env
 		rr.OutToStd = true
+		rr.Workdir = workdir
+		rr.EnvMap = ctx.MergeEnv(si.Env)
 		rr.DryRun = ctx.DryRun
 	})
 
-	shell := strutil.OrElse(si.Type, ctx.Type)
 	for _, line := range si.Cmds {
 		line = r.handleCmdline(line, inArgs, si)
 

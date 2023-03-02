@@ -3,6 +3,7 @@ package kscript
 import (
 	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/errorx"
+	"github.com/gookit/goutil/maputil"
 )
 
 // ScriptInfo struct
@@ -12,6 +13,8 @@ type ScriptInfo struct {
 
 	// Workdir for run script
 	Workdir string
+	// Platform limit. allow: windows, linux, darwin
+	Platform []string
 
 	// Name for script
 	Name string
@@ -64,6 +67,8 @@ type RunCtx struct {
 	Name string
 	Type string
 
+	// Verbose show more info on run
+	Verbose bool
 	// DryRun script
 	DryRun bool
 	// Workdir for run script
@@ -72,7 +77,7 @@ type RunCtx struct {
 	Env map[string]string
 
 	// BeforeFn hook
-	BeforeFn func(si *ScriptInfo)
+	BeforeFn func(si *ScriptInfo, ctx *RunCtx)
 }
 
 // EnsureCtx to
@@ -87,4 +92,9 @@ func EnsureCtx(ctx *RunCtx) *RunCtx {
 func (c *RunCtx) WithName(name string) *RunCtx {
 	c.Name = name
 	return c
+}
+
+// MergeEnv and returns
+func (c *RunCtx) MergeEnv(mp map[string]string) map[string]string {
+	return maputil.MergeSMap(mp, c.Env, false)
 }

@@ -18,8 +18,9 @@ import (
 var runOpts = struct {
 	cmdbiz.CommonOpts
 	wrapType gflag.EnumString
+	envMap   gflag.KVString
 
-	listAll, showInfo, search, proxy bool
+	listAll, showInfo, search, proxy, verbose bool
 
 	alias, plugin, script, system bool
 }{}
@@ -36,10 +37,14 @@ var RunAnyCmd = &gcli.Command{
 		c.BoolOpt2(&runOpts.listAll, "list, l", "List information for all scripts or one script")
 		c.BoolOpt2(&runOpts.showInfo, "show, info, i", "Show information for input alias/script/plugin name")
 		c.BoolOpt2(&runOpts.search, "search, s", "Display all matched scripts by the input name")
+		c.BoolOpt2(&runOpts.verbose, "verbose, v", "Display context information on execute")
+
 		c.BoolOpt2(&runOpts.plugin, "plugin", "dont check and direct run alias command on kite")
 		c.BoolOpt2(&runOpts.alias, "alias", "dont check and direct run alias command on kite")
 		c.BoolOpt2(&runOpts.script, "script", "dont check and direct run user script on kite")
 		c.BoolOpt2(&runOpts.system, "system, sys", "dont check and direct run command on system")
+
+		c.VarOpt2(&runOpts.envMap, "env,e", "custom set ENV value on run command, format: `KEY=VALUE`")
 		c.VarOpt(&runOpts.wrapType, "type", "", "wrap shell type for run input script, allow: "+runOpts.wrapType.EnumString())
 
 		c.AddArg("command", "The command for execute, can be with custom arguments")
@@ -100,6 +105,7 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 
 	ctx := &kscript.RunCtx{
 		Workdir: runOpts.Workdir,
+		Verbose: runOpts.verbose,
 		DryRun:  runOpts.DryRun,
 		Type:    runOpts.wrapType.String(),
 	}
@@ -107,9 +113,13 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 	// direct run as script
 	if runOpts.script {
 		c.Infof("TIP: will direct run %q as script name (by --script)\n", name)
-		ctx.BeforeFn = func(si *kscript.ScriptInfo) {
-			// cliutil.Infof("TIP: %q is a script name, will run it with %v\n", name, args)
-			show.AList("Script Context", si)
+
+		if runOpts.verbose {
+			ctx.BeforeFn = func(si *kscript.ScriptInfo, ctx *kscript.RunCtx) {
+				// cliutil.Infof("TIP: %q is a script name, will run it with %v\n", name, args)
+				show.AList("Script Info", si)
+				show.AList("Run Context", ctx)
+			}
 		}
 
 		return app.Scripts.Run(name, args, ctx)
