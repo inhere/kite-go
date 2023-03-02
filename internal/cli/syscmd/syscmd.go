@@ -18,12 +18,13 @@ var SysCmd = &gcli.Command{
 	Aliases: []string{"os", "system"},
 	Desc:    "provide some useful system commands",
 	Subs: []*gcli.Command{
-		NewQuickOpenCmd(),
 		SearchExeCmd,
 		WhichExeCmd,
 		SysInfoCmd,
+		NewQuickOpenCmd(),
 		NewBatchRunCmd(),
 		NewEnvInfoCmd(),
+		NewClipboardCmd(),
 	},
 }
 

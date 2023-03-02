@@ -14,9 +14,9 @@ func NewBatchRunCmd() *gcli.Command {
 	var btrOpts = struct {
 		cmdbiz.CommonOpts
 		cmdTpl  string
-		inDirs  gcli.String
+		inDirs  gflag.String
 		allSub  bool
-		exclude gcli.Strings
+		exclude gflag.Strings
 	}{}
 
 	return &gcli.Command{
