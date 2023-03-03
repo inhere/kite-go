@@ -4,12 +4,15 @@ import (
 	"fmt"
 
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/gcli/v3/show"
+	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/inhere/kite"
 	"github.com/inhere/kite/internal/app"
+	"github.com/inhere/kite/internal/biz/cmdbiz"
 )
 
 // KiteInfoCmd instance
@@ -33,55 +36,6 @@ var KiteInfoCmd = &gcli.Command{
 			// "i18n files": i18n.Default().LoadFile(),
 		}, nil)
 
-		return nil
-	},
-}
-
-var kpOpts = struct {
-	all bool
-}{}
-
-// KitePathCmd command
-var KitePathCmd = &gcli.Command{
-	Name: "path",
-	// Aliases: []string{"update-self", "up-self", "up"},
-	Desc: "show the path info on kite by input name",
-	Config: func(c *gcli.Command) {
-		c.BoolOpt2(&kpOpts.all, "all, a", "display all paths for the kite")
-		c.AddArg("name", "special path name on the kite, allow: base, config, tmp")
-	},
-	Func: func(c *gcli.Command, args []string) error {
-		if kpOpts.all {
-			dump.Clear(app.App().Config)
-			return nil
-		}
-
-		name := c.Arg("name").String()
-		if name == "" {
-			return errorx.Raw("Please input name for show path")
-		}
-
-		var path string
-		switch name {
-		case "base", "root":
-			path = app.App().BaseDir
-		case "cache", "caches":
-			path = app.App().CacheDir
-		case "conf", "config":
-			path = app.App().ConfigDir
-		case "data":
-			path = app.App().DataDir
-		case "tmp", "temp":
-			path = app.App().TmpDir
-		case "res", "resource":
-			path = app.App().ResourceDir
-		}
-
-		if path == "" {
-			return errorx.Rawf("Not found path for %q", name)
-		}
-
-		fmt.Println(path)
 		return nil
 	},
 }
@@ -136,7 +90,7 @@ var KiteConfCmd = &gcli.Command{
 		c.BoolOpt2(&confOpts.keys, "keys", "display raw config data")
 		c.StrOpt2(&confOpts.search, "search,s", "search top key by input keywords")
 
-		c.AddArg("key", "show config for the key")
+		c.AddArg("key", "show config for the input key")
 	},
 	Func: func(c *gcli.Command, args []string) error {
 		if confOpts.keys {
@@ -177,22 +131,104 @@ var KiteConfCmd = &gcli.Command{
 	},
 }
 
+var kpOpts = struct {
+	list bool
+}{}
+
+// KitePathCmd command
+var KitePathCmd = &gcli.Command{
+	Name: "path",
+	// Aliases: []string{"update-self", "up-self", "up"},
+	Desc: "show the path info on app by input name",
+	Config: func(c *gcli.Command) {
+		c.BoolOpt2(&kpOpts.list, "list, all, a, l", "display all paths for the kite")
+		c.AddArg("name", "special path name on the kite, allow: base, config, tmp")
+	},
+	Func: func(c *gcli.Command, args []string) error {
+		if kpOpts.list {
+			dump.Clear(app.App().Config)
+			return nil
+		}
+
+		name := c.Arg("name").String()
+		if name == "" {
+			return errorx.Raw("please input name for show path")
+		}
+
+		var path = app.App().PathByName(name)
+		if path == "" {
+			return errorx.Rawf("not found path for %q", name)
+		}
+
+		fmt.Println(path)
+		return nil
+	},
+}
+
+// paCmdOpts struct
+type paCmdOpts struct {
+	List bool `flag:"list all path alias map;;;l"`
+	Name string
+}
+
+var paOpts = &paCmdOpts{}
+
 // PathAliasCmd command
 var PathAliasCmd = &gcli.Command{
 	Name:    "pathmap",
-	Aliases: []string{"path-alias"},
-	Desc:    "custom path aliases mapping in kite",
+	Aliases: []string{"path-alias", "pmap"},
+	Desc:    "show custom path aliases mapping in app(config:pathmap)",
+	Config: func(c *gcli.Command) {
+		goutil.MustOK(c.UseSimpleRule().FromStruct(paOpts))
+		c.AddArg("name", "get path of the input alias name").WithAfterFn(func(a *gflag.CliArg) error {
+			paOpts.Name = a.String()
+			return nil
+		})
+	},
 	Func: func(c *gcli.Command, args []string) error {
-		return errorx.New("todo")
+		if paOpts.List {
+			show.AList("Path aliases", app.PathMap.Data())
+			return nil
+		}
+
+		if paOpts.Name != "" {
+			fmt.Println(app.PathMap.Resolve(paOpts.Name))
+			return nil
+		}
+		return errorx.New("please input name for get path")
 	},
 }
+
+// kaCmdOpts struct
+type kaCmdOpts struct {
+	List bool `flag:"list all app command aliases;;;l"`
+	Name string
+}
+
+var kaOpts = &kaCmdOpts{}
 
 // KiteAliasCmd command
 var KiteAliasCmd = &gcli.Command{
 	Name:    "alias",
-	Aliases: []string{"aliases"},
-	Desc:    "display custom command aliases for kite",
-	Func: func(c *gcli.Command, args []string) error {
-		return errorx.New("todo")
+	Aliases: []string{"aliases", "cmd-alias"},
+	Desc:    "show custom command aliases in app(config:aliases)",
+	Config: func(c *gcli.Command) {
+		goutil.MustOK(c.UseSimpleRule().FromStruct(kaOpts))
+		c.AddArg("name", "get real-name of the input alias").WithAfterFn(func(a *gflag.CliArg) error {
+			kaOpts.Name = a.String()
+			return nil
+		})
+	},
+	Func: func(c *gcli.Command, _ []string) error {
+		if kaOpts.List {
+			show.AList("Command aliases", cmdbiz.Kas)
+			return nil
+		}
+
+		if kaOpts.Name != "" {
+			fmt.Println(cmdbiz.Kas.ResolveAlias(kaOpts.Name))
+			return nil
+		}
+		return errorx.New("please input alias for get command")
 	},
 }
