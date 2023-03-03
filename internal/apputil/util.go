@@ -55,3 +55,17 @@ func ResolvePath(path string) string {
 	}
 	return app.App().PathBuild(path)
 }
+
+// ResolveSep char
+func ResolveSep(sep string) string {
+	switch sep {
+	case "SPACE":
+		return " "
+	case "NL", "NEWLINE":
+		return "\n"
+	case "TAB":
+		return "\t"
+	default:
+		return sep
+	}
+}

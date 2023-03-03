@@ -32,3 +32,19 @@ var (
 const (
 	VarFormat = "{,}"
 )
+
+// some special chars name
+const (
+	Nl    = "NL"
+	Space = "SPACE"
+	TAB   = "TAB"
+)
+
+var (
+	// StdinAliases list
+	StdinAliases = []string{"@i", "@si", "@stdin", "stdin"}
+	// StdoutAliases list
+	StdoutAliases = []string{"@o", "@so", "@stdout", "stdout"}
+	// ClipAliases list
+	ClipAliases = []string{"@c", "@cb", "@clip", "@clipboard", "clipboard"}
+)

@@ -114,27 +114,37 @@ func (c *Config) PathResolve(path string) string {
 
 	var other string
 	name := path[1:]
-	sepIdx := strings.IndexRune(path, '/')
+	sepIdx := strings.IndexByte(path, '/')
 	if sepIdx > 0 {
 		name = path[1:sepIdx]
 		other = path[sepIdx:]
 	}
 
-	switch name {
-	case "base":
-		return c.BaseDir + other
-	case "tmp", "temp":
-		return c.TmpDir + other
-	case "cache":
-		return c.CacheDir + other
-	case "cfg", "config":
-		return c.ConfigDir + other
-	case "res", "resource":
-		return c.ResourceDir + other
-	case "user", "home":
-		return sysutil.HomeDir() + other
+	if prefix := c.PathByName(name); len(prefix) > 0 {
+		return prefix + other
 	}
 	return path
+}
+
+// PathByName get
+func (c *Config) PathByName(name string) string {
+	switch name {
+	case "data":
+		return c.DataDir
+	case "base", "root":
+		return c.BaseDir
+	case "tmp", "temp":
+		return c.TmpDir
+	case "cache", "caches":
+		return c.CacheDir
+	case "cfg", "conf", "config":
+		return c.ConfigDir
+	case "res", "resource":
+		return c.ResourceDir
+	case "user", "home":
+		return sysutil.HomeDir()
+	}
+	return ""
 }
 
 // ConfFile get main config file

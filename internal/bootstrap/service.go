@@ -84,7 +84,7 @@ func addServiceBoot(ka *app.KiteApp) {
 	ka.AddBootFuncs(func(ka *app.KiteApp) error {
 		app.OpenMap = app.Cfg().StringMap("quick_open")
 		app.PathMap = &kiteext.PathMap{
-			Map: app.Cfg().StringMap("pathmap"),
+			Aliases: app.Cfg().StringMap("pathmap"),
 		}
 
 		cmdbiz.Kas = app.Cfg().StringMap("aliases")

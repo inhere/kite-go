@@ -8,9 +8,6 @@
 #
 set -e
 
-# echo $@;
-# exit 0;
-
 # check OS info
 case $(uname | tr '[:upper:]' '[:lower:]') in
   linux*)
@@ -57,9 +54,7 @@ BIN_NAME=kite
 BUILD_BIN_NAME="$BIN_NAME-$CUR_OS_NAME-$ARCH_NAME"
 
 DOWNLOAD_URL="https://github.com/inhere/kite-go/releases/latest/download/$BUILD_BIN_NAME"
-
-echo $DOWNLOAD_URL;
-exit 0;
+#echo $DOWNLOAD_URL;
 
 INSTALL_DIR=/usr/local/bin
 INSTALL_FILE=$INSTALL_DIR/$BIN_NAME
