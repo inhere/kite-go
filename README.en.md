@@ -4,28 +4,28 @@
 
 ![app cmds](docs/images/kite-in-wsl.png)
 
-## Git 仓库
+## Features
 
-* [https://github.com/inhere/kite](https://github.com/inhere/kite)  PHP 版本，功能较为完善，已开发使用较久。
-* [https://github.com/inhere/kite-go](https://github.com/inhere/kite-go) Go 语言版本，暂时只有常用功能。
+* Git common command operations
+* GitLab common command operation
+* GitHub common command operations
+* String processing tools: analysis, formatting, extracting information, converting
+* json processing tools: formatting, searching, filtering, etc.
+* go, php, java code generation, conversion, etc.
+* json, yaml, sql formatting, conversion
+* View system and environment information
+* Quickly run built-in scripts
+* Quickly run system commands
+* File search matching, processing
+* Batch run commands
+* Document search, viewing, etc.
 
-## 主要功能
+## Git Repos
 
-* git 常用命令操作
-* gitlab 常用命令操作
-* github 常用命令操作
-* 字符串处理工具: 分析，格式化，提取信息，转换
-* json 处理工具: 格式化，查找，过滤等
-* go, php, java 代码生成，转换等
-* json, yaml, sql 格式化，转换
-* 系统、环境信息查看
-* 快速运行内置脚本
-* 快速运行系统命令
-* 文件查找匹配，处理
-* 批量运行命令
-* 文档搜索、查看等
+* [https://github.com/inhere/kite-go](https://github.com/inhere/kite-go) Go language version
+* [https://github.com/inhere/kite](https://github.com/inhere/kite)  PHP version
 
-## 安装
+## Install
 
 ### Quick install
 
@@ -79,3 +79,4 @@ make kite2gobin
 ## Refers
 
 - https://github.com/bitfield/script
+- https://github.com/inhere/kite
