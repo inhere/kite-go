@@ -11,12 +11,13 @@ import (
 	"github.com/inhere/kite/internal/cli/devcmd"
 	"github.com/inhere/kite/internal/cli/devcmd/jsoncmd"
 	"github.com/inhere/kite/internal/cli/fscmd"
-	"github.com/inhere/kite/internal/cli/ghubcmd"
 	"github.com/inhere/kite/internal/cli/gitcmd"
-	"github.com/inhere/kite/internal/cli/glabcmd"
+	"github.com/inhere/kite/internal/cli/gitcmd/ghubcmd"
+	"github.com/inhere/kite/internal/cli/gitcmd/glabcmd"
 	"github.com/inhere/kite/internal/cli/httpcmd"
 	"github.com/inhere/kite/internal/cli/syscmd"
 	"github.com/inhere/kite/internal/cli/taskx"
+	"github.com/inhere/kite/internal/cli/textcmd"
 	"github.com/inhere/kite/internal/cli/toolcmd"
 	"github.com/inhere/kite/pkg/pacutil"
 )
@@ -42,6 +43,7 @@ func addCommands(cli *gcli.App) {
 		syscmd.SysCmd,
 		appcmd.ManageCmd,
 		taskx.TaskManageCmd,
+		textcmd.TextOperateCmd,
 		jsoncmd.JSONToolCmd,
 		toolcmd.ToolsCmd,
 		toolcmd.RunAnyCmd,
