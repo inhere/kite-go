@@ -7,7 +7,7 @@ import (
 	"github.com/inhere/kite/internal/cli/fscmd"
 	"github.com/inhere/kite/internal/cli/pkgcmd"
 	"github.com/inhere/kite/internal/cli/syscmd"
-	"github.com/inhere/kite/internal/cli/toolcmd/doctool"
+	"github.com/inhere/kite/internal/cli/toolcmd/doccmd"
 	"github.com/inhere/kite/internal/cli/toolcmd/mdcmd"
 	"github.com/inhere/kite/internal/cli/toolcmd/swagcmd"
 )
@@ -19,7 +19,6 @@ var ToolsCmd = &gcli.Command{
 	Desc:    "provide some useful help tools commands",
 	Subs: []*gcli.Command{
 		swagcmd.SwaggerCmd,
-		// textcmd.TextOperateCmd,
 		syscmd.NewBatchRunCmd(),
 		syscmd.NewEnvInfoCmd(),
 		appcmd.NewPathMapCmd(),
@@ -33,7 +32,7 @@ var ToolsCmd = &gcli.Command{
 		Time2dateCmd,
 		syscmd.NewClipboardCmd(),
 		pkgcmd.PkgManageCmd,
-		doctool.DocumentCmd,
+		doccmd.DocumentCmd,
 		mdcmd.MkDownCmd,
 		syscmd.NewQuickOpenCmd(),
 		jsoncmd.JSONToolCmd,

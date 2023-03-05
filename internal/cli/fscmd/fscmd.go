@@ -6,11 +6,11 @@ import (
 
 // FsCmd command
 var FsCmd = &gcli.Command{
-	Name: "fs",
-	// Aliases: []string{"fss"},
-	Desc: "provide some useful file system commands",
+	Name:    "fs",
+	Aliases: []string{"file"},
+	Desc:    "provide some useful file system commands",
 	Subs: []*gcli.Command{
-		FileCatCmd,
+		NewFileCatCmd(),
 		FileFindCmd,
 		ListFilesCmd,
 		RenameCmd,
