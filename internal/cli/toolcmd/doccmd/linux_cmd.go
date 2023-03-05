@@ -1,4 +1,4 @@
-package doctool
+package doccmd
 
 import (
 	"errors"
