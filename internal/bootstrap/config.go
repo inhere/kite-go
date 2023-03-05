@@ -1,11 +1,15 @@
 package bootstrap
 
 import (
+	"os"
+	"runtime"
+
 	"github.com/gookit/config/v2"
 	"github.com/gookit/config/v2/yamlv3"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/envutil"
 	"github.com/gookit/goutil/fsutil"
+	"github.com/gookit/goutil/strutil"
 	"github.com/inhere/kite/internal/app"
 	"github.com/inhere/kite/internal/appconst"
 	"github.com/inhere/kite/internal/initlog"
@@ -79,6 +83,12 @@ func mapAppConfig(ka *app.KiteApp, cfg *config.Config) error {
 	return nil
 }
 
+// can use var in filepath
+var pathVars = map[string]string{
+	"$os":   runtime.GOOS,
+	"$user": os.Getenv("USER"),
+}
+
 // LoadIncludeConfigs from conf.IncludeConfig
 func loadIncludeConfigs(ka *app.KiteApp, cfg *config.Config) error {
 	ln := len(ka.IncludeConfig)
@@ -94,6 +104,10 @@ func loadIncludeConfigs(ka *app.KiteApp, cfg *config.Config) error {
 		}
 
 		var filePath string
+		// contains var
+		if strutil.ContainsByte(file, '$') {
+			file = strutil.Replaces(file, pathVars)
+		}
 
 		// is relative path
 		if file[0] != app.OSPathSepChar && !app.IsAliasPath(file) {
@@ -104,6 +118,13 @@ func loadIncludeConfigs(ka *app.KiteApp, cfg *config.Config) error {
 
 		initlog.L.Debugf("load the include file: %s", filePath)
 		filePaths = append(filePaths, filePath)
+	}
+
+	// platform config file: config.darwin.yml
+	platFile := ka.ConfigPath("config." + runtime.GOOS + ".yml")
+	if fsutil.IsFile(platFile) {
+		initlog.L.Info("will auto load the platform config file:", platFile)
+		filePaths = append(filePaths, platFile)
 	}
 
 	return cfg.LoadFiles(filePaths...)
