@@ -2,6 +2,7 @@ package gitcmd
 
 import (
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/goutil/basefn"
 	"github.com/gookit/goutil/errorx"
 	"github.com/inhere/kite/internal/apputil"
 	"github.com/inhere/kite/internal/biz/cmdbiz"
@@ -58,7 +59,6 @@ var BranchCreateCmd = &gcli.Command{
 	},
 	Func: func(c *gcli.Command, args []string) error {
 		cfg := apputil.GitCfgByCmdID(c)
-		c.Infof("TIP: auto select git config type: %s(by cmd ID: %s)\n", cfg.HostType, c.ID())
 
 		rp := cfg.LoadRepo(upOpts.Workdir)
 		if err := rp.Check(); err != nil {
@@ -109,16 +109,53 @@ var BranchDeleteCmd = &gcli.Command{
 	},
 }
 
+var bsOpts = struct {
+	cmdbiz.CommonOpts
+	notToSrc bool
+}{}
+
 // BranchSetupCmd instance
 var BranchSetupCmd = &gcli.Command{
-	Name:    "setup",
-	Desc:    "setup a new checkout branch on fork develop mode",
-	Help:    `Will setup upstream remote to default_remote`,
+	Name: "setup",
+	Desc: "setup a new checkout branch on fork develop mode",
+	Help: `Workflow:
+git fetch DEFAULT_REMOTE
+
+if DEFAULT_REMOTE/BRANCH exist:
+	git branch --set-upstream-to=DEFAULT_REMOTE/BRANCH
+else:
+	git push --set-upstream DEFAULT_REMOTE BRANCH
+
+git push SOURCE_REMOTE BRANCH
+`,
 	Aliases: []string{"init"},
-	Func: func(c *gcli.Command, args []string) error {
+	Config: func(c *gcli.Command) {
+		bsOpts.BindCommonFlags(c)
+		c.BoolOpt2(&bsOpts.notToSrc, "not-to-src, nts", "dont push branch to the source remote")
+	},
+	Func: func(c *gcli.Command, args []string) (err error) {
+		cfg := apputil.GitCfgByCmdID(c)
+		rp := cfg.LoadRepo(bsOpts.Workdir)
+		if err := rp.Check(); err != nil {
+			return err
+		}
+
+		if err := rp.FetchOrigin(); err != nil {
+			return err
+		}
+
 		// git fetch origin
-		// exist: git br --set-upstream-to=origin/br
-		// not exist: git push -u origin
-		return errorx.New("TODO")
+		// exist: git branch --set-upstream-to=DEFAULT_REMOTE/BRANCH
+		// not exist: git push --set-upstream DEFAULT_REMOTE BRANCH
+		brName := rp.CurBranchName()
+		if rp.HasOriginBranch(brName) {
+			err = rp.Cmd("branch").Argf("--set-upstream-to=%s/%s", rp.DefaultRemote, brName).Run()
+		} else {
+			err = rp.Cmd("push", "-u", rp.DefaultRemote, brName).Run()
+		}
+
+		return basefn.CallOn(!bsOpts.notToSrc, func() error {
+			return rp.Cmd("push", rp.SourceRemote, brName).Run()
+		})
 	},
 }

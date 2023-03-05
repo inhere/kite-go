@@ -28,6 +28,26 @@ func NewGitLoc(repoDir string, cfg *Config) *GitLoc {
 	}
 }
 
+func (g *GitLoc) FetchOrigin() error {
+	return g.Cmd("fetch", g.DefaultRemote).Run()
+}
+
+func (g *GitLoc) FetchSource() error {
+	return g.Cmd("fetch", g.SourceRemote).Run()
+}
+
+func (g *GitLoc) HasDefaultBranch(br string) bool {
+	return g.HasOriginBranch(br)
+}
+
+func (g *GitLoc) HasOriginBranch(br string) bool {
+	return g.HasRemoteBranch(g.DefaultRemote, br)
+}
+
+func (g *GitLoc) HasSourceBranch(br string) bool {
+	return g.HasRemoteBranch(g.SourceRemote, br)
+}
+
 func (g *GitLoc) HasDefaultRemote() bool {
 	return g.Repo.HasRemote(g.DefaultRemote)
 }
@@ -59,6 +79,8 @@ func (g *GitLoc) Check() error {
 	if err := g.CheckRemote(); err != nil {
 		return err
 	}
+
+	// TODO check others
 	return nil
 }
 

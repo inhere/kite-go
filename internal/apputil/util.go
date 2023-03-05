@@ -32,16 +32,19 @@ func ReadSource(s string) string {
 }
 
 // GitCfgByCmdID get
-func GitCfgByCmdID(c *gcli.Command) *gitx.Config {
+func GitCfgByCmdID(c *gcli.Command) (cfg *gitx.Config) {
 	id := c.ID()
+
 	if strings.Contains(id, gitw.TypeGitHub) {
-		return app.Ghub().Config
+		cfg = app.Ghub().Config
+	} else if strings.Contains(id, gitw.TypeGitlab) {
+		cfg = app.Glab().Config
+	} else {
+		cfg = app.Gitx()
 	}
 
-	if strings.Contains(id, gitw.TypeGitlab) {
-		return app.Glab().Config
-	}
-	return app.Gitx()
+	c.Infof("TIP: auto select git config type: %s(by cmd ID: %s)\n", cfg.HostType, c.ID())
+	return cfg
 }
 
 // ResolvePath for input path
