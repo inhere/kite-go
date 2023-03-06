@@ -9,7 +9,7 @@ require (
 	github.com/go-openapi/swag v0.22.3
 	github.com/gomarkdown/markdown v0.0.0-20221013030248-663e2500819c
 	github.com/gookit/color v1.5.2
-	github.com/gookit/config/v2 v2.2.0
+	github.com/gookit/config/v2 v2.2.1
 	github.com/gookit/event v1.0.6
 	github.com/gookit/gcli/v3 v3.2.1
 	github.com/gookit/gitw v0.3.3
@@ -24,10 +24,11 @@ require (
 )
 
 require (
+	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/fatih/color v1.14.1 // indirect
 	github.com/go-openapi/jsonpointer v0.19.6 // indirect
 	github.com/go-openapi/jsonreference v0.20.2 // indirect
-	github.com/goccy/go-yaml v1.9.8 // indirect
+	github.com/goccy/go-yaml v1.10.0 // indirect
 	github.com/gookit/filter v1.1.4 // indirect
 	github.com/gookit/gsr v0.0.8 // indirect
 	github.com/gookit/validate v1.4.6 // indirect
