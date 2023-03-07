@@ -6,5 +6,5 @@ import (
 
 // SwagDoc struct
 type SwagDoc struct {
-	openapi3.Swagger
+	openapi3.T
 }

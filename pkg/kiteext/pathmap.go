@@ -40,7 +40,8 @@ type VarMap struct {
 // NewVarMap instance
 func NewVarMap(smp map[string]string) *VarMap {
 	vm := &VarMap{
-		Prefix: "$",
+		Prefix:  "$",
+		Aliases: make(maputil.Aliases),
 	}
 
 	vm.LoadMap(map[string]string{

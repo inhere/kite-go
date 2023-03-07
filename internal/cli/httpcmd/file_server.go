@@ -4,6 +4,7 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/rux"
+	"github.com/inhere/kite/internal/apputil"
 	"github.com/inhere/kite/internal/biz/cmdbiz"
 )
 
@@ -29,6 +30,13 @@ func NewFileServerCmd() *gcli.Command {
 
 			srv := rux.New(func(r *rux.Router) {})
 			srv.StaticDir("/fs", fsOpts.Workdir)
+
+			cfg := apputil.CmdConfigData2(c)
+			if mp := cfg.StrMap("static_dir"); len(mp) > 0 {
+				for prefix, dirPath := range mp {
+					srv.StaticDir(prefix, dirPath)
+				}
+			}
 
 			srv.Any("/", func(c *rux.Context) {
 				c.JSON(200, rux.M{"msg": "OK"})
