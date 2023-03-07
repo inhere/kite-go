@@ -59,13 +59,13 @@ $ kite run ls -al
 
 > default in the scripts.yml or dir: $base/scripts
 
-Can use '$@' '$?' at script line. will auto replace to input arguments
+Can use '$@' '$*' at script line. will auto replace to input arguments
 examples:
 
   # scripts.yml
   st: git status
   co: git checkout $@
-  br: git branch $?
+  br: git branch $*
 `,
 }
 
@@ -114,6 +114,8 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 	if runOpts.script {
 		c.Infof("TIP: will direct run %q as script name (by --script)\n", name)
 
+		// TODO search ...
+
 		if runOpts.verbose {
 			ctx.BeforeFn = func(si *kscript.ScriptInfo, ctx *kscript.RunCtx) {
 				// cliutil.Infof("TIP: %q is a script name, will run it with %v\n", name, args)
@@ -124,6 +126,8 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 
 		return app.Scripts.Run(name, args, ctx)
 	}
+
+	// TODO search ...
 
 	// try alias, script, ...
 	return cmdbiz.RunAny(name, args, ctx)
