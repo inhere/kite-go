@@ -27,8 +27,10 @@ func CmdConfigKey(nodes ...string) string {
 }
 
 // ReadSource string data.
-func ReadSource(s string) string {
-	return kiteext.NewSourceReader(s).ReadString()
+func ReadSource(s string) (string, error) {
+	return kiteext.
+		NewSourceReader(s, kiteext.FallbackStdin(), kiteext.WithTrimSpace()).
+		TryReadString()
 }
 
 // GitCfgByCmdID get
