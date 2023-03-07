@@ -21,6 +21,15 @@ func CmdConfigData(nodes ...string) maputil.Data {
 	return app.Cfg().SubDataMap(CmdConfigKey(nodes...))
 }
 
+// CmdConfigData2 find.
+//
+// eg:
+//
+//	CmdConfigData2("git", "update") => read config by key: cmd_git_update
+func CmdConfigData2(c *gcli.Command) maputil.Data {
+	return app.Cfg().SubDataMap(CmdConfigKey(c.PathNames()...))
+}
+
 // CmdConfigKey build. eg: ("git", "update") => "cmd_git_update"
 func CmdConfigKey(nodes ...string) string {
 	return "cmd_" + strings.Join(nodes, "_")
