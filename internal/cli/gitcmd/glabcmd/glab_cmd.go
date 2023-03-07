@@ -3,7 +3,6 @@ package glabcmd
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/events"
-	"github.com/gookit/goutil/envutil"
 	"github.com/inhere/kite/internal/app"
 	"github.com/inhere/kite/internal/cli/gitcmd"
 	"github.com/inhere/kite/pkg/gitx"
@@ -25,9 +24,7 @@ var GitLabCmd = &gcli.Command{
 		gitcmd.NewUpdatePushCmd(configProvider),
 		gitcmd.NewAddCommitPush(configProvider),
 		gitcmd.NewAddCommitCmd(configProvider),
-		gitx.NewOpenRemoteCmd(func() string {
-			return envutil.Getenv("KITE_GLAB_HOST", app.Cfg().String("gitlab.host_url"))
-		}),
+		gitcmd.NewOpenRemoteCmd(configProvider),
 	},
 	Config: func(c *gcli.Command) {
 		c.On(gcli.EvtCmdRunBefore, func(ctx *gcli.HookCtx) (stop bool) {

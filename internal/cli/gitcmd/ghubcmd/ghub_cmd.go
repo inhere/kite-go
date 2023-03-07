@@ -23,9 +23,7 @@ var GithubCmd = &gcli.Command{
 		gitcmd.NewAddCommitPush(configProvider),
 		gitcmd.NewUpdateCmd(configProvider),
 		gitcmd.NewUpdatePushCmd(configProvider),
-		gitx.NewOpenRemoteCmd(func() string {
-			return gitx.GitHubURL // github.host_url
-		}),
+		gitcmd.NewOpenRemoteCmd(configProvider),
 	},
 	Config: func(c *gcli.Command) {
 		c.On(events.OnCmdRunBefore, func(ctx *gcli.HookCtx) (stop bool) {
