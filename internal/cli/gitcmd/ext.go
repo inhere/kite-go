@@ -82,7 +82,7 @@ func NewGitEmojisCmd() *gcli.Command {
 		lang   string
 		render string
 		output string
-		search gcli.String
+		search gflag.String
 	}{}
 
 	return &gcli.Command{
@@ -117,10 +117,12 @@ func NewGitEmojisCmd() *gcli.Command {
 			}
 
 			if geOpts.render != "" {
-				src := apputil.ReadSource(geOpts.render)
-				src = em.RenderCodes(src)
+				src, err := apputil.ReadSource(geOpts.render)
+				if err != nil {
+					return err
+				}
 
-				fmt.Println(src)
+				fmt.Println(em.RenderCodes(src))
 				return nil
 			}
 

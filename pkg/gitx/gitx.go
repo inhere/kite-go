@@ -87,11 +87,11 @@ func (g *GitLoc) Check() error {
 // CheckRemote git config.
 func (g *GitLoc) CheckRemote() error {
 	if !g.HasRemote(g.DefaultRemote) {
-		return errorx.Rawf("the default remote %q is not exists")
+		return errorx.Rawf("the default remote %q is not exists", g.DefaultRemote)
 	}
 
 	if g.ForkMode && !g.HasRemote(g.SourceRemote) {
-		return errorx.Rawf("the source remote %q is not exists")
+		return errorx.Rawf("the source remote %q is not exists", g.SourceRemote)
 	}
 
 	return nil
