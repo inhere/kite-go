@@ -9,7 +9,6 @@ import (
 	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/errorx"
 	"github.com/inhere/kite/internal/apputil"
-	"github.com/inhere/kite/pkg/kiteext"
 )
 
 // TextOperateCmd instance
@@ -40,11 +39,13 @@ var StrCountCmd = &gcli.Command{
 }
 
 var splitOpts = struct {
-	get   gflag.IntsString
-	sep   string
-	join  string
-	text  string
-	count bool
+	get  gflag.IntsString
+	sep  string
+	join string
+	text string
+
+	count  bool
+	noTrim bool
 	// quick fetch
 	first, last bool
 }{}
@@ -56,13 +57,14 @@ var StrSplitCmd = &gcli.Command{
 	Desc: "split input text to multi parts, then fetch or joins",
 	Config: func(c *gcli.Command) {
 		splitOpts.get.ValueFn = func(val int) error {
-			return goutil.OrError(val < 0, errorx.Rawf("get index cannot be < 0"))
+			return goutil.OrError(val >= 0, errorx.Rawf("get index cannot be < 0"))
 		}
 
 		c.StrOpt2(&splitOpts.sep, "sep,s", "set sep char for split input, default is SPACE", gflag.WithDefault("SPACE"))
 		c.StrOpt2(&splitOpts.join, "join", "set join char for build output, default is NL", gflag.WithDefault("NL"))
-		c.VarOpt2(&splitOpts.get, "get", "get values by indexes, multi by comma")
+		c.VarOpt2(&splitOpts.get, "get, i", "get values by indexes, multi by comma")
 
+		c.BoolOpt2(&splitOpts.noTrim, "no-trim", "do not trim input text contents")
 		c.BoolOpt2(&splitOpts.count, "count, c", "get first part from split strings")
 		c.BoolOpt2(&splitOpts.first, "first, f", "get first part from split strings")
 		c.BoolOpt2(&splitOpts.last, "last, l", "get last part from split strings")
@@ -72,27 +74,27 @@ var StrSplitCmd = &gcli.Command{
 			return nil
 		})
 	},
-	Func: func(c *gcli.Command, _ []string) error {
-		src, err := kiteext.ReadContents(splitOpts.text)
-		if err != nil {
-			return err
-		}
+	Func: strSplitHandle,
+}
 
-		list := strings.Split(src, apputil.ResolveSep(splitOpts.sep))
-		listLen := len(list)
-		if listLen == 0 {
-			return nil
-		}
+func strSplitHandle(_ *gcli.Command, _ []string) error {
+	src, err := apputil.ReadSource(splitOpts.text)
+	if err != nil {
+		return err
+	}
 
-		if splitOpts.first {
-			fmt.Println(list[0])
-			return nil
-		}
-		if splitOpts.last {
-			fmt.Println(list[listLen-1])
-			return nil
-		}
+	list := strings.Split(src, apputil.ResolveSep(splitOpts.sep))
+	listLen := len(list)
+	if listLen == 0 {
+		return nil
+	}
 
+	var val string
+	if splitOpts.first {
+		val = list[0]
+	} else if splitOpts.last {
+		val = list[listLen-1]
+	} else {
 		joinSep := apputil.ResolveSep(splitOpts.join)
 
 		if indexes := splitOpts.get.Ints(); len(indexes) > 0 {
@@ -105,7 +107,13 @@ var StrSplitCmd = &gcli.Command{
 			list = newList
 		}
 
-		fmt.Println(strings.Join(list, joinSep))
-		return nil
-	},
+		val = strings.Join(list, joinSep)
+	}
+
+	if splitOpts.noTrim {
+		fmt.Println(val)
+	} else {
+		fmt.Print(val)
+	}
+	return nil
 }
