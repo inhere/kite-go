@@ -46,6 +46,8 @@ var (
 	// PathMap data
 	PathMap *kiteext.PathMap
 	OpenMap maputil.Aliases
+
+	Vars *kiteext.VarMap
 )
 
 // Cfg get the config object

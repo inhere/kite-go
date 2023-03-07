@@ -1,7 +1,6 @@
 package bootstrap
 
 import (
-	"os"
 	"runtime"
 
 	"github.com/gookit/config/v2"
@@ -9,10 +8,10 @@ import (
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/envutil"
 	"github.com/gookit/goutil/fsutil"
-	"github.com/gookit/goutil/strutil"
 	"github.com/inhere/kite/internal/app"
 	"github.com/inhere/kite/internal/appconst"
 	"github.com/inhere/kite/internal/initlog"
+	"github.com/inhere/kite/pkg/kiteext"
 )
 
 // BootConfig for kite
@@ -83,11 +82,8 @@ func mapAppConfig(ka *app.KiteApp, cfg *config.Config) error {
 	return nil
 }
 
-// can use var in filepath
-var pathVars = map[string]string{
-	"$os":   runtime.GOOS,
-	"$user": os.Getenv("USER"),
-}
+// can use vars in filepath
+var bootVars = kiteext.NewVarMap(nil)
 
 // LoadIncludeConfigs from conf.IncludeConfig
 func loadIncludeConfigs(ka *app.KiteApp, cfg *config.Config) error {
@@ -104,10 +100,7 @@ func loadIncludeConfigs(ka *app.KiteApp, cfg *config.Config) error {
 		}
 
 		var filePath string
-		// contains var
-		if strutil.ContainsByte(file, '$') {
-			file = strutil.Replaces(file, pathVars)
-		}
+		file = bootVars.Replace(file)
 
 		// is relative path
 		if file[0] != app.OSPathSepChar && !app.IsAliasPath(file) {

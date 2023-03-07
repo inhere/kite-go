@@ -27,6 +27,12 @@ type Runner struct {
 	// format: {name: info, name2: info2, ...}
 	Scripts map[string]any `json:"scripts"`
 	// DefineFiles scripts define files, will read and add to Scripts
+	//
+	// Allow vars: $user, $os
+	//
+	// eg:
+	//	- config/module/scripts.yml
+	//	- ?config/module/scripts.$os.yml  // start withs '?' - an optional file, load on exists.
 	DefineFiles []string `json:"define_files"`
 	// TypeShell wrapper for run each script.
 	//
@@ -76,7 +82,7 @@ func (r *Runner) InitLoad() error {
 }
 
 // LoadDefineScripts from DefineFiles
-func (r *Runner) LoadDefineScripts() error {
+func (r *Runner) LoadDefineScripts() (err error) {
 	if r.defineLoaded {
 		return nil
 	}
@@ -88,9 +94,20 @@ func (r *Runner) LoadDefineScripts() error {
 	loader.AddDriver(toml.Driver)
 
 	for _, fpath := range r.DefineFiles {
-		fpath = r.PathResolver(fpath)
+		// optional file
+		var optional bool
+		if fpath[0] == '?' {
+			optional = true
+			fpath = fpath[1:]
+		}
 
-		err := loader.LoadFiles(fpath)
+		fpath = r.PathResolver(fpath)
+		if optional {
+			err = loader.LoadExists(fpath)
+		} else {
+			err = loader.LoadFiles(fpath)
+		}
+
 		if err != nil {
 			return err
 		}
@@ -125,6 +142,11 @@ func (r *Runner) LoadScriptFiles() error {
 		}
 	}
 
+	return nil
+}
+
+// Search by name
+func (r *Runner) Search(name string, ctx *RunCtx) error {
 	return nil
 }
 

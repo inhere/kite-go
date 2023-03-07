@@ -87,6 +87,8 @@ func addServiceBoot(ka *app.KiteApp) {
 			Aliases: app.Cfg().StringMap("pathmap"),
 		}
 
+		app.Vars = kiteext.NewVarMap(app.Cfg().StringMap("global_vars"))
+
 		cmdbiz.Kas = app.Cfg().StringMap("aliases")
 		// app.AlsRun = &kiteext.KiteAliasRun{
 		// 	Aliases: app.Cfg().StringMap("aliases"),
