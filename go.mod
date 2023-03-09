@@ -13,7 +13,7 @@ require (
 	github.com/gookit/event v1.0.6
 	github.com/gookit/gcli/v3 v3.2.1
 	github.com/gookit/gitw v0.3.3
-	github.com/gookit/goutil v0.6.6
+	github.com/gookit/goutil v0.6.7
 	github.com/gookit/greq v0.2.0
 	github.com/gookit/i18n v1.1.4
 	github.com/gookit/ini/v2 v2.2.1
@@ -24,6 +24,7 @@ require (
 )
 
 require (
+	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/fatih/color v1.14.1 // indirect
 	github.com/go-openapi/jsonpointer v0.19.6 // indirect
 	github.com/go-openapi/jsonreference v0.20.2 // indirect
@@ -45,9 +46,9 @@ require (
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	golang.org/x/crypto v0.6.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.5.0 // indirect
-	golang.org/x/term v0.5.0 // indirect
-	golang.org/x/text v0.7.0 // indirect
+	golang.org/x/sys v0.6.0 // indirect
+	golang.org/x/term v0.6.0 // indirect
+	golang.org/x/text v0.8.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
