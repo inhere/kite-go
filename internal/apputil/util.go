@@ -1,8 +1,11 @@
 package apputil
 
 import (
+	"os"
 	"strings"
 
+	"github.com/alecthomas/chroma/quick"
+	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gitw"
 	"github.com/gookit/goutil/fsutil"
@@ -38,7 +41,7 @@ func CmdConfigKey(nodes ...string) string {
 // ReadSource string data.
 func ReadSource(s string) (string, error) {
 	return kiteext.
-		NewSourceReader(s, kiteext.FallbackStdin(), kiteext.WithTrimSpace()).
+		NewSourceReader(s, kiteext.FallbackStdin(), kiteext.WithTrimSpace(), kiteext.WithCheckResult()).
 		TryReadString()
 }
 
@@ -84,4 +87,15 @@ func ResolveSep(sep string) string {
 	default:
 		return sep
 	}
+}
+
+// RenderContents and output to stdout.
+// formatter see like formatters.TTY16m
+func RenderContents(s, format, style string) error {
+	formatter := "terminal16m"
+	if color.IsSupportTrueColor() {
+		formatter = "terminal256"
+	}
+
+	return quick.Highlight(os.Stdout, s, format, formatter, style)
 }

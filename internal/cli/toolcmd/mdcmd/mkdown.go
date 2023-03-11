@@ -7,7 +7,7 @@ import "github.com/gookit/gcli/v3"
 // MkDownCmd instance
 var MkDownCmd = &gcli.Command{
 	Name:    "mkdown",
-	Desc:    "some tool for markdown",
+	Desc:    "some tools for markdown",
 	Aliases: []string{"md", "mdown", "markdown"},
 	Subs: []*gcli.Command{
 		MdRenderCmd,

@@ -6,13 +6,14 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/sysutil/clipboard"
+	"github.com/inhere/kite/internal/apputil"
 )
 
 // clipCmdOpts struct
 type clipCmdOpts struct {
 	Verb   bool   `flag:"verbose;display real exec command line;;;v"`
 	Read   bool   `flag:"read contents from clipboard, default operate;;;r"`
-	Write  string `flag:"write contents to clipboard;false;;w"`
+	Write  string `flag:"write contents to clipboard, allow: @in;false;;w"`
 	Output string `flag:"read contents and write to the output;;stdout;o"`
 }
 
@@ -31,8 +32,12 @@ func NewClipboardCmd() *gcli.Command {
 			cb := clipboard.New().WithVerbose(clipOpts.Verb)
 
 			if clipOpts.Write != "" {
-				_, err := cb.WriteString(clipOpts.Write)
+				str, err := apputil.ReadSource(clipOpts.Write)
 				if err != nil {
+					return err
+				}
+
+				if _, err = cb.WriteString(str); err != nil {
 					return err
 				}
 				return cb.Flush()

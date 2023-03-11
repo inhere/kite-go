@@ -76,8 +76,8 @@ var KiteObjectCmd = &gcli.Command{
 
 var confOpts = struct {
 	search string
-	raw    bool
 	keys   bool
+	all    bool
 }{}
 
 // KiteConfCmd command
@@ -86,7 +86,7 @@ var KiteConfCmd = &gcli.Command{
 	Aliases: []string{"conf", "cfg"},
 	Desc:    "display kite config information",
 	Config: func(c *gcli.Command) {
-		c.BoolOpt(&confOpts.raw, "raw", "r", false, "display raw config data")
+		c.BoolOpt2(&confOpts.all, "all,a", "display all config data")
 		c.BoolOpt2(&confOpts.keys, "keys", "display raw config data")
 		c.StrOpt2(&confOpts.search, "search,s", "search top key by input keywords")
 
@@ -104,11 +104,15 @@ var KiteConfCmd = &gcli.Command{
 			return nil
 		}
 
-		key := c.Arg("key").String()
-		if key == "" {
+		if confOpts.all {
 			c.Infoln("All Config Data:")
 			dump.Clear(app.Cfg().Data())
 			return nil
+		}
+
+		key := c.Arg("key").String()
+		if key == "" {
+			return errorx.Raw("please input key for show configuration")
 		}
 
 		switch key {
@@ -146,7 +150,7 @@ var KitePathCmd = &gcli.Command{
 	},
 	Func: func(c *gcli.Command, args []string) error {
 		if kpOpts.list {
-			dump.Clear(app.App().Config)
+			show.AList("Kite paths", app.App().Config)
 			return nil
 		}
 
