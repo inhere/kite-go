@@ -237,7 +237,7 @@ func (r *Runner) doExecScriptFile(si *ScriptInfo, inArgs []string, ctx *RunCtx) 
 	}
 
 	// run script file
-	return cmdr.NewCmd(si.Bin, si.File).
+	return cmdr.NewCmd(si.BinName, si.File).
 		WorkDirOnNE(si.Workdir).
 		WithDryRun(ctx.DryRun).
 		AppendEnv(si.Env).
@@ -289,6 +289,8 @@ func (r *Runner) doExecScript(si *ScriptInfo, inArgs []string, ctx *RunCtx) erro
 		rr.DryRun = ctx.DryRun
 	})
 
+	// cr.BeforeRun
+
 	for _, line := range si.Cmds {
 		line = r.handleCmdline(line, inArgs, si)
 
@@ -320,7 +322,7 @@ func (r *Runner) handleCmdline(line string, args []string, si *ScriptInfo) strin
 
 	// eg: $SHELL
 	if r.ParseEnv && strutil.ContainsByte(line, '$') {
-		envs := sysutil.EnvironWith(si.Env)
+		envs := sysutil.EnvMapWith(si.Env)
 		return textutil.RenderSMap(line, envs, "$,")
 	}
 
@@ -399,14 +401,14 @@ func (r *Runner) ScriptFileInfo(name string) (*ScriptInfo, error) {
 
 func (r *Runner) newFileScriptItem(name, fpath, ext string) (*ScriptInfo, error) {
 	si := &ScriptInfo{
-		Name: name,
-		File: fpath,
-		Ext:  ext,
-		Bin:  ext[1:],
+		Name:    name,
+		File:    fpath,
+		FileExt: ext,
+		BinName: ext[1:],
 	}
 
 	if bin, ok := r.ExtToBinMap[ext]; ok {
-		si.Bin = bin
+		si.BinName = bin
 	}
 	return si, nil
 }

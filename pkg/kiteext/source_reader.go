@@ -2,6 +2,7 @@ package kiteext
 
 import (
 	"bytes"
+	"errors"
 	"os"
 	"strings"
 
@@ -42,6 +43,8 @@ type SourceReader struct {
 	// has read contents by src
 	hasRead   bool
 	trimSpace bool
+	// return error on result is empty
+	checkResult bool
 }
 
 func ReadStdin(fns ...ReaderFn) (string, error) {
@@ -69,6 +72,11 @@ func FallbackStdin() ReaderFn {
 // WithTrimSpace on read contents.
 func WithTrimSpace() ReaderFn {
 	return func(sr *SourceReader) { sr.trimSpace = true }
+}
+
+// WithCheckResult on read contents.
+func WithCheckResult() ReaderFn {
+	return func(sr *SourceReader) { sr.checkResult = true }
 }
 
 // NewSourceReader instance
@@ -163,6 +171,8 @@ func (r *SourceReader) TryReadString() (string, error) {
 	return r.ReadString(), r.err
 }
 
+var emptyResultErr = errors.New("input is empty")
+
 // ReadString return string
 func (r *SourceReader) ReadString() string {
 	if r.buf.Cap() == 0 {
@@ -170,10 +180,15 @@ func (r *SourceReader) ReadString() string {
 	}
 	defer r.buf.Reset()
 
+	s := r.buf.String()
 	if r.trimSpace {
-		return strings.TrimSpace(r.buf.String())
+		s = strings.TrimSpace(s)
 	}
-	return r.buf.String()
+
+	if r.checkResult && len(s) == 0 {
+		r.err = emptyResultErr
+	}
+	return s
 }
 
 // tryReadAny return string
@@ -194,7 +209,7 @@ func (r *SourceReader) tryReadAny() {
 		r.typ = TypeClip
 		r.err = clipboard.Std().ReadTo(&r.buf)
 		r.hasRead = true
-	case "@in", "@stdin", "stdin":
+	case "@i", "@in", "@stdin", "stdin":
 		r.typ = TypeStdin
 		_, r.err = r.buf.ReadFrom(os.Stdin)
 		r.hasRead = true
@@ -225,6 +240,11 @@ func (r *SourceReader) readfile(fpath string) {
 // HasRead bool
 func (r *SourceReader) HasRead() bool {
 	return r.hasRead
+}
+
+// SrcType get
+func (r *SourceReader) SrcType() string {
+	return r.typ
 }
 
 // Type get

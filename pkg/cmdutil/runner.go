@@ -4,6 +4,7 @@ import (
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3/interact"
 	"github.com/gookit/goutil/sysutil/cmdr"
+	"github.com/gookit/goutil/timex"
 )
 
 // Runner struct
@@ -49,7 +50,7 @@ func (r *Runner) Run() error {
 	err := r.Runner.Run()
 
 	if !r.Silent && err == nil {
-		color.Successln("✅  All Tasks Run Completed")
+		color.Successln("✅  All Tasks Run Completed. At", timex.Now().Datetime())
 	}
 	return err
 }

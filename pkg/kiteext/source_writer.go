@@ -1,10 +1,12 @@
 package kiteext
 
 import (
-	"fmt"
 	"io"
+	"strings"
 
 	"github.com/gookit/goutil/fsutil"
+	"github.com/gookit/goutil/stdio"
+	"github.com/gookit/goutil/sysutil/clipboard"
 )
 
 // WriterFn type
@@ -15,7 +17,7 @@ type SourceWriter struct {
 	err error
 	src string
 	dst string
-	// dstType name
+	// dstType real dst type name
 	dstType string
 	// emptyAction type on dst is empty.
 	emptyAction string
@@ -39,16 +41,25 @@ func NewSourceWriter(dst string) *SourceWriter {
 	}
 }
 
-func (w *SourceWriter) WriteFrom(r io.Reader) {
+func (w *SourceWriter) WriteFrom(r io.Reader) error {
 
+	return nil
 }
 
 func (w *SourceWriter) WriteString(s string) (err error) {
-	switch w.dstType {
-	case TypeFile:
-		_, err = fsutil.PutContents(w.dst, s)
-	default:
-		fmt.Println(s)
+	dst := w.dst
+	switch dst {
+	case "@c", "@cb", "@clip", "@clipboard", "clipboard":
+		err = clipboard.WriteString(s)
+		w.dstType = TypeClip
+	case "", "@o", "@out", "@stdout", "stdout":
+		stdio.WriteString(s)
+		w.dstType = TypeFile
+	default: // to file
+		if idx := strings.IndexByte(dst, '@'); idx == 0 {
+			dst = dst[1:]
+		}
+		_, err = fsutil.PutContents(dst, s)
 	}
 	return
 }

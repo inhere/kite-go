@@ -8,6 +8,11 @@ import (
 
 // ScriptInfo struct
 type ScriptInfo struct {
+
+	//
+	// For define script
+	//
+
 	// Type wrap for run script. allow: sh, bash, zsh
 	Type string
 
@@ -24,13 +29,17 @@ type ScriptInfo struct {
 	Env map[string]string
 	// Args script args definition.
 	Args, ArgNames []string
-	// Cmds commands define in Runner.DefineFiles
+	// Cmds commands list
 	Cmds []string
 
+	//
+	// For script file
+	//
+
 	// File script file path in Runner.ScriptDirs
-	File string
-	Bin  string
-	Ext  string // eg: .go
+	File    string
+	BinName string
+	FileExt string // eg: .go
 }
 
 // InitType on not set
