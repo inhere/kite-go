@@ -21,6 +21,7 @@ var TextOperateCmd = &gcli.Command{
 		StrSplitCmd,
 		StrMatchCmd,
 		TextSearchCmd,
+		TxtTemplateCmd,
 		// TODO
 	},
 }

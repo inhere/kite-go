@@ -12,7 +12,6 @@ import (
 	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/goutil/timex"
 	"github.com/inhere/kite/internal/apputil"
-	"github.com/inhere/kite/pkg/kiteext"
 )
 
 // ConvBaseCmd command
@@ -42,16 +41,16 @@ var Time2dateCmd = &gcli.Command{
 	Config: func(c *gcli.Command) {
 		c.AddArg("input", "want parsed input contents", true, true)
 	},
-	Func: func(c *gcli.Command, _ []string) error {
+	Func: func(c *gcli.Command, _ []string) (err error) {
 		var txt string
 		ss := c.Arg("input").Strings()
 		if len(ss) > 1 {
 			txt = strings.Join(ss, " ")
-		}
-
-		txt, err := kiteext.ReadContents(ss[0])
-		if err != nil {
-			return err
+		} else {
+			txt, err = apputil.ReadSource(ss[0])
+			if err != nil {
+				return err
+			}
 		}
 
 		c.Infoln("Input Contents:")

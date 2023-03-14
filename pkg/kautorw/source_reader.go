@@ -1,4 +1,4 @@
-package kiteext
+package kautorw
 
 import (
 	"bytes"
@@ -8,24 +8,6 @@ import (
 
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/sysutil/clipboard"
-)
-
-// types for read or write
-const (
-	DstStdin  = "@stdin"
-	DstStdout = "@stdout"
-	DstClip   = "@clip"
-)
-
-// types for read or write
-const (
-	TypeStdin  = "stdin"
-	TypeString = "string" // raw string
-
-	TypeStdout = "stdout"
-
-	TypeClip = "clip"
-	TypeFile = "file"
 )
 
 // ReaderFn type
@@ -38,64 +20,54 @@ type SourceReader struct {
 	src string
 	// src real type
 	typ string
-	// emptyAction type on src is empty.
-	emptyAction string
 	// has read contents by src
-	hasRead   bool
-	trimSpace bool
-	// return error on result is empty
-	checkResult bool
+	hasRead bool
+	// TypeOnEmpty operate type on src is empty.
+	TypeOnEmpty string
+	// DefaultAsFile type on src type not match.
+	DefaultAsFile bool
+	// TrimSpace for read contents
+	TrimSpace bool
+	// CheckResult return error on result is empty
+	CheckResult bool
 }
 
-func ReadStdin(fns ...ReaderFn) (string, error) {
-	return NewSourceReader(DstStdin, fns...).ReadStdin().TryString()
+// WithTypeOnEmpty setting.
+func WithTypeOnEmpty(typ string) ReaderFn {
+	return func(sr *SourceReader) { sr.TypeOnEmpty = typ }
 }
 
-func ReadClip(fns ...ReaderFn) (string, error) {
-	return NewSourceReader(DstClip, fns...).ReadClip().TryString()
-}
-
-func ReadContents(src string, fns ...ReaderFn) (string, error) {
-	return NewSourceReader(src, fns...).TryReadString()
-}
-
-// WithEmptyAction setting.
-func WithEmptyAction(typ string) ReaderFn {
-	return func(sr *SourceReader) { sr.emptyAction = typ }
-}
-
-// FallbackStdin read from stdin.
-func FallbackStdin() ReaderFn {
-	return func(sr *SourceReader) { sr.emptyAction = TypeStdin }
+// TryStdinOnEmpty try read from stdin.
+func TryStdinOnEmpty() ReaderFn {
+	return func(sr *SourceReader) { sr.TypeOnEmpty = TypeStdin }
 }
 
 // WithTrimSpace on read contents.
 func WithTrimSpace() ReaderFn {
-	return func(sr *SourceReader) { sr.trimSpace = true }
+	return func(sr *SourceReader) { sr.TrimSpace = true }
+}
+
+// WithDefaultAsFile on read contents.
+func WithDefaultAsFile() ReaderFn {
+	return func(sr *SourceReader) { sr.DefaultAsFile = true }
 }
 
 // WithCheckResult on read contents.
 func WithCheckResult() ReaderFn {
-	return func(sr *SourceReader) { sr.checkResult = true }
+	return func(sr *SourceReader) { sr.CheckResult = true }
 }
 
 // NewSourceReader instance
 func NewSourceReader(src string, fns ...ReaderFn) *SourceReader {
 	sr := &SourceReader{
 		src: src,
-		typ: TypeString,
 	}
 
+	sr.CheckResult = true
 	for _, fn := range fns {
 		fn(sr)
 	}
 	return sr
-}
-
-// SetEmptyAction type on src is empty
-func (r *SourceReader) SetEmptyAction(typ string) *SourceReader {
-	r.emptyAction = typ
-	return r
 }
 
 // TryString return string and error
@@ -128,7 +100,7 @@ func (r *SourceReader) ReadClip() *SourceReader {
 func (r *SourceReader) tryReadClip() {
 	ln := len(r.src)
 	if ln > 12 {
-		r.buf.WriteString(r.src)
+		r.directToBuf()
 		return
 	}
 
@@ -138,7 +110,7 @@ func (r *SourceReader) tryReadClip() {
 		r.err = clipboard.Std().ReadTo(&r.buf)
 		r.hasRead = true
 	default:
-		r.buf.WriteString(r.src)
+		r.directToBuf()
 	}
 }
 
@@ -152,7 +124,7 @@ func (r *SourceReader) ReadStdin() *SourceReader {
 func (r *SourceReader) tryReadStdin() {
 	ln := len(r.src)
 	if ln > 8 {
-		r.buf.WriteString(r.src)
+		r.directToBuf()
 		return
 	}
 
@@ -162,7 +134,7 @@ func (r *SourceReader) tryReadStdin() {
 		_, r.err = r.buf.ReadFrom(os.Stdin)
 		r.hasRead = true
 	default:
-		r.buf.WriteString(r.src)
+		r.directToBuf()
 	}
 }
 
@@ -181,11 +153,11 @@ func (r *SourceReader) ReadString() string {
 	defer r.buf.Reset()
 
 	s := r.buf.String()
-	if r.trimSpace {
+	if r.TrimSpace {
 		s = strings.TrimSpace(s)
 	}
 
-	if r.checkResult && len(s) == 0 {
+	if r.CheckResult && len(s) == 0 {
 		r.err = emptyResultErr
 	}
 	return s
@@ -195,15 +167,20 @@ func (r *SourceReader) ReadString() string {
 func (r *SourceReader) tryReadAny() {
 	ln := len(r.src)
 	if ln > 86 {
-		r.buf.WriteString(r.src)
+		r.directToBuf()
 		return
 	}
 
 	src := r.src
-	if r.emptyAction != "" && ln == 0 {
-		src = "@" + r.emptyAction
+	if r.TypeOnEmpty != "" && ln == 0 {
+		src = "@" + r.TypeOnEmpty
 	}
 
+	r.tryReadSrc(src)
+}
+
+// HasRead bool
+func (r *SourceReader) tryReadSrc(src string) {
 	switch src {
 	case "@c", "@cb", "@clip", "@clipboard", "clipboard":
 		r.typ = TypeClip
@@ -215,12 +192,24 @@ func (r *SourceReader) tryReadAny() {
 		r.hasRead = true
 	default:
 		// read file
-		if ln > 3 && strings.HasPrefix(r.src, "@") {
-			r.readfile(r.src[1:])
-		} else {
-			r.buf.WriteString(r.src)
+		if len(src) > 3 {
+			if strings.HasPrefix(src, "@") {
+				r.readfile(src[1:])
+			} else if r.DefaultAsFile && fsutil.IsFile(src) {
+				r.readfile(src)
+			}
+		}
+
+		if r.err == nil && r.typ == "" {
+			r.directToBuf()
 		}
 	}
+}
+
+// HasRead bool
+func (r *SourceReader) directToBuf() {
+	r.typ = TypeString
+	r.buf.WriteString(r.src)
 }
 
 // HasRead bool

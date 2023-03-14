@@ -4,7 +4,7 @@ import (
 	"github.com/charmbracelet/glamour"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/stdio"
-	"github.com/inhere/kite/pkg/kiteext"
+	"github.com/inhere/kite/pkg/kautorw"
 )
 
 var mrOpts = struct {
@@ -24,7 +24,7 @@ var MdRenderCmd = &gcli.Command{
 	},
 	Func: func(c *gcli.Command, _ []string) error {
 		fpath := c.Arg("file").String()
-		str, err := kiteext.ReadContents("@" + fpath)
+		str, err := kautorw.ReadContents("@" + fpath)
 		if err != nil {
 			return err
 		}

@@ -1,4 +1,4 @@
-package kiteext
+package kautorw
 
 import (
 	"io"
@@ -19,19 +19,15 @@ type SourceWriter struct {
 	dst string
 	// dstType real dst type name
 	dstType string
-	// emptyAction type on dst is empty.
-	emptyAction string
+	// FallbackType operate type on dst is empty.
+	FallbackType string
 }
 
 // FallbackStdout write to stdout.
-func FallbackStdout() ReaderFn {
-	return func(sr *SourceReader) {
-		sr.emptyAction = TypeStdout
+func FallbackStdout() WriterFn {
+	return func(sr *SourceWriter) {
+		sr.FallbackType = TypeStdout
 	}
-}
-
-func WriteContents(contents, dst string) (string, error) {
-	return "", nil
 }
 
 func NewSourceWriter(dst string) *SourceWriter {
@@ -48,17 +44,22 @@ func (w *SourceWriter) WriteFrom(r io.Reader) error {
 
 func (w *SourceWriter) WriteString(s string) (err error) {
 	dst := w.dst
+	if len(dst) == 0 && w.FallbackType != "" {
+		dst = "@" + w.FallbackType
+	}
+
 	switch dst {
 	case "@c", "@cb", "@clip", "@clipboard", "clipboard":
-		err = clipboard.WriteString(s)
 		w.dstType = TypeClip
-	case "", "@o", "@out", "@stdout", "stdout":
+		err = clipboard.WriteString(s)
+	case "@o", "@out", "@stdout", "stdout":
+		w.dstType = TypeStdout
 		stdio.WriteString(s)
-		w.dstType = TypeFile
 	default: // to file
 		if idx := strings.IndexByte(dst, '@'); idx == 0 {
 			dst = dst[1:]
 		}
+		w.dstType = TypeFile
 		_, err = fsutil.PutContents(dst, s)
 	}
 	return

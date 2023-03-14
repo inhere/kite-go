@@ -10,7 +10,7 @@ import (
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/stdio"
 	"github.com/inhere/kite/internal/apputil"
-	"github.com/inhere/kite/pkg/kiteext"
+	"github.com/inhere/kite/pkg/kautorw"
 )
 
 var fcOpts = struct {
@@ -55,11 +55,11 @@ func fileCat(c *gcli.Command, _ []string) error {
 	// format := strutil.OrElse(fcOpts.format, "markdown")
 	format := fcOpts.format
 	if fcOpts.stdin {
-		return renderOneFile(kiteext.DstStdin, format)
+		return renderOneFile(kautorw.DstStdin, format)
 	}
 
 	if fcOpts.clip {
-		return renderOneFile(kiteext.DstClip, format)
+		return renderOneFile(kautorw.DstClip, format)
 	}
 
 	files := c.Arg("files").Strings()
@@ -78,12 +78,12 @@ func fileCat(c *gcli.Command, _ []string) error {
 	}
 
 	// default read stdin
-	return renderOneFile(kiteext.DstStdin, format)
+	return renderOneFile(kautorw.DstStdin, format)
 }
 
 func renderOneFile(fpath, format string) error {
-	sr := kiteext.NewSourceReader(fpath)
-	if format == "" && sr.Type() != kiteext.TypeFile {
+	sr := kautorw.NewSourceReader(fpath)
+	if format == "" && sr.Type() != kautorw.TypeFile {
 		format = "markdown" // default as markdown contents
 	}
 

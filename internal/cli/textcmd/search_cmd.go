@@ -5,7 +5,7 @@ import (
 
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
-	"github.com/inhere/kite/pkg/kiteext"
+	"github.com/inhere/kite/internal/apputil"
 )
 
 var tsOpts = struct {
@@ -28,7 +28,7 @@ var TextSearchCmd = &gcli.Command{
 		})
 	},
 	Func: func(c *gcli.Command, _ []string) error {
-		src, err := kiteext.ReadContents(tsOpts.text)
+		src, err := apputil.ReadSource(tsOpts.text)
 		if err != nil {
 			return err
 		}
