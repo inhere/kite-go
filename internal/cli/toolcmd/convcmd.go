@@ -8,8 +8,10 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/errorx"
+	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/goutil/timex"
+	"github.com/inhere/kite/internal/apputil"
 	"github.com/inhere/kite/pkg/kiteext"
 )
 
@@ -68,6 +70,49 @@ var Time2dateCmd = &gcli.Command{
 		show.AList("Matched timestamps", mp, func(opts *show.ListOption) {
 			opts.SepChar = "  =>  "
 		})
+		return nil
+	},
+}
+
+var cpsOpts = struct {
+	format string
+}{}
+
+// ConvPathSepCmd instance
+var ConvPathSepCmd = &gcli.Command{
+	Name:    "conv-path",
+	Aliases: []string{"conv-sep"},
+	Desc:    "Quick convert unix path to Windows path",
+	Config: func(c *gcli.Command) {
+		c.StrOpt2(&cpsOpts.format, "format, f", `sets the target format, will auto-detect on is empty.
+allow: w/win/windows, l/lin/linux/unix`)
+		c.AddArg("input", "want convert path contents")
+	},
+	Func: func(c *gcli.Command, _ []string) (err error) {
+		pathStr := c.Arg("input").String()
+		pathStr, err = apputil.ReadSource(pathStr)
+		if err != nil {
+			return err
+		}
+
+		// will auto-detect on is empty
+		if cpsOpts.format == "" {
+			// win -> linux
+			if strings.ContainsRune(pathStr, '\\') {
+				cpsOpts.format = "linux"
+				// linux -> win
+			} else if strings.ContainsRune(pathStr, '/') {
+				cpsOpts.format = "win"
+			}
+		}
+
+		switch strings.ToLower(cpsOpts.format) {
+		case "w", "win", "windows":
+			pathStr = fsutil.SlashPath(pathStr)
+		case "l", "lin", "linux":
+			pathStr = fsutil.UnixPath(pathStr)
+		}
+		fmt.Println(pathStr)
 		return nil
 	},
 }
