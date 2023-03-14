@@ -32,7 +32,7 @@ func BootConfig(ka *app.KiteApp) error {
 			return err
 		}
 	} else {
-		initlog.L.Warn("the kite main config file not found")
+		initlog.L.Warn("the main config file not found. TIP: please run `kite app init` for init config")
 	}
 
 	// map app config

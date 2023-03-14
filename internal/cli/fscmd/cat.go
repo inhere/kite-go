@@ -1,17 +1,15 @@
 package fscmd
 
 import (
-	"os"
 	"sort"
 	"strings"
 
-	"github.com/alecthomas/chroma/quick"
 	"github.com/alecthomas/chroma/styles"
 	"github.com/charmbracelet/glamour"
-	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/stdio"
+	"github.com/inhere/kite/internal/apputil"
 	"github.com/inhere/kite/pkg/kiteext"
 )
 
@@ -69,7 +67,7 @@ func fileCat(c *gcli.Command, _ []string) error {
 	if ln := len(files); ln > 1 {
 		for _, fpath := range files {
 			str := fsutil.ReadString(fpath)
-			return renderContents(str, fcOpts.format)
+			return apputil.RenderContents(str, fcOpts.format, fcOpts.style)
 		}
 	} else if ln == 1 {
 		fpath := files[0]
@@ -86,23 +84,14 @@ func fileCat(c *gcli.Command, _ []string) error {
 func renderOneFile(fpath, format string) error {
 	sr := kiteext.NewSourceReader(fpath)
 	if format == "" && sr.Type() != kiteext.TypeFile {
-		format = "markdown" // default as markdown
+		format = "markdown" // default as markdown contents
 	}
 
 	str, err := sr.TryReadString()
 	if err != nil {
 		return err
 	}
-	return renderContents(str, format)
-}
-
-// formatter see like formatters.TTY16m
-func renderContents(s, format string) error {
-	formatter := "terminal16m"
-	if color.IsSupportTrueColor() {
-		formatter = "terminal256"
-	}
-	return quick.Highlight(os.Stdout, s, format, formatter, fcOpts.style)
+	return apputil.RenderContents(str, format, fcOpts.style)
 }
 
 func renderMarkdown(s string) error {

@@ -7,6 +7,7 @@ import (
 	"github.com/inhere/kite/internal/cli/devcmd/javacmd"
 	"github.com/inhere/kite/internal/cli/devcmd/phpcmd"
 	"github.com/inhere/kite/internal/cli/devcmd/sqlcmd"
+	jsoncmd "github.com/inhere/kite/internal/cli/devcmd/yamlcmd"
 )
 
 // DevToolsCmd command
@@ -21,5 +22,6 @@ var DevToolsCmd = &gcli.Command{
 		gocmd.GoToolsCmd,
 		phpcmd.PhpToolsCmd,
 		sqlcmd.SQLToolCmd,
+		jsoncmd.YamlToolCmd,
 	},
 }

@@ -1,6 +1,8 @@
 package httpcmd
 
 import (
+	"strings"
+
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/rux"
@@ -14,9 +16,9 @@ func NewEchoServerCmd() *gcli.Command {
 	}{}
 
 	return &gcli.Command{
-		Name:    "echo",
+		Name:    "echo-server",
 		Desc:    "start an simple echo http server",
-		Aliases: []string{"echo-serve"},
+		Aliases: []string{"echo-serve", "echo"},
 		Config: func(c *gcli.Command) {
 			c.UintOpt(&esOpts.port, "port", "P", 0, "custom the echo server port, default will use random `port`")
 		},
@@ -37,10 +39,20 @@ func NewEchoServerCmd() *gcli.Command {
 				}
 
 				data := rux.M{
+					"method":  c.Req.Method,
 					"headers": c.Req.Header,
 					"uri":     c.Req.RequestURI,
 					"query":   c.QueryValues(),
 					"body":    string(bs),
+				}
+
+				if strings.Contains(c.ContentType(), "/json") {
+					objJson := rux.M{}
+					if err := c.BindJSON(&objJson); err != nil {
+						c.AbortThen().AddError(err)
+						return
+					}
+					data["json"] = objJson
 				}
 
 				// c.JSON(200, data)
