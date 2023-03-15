@@ -79,8 +79,19 @@ func (c *Config) IsCenterRemote(remote string) bool {
 	return c.SourceRemote == remote
 }
 
+// IsForkMode check
 func (c *Config) IsForkMode() bool {
 	return c.ForkMode && c.SourceRemote != ""
+}
+
+// OriginBranch name build
+func (c *Config) OriginBranch(br string) string {
+	return c.DefaultRemote + "/" + br
+}
+
+// SourceBranch name build
+func (c *Config) SourceBranch(br string) string {
+	return c.SourceRemote + "/" + br
 }
 
 // BuildRepoURL build
@@ -91,9 +102,14 @@ func (c *Config) BuildRepoURL(repoPath string, useSsh bool) string {
 	return c.HostUrl + "/" + repoPath
 }
 
+// ResolveBranch branch name
+func (c *Config) ResolveBranch(name string) string {
+	return c.BranchAliases.ResolveAlias(name)
+}
+
 // ResolveAlias branch name
 func (c *Config) ResolveAlias(name string) string {
-	return c.BranchAliases.ResolveAlias(name)
+	return c.ResolveBranch(name)
 }
 
 // Clone new config instance

@@ -10,6 +10,8 @@ import (
 	"github.com/gookit/goutil/sysutil/clipboard"
 )
 
+const typeMaxLen = 128
+
 // ReaderFn type
 type ReaderFn func(r *SourceReader)
 
@@ -166,7 +168,7 @@ func (r *SourceReader) ReadString() string {
 // tryReadAny return string
 func (r *SourceReader) tryReadAny() {
 	ln := len(r.src)
-	if ln > 86 {
+	if ln > typeMaxLen {
 		r.directToBuf()
 		return
 	}

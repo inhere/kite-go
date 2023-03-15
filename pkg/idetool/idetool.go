@@ -1,7 +1,10 @@
 package idetool
 
-import "io/ioutil"
+import (
+	"os"
+)
 
+// LoadHceFile file contents
 func LoadHceFile(hceFile string) (bts []byte, err error) {
-	return ioutil.ReadFile(hceFile)
+	return os.ReadFile(hceFile)
 }

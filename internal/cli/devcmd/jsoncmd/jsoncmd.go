@@ -3,10 +3,10 @@ package jsoncmd
 import (
 	"bytes"
 	"fmt"
+	"strings"
 
 	"github.com/goccy/go-yaml"
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/jsonutil"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/stdio"
@@ -55,8 +55,7 @@ var JSONQueryCmd = &gcli.Command{
 		}
 
 		if !jvOpts.json5 {
-			dump.P(gjson.Get(src, jvOpts.query).String())
-			return nil
+			return outputFmtJSON(gjson.Get(src, jvOpts.query).String())
 		}
 
 		var mp maputil.Data
@@ -99,6 +98,14 @@ var JSONFormatCmd = &gcli.Command{
 }
 
 func outputFmtJSON(src string) error {
+	if len(src) < 24 {
+		// only value
+		if !strings.ContainsRune(src, ':') {
+			stdio.Writeln(src)
+			return nil
+		}
+	}
+
 	var buf bytes.Buffer
 	err := json5.Indent(&buf, []byte(src), "", "  ")
 	if err != nil {
