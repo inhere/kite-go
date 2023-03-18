@@ -23,6 +23,8 @@ var (
 		openBr string // same of target + openIt=true
 		// open link on browser
 		openIt bool
+		// auto search .git repo on parent dir
+		// findRepo bool
 	}{}
 
 	// MergeRequestCmd command
@@ -36,9 +38,8 @@ var (
 			c.BoolOpt(&mrOpts.new, "new", "", false,
 				"Open new PR page link on browser. eg: http://my.gitlab.com/group/repo/merge_requests/new",
 			)
-			c.BoolOpt(&mrOpts.direct, "direct", "d", false,
-				"The PR is direct from fork to main repository",
-			)
+			c.BoolOpt2(&mrOpts.direct, "direct,d", "The PR is direct from fork to main repository")
+			// c.BoolOpt2(&mrOpts.findRepo, "find-repo, find", "auto find repo .git dir on parent dirs")
 
 			c.StrOpt(&mrOpts.openBr, "open", "o", "Set target branch and open PR link on browser")
 			c.StrOpt(&mrOpts.source, "source", "s", "The source branch name, default is current `BRANCH`")
@@ -60,89 +61,91 @@ Special:
   # Will generate PR link for 'group/repo', from 'dev' to 'qa' branch
   {binWithCmd} -o dev -t qa group/repo
 `,
-		Func: func(c *gcli.Command, args []string) (err error) {
-			workdir := c.WorkDir()
-			repoPath := c.Arg("repoPath").String()
-
-			var group, name string
-			gl := app.Glab()
-			glp := gitlab.NewGlProject(workdir, gl)
-
-			if gl.HostUrl == "" {
-				c.Infoln("TIP: config gitlab.host_url is empty, try fetch from git remote")
-				gl.HostUrl = glp.Repo().DefaultRemoteInfo().HTTPHost()
-			}
-
-			// http://my.gitlab.com/group/repo/merge_requests/new
-			if mrOpts.new {
-				if repoPath == "" {
-					repoPath = glp.Repo().DefaultRemoteInfo().Path()
-				}
-
-				link := gl.HostUrl + "/" + repoPath + "/merge_requests/new"
-				return sysutil.OpenBrowser(link)
-			}
-
-			mrOpts.source, _ = glp.ResolveBranch(mrOpts.source)
-
-			if mrOpts.openBr != "" {
-				openBr, _ := glp.ResolveBranch(mrOpts.openBr)
-				mrOpts.openIt = true
-				mrOpts.target = openBr
-			} else {
-				mrOpts.target, _ = glp.ResolveBranch(mrOpts.target)
-			}
-
-			var srcPid, dstPid string
-			var mrInfo *gitlab.PRLinkQuery
-			if strutil.IsNotBlank(repoPath) {
-				group, name, err = gitutil.SplitPath(repoPath)
-				if err != nil {
-					return err
-				}
-
-				srcPid = gitlab.BuildProjectID(group, name)
-			} else {
-				if err := glp.CheckRemote(); err != nil {
-					return err
-				}
-
-				if mrOpts.target == "@s" {
-					mrOpts.target = mrOpts.source
-				}
-
-				dstPid = glp.MainProjectId()
-				// srcPid = glp.MainProjectId()
-				if mrOpts.direct {
-					srcPid = glp.ForkProjectId()
-				}
-
-				if mrOpts.direct || mrOpts.target == mrOpts.source {
-					repoPath = glp.ForkRmtInfo().Path()
-				} else {
-					repoPath = glp.MainRmtInfo().Path()
-				}
-			}
-
-			show.AList("Current Options Info", maputil.Data{
-				"Direct from fork":  mrOpts.direct,
-				"Open browser link": mrOpts.openIt,
-			})
-
-			mrInfo = gitlab.NewPRLinkQuery(srcPid, mrOpts.source, dstPid, mrOpts.target)
-			mrInfo.RepoPath = repoPath
-
-			show.AList("Merge Request Info", mrInfo)
-
-			// link := glp.MargeRequestURL(mrInfo)
-			link := mrInfo.BuildURL(gl.HostUrl)
-			c.Warnln("Merge Request Link:")
-			c.Println("  ", link)
-
-			if mrOpts.openIt {
-				err = sysutil.OpenBrowser(link)
-			}
-			return
-		},
+		Func: mergeRequestHandle,
 	}
 )
+
+func mergeRequestHandle(c *gcli.Command, _ []string) (err error) {
+	repoDir := mrOpts.Workdir
+
+	var group, name string
+	gl := app.Glab()
+	glp := gitlab.NewGlProject(repoDir, gl)
+
+	if gl.HostUrl == "" {
+		c.Infoln("TIP: config gitlab.host_url is empty, try fetch from default remote")
+		gl.HostUrl = glp.ForkRmtInfo().HTTPHost()
+	}
+
+	// http://my.gitlab.com/group/repo/merge_requests/new
+	repoPath := c.Arg("repoPath").String()
+	if mrOpts.new {
+		if repoPath == "" {
+			repoPath = glp.ForkRmtInfo().Path()
+		}
+
+		link := gl.HostUrl + "/" + repoPath + "/merge_requests/new"
+		return sysutil.OpenBrowser(link)
+	}
+
+	mrOpts.source, _ = glp.ResolveBranch(mrOpts.source)
+
+	if mrOpts.openBr != "" {
+		openBr, _ := glp.ResolveBranch(mrOpts.openBr)
+		mrOpts.openIt = true
+		mrOpts.target = openBr
+	} else {
+		mrOpts.target, _ = glp.ResolveBranch(mrOpts.target)
+	}
+
+	var srcPid, dstPid string
+	var mrInfo *gitlab.PRLinkQuery
+	if strutil.IsNotBlank(repoPath) {
+		group, name, err = gitutil.SplitPath(repoPath)
+		if err != nil {
+			return err
+		}
+
+		srcPid = gitlab.BuildProjectID(group, name)
+	} else {
+		if err := glp.CheckRemote(); err != nil {
+			return err
+		}
+
+		if mrOpts.target == "@s" {
+			mrOpts.target = mrOpts.source
+		}
+
+		dstPid = glp.MainProjectId()
+		// srcPid = glp.MainProjectId()
+		if mrOpts.direct {
+			srcPid = glp.ForkProjectId()
+		}
+
+		if mrOpts.direct || mrOpts.target == mrOpts.source {
+			repoPath = glp.ForkRmtInfo().Path()
+		} else {
+			repoPath = glp.MainRmtInfo().Path()
+		}
+	}
+
+	show.AList("Current Options Info", maputil.Data{
+		"Direct from fork":  mrOpts.direct,
+		"Open browser link": mrOpts.openIt,
+	})
+
+	mrInfo = gitlab.NewPRLinkQuery(srcPid, mrOpts.source, dstPid, mrOpts.target)
+	mrInfo.RepoPath = repoPath
+
+	show.AList("Merge Request Info", mrInfo)
+
+	// link := glp.MargeRequestURL(mrInfo)
+	link := mrInfo.BuildURL(gl.HostUrl)
+	c.Warnln("Merge Request Link:")
+	c.Println("  ", link)
+
+	if mrOpts.openIt {
+		err = sysutil.OpenBrowser(link)
+	}
+	return
+}

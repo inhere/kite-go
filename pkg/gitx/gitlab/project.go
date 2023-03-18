@@ -7,14 +7,15 @@ import (
 	"github.com/gookit/gitw"
 	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/errorx"
+	"github.com/inhere/kite/pkg/gitx"
 )
 
 // GlProject struct
 type GlProject struct {
 	*GitLab
-	// dir for the project
-	dir  string
-	repo *gitw.Repo
+
+	lp *gitx.GitLoc
+
 	// remote info
 	mainRemoteInfo *gitw.RemoteInfo
 	forkRemoteInfo *gitw.RemoteInfo
@@ -26,16 +27,14 @@ type GlProject struct {
 // NewGlProject instance
 func NewGlProject(dir string, gl *GitLab) *GlProject {
 	return &GlProject{
-		dir:    dir,
 		GitLab: gl,
+		lp:     gl.LoadRepo(dir),
 	}
 }
 
-func (p *GlProject) Repo() *gitw.Repo {
-	if p.repo == nil {
-		p.repo = gitw.NewRepo(p.dir)
-	}
-	return p.repo
+// GitLoc instance
+func (p *GlProject) GitLoc() *gitx.GitLoc {
+	return p.lp
 }
 
 func (p *GlProject) CheckRemote() error {
@@ -46,14 +45,14 @@ func (p *GlProject) CheckRemote() error {
 }
 
 func (p *GlProject) CheckDefaultRemote() error {
-	if !p.Repo().HasRemote(p.DefaultRemote) {
+	if !p.lp.HasRemote(p.DefaultRemote) {
 		return errorx.Newf("the fork remote '%s' is not found(config:gitlab.default_remote)", p.DefaultRemote)
 	}
 	return nil
 }
 
 func (p *GlProject) CheckSourceRemote() error {
-	if !p.Repo().HasRemote(p.SourceRemote) {
+	if !p.lp.HasRemote(p.SourceRemote) {
 		return errorx.Newf("the main remote '%s' is not found(config:gitlab.source_remote)", p.SourceRemote)
 	}
 	return nil
@@ -62,7 +61,7 @@ func (p *GlProject) CheckSourceRemote() error {
 func (p *GlProject) ForkRmtInfo() *gitw.RemoteInfo {
 	if p.forkRemoteInfo == nil {
 		goutil.PanicErr(p.CheckDefaultRemote())
-		p.forkRemoteInfo = p.Repo().RemoteInfo(p.DefaultRemote)
+		p.forkRemoteInfo = p.lp.RemoteInfo(p.DefaultRemote)
 	}
 	return p.forkRemoteInfo
 }
@@ -70,7 +69,7 @@ func (p *GlProject) ForkRmtInfo() *gitw.RemoteInfo {
 func (p *GlProject) MainRmtInfo() *gitw.RemoteInfo {
 	if p.mainRemoteInfo == nil {
 		goutil.PanicErr(p.CheckDefaultRemote())
-		p.mainRemoteInfo = p.Repo().RemoteInfo(p.SourceRemote)
+		p.mainRemoteInfo = p.lp.RemoteInfo(p.SourceRemote)
 	}
 	return p.mainRemoteInfo
 }
@@ -79,7 +78,7 @@ func (p *GlProject) MainRmtInfo() *gitw.RemoteInfo {
 func (p *GlProject) ResolveBranch(brName string) (string, bool) {
 	switch strings.ToUpper(brName) {
 	case "", "@", "H", "HEAD":
-		return p.Repo().CurBranchName(), true
+		return p.lp.CurBranchName(), true
 	}
 	return p.ResolveAlias(brName), false
 }
