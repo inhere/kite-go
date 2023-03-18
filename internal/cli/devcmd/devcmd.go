@@ -17,6 +17,7 @@ var DevToolsCmd = &gcli.Command{
 	Desc:    "provide some useful dev tools commands",
 	Subs: []*gcli.Command{
 		HotReloadServe,
+		IDEAToolCmd,
 		gencmd.CodeGenCmd,
 		javacmd.JavaToolCmd,
 		gocmd.GoToolsCmd,

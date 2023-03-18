@@ -2,7 +2,7 @@ package gocmd
 
 import (
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/goutil/sysutil"
+	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/sysutil/cmdr"
 )
 
@@ -30,7 +30,7 @@ var ListBinCmd = &gcli.Command{
 	Func: func(c *gcli.Command, args []string) error {
 		c.Infoln("list bin in $GOPATH/bin")
 
-		path := sysutil.ExpandPath("${GOPATH}/bin")
+		path := fsutil.ResolvePath("${GOPATH}/bin")
 		cmd := cmdr.NewCmd("ls", path)
 
 		return cmd.Run()

@@ -2,16 +2,16 @@ package jsoncmd
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"strings"
 
 	"github.com/goccy/go-yaml"
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/goutil/jsonutil"
+	"github.com/gookit/goutil/fmtutil"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/stdio"
 	"github.com/inhere/kite/internal/apputil"
-	"github.com/tidwall/gjson"
 	"github.com/yosuke-furukawa/json5/encoding/json5"
 )
 
@@ -38,10 +38,10 @@ var JSONQueryCmd = &gcli.Command{
 	Desc:    "convert create table SQL to markdown table",
 	Config: func(c *gcli.Command) {
 		c.BoolOpt2(&jvOpts.json5, "json5, 5", "mark input contents is json5 format")
-		c.StrOpt2(&jvOpts.query, "query, q, p", "The path for query sub value")
+		c.StrOpt2(&jvOpts.query, "query, path, q, p", "The path for query sub value")
 
 		c.AddArg("json", "input JSON contents for format")
-		// c.AddArg("path", "The path for query sub value")
+		c.AddArg("path", "The path for query sub value, same of --path")
 	},
 	Func: func(c *gcli.Command, _ []string) error {
 		src, err := apputil.ReadSource(c.Arg("json").String())
@@ -49,21 +49,31 @@ var JSONQueryCmd = &gcli.Command{
 			return err
 		}
 
+		// allow use arg for input path
+		if !c.Arg("path").IsEmpty() {
+			jvOpts.query = c.Arg("path").String()
+		}
+
 		// no query, format and output
 		if jvOpts.query == "" {
 			return outputFmtJSON(src)
 		}
 
-		if !jvOpts.json5 {
-			return outputFmtJSON(gjson.Get(src, jvOpts.query).String())
-		}
-
 		var mp maputil.Data
-		if err = json5.Unmarshal([]byte(src), &mp); err != nil {
-			return err
+		if !jvOpts.json5 {
+			// TIP: gjson.Get() cannot find for "dev.host" : {"dev": {"host": "ip:port"}}
+			// return outputFmtJSON(gjson.Get(src, jvOpts.query).String())
+			if err = json.Unmarshal([]byte(src), &mp); err != nil {
+				return err
+			}
+		} else {
+			if err = json5.Unmarshal([]byte(src), &mp); err != nil {
+				return err
+			}
 		}
 
-		bs, err := jsonutil.EncodePretty(mp.Get(jvOpts.query))
+		// query value
+		bs, err := fmtutil.StringOrJSON(mp.Get(jvOpts.query))
 		if err != nil {
 			return err
 		}
