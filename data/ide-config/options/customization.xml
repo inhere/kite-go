@@ -1,0 +1,11 @@
+<application>
+  <component name="com.intellij.ide.ui.customization.CustomActionsSchema">
+    <group value="ExternalTools_Kite Tools" is_group="true" forse_popup="true" action_type="1" position="1">
+      <path value="root" />
+      <path value="Main Toolbar Right" />
+      <path value="ExecutionTargetsToolbarGroup" />
+      <option name="myInitialPosition" value="-1" />
+    </group>
+    <action id="ExternalTools_Kite Tools" icon="C:/Users/inhere/Pictures/Saved Pictures/zhizuotu_1.png" />
+  </component>
+</application>
