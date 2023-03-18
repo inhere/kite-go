@@ -9,6 +9,7 @@ import (
 	"github.com/inhere/kite/pkg/gitx"
 	"github.com/inhere/kite/pkg/gitx/github"
 	"github.com/inhere/kite/pkg/gitx/gitlab"
+	"github.com/inhere/kite/pkg/httptpl"
 	"github.com/inhere/kite/pkg/kiteext"
 	"github.com/inhere/kite/pkg/kscript"
 )
@@ -48,6 +49,7 @@ var (
 	OpenMap maputil.Aliases
 
 	Vars *kiteext.VarMap
+	HTpl *httptpl.Manager
 )
 
 // Cfg get the config object

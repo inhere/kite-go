@@ -7,12 +7,26 @@ import (
 	"github.com/inhere/kite/pkg/gitx"
 	"github.com/inhere/kite/pkg/gitx/github"
 	"github.com/inhere/kite/pkg/gitx/gitlab"
+	"github.com/inhere/kite/pkg/httptpl"
 	"github.com/inhere/kite/pkg/kiteext"
 	"github.com/inhere/kite/pkg/kscript"
 )
 
 // addServiceBoot handle
 func addServiceBoot(ka *app.KiteApp) {
+
+	ka.AddBootFuncs(func(ka *app.KiteApp) error {
+		app.OpenMap = app.Cfg().StringMap("quick_open")
+		app.PathMap = &kiteext.PathMap{
+			Aliases: app.Cfg().StringMap("pathmap"),
+		}
+
+		app.Vars = kiteext.NewVarMap(app.Cfg().StringMap("global_vars"))
+
+		cmdbiz.Kas = app.Cfg().StringMap("aliases")
+		return nil
+	})
+
 	ka.AddBootFuncs(func(ka *app.KiteApp) error {
 		cfg := gitx.NewConfig()
 		err := app.Cfg().MapOnExists(app.ObjGit, cfg)
@@ -79,20 +93,20 @@ func addServiceBoot(ka *app.KiteApp) {
 		app.Plugins = plug
 		// app.Add(app.ObjPlugin, plug)
 		return nil
-	})
-
-	ka.AddBootFuncs(func(ka *app.KiteApp) error {
-		app.OpenMap = app.Cfg().StringMap("quick_open")
-		app.PathMap = &kiteext.PathMap{
-			Aliases: app.Cfg().StringMap("pathmap"),
+	}, func(ka *app.KiteApp) error {
+		htpl := httptpl.NewManager()
+		err := app.Cfg().MapOnExists("http_tpl", htpl)
+		if err != nil {
+			return err
 		}
 
-		app.Vars = kiteext.NewVarMap(app.Cfg().StringMap("global_vars"))
+		htpl.PathResolver = apputil.ResolvePath
+		if err := htpl.Init(); err != nil {
+			return err
+		}
 
-		cmdbiz.Kas = app.Cfg().StringMap("aliases")
-		// app.AlsRun = &kiteext.KiteAliasRun{
-		// 	Aliases: app.Cfg().StringMap("aliases"),
-		// }
+		app.HTpl = htpl
 		return nil
 	})
+
 }

@@ -6,10 +6,6 @@ import (
 
 	"github.com/alecthomas/chroma/quick"
 	"github.com/gookit/color"
-	"github.com/gookit/config/v2"
-	"github.com/gookit/config/v2/ini"
-	"github.com/gookit/config/v2/json5"
-	"github.com/gookit/config/v2/yaml"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gitw"
 	"github.com/gookit/goutil/fsutil"
@@ -102,11 +98,4 @@ func RenderContents(s, format, style string) error {
 	}
 
 	return quick.Highlight(os.Stdout, s, format, formatter, style)
-}
-
-// NewConfig box instance
-func NewConfig() *config.Config {
-	return config.
-		NewWithOptions("kite", config.ParseEnv).
-		WithDriver(yaml.Driver, json5.Driver, ini.Driver)
 }

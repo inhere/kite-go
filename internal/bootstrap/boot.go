@@ -1,7 +1,10 @@
 package bootstrap
 
 import (
-	"github.com/gookit/goutil"
+	"fmt"
+	"os"
+
+	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/inhere/kite/internal/app"
 	"github.com/inhere/kite/internal/appconst"
@@ -12,7 +15,12 @@ var defaultBaseDir string
 
 // MustRun boot and run app
 func MustRun(ka *app.KiteApp) {
-	goutil.MustOK(Boot(ka))
+	if err := Boot(ka); err != nil {
+		cliutil.Errorp(" ERROR ")
+		fmt.Println(err)
+		os.Exit(-1)
+	}
+	// goutil.MustOK(err)
 
 	// to run
 	app.Run()
