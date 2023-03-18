@@ -7,6 +7,7 @@ import (
 	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/errorx"
+	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/sysutil/cmdr"
 	"github.com/inhere/kite/internal/app"
@@ -19,6 +20,7 @@ var runOpts = struct {
 	cmdbiz.CommonOpts
 	wrapType gflag.EnumString
 	envMap   gflag.KVString
+	chdir    string // auto find and chdir
 
 	listAll, showInfo, search, proxy, verbose bool
 
@@ -43,6 +45,7 @@ var RunAnyCmd = &gcli.Command{
 		c.BoolOpt2(&runOpts.alias, "alias", "dont check and direct run alias command on kite")
 		c.BoolOpt2(&runOpts.script, "script", "dont check and direct run user script on kite")
 		c.BoolOpt2(&runOpts.system, "system, sys", "dont check and direct run command on system")
+		c.StrOpt2(&runOpts.chdir, "chdir, cd", "auto find match dir and chdir as workdir")
 
 		c.VarOpt2(&runOpts.envMap, "env,e", "custom set ENV value on run command, format: `KEY=VALUE`")
 		c.VarOpt(&runOpts.wrapType, "type", "", "wrap shell type for run input script, allow: "+runOpts.wrapType.EnumString())
@@ -91,10 +94,19 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 		})
 	}
 
+	wd := runOpts.Workdir
+	if runOpts.chdir != "" {
+		cd, changed := fsutil.SearchNameUpx(wd, runOpts.chdir)
+		if changed {
+			wd = cd
+			cliutil.Yellowf("TIP: auto find the %q and will chdir to %s", runOpts.chdir, cd)
+		}
+	}
+
 	// direct run system command
 	if runOpts.system {
 		c.Infof("TIP: will direct run system command %q (by --system)\n", name)
-		return cmdr.NewCmd(name, args...).WorkDirOnNE(runOpts.Workdir).FlushRun()
+		return cmdr.NewCmd(name, args...).WorkDirOnNE(wd).FlushRun()
 	}
 
 	// direct run as cmd-alias
@@ -104,7 +116,7 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 	}
 
 	ctx := &kscript.RunCtx{
-		Workdir: runOpts.Workdir,
+		Workdir: wd,
 		Verbose: runOpts.verbose,
 		DryRun:  runOpts.DryRun,
 		Type:    runOpts.wrapType.String(),

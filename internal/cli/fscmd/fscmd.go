@@ -14,6 +14,7 @@ var FsCmd = &gcli.Command{
 		FileFindCmd,
 		ListFilesCmd,
 		RenameCmd,
+		DeleteCmd,
 		// filewatcher.FileWatcher(nil)
 	},
 }

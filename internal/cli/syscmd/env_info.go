@@ -34,16 +34,17 @@ func NewEnvInfoCmd() *gcli.Command {
 
 func envInfoHandle(c *gcli.Command, _ []string) error {
 	if eiOpts.search != "" {
+		keywords := eiOpts.search
 		founded := make(map[string]string)
 		for name, val := range envutil.Environ() {
-			if strutil.IContains(name, eiOpts.search) {
+			if strutil.IContains(name, keywords) {
 				founded[name] = val
-			} else if eiOpts.inValue && strutil.IContains(val, eiOpts.search) {
+			} else if eiOpts.inValue && strutil.IContains(val, keywords) {
 				founded[name] = val
 			}
 		}
 
-		show.AList("Search Result", founded)
+		show.AList("Search result for "+keywords, founded)
 		return nil
 	}
 
