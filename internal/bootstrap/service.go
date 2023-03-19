@@ -22,6 +22,7 @@ func addServiceBoot(ka *app.KiteApp) {
 		}
 
 		app.Vars = kiteext.NewVarMap(app.Cfg().StringMap("global_vars"))
+		app.Vars.Aliases["$kite"] = app.Cli().BinName()
 
 		cmdbiz.Kas = app.Cfg().StringMap("aliases")
 		return nil

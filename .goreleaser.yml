@@ -1,0 +1,37 @@
+# refer from https://github.com/alecthomas/chroma/blob/master/.goreleaser.yml
+project_name: kite
+release:
+  github:
+    owner: inhere
+    name: kite
+brews:
+  -
+    install: bin.install "kite"
+env:
+  - CGO_ENABLED=0
+builds:
+  - goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - arm64
+      - amd64
+    goarm:
+      - "6"
+    dir: ./cmd/kite
+    main: .
+    ldflags: -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}
+    binary: kite
+archives:
+  -
+    format: tar.gz
+    name_template: '{{ .Binary }}-{{ .Version }}-{{ .Os }}-{{ .Arch }}{{ if .Arm }}v{{
+    .Arm }}{{ end }}'
+    files:
+      - LICENSE
+      - README*
+snapshot:
+  name_template: SNAPSHOT-{{ .Commit }}
+checksum:
+  name_template: '{{ .ProjectName }}-{{ .Version }}-checksums.txt'

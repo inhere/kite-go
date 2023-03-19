@@ -15,7 +15,7 @@ import (
 var TextOperateCmd = &gcli.Command{
 	Name:    "text",
 	Desc:    "useful commands for handle string text",
-	Aliases: []string{"str", "string"},
+	Aliases: []string{"txt", "str", "string"},
 	Subs: []*gcli.Command{
 		StrCountCmd,
 		StrSplitCmd,
