@@ -8,11 +8,14 @@ import (
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gitw"
+	"github.com/gookit/goutil/cliutil"
+	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/maputil"
 	"github.com/inhere/kite/internal/app"
 	"github.com/inhere/kite/pkg/gitx"
 	"github.com/inhere/kite/pkg/kautorw"
+	"github.com/inhere/kite/pkg/lcproxy"
 )
 
 // CmdConfigData find.
@@ -98,4 +101,12 @@ func RenderContents(s, format, style string) error {
 	}
 
 	return quick.Highlight(os.Stdout, s, format, formatter, style)
+}
+
+// ApplyProxyEnv settings
+func ApplyProxyEnv() {
+	app.Lcp.Apply(func(lp *lcproxy.LocalProxy) {
+		cliutil.Infoln("TIP: auto enable set proxy ENV vars, will set", lp.EnvKeys())
+		dump.NoLoc(lp)
+	})
 }

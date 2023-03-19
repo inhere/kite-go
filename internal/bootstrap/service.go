@@ -25,7 +25,7 @@ func addServiceBoot(ka *app.KiteApp) {
 		app.Vars.Aliases["$kite"] = app.Cli().BinName()
 
 		cmdbiz.Kas = app.Cfg().StringMap("aliases")
-		return nil
+		return app.Cfg().MapOnExists("proxy_cmd", cmdbiz.ProxyCC)
 	})
 
 	ka.AddBootFuncs(func(ka *app.KiteApp) error {

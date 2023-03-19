@@ -97,6 +97,7 @@ func RedirectToGitx(ctx *gcli.HookCtx) (stop bool) {
 	pName := ctx.Cmd.Name
 	sName := ctx.Str("name")
 	cliutil.Warnf("%s: subcommand '%s' not found, will redirect to run `kite git %s`\n", pName, sName, sName)
+	cmdbiz.ProxyCC.AutoSetByName(pName, sName)
 
 	// dump.P(ctx.App.CommandNames(), ctx.App.HasCommand("git"))
 	err := ctx.App.RunCmd("git", ctx.Cmd.RawArgs())

@@ -41,8 +41,8 @@ func BootAppInfo(ka *app.KiteApp) error {
 
 	initlog.L.Info("init kite application info:", structs.ToString(ka.Info))
 
-	ka.Lcp = lcproxy.NewLocalProxy()
-	err := app.Cfg().MapOnExists("local_proxy", ka.Lcp)
+	app.Lcp = lcproxy.NewLocalProxy()
+	err := app.Cfg().MapOnExists("local_proxy", app.Lcp)
 	if err != nil {
 		return err
 	}

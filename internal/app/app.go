@@ -10,7 +10,6 @@ import (
 	"github.com/gookit/slog"
 	"github.com/inhere/kite/internal/appconst"
 	"github.com/inhere/kite/internal/initlog"
-	"github.com/inhere/kite/pkg/lcproxy"
 )
 
 // Env names
@@ -36,7 +35,6 @@ type KiteApp struct {
 	*Info
 	*Config
 	*gcli.Context
-	Lcp *lcproxy.LocalProxy
 
 	// pre-bootloaders
 	preLoaders []BootLoader

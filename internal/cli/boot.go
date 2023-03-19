@@ -17,7 +17,7 @@ import (
 	"github.com/inhere/kite/internal/cli/gitcmd/glabcmd"
 	"github.com/inhere/kite/internal/cli/httpcmd"
 	"github.com/inhere/kite/internal/cli/syscmd"
-	"github.com/inhere/kite/internal/cli/taskx"
+	"github.com/inhere/kite/internal/cli/taskcmd"
 	"github.com/inhere/kite/internal/cli/textcmd"
 	"github.com/inhere/kite/internal/cli/toolcmd"
 	"github.com/inhere/kite/pkg/pacutil"
@@ -44,7 +44,7 @@ func addCommands(cli *gcli.App) {
 		syscmd.SysCmd,
 		appcmd.ManageCmd,
 		extcmd.UserExtCmd,
-		taskx.TaskManageCmd,
+		taskcmd.TaskManageCmd,
 		textcmd.TextOperateCmd,
 		jsoncmd.JSONToolCmd,
 		toolcmd.ToolsCmd,
@@ -72,19 +72,20 @@ func addListener(cli *gcli.App) {
 	})
 
 	cli.On(events.OnCmdRunBefore, func(ctx *gcli.HookCtx) (stop bool) {
-		app.Log().Infof("will run the command: %s with args: %v", ctx.Cmd.ID(), ctx.Cmd.RawArgs())
+		app.Log().Infof("%s: will run the command %q with args: %v", ctx.Name(), ctx.Cmd.ID(), ctx.Cmd.RawArgs())
+		cmdbiz.ProxyCC.AutoSetByCmd(ctx.Cmd)
 		return
 	})
 
 	cli.On(events.OnCmdRunAfter, func(ctx *gcli.HookCtx) (stop bool) {
-		app.Log().Infof("kite cli app command: %s run completed", ctx.Cmd.ID())
+		app.Log().Infof("%s: kite cli app command %q run completed", ctx.Name(), ctx.Cmd.ID())
 		return
 	})
 
 	cli.On(events.OnCmdNotFound, func(ctx *gcli.HookCtx) (stop bool) {
 		name := ctx.Str("name")
 		args := ctx.Strings("args")
-		app.Log().Infof("kite cli event: %s, command not found: %s", ctx.Name(), name)
+		app.Log().Infof("%s: handle kite cli command not found: %s", ctx.Name(), name)
 
 		if err := cmdbiz.RunAny(name, args, nil); err != nil {
 			cliutil.Warnln("RunAny Error >", err)

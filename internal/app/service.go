@@ -12,6 +12,7 @@ import (
 	"github.com/inhere/kite/pkg/httptpl"
 	"github.com/inhere/kite/pkg/kiteext"
 	"github.com/inhere/kite/pkg/kscript"
+	"github.com/inhere/kite/pkg/lcproxy"
 )
 
 const (
@@ -39,6 +40,7 @@ var (
 )
 
 var (
+	Lcp *lcproxy.LocalProxy
 	// AlsRun  *kiteext.KiteAliasRun
 
 	Scripts *kscript.Runner
