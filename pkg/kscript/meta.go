@@ -1,6 +1,10 @@
 package kscript
 
 import (
+	"regexp"
+	"sort"
+	"strings"
+
 	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/maputil"
@@ -20,6 +24,8 @@ type ScriptInfo struct {
 	Workdir string
 	// Platform limit. allow: windows, linux, darwin
 	Platform []string
+	// Output target. default is stdout
+	Output string
 
 	// Name for script
 	Name string
@@ -40,6 +46,31 @@ type ScriptInfo struct {
 	File    string
 	BinName string
 	FileExt string // eg: .go
+}
+
+var argReg = regexp.MustCompile(`\$\d{1,2}`)
+
+// ParseArgs on commands
+func (si *ScriptInfo) ParseArgs() (args []string) {
+	if len(si.Cmds) == 0 {
+		return
+	}
+
+	str := strings.Join(si.Cmds, ",")
+	ss := arrutil.Unique(argReg.FindAllString(str, -1))
+
+	sort.Strings(ss)
+	return ss
+}
+
+// IsFile script
+func (si *ScriptInfo) IsFile() bool {
+	return si.File != ""
+}
+
+// IsDefined script
+func (si *ScriptInfo) IsDefined() bool {
+	return si.File == ""
 }
 
 // InitType on not set
@@ -70,7 +101,7 @@ func (si *ScriptInfo) loadArgsDefine(args any) error {
 	return nil
 }
 
-// RunCtx struct
+// RunCtx definition
 type RunCtx struct {
 	// Name for script run
 	Name string

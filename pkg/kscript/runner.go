@@ -17,7 +17,6 @@ import (
 	"github.com/gookit/goutil/strutil/textutil"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/gookit/goutil/sysutil/cmdr"
-	"github.com/inhere/kite/pkg/cmdutil"
 )
 
 // Runner struct
@@ -180,7 +179,7 @@ func (r *Runner) TryRun(name string, args []string, ctx *RunCtx) (found bool, er
 		return found, err
 	}
 	if si != nil {
-		return found, r.doExecScript(si, args, ctx)
+		return found, r.runDefineScript(si, args, ctx)
 	}
 
 	// try check and run script file.
@@ -190,7 +189,7 @@ func (r *Runner) TryRun(name string, args []string, ctx *RunCtx) (found bool, er
 	}
 
 	if si != nil {
-		return found, r.doExecScriptFile(si, args, ctx)
+		return found, r.runScriptFile(si, args, ctx)
 	}
 	return false, nil
 }
@@ -208,7 +207,7 @@ func (r *Runner) RunDefinedScript(name string, args []string, ctx *RunCtx) error
 
 	if si != nil {
 		ctx = EnsureCtx(ctx).WithName(name)
-		return r.doExecScript(si, args, ctx)
+		return r.runDefineScript(si, args, ctx)
 	}
 	return errorx.Rawf("script %q is not exists", name)
 }
@@ -226,12 +225,20 @@ func (r *Runner) RunScriptFile(name string, args []string, ctx *RunCtx) error {
 
 	if si != nil {
 		ctx = EnsureCtx(ctx).WithName(name)
-		return r.doExecScriptFile(si, args, ctx)
+		return r.runScriptFile(si, args, ctx)
 	}
 	return errorx.Rawf("script file %q is not exists", name)
 }
 
-func (r *Runner) doExecScriptFile(si *ScriptInfo, inArgs []string, ctx *RunCtx) error {
+// RunScriptInfo by args and context
+func (r *Runner) RunScriptInfo(si *ScriptInfo, inArgs []string, ctx *RunCtx) error {
+	if si.IsFile() {
+		return r.runScriptFile(si, inArgs, ctx)
+	}
+	return r.runDefineScript(si, inArgs, ctx)
+}
+
+func (r *Runner) runScriptFile(si *ScriptInfo, inArgs []string, ctx *RunCtx) error {
 	if ctx.BeforeFn != nil {
 		ctx.BeforeFn(si, ctx)
 	}
@@ -246,7 +253,7 @@ func (r *Runner) doExecScriptFile(si *ScriptInfo, inArgs []string, ctx *RunCtx) 
 		FlushRun()
 }
 
-func (r *Runner) doExecScript(si *ScriptInfo, inArgs []string, ctx *RunCtx) error {
+func (r *Runner) runDefineScript(si *ScriptInfo, inArgs []string, ctx *RunCtx) error {
 	if ctx.BeforeFn != nil {
 		ctx.BeforeFn(si, ctx)
 	}
@@ -256,16 +263,39 @@ func (r *Runner) doExecScript(si *ScriptInfo, inArgs []string, ctx *RunCtx) erro
 		return errorx.Rawf("empty cmd config for script %q", ctx.Name)
 	}
 
-	if len(inArgs) < len(si.Args) {
+	needArgs := si.ParseArgs()
+	if len(inArgs) < len(needArgs) {
 		return errorx.Rawf("missing required args for run script %q", ctx.Name)
 	}
 
+	envMap := ctx.MergeEnv(si.Env)
 	shell := strutil.OrElse(ctx.Type, si.Type)
 	workdir := strutil.OrElse(ctx.Workdir, si.Workdir)
 
-	// only one
-	if ln == 1 {
-		line := r.handleCmdline(si.Cmds[0], inArgs, si)
+	// exec each command
+	for _, line := range si.Cmds {
+		if len(line) == 0 {
+			continue
+		}
+
+		// redirect run other script
+		if line[0] == '@' {
+			name := line[1:]
+			osi, err := r.ScriptDefineInfo(name)
+			if err != nil {
+				return err
+			}
+			if osi == nil {
+				return errorx.Rawf("run %q: reference script %q not found", si.Name, name)
+			}
+
+			err = r.runDefineScript(osi, inArgs, ctx)
+			if err != nil {
+				return err
+			}
+		}
+
+		line = r.handleCmdline(line, inArgs, si)
 
 		var cmd *cmdr.Cmd
 		if shell != "" {
@@ -274,33 +304,17 @@ func (r *Runner) doExecScript(si *ScriptInfo, inArgs []string, ctx *RunCtx) erro
 			cmd = cmdr.NewCmdline(line)
 		}
 
-		return cmd.WorkDirOnNE(workdir).
+		err := cmd.WorkDirOnNE(workdir).
 			WithDryRun(ctx.DryRun).
-			AppendEnv(ctx.MergeEnv(si.Env)).
+			AppendEnv(envMap).
 			PrintCmdline().
 			FlushRun()
-	}
 
-	// multi command
-	cr := cmdutil.NewRunner(func(rr *cmdutil.Runner) {
-		rr.OutToStd = true
-		rr.Workdir = workdir
-		rr.EnvMap = ctx.MergeEnv(si.Env)
-		rr.DryRun = ctx.DryRun
-	})
-
-	// cr.BeforeRun
-
-	for _, line := range si.Cmds {
-		line = r.handleCmdline(line, inArgs, si)
-
-		if shell != "" {
-			cr.CmdWithArgs(shell, "-c", line)
-		} else {
-			cr.AddCmdline(line)
+		if err != nil {
+			return err
 		}
 	}
-	return cr.Run()
+	return nil
 }
 
 // process vars and env
@@ -329,8 +343,8 @@ func (r *Runner) handleCmdline(line string, args []string, si *ScriptInfo) strin
 	return line
 }
 
-// DefinedScript info get
-func (r *Runner) DefinedScript(name string) (any, bool) {
+// RawDefinedScript raw info get
+func (r *Runner) RawDefinedScript(name string) (any, bool) {
 	info, ok := r.Scripts[name]
 	return info, ok
 }
@@ -339,7 +353,7 @@ func (r *Runner) DefinedScript(name string) (any, bool) {
 func (r *Runner) ScriptDefineInfo(name string) (*ScriptInfo, error) {
 	info, ok := r.Scripts[name]
 	if !ok {
-		return nil, nil // not found
+		return nil, nil // not found TODO ErrNotFund
 	}
 	return r.newDefinedScriptInfo(name, info)
 }

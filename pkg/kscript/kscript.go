@@ -1,6 +1,10 @@
 package kscript
 
-import "github.com/gookit/goutil/sysutil"
+import (
+	"errors"
+
+	"github.com/gookit/goutil/fsutil"
+)
 
 // AllowTypes shell wrapper for run script
 var AllowTypes = []string{"sh", "zsh", "bash"}
@@ -30,7 +34,7 @@ func NewRunner(fns ...func(sr *Runner)) *Runner {
 		ParseEnv:     true,
 		AllowedExt:   AllowExt,
 		ExtToBinMap:  ExtToBinMap,
-		PathResolver: sysutil.ExpandPath,
+		PathResolver: fsutil.ResolvePath,
 		scriptFiles:  map[string]string{},
 	}
 
@@ -38,4 +42,12 @@ func NewRunner(fns ...func(sr *Runner)) *Runner {
 		fn(sr)
 	}
 	return sr
+}
+
+// ErrNotFound error
+var ErrNotFound = errors.New("script not found")
+
+// IsNoNotFound error
+func IsNoNotFound(err error) bool {
+	return err != nil && err != ErrNotFound
 }
