@@ -64,15 +64,12 @@ TEST_PACKAGE ?= ./...
 COVER_OUT:=$(REPORTS_DIR)/cover.out
 COVERFLAGS=-coverprofile=$(COVER_OUT) --covermode=count --coverpkg=./...
 
-.PHONY: list
-list: ## List all make targets
-	@$(MAKE) -pRrn : -f $(MAKEFILE_LIST) 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | egrep -v -e '^[^[:alnum:]]' -e '^$@$$' | sort
-
 .PHONY: help
 .DEFAULT_GOAL := help
 help:
+	@echo -e "Provide some quick usage commands\n"
 	@echo "Commands:"
-	@grep -h -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@grep -h -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m  %-20s\033[0m %s\n", $$1, $$2}' | sort
 
 full: check ## Build and run the tests
 check: build test ## Build and run the tests
@@ -95,6 +92,10 @@ install2: $(GO_DEPENDENCIES) ## Install the kit binary to gopath/bin
 	go build $(BUILDFLAGS) -o $(GOPATH)/bin/kit ./cmd/kite
 	@ls -alh ${GOPATH}/bin/kit
 
+install3: install2 win linux ## Build for local and Linux and Windows then copy to Windows(Local dev)
+	cp -f build/kite-windows-amd64.exe /Volumes/inhere-win/Users/inhere/bin/kite.exe
+	cp -f build/kite-linux-amd64 /Volumes/inhere-win/Users/inhere/bin/kite
+
 tidy-deps: ## Cleans up dependencies
 	$(GO) mod tidy
 	# mod tidy only takes compile dependencies into account, let's make sure we capture tooling dependencies as well
@@ -104,22 +105,6 @@ pprof-cli: ## generate pprof file and start an web-ui
 	go run ./_examples/pprof-cli.go
 	#go tool pprof rux_prof_data.prof
 	go tool pprof -http=:8080 rux_prof_data.prof
-
-.PHONY: make-reports-dir
-make-reports-dir:
-	mkdir -p $(REPORTS_DIR)
-
-test: ## Run tests with the "unit" build tag
-	KUBECONFIG=/cluster/connections/not/allowed CGO_ENABLED=$(CGO_ENABLED) $(GOTEST) --tags=unit -failfast -short ./... $(TEST_BUILDFLAGS)
-
-test-coverage : make-reports-dir ## Run tests and coverage for all tests with the "unit" build tag
-	CGO_ENABLED=$(CGO_ENABLED) $(GOTEST) --tags=unit $(COVERFLAGS) -failfast -short ./... $(TEST_BUILDFLAGS)
-
-test-report: make-reports-dir get-test-deps test-coverage ## Create the test report
-	@gocov convert $(COVER_OUT) | gocov report
-
-test-report-html: make-reports-dir get-test-deps test-coverage ## Create the test report in HTML format
-	@gocov convert $(COVER_OUT) | gocov-html > $(REPORTS_DIR)/cover.html && open $(REPORTS_DIR)/cover.html
 
 build-all:linux linux-arm win win-arm darwin darwin-arm ## Build for Linux,OSX,Windows platform
 

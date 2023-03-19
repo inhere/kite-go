@@ -6,6 +6,6 @@
       <path value="ExecutionTargetsToolbarGroup" />
       <option name="myInitialPosition" value="-1" />
     </group>
-    <action id="ExternalTools_Kite Tools" icon="C:/Users/inhere/Pictures/Saved Pictures/zhizuotu_1.png" />
+    <action id="ExternalTools_Kite Tools" icon="{{kite.data_dir}}/assets/kite-icon.png" />
   </component>
 </application>
