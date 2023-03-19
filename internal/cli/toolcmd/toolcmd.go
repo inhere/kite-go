@@ -3,10 +3,10 @@ package toolcmd
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/inhere/kite/internal/cli/appcmd"
-	"github.com/inhere/kite/internal/cli/devcmd/jsoncmd"
 	"github.com/inhere/kite/internal/cli/fscmd"
 	"github.com/inhere/kite/internal/cli/pkgcmd"
 	"github.com/inhere/kite/internal/cli/syscmd"
+	"github.com/inhere/kite/internal/cli/toolcmd/convcmd"
 	"github.com/inhere/kite/internal/cli/toolcmd/doccmd"
 	"github.com/inhere/kite/internal/cli/toolcmd/mdcmd"
 	"github.com/inhere/kite/internal/cli/toolcmd/swagcmd"
@@ -24,19 +24,19 @@ var ToolsCmd = &gcli.Command{
 		appcmd.NewPathMapCmd(),
 		fscmd.NewFileCatCmd(),
 		AutoJumpCmd,
-		ConvBaseCmd,
+		convcmd.ConvBaseCmd,
 		// RunAnyCmd,
 		// ScriptCmd,
 		RandomCmd,
 		MathCalcCmd,
-		Time2dateCmd,
-		ConvPathSepCmd,
+		convcmd.NewTime2dateCmd(),
+		convcmd.NewConvPathSepCmd(),
 		syscmd.NewClipboardCmd(),
 		pkgcmd.PkgManageCmd,
 		doccmd.DocumentCmd,
 		mdcmd.MkDownCmd,
 		syscmd.NewQuickOpenCmd(),
-		jsoncmd.JSONToolCmd,
+		// jsoncmd.JSONToolCmd,
 	},
 	Config: func(c *gcli.Command) {
 

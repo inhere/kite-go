@@ -9,6 +9,7 @@ import (
 	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/errorx"
 	"github.com/inhere/kite/internal/apputil"
+	"github.com/inhere/kite/internal/cli/toolcmd/convcmd"
 )
 
 // TextOperateCmd instance
@@ -22,6 +23,7 @@ var TextOperateCmd = &gcli.Command{
 		StrMatchCmd,
 		TextSearchCmd,
 		TxtTemplateCmd,
+		convcmd.NewTime2dateCmd(),
 		// TODO
 	},
 }

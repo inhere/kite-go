@@ -264,8 +264,8 @@ func (r *Runner) runDefineScript(si *ScriptInfo, inArgs []string, ctx *RunCtx) e
 	}
 
 	needArgs := si.ParseArgs()
-	if len(inArgs) < len(needArgs) {
-		return errorx.Rawf("missing required args for run script %q", ctx.Name)
+	if nln := len(needArgs); len(inArgs) < nln {
+		return errorx.Rawf("missing required args for run script %q(need %d)", ctx.Name, nln)
 	}
 
 	envMap := ctx.MergeEnv(si.Env)
@@ -293,6 +293,7 @@ func (r *Runner) runDefineScript(si *ScriptInfo, inArgs []string, ctx *RunCtx) e
 			if err != nil {
 				return err
 			}
+			continue
 		}
 
 		line = r.handleCmdline(line, inArgs, si)
