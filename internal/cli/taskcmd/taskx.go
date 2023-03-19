@@ -1,4 +1,4 @@
-package taskx
+package taskcmd
 
 import "github.com/gookit/gcli/v3"
 

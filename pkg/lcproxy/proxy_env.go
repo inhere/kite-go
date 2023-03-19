@@ -43,6 +43,11 @@ func (lp *LocalProxy) RunFunc(fn func()) {
 	fn()
 }
 
+// EnvKeys for proxy ENV
+func (lp *LocalProxy) EnvKeys() []string {
+	return []string{HttpKey, HttpsKey}
+}
+
 // Unset proxy ENV
 func (lp *LocalProxy) Unset() {
 	if !lp.IsEmpty() {

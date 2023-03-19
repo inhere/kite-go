@@ -22,7 +22,7 @@ var TextOperateCmd = &gcli.Command{
 		StrSplitCmd,
 		StrMatchCmd,
 		TextSearchCmd,
-		TxtTemplateCmd,
+		NewTemplateCmd(),
 		convcmd.NewTime2dateCmd(),
 		// TODO
 	},

@@ -5,7 +5,6 @@ import (
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/cliutil"
-	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/strutil"
@@ -13,7 +12,6 @@ import (
 	"github.com/inhere/kite/internal/app"
 	"github.com/inhere/kite/internal/biz/cmdbiz"
 	"github.com/inhere/kite/pkg/kscript"
-	"github.com/inhere/kite/pkg/lcproxy"
 )
 
 var runOpts = struct {
@@ -22,7 +20,7 @@ var runOpts = struct {
 	envMap   gflag.KVString
 	chdir    string // auto find and chdir
 
-	listAll, showInfo, search, proxy, verbose bool
+	listAll, showInfo, search, verbose bool
 
 	alias, plugin, script, system bool
 }{}
@@ -84,14 +82,6 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 
 	if runOpts.showInfo {
 		return showInfo(name)
-	}
-
-	// set proxy ENV
-	if runOpts.proxy {
-		app.App().Lcp.Apply(func(lp *lcproxy.LocalProxy) {
-			c.Infoln("TIP: enabled to set proxy ENV vars, by", lcproxy.HttpKey, lcproxy.HttpsKey)
-			dump.NoLoc(lp)
-		})
 	}
 
 	wd := runOpts.Workdir
