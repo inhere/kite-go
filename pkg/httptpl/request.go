@@ -1,6 +1,7 @@
 package httptpl
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -41,6 +42,8 @@ type Template struct {
 	Query map[string]any `json:"query"`
 	// Header for request
 	Header map[string]string `json:"header"`
+	// BasicAuth config
+	BasicAuth *httpreq.BasicAuthConf `json:"basic_auth"`
 
 	// Body for request
 	Body any `json:"body"`
@@ -96,7 +99,7 @@ func (t *Template) FromHCString(s string) error {
 
 var rpl = textutil.NewVarReplacer("{{,}}").WithParseEnv().DisableFlatten()
 
-// Send request
+// Send request with variables
 func (t *Template) Send(vars maputil.Data, hs map[string]string) error {
 	req, err := t.BuildRequest(vars, hs)
 	if err != nil {
@@ -154,11 +157,22 @@ func (t *Template) BuildRequest(vars maputil.Data, hs map[string]string) (*http.
 		r.Header.Set(name, rpl.Replace(val, vars))
 	}
 
+	// add auth headers
+	if t.BasicAuth != nil && t.BasicAuth.IsValid() {
+		value := rpl.Replace(t.BasicAuth.String(), vars)
+		value = "Basic " + base64.StdEncoding.EncodeToString([]byte(value))
+		r.Header.Set("Authorization", value)
+	}
+
 	return r, nil
 }
 
 // BuildRequestBody for request
 func (t *Template) BuildRequestBody(vars maputil.Data) (io.Reader, error) {
+	if httpreq.IsNoBodyMethod(t.Method) {
+		return nil, nil
+	}
+
 	var data string
 
 	if t.Form != nil {

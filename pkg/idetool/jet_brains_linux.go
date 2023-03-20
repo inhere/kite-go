@@ -1,6 +1,6 @@
 package idetool
 
 // ProfileDir for ide
-func (j *JetBrains) ProfileDir() string {
+func (j *JetBrains) ProfileDir(subPath ...string) string {
 	return ""
 }

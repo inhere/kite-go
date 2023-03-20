@@ -229,9 +229,9 @@ func (d *DomainConfig) BuildVars(envName, envFile string) (maputil.Data, error) 
 		if err != nil {
 			return nil, err
 		}
-		vs = em[envName]
+		vs.Load(em[envName])
 	} else if ev, ok := d.LookupVars(envName); ok {
-		vs = ev
+		vs.Load(ev)
 	}
 
 	return vs, nil

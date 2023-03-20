@@ -90,7 +90,7 @@ func NewTemplateCmd() *gcli.Command {
   {$fullCmd} --eng go-tpl -v name=inhere -v age=234 'hi, {{.name}}, age is {{ .age }}'
 
 ## use template file
-  {$fullCmd} --var-file /path/to/_variables.yaml /path/to/my-template.tpl
+  {$fullCmd} --var-file /path/to/_variables.yaml @/path/to/my-template.tpl
 `,
 		Func: func(c *gcli.Command, _ []string) error {
 			src, err := apputil.ReadSource(ttOpts.text)

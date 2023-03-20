@@ -26,6 +26,7 @@ var stOpts = struct {
 	hcFile   string
 	tplName  string
 	userVars gflag.KVString
+	verbose  gcli.VerbLevel
 }{
 	userVars: cflag.NewKVString(),
 }
@@ -71,7 +72,6 @@ var SendTemplateCmd = &gcli.Command{
 		}
 
 		uv := stOpts.userVars.Data()
-		dump.P(uv)
 		if len(uv) > 0 {
 			vs.LoadSMap(uv)
 		}
@@ -94,8 +94,11 @@ var SendTemplateCmd = &gcli.Command{
 		}
 
 		cliutil.Yellowln("RESPONSE:")
-		rsp := t.Resp
-		fmt.Println(rsp.String())
+		if t.Resp.IsEmptyBody() {
+			fmt.Print(t.Resp.String())
+		} else {
+			fmt.Println(t.Resp.String())
+		}
 		return nil
 	},
 }
