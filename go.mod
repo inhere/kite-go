@@ -9,7 +9,6 @@ require (
 	github.com/getkin/kin-openapi v0.115.0
 	github.com/go-openapi/spec v0.20.8
 	github.com/go-openapi/swag v0.22.3
-	github.com/goccy/go-json v0.10.0
 	github.com/goccy/go-yaml v1.10.0
 	github.com/gomarkdown/markdown v0.0.0-20230313173142-2ced44d5b584
 	github.com/gookit/color v1.5.2
@@ -31,7 +30,6 @@ require (
 
 require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
-	github.com/aymanbagabas/go-osc52 v1.2.2 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/dlclark/regexp2 v1.8.1 // indirect
