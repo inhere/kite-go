@@ -3,8 +3,8 @@ package bootstrap
 import (
 	"github.com/gookit/slog"
 	"github.com/gookit/slog/handler"
-	"github.com/inhere/kite/internal/app"
-	"github.com/inhere/kite/internal/initlog"
+	"github.com/inhere/kite-go/internal/app"
+	"github.com/inhere/kite-go/internal/initlog"
 )
 
 // BootLogger handle

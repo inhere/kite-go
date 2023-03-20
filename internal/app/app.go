@@ -8,8 +8,8 @@ import (
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/gookit/slog"
-	"github.com/inhere/kite/internal/appconst"
-	"github.com/inhere/kite/internal/initlog"
+	"github.com/inhere/kite-go/internal/appconst"
+	"github.com/inhere/kite-go/internal/initlog"
 )
 
 // Env names

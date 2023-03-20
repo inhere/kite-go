@@ -2,7 +2,7 @@ package web
 
 import (
 	"github.com/gookit/rux"
-	"github.com/inhere/kite/internal/web/controller"
+	"github.com/inhere/kite-go/internal/web/controller"
 )
 
 // AddRoutes to rux.Router

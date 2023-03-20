@@ -7,7 +7,7 @@ import (
 	"github.com/gookit/gitw"
 	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/errorx"
-	"github.com/inhere/kite/pkg/gitx"
+	"github.com/inhere/kite-go/pkg/gitx"
 )
 
 // GlProject struct

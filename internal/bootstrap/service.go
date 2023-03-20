@@ -1,15 +1,15 @@
 package bootstrap
 
 import (
-	"github.com/inhere/kite/internal/app"
-	"github.com/inhere/kite/internal/apputil"
-	"github.com/inhere/kite/internal/biz/cmdbiz"
-	"github.com/inhere/kite/pkg/gitx"
-	"github.com/inhere/kite/pkg/gitx/github"
-	"github.com/inhere/kite/pkg/gitx/gitlab"
-	"github.com/inhere/kite/pkg/httptpl"
-	"github.com/inhere/kite/pkg/kiteext"
-	"github.com/inhere/kite/pkg/kscript"
+	"github.com/inhere/kite-go/internal/app"
+	"github.com/inhere/kite-go/internal/apputil"
+	"github.com/inhere/kite-go/internal/biz/cmdbiz"
+	"github.com/inhere/kite-go/pkg/gitx"
+	"github.com/inhere/kite-go/pkg/gitx/github"
+	"github.com/inhere/kite-go/pkg/gitx/gitlab"
+	"github.com/inhere/kite-go/pkg/httptpl"
+	"github.com/inhere/kite-go/pkg/kiteext"
+	"github.com/inhere/kite-go/pkg/kscript"
 )
 
 // addServiceBoot handle

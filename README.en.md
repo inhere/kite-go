@@ -43,6 +43,8 @@ curl https://ghproxy.com/https://raw.githubusercontent.com/inhere/kite-go/main/c
 
 ```bash
 go install github.com/inhere/kite-go/cmd/kite
+# or
+go install github.com/inhere/kite-go/cmd/kite@latest
 ```
 
 ## Build

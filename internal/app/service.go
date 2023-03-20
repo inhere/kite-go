@@ -6,13 +6,13 @@ import (
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/rux"
 	"github.com/gookit/slog"
-	"github.com/inhere/kite/pkg/gitx"
-	"github.com/inhere/kite/pkg/gitx/github"
-	"github.com/inhere/kite/pkg/gitx/gitlab"
-	"github.com/inhere/kite/pkg/httptpl"
-	"github.com/inhere/kite/pkg/kiteext"
-	"github.com/inhere/kite/pkg/kscript"
-	"github.com/inhere/kite/pkg/lcproxy"
+	"github.com/inhere/kite-go/pkg/gitx"
+	"github.com/inhere/kite-go/pkg/gitx/github"
+	"github.com/inhere/kite-go/pkg/gitx/gitlab"
+	"github.com/inhere/kite-go/pkg/httptpl"
+	"github.com/inhere/kite-go/pkg/kiteext"
+	"github.com/inhere/kite-go/pkg/kscript"
+	"github.com/inhere/kite-go/pkg/lcproxy"
 )
 
 const (

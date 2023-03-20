@@ -1,4 +1,4 @@
-package kite
+package kite_go
 
 import "embed"
 

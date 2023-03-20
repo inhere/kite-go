@@ -1,7 +1,7 @@
 package gitlab
 
 import (
-	"github.com/inhere/kite/pkg/gitx"
+	"github.com/inhere/kite-go/pkg/gitx"
 )
 
 const (

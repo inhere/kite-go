@@ -7,7 +7,7 @@ import (
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/strutil"
-	"github.com/inhere/kite/pkg/pkgutil"
+	"github.com/inhere/kite-go/pkg/pkgutil"
 )
 
 // Templates type constants

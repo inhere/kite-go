@@ -1,4 +1,4 @@
-module github.com/inhere/kite
+module github.com/inhere/kite-go
 
 go 1.19
 

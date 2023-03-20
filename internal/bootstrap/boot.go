@@ -6,9 +6,9 @@ import (
 
 	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/sysutil"
-	"github.com/inhere/kite/internal/app"
-	"github.com/inhere/kite/internal/appconst"
-	"github.com/inhere/kite/internal/initlog"
+	"github.com/inhere/kite-go/internal/app"
+	"github.com/inhere/kite-go/internal/appconst"
+	"github.com/inhere/kite-go/internal/initlog"
 )
 
 var defaultBaseDir string

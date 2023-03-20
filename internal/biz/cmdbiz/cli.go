@@ -5,8 +5,8 @@ import (
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/strutil"
-	"github.com/inhere/kite/internal/app"
-	"github.com/inhere/kite/pkg/lcproxy"
+	"github.com/inhere/kite-go/internal/app"
+	"github.com/inhere/kite-go/pkg/lcproxy"
 )
 
 // CommonOpts some common vars struct

@@ -5,7 +5,7 @@ import (
 
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/testutil/assert"
-	"github.com/inhere/kite/internal/app"
+	"github.com/inhere/kite-go/internal/app"
 )
 
 type testObj struct {

@@ -4,8 +4,8 @@ import (
 	"github.com/gookit/goutil/envutil"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/ini/v2/dotenv"
-	"github.com/inhere/kite/internal/app"
-	"github.com/inhere/kite/internal/appconst"
+	"github.com/inhere/kite-go/internal/app"
+	"github.com/inhere/kite-go/internal/appconst"
 )
 
 // BootEnv config for kite

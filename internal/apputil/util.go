@@ -12,10 +12,10 @@ import (
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/maputil"
-	"github.com/inhere/kite/internal/app"
-	"github.com/inhere/kite/pkg/gitx"
-	"github.com/inhere/kite/pkg/kautorw"
-	"github.com/inhere/kite/pkg/lcproxy"
+	"github.com/inhere/kite-go/internal/app"
+	"github.com/inhere/kite-go/pkg/gitx"
+	"github.com/inhere/kite-go/pkg/kautorw"
+	"github.com/inhere/kite-go/pkg/lcproxy"
 )
 
 // CmdConfigData find.

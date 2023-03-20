@@ -4,10 +4,9 @@ import (
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/structs"
 	"github.com/gookit/i18n"
-	"github.com/inhere/kite"
-	"github.com/inhere/kite/internal/app"
-	"github.com/inhere/kite/internal/initlog"
-	"github.com/inhere/kite/pkg/lcproxy"
+	"github.com/inhere/kite-go/internal/app"
+	"github.com/inhere/kite-go/internal/initlog"
+	"github.com/inhere/kite-go/pkg/lcproxy"
 )
 
 // BootI18n info
@@ -31,12 +30,12 @@ func BootAppInfo(ka *app.KiteApp) error {
 	}
 
 	ka.Info = &app.Info{
-		Branch:    kite.Branch,
-		Version:   kite.Version,
-		Revision:  kite.Revision,
-		GoVersion: kite.GoVersion,
-		PublishAt: kite.PublishAt,
-		UpdatedAt: kite.UpdatedAt,
+		Branch:    kite_go.Branch,
+		Version:   kite_go.Version,
+		Revision:  kite_go.Revision,
+		GoVersion: kite_go.GoVersion,
+		PublishAt: kite_go.PublishAt,
+		UpdatedAt: kite_go.UpdatedAt,
 	}
 
 	initlog.L.Info("init kite application info:", structs.ToString(ka.Info))

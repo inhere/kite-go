@@ -8,8 +8,8 @@ import (
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/gookit/goutil/sysutil/cmdr"
-	"github.com/inhere/kite/internal/app"
-	"github.com/inhere/kite/pkg/kscript"
+	"github.com/inhere/kite-go/internal/app"
+	"github.com/inhere/kite-go/pkg/kscript"
 )
 
 // Kas map data

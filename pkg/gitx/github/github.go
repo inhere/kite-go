@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gookit/gitw"
-	"github.com/inhere/kite/pkg/gitx"
+	"github.com/inhere/kite-go/pkg/gitx"
 )
 
 const (

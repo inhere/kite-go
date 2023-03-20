@@ -4,7 +4,7 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/strutil"
-	"github.com/inhere/kite/internal/apputil"
+	"github.com/inhere/kite-go/internal/apputil"
 )
 
 // ProxyCmdConf struct

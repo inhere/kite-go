@@ -6,7 +6,7 @@ import (
 
 	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/sysutil"
-	"github.com/inhere/kite/internal/appconst"
+	"github.com/inhere/kite-go/internal/appconst"
 )
 
 // some special chars

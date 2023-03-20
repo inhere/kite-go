@@ -5,7 +5,7 @@ import (
 
 	"github.com/gookit/rux"
 	"github.com/gookit/view"
-	"github.com/inhere/kite/internal/appconst"
+	"github.com/inhere/kite-go/internal/appconst"
 )
 
 // HomeController struct

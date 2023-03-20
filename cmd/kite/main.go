@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/inhere/kite/internal/app"
-	"github.com/inhere/kite/internal/bootstrap"
+	"github.com/inhere/kite-go/internal/app"
+	"github.com/inhere/kite-go/internal/bootstrap"
 )
 
 // dev run:
