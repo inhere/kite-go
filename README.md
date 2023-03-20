@@ -33,13 +33,13 @@
 curl https://raw.githubusercontent.com/inhere/kite-go/main/cmd/install.sh | bash
 ```
 
-**从代理下载**
+**从代理下载安装脚本**
 
 ```shell
-curl https://ghproxy.com/https://raw.githubusercontent.com/inhere/kite-go/main/cmd/install.sh | bash
+curl https://ghproxy.com/https://raw.githubusercontent.com/inhere/kite-go/main/cmd/install.sh | bash -s proxy
 ```
 
-### 从 releases 下载
+### 从 Releases 下载
 
 ```shell
 wget -c https://github.com/inhere/kite-ge/releases/latest/download/kite-{OS}-{ARCH}.tar.gz
@@ -58,7 +58,6 @@ go install github.com/inhere/kite-go/cmd/kite
 
 ```shell
 $ kite app init
-
 ```
 
 ------
@@ -72,7 +71,7 @@ kite COMMAND -h # 查看命令帮助信息
 kite COMMAND SUBCOMMAND # 运行一个子级命令
 ```
 
-### 常用命令别名
+### 配置Shell命令别名
 
 推荐配置常用命令组别名到 `~/.bashrc` 或者 `~/.zshrc`，这样可以快速使用常用的命令。
 
@@ -86,6 +85,16 @@ alias kj="kite json"
 alias kstr="kite text"
 ```
 
+## Git 命令使用
+
+`kite git` 提供了一些 git 命令行快速使用命令的封装.
+
+```shell
+$ kite g # 查看封装的可用的 git 命令
+```
+
+> TIP: 通过 `kite git CMD` 运行未知命令会自动转发到系统上的 `git` 下面执行. 因此, 可以执行任何 `git` 命令.
+
 ## Gitlab 命令使用
 
 `kite gitlab` 提供了一些 gitlab 命令行快速使用命令的封装.
@@ -94,7 +103,9 @@ alias kstr="kite text"
 $ kite gl # 查看封装的可用的 gitlab 命令
 ```
 
-## 配置Gitlab
+> TIP: 通过 `kite gl CMD` 运行未知命令会自动转发到 `kite git` 命令组下面执行. 因此, 可以执行任何 git 命令.
+
+### 配置Gitlab
 
 通常只需要配置下面两个信息即可使用
 
@@ -144,13 +155,102 @@ gitlab:
 $ kite gl open # 快速在浏览器打开当前仓库
 ```
 
-## GitHab 命令使用
+## GitHub 命令使用
 
-TODO
+GitHub 大部分命令与 `git` `gitlab` 组下面的相同. 同样提供了 `ac` `acp` `clone` `open` 等命令.
 
-> TIP: github 的配置默认会继承 `gitx.yml->git` 的配置信息.
+> TIP: 通过 `kite gh CMD` 运行未知命令会自动转发到 `kite git` 命令组下面执行.
+
+### 配置
+
+通常只需要配置下面de信息即可使用
+
+```dotenv
+# github
+GITHUB_USER=inhere
+```
+
+> TIP: `github` 的配置默认会继承 `gitx.yml->git` 的配置信息.
+
+### 快速克隆仓库
+
+可用直接使用 `group/path` 快速克隆仓库, 会自动填充配置的 `GITLAB_HOST` 进行克隆.
+
+```shell
+$ kite gl clone group/path
+```
 
 ## Http 工具使用
+
+### 启动一个简单的echo服务
+
+启动一个简单的 `echo` 服务用于快速测试发送请求是否正确响应. 不论请求任何路由,都会返回请求的方法,headers,请求数据等.
+
+```shell
+$ kite http echo-server
+```
+
+### 启动一个文件服务
+
+在指定目录快速启动一个文件服务, 用于测试请求服务文件,比如 图片.
+
+```shell
+# file: public/some.png
+# access http://localhost:8090/fs/some.png
+$ kite http fs-server --port 8090 -w public
+```
+
+### 通过模板快速发送请求
+
+通过定义API请求模板和设置请求变量来快速发送请求. 快速实现操作三方工具.
+
+```shell
+$ kite http tpl-send -d jenkins --api api-build.json5 -e dev --var branch=qa -v group=my -v repoName=user
+```
+
+配置模板信息和目录.
+
+```yaml
+# domain: gitlab, jenkins, feishu
+http_tpl:
+  domains:
+    gitlab:
+      config_file: $data/http_tpl/gitlab-domain.json5
+    jenkins:
+      config_file: $data/http_tpl/jenkins-domain.json5
+```
+
+## `fs` 文件/目录命令组
+
+`kite fs` 封装了一些对文件或目录的常用操作命令.
+
+### 查看文件内容
+
+`kite fs cat` 跟系统的 cat 类似, 但是会针对不同扩展文件提供语法高亮渲染并输出.
+
+```shell
+$ kite fs cat README.md
+```
+
+### 渲染模板文件
+
+`kite fs render` 可以通过输入变量或指定变量文件,快速的将模板内容或文件渲染并输出.
+
+**两种引擎模式**:
+
+- `simple/replace`  快速替换模板变量,简单方便,但是不支持表达式.
+- `go/go-tpl`  使用 go `text/template` 渲染模板,功能强大.
+
+```shell
+# simple example
+$ kite fs render -v name=inhere -v age=234 'hi, {{name}}, age is {{ age }}'
+
+# go-tpl example
+$ kite fs render --eng go-tpl -v name=inhere -v age=234 'hi, {{.name}}, age is {{ .age }}'
+
+# use variable file and template file
+$ kite fs render --var-file /path/to/_variables.yaml @/path/to/my-template.tpl
+```
 
 ## Kite 信息查看
 
@@ -216,13 +316,13 @@ $ kite app pathmap
 
 ### 列出kite所有命令
 
-按层级列出kite所有命令,包含所有子级命令列表.
+按层级列出kite所有命令,包含所有子级命令列表. TODO
 
 ```shell
 kite app cmd-map
 ```
 
-## 运行任意命令或脚本
+## `kite run` 运行任意命令或脚本
 
 使用 `kite run COMMAND` 运行任意命令. 它会自动尝试检查 `COMMAND` 是
 否是 `script|alias|plugin|system-cmd` 中的一个命令. 匹配成功则执行.
@@ -245,7 +345,36 @@ $ kite script -l
 
 > TIP: 你可以自定义配置任意的 `scripts` 命令, 请查看 `$config/module/scripts.yml`
 
-## 常用工具命令
+## sys 系统命令组
+
+`kite sys` 系统命令组提供了一些常用的系统命令包装,方便查询或操作系统工具.
+
+### 在子目录或多个目录同时执行命令
+
+`batch-run` 可以在一个目录的每个子目录或指定的多个目录同时执行命令 TODO 
+
+```shell
+$ kite sys batch-run
+```
+
+### 读取或写入系统剪切板
+
+`kite sys clip` 可以方便的通过命令方式读取或写入内容到系统剪切板.
+
+```shell
+$ kite sys clip -r # read contents
+$ kite sys clip -w "some contents" # read contents
+```
+
+> TIP: 你会发现在 kite 里很多操作 `字符串` 或者 `文件` 的命令都支持读取剪切板数据.
+
+### 搜索查找可执行文件
+
+`kite sys find-exe` 将会在 PATH 的目录里模糊匹配搜索可执行文件列表.
+
+### 指定查找可执行文件
+
+`kite sys which` 跟系统的 `whereis` `which` 一样将会在 PATH 的目录里完全匹配查找可执行文件.
 
 ### 查看ENV环境信息
 
@@ -261,7 +390,39 @@ kite env
 搜索ENV变量信息:
 
 ```shell
-$ kit env -s term
+$ kite env -s term
+```
+
+展开ENV变量信息:
+
+> `--expand` 将会把变量值按系统分隔符分割为多行方便查看.
+
+```shell
+$ kite sys env --expand path
+```
+
+## 常用工具命令
+
+### 运行命令时自动设置代理环境
+
+可以配置在运行一些特殊命令时自动设置代理环境,方便使用.
+
+配置示例:
+
+```yaml
+# will set local_proxy before run matched command
+proxy_cmd:
+  command_ids:
+    - 'github:tag:delete'
+  group_limits:
+    github: [acp, push, pull, update, update-push]
+
+# local proxy hosts
+local_proxy:
+  # export http_proxy=http://127.0.0.1:1081;export https_proxy=http://127.0.0.1:1081;
+  http_proxy: ${PROXY_SERVE}
+  https_proxy: ${PROXY_SERVE}
+
 ```
 
 ------
