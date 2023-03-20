@@ -5,7 +5,7 @@ import (
 
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
-	"github.com/inhere/kite/internal/apputil"
+	"github.com/inhere/kite-go/internal/apputil"
 )
 
 var tsOpts = struct {

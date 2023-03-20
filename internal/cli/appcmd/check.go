@@ -5,8 +5,8 @@ import (
 
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/fsutil"
-	"github.com/inhere/kite/internal/app"
-	"github.com/inhere/kite/internal/appconst"
+	"github.com/inhere/kite-go/internal/app"
+	"github.com/inhere/kite-go/internal/appconst"
 )
 
 // AppCheckCmd command

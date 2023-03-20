@@ -9,9 +9,9 @@ import (
 	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/strutil/textutil"
-	"github.com/inhere/kite/internal/apputil"
-	"github.com/inhere/kite/pkg/kautorw"
-	"github.com/inhere/kite/pkg/pkgutil"
+	"github.com/inhere/kite-go/internal/apputil"
+	"github.com/inhere/kite-go/pkg/kautorw"
+	"github.com/inhere/kite-go/pkg/pkgutil"
 )
 
 var matchOpts = struct {

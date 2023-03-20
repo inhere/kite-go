@@ -9,8 +9,8 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/stdio"
-	"github.com/inhere/kite/internal/apputil"
-	"github.com/inhere/kite/pkg/kautorw"
+	"github.com/inhere/kite-go/internal/apputil"
+	"github.com/inhere/kite-go/pkg/kautorw"
 )
 
 var fcOpts = struct {

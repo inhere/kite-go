@@ -6,7 +6,7 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/goutil/errorx"
-	"github.com/inhere/kite/internal/biz/cmdbiz"
+	"github.com/inhere/kite-go/internal/biz/cmdbiz"
 )
 
 // NewBatchRunCmd instance

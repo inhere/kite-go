@@ -8,7 +8,7 @@ import (
 	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/errorx"
-	"github.com/inhere/kite/internal/app"
+	"github.com/inhere/kite-go/internal/app"
 )
 
 // paCmdOpts struct

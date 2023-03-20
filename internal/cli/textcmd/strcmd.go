@@ -8,8 +8,8 @@ import (
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/errorx"
-	"github.com/inhere/kite/internal/apputil"
-	"github.com/inhere/kite/internal/cli/toolcmd/convcmd"
+	"github.com/inhere/kite-go/internal/apputil"
+	"github.com/inhere/kite-go/internal/cli/toolcmd/convcmd"
 )
 
 // TextOperateCmd instance

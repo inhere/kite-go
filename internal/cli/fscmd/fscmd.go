@@ -2,8 +2,8 @@ package fscmd
 
 import (
 	"github.com/gookit/gcli/v3"
-	"github.com/inhere/kite/internal/cli/textcmd"
-	"github.com/inhere/kite/internal/cli/toolcmd/convcmd"
+	"github.com/inhere/kite-go/internal/cli/textcmd"
+	"github.com/inhere/kite-go/internal/cli/toolcmd/convcmd"
 )
 
 // FsCmd command

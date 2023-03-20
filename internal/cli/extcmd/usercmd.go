@@ -3,8 +3,8 @@ package extcmd
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/maputil"
-	"github.com/inhere/kite/internal/app"
-	"github.com/inhere/kite/internal/apputil"
+	"github.com/inhere/kite-go/internal/app"
+	"github.com/inhere/kite-go/internal/apputil"
 )
 
 // CmdAction struct

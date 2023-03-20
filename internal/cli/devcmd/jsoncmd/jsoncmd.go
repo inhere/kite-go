@@ -11,7 +11,7 @@ import (
 	"github.com/gookit/goutil/fmtutil"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/stdio"
-	"github.com/inhere/kite/internal/apputil"
+	"github.com/inhere/kite-go/internal/apputil"
 	"github.com/yosuke-furukawa/json5/encoding/json5"
 )
 

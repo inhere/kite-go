@@ -11,7 +11,7 @@ import (
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/goutil/timex"
-	"github.com/inhere/kite/internal/apputil"
+	"github.com/inhere/kite-go/internal/apputil"
 )
 
 // ConvBaseCmd command

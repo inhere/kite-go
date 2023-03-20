@@ -14,7 +14,7 @@ import (
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/netutil/httpreq"
 	"github.com/gookit/goutil/stdio"
-	"github.com/inhere/kite/internal/app"
+	"github.com/inhere/kite-go/internal/app"
 )
 
 var stOpts = struct {

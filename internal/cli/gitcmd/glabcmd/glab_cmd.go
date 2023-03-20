@@ -9,9 +9,9 @@ import (
 	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/fsutil"
-	"github.com/inhere/kite/internal/app"
-	"github.com/inhere/kite/internal/cli/gitcmd"
-	"github.com/inhere/kite/pkg/gitx"
+	"github.com/inhere/kite-go/internal/app"
+	"github.com/inhere/kite-go/internal/cli/gitcmd"
+	"github.com/inhere/kite-go/pkg/gitx"
 )
 
 var glOpts = struct {

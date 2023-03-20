@@ -4,9 +4,9 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/rux/handlers"
-	"github.com/inhere/kite/internal/app"
-	"github.com/inhere/kite/internal/web"
-	"github.com/inhere/kite/pkg/httpserve"
+	"github.com/inhere/kite-go/internal/app"
+	"github.com/inhere/kite-go/internal/web"
+	"github.com/inhere/kite-go/pkg/httpserve"
 )
 
 // options for the HttpServe

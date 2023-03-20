@@ -9,9 +9,9 @@ import (
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/sysutil/cmdr"
-	"github.com/inhere/kite/internal/app"
-	"github.com/inhere/kite/internal/biz/cmdbiz"
-	"github.com/inhere/kite/pkg/kscript"
+	"github.com/inhere/kite-go/internal/app"
+	"github.com/inhere/kite-go/internal/biz/cmdbiz"
+	"github.com/inhere/kite-go/pkg/kscript"
 )
 
 var runOpts = struct {

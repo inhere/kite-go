@@ -12,12 +12,12 @@ import (
 	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/strutil/textutil"
-	"github.com/inhere/kite/internal/app"
-	"github.com/inhere/kite/internal/appconst"
-	"github.com/inhere/kite/internal/apputil"
-	"github.com/inhere/kite/internal/biz/cmdbiz"
-	"github.com/inhere/kite/pkg/cmdutil"
-	"github.com/inhere/kite/pkg/gitx"
+	"github.com/inhere/kite-go/internal/app"
+	"github.com/inhere/kite-go/internal/appconst"
+	"github.com/inhere/kite-go/internal/apputil"
+	"github.com/inhere/kite-go/internal/biz/cmdbiz"
+	"github.com/inhere/kite-go/pkg/cmdutil"
+	"github.com/inhere/kite-go/pkg/gitx"
 )
 
 type acpOptModel struct {

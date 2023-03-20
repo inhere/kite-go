@@ -4,9 +4,9 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/basefn"
 	"github.com/gookit/goutil/errorx"
-	"github.com/inhere/kite/internal/apputil"
-	"github.com/inhere/kite/internal/biz/cmdbiz"
-	"github.com/inhere/kite/pkg/cmdutil"
+	"github.com/inhere/kite-go/internal/apputil"
+	"github.com/inhere/kite-go/internal/biz/cmdbiz"
+	"github.com/inhere/kite-go/pkg/cmdutil"
 )
 
 // NewBranchCmd instance

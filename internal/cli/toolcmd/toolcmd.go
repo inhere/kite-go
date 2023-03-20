@@ -2,14 +2,14 @@ package toolcmd
 
 import (
 	"github.com/gookit/gcli/v3"
-	"github.com/inhere/kite/internal/cli/appcmd"
-	"github.com/inhere/kite/internal/cli/fscmd"
-	"github.com/inhere/kite/internal/cli/pkgcmd"
-	"github.com/inhere/kite/internal/cli/syscmd"
-	"github.com/inhere/kite/internal/cli/toolcmd/convcmd"
-	"github.com/inhere/kite/internal/cli/toolcmd/doccmd"
-	"github.com/inhere/kite/internal/cli/toolcmd/mdcmd"
-	"github.com/inhere/kite/internal/cli/toolcmd/swagcmd"
+	"github.com/inhere/kite-go/internal/cli/appcmd"
+	"github.com/inhere/kite-go/internal/cli/fscmd"
+	"github.com/inhere/kite-go/internal/cli/pkgcmd"
+	"github.com/inhere/kite-go/internal/cli/syscmd"
+	"github.com/inhere/kite-go/internal/cli/toolcmd/convcmd"
+	"github.com/inhere/kite-go/internal/cli/toolcmd/doccmd"
+	"github.com/inhere/kite-go/internal/cli/toolcmd/mdcmd"
+	"github.com/inhere/kite-go/internal/cli/toolcmd/swagcmd"
 )
 
 // ToolsCmd command

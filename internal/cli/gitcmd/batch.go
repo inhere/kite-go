@@ -5,7 +5,7 @@ import (
 
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/dump"
-	"github.com/inhere/kite/internal/biz/cmdbiz"
+	"github.com/inhere/kite-go/internal/biz/cmdbiz"
 )
 
 // BatchCmd command

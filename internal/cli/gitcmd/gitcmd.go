@@ -10,9 +10,9 @@ import (
 	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/sysutil/cmdr"
-	"github.com/inhere/kite/internal/app"
-	"github.com/inhere/kite/internal/biz/cmdbiz"
-	"github.com/inhere/kite/pkg/gitx"
+	"github.com/inhere/kite-go/internal/app"
+	"github.com/inhere/kite-go/internal/biz/cmdbiz"
+	"github.com/inhere/kite-go/pkg/gitx"
 )
 
 // GitOpts object

@@ -4,9 +4,9 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/events"
 	"github.com/gookit/goutil/errorx"
-	"github.com/inhere/kite/internal/app"
-	"github.com/inhere/kite/internal/cli/gitcmd"
-	"github.com/inhere/kite/pkg/gitx"
+	"github.com/inhere/kite-go/internal/app"
+	"github.com/inhere/kite-go/internal/cli/gitcmd"
+	"github.com/inhere/kite-go/pkg/gitx"
 )
 
 // GithubCmd commands

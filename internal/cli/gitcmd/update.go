@@ -2,9 +2,9 @@ package gitcmd
 
 import (
 	"github.com/gookit/gcli/v3"
-	"github.com/inhere/kite/internal/biz/cmdbiz"
-	"github.com/inhere/kite/pkg/cmdutil"
-	"github.com/inhere/kite/pkg/gitx"
+	"github.com/inhere/kite-go/internal/biz/cmdbiz"
+	"github.com/inhere/kite-go/pkg/cmdutil"
+	"github.com/inhere/kite-go/pkg/gitx"
 )
 
 var upOpts = struct {

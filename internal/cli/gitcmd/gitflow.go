@@ -5,8 +5,8 @@ import (
 	"github.com/gookit/gcli/v3/interact"
 	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/strutil"
-	"github.com/inhere/kite/internal/apputil"
-	"github.com/inhere/kite/internal/biz/cmdbiz"
+	"github.com/inhere/kite-go/internal/apputil"
+	"github.com/inhere/kite-go/internal/biz/cmdbiz"
 )
 
 var CreatePRLink = &gcli.Command{

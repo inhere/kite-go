@@ -10,9 +10,9 @@ import (
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/sysutil"
-	"github.com/inhere/kite"
-	"github.com/inhere/kite/internal/app"
-	"github.com/inhere/kite/internal/biz/cmdbiz"
+	"github.com/inhere/kite-go"
+	"github.com/inhere/kite-go/internal/app"
+	"github.com/inhere/kite-go/internal/biz/cmdbiz"
 )
 
 // KiteInfoCmd instance
@@ -29,10 +29,10 @@ var KiteInfoCmd = &gcli.Command{
 			"dotenv file":   app.App().DotenvFile(),
 			"config files":  app.Cfg().LoadedFiles(),
 			"language":      "TODO",
-			"version":       kite.Version,
-			"build date":    kite.BuildDate,
-			"go version":    kite.GoVersion,
-			"github repo":   kite.GithubRepo,
+			"version":       kite_go.Version,
+			"build date":    kite_go.BuildDate,
+			"go version":    kite_go.GoVersion,
+			"github repo":   kite_go.GithubRepo,
 			// "i18n files": i18n.Default().LoadFile(),
 		}, nil)
 

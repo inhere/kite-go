@@ -4,7 +4,7 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/gitw"
-	"github.com/inhere/kite/internal/biz/cmdbiz"
+	"github.com/inhere/kite-go/internal/biz/cmdbiz"
 )
 
 var riOpts = struct {

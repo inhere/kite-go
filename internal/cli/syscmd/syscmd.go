@@ -9,7 +9,7 @@ import (
 	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/gitw"
 	"github.com/gookit/goutil/sysutil"
-	"github.com/inhere/kite/internal/app"
+	"github.com/inhere/kite-go/internal/app"
 )
 
 // SysCmd command

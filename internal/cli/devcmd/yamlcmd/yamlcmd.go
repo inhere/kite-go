@@ -6,7 +6,7 @@ import (
 	"github.com/goccy/go-yaml"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/errorx"
-	"github.com/inhere/kite/internal/apputil"
+	"github.com/inhere/kite-go/internal/apputil"
 )
 
 // YamlToolCmd instance
