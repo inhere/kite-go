@@ -322,10 +322,10 @@ $ kite app pathmap
 kite app cmd-map
 ```
 
-## `kite run` 运行任意命令或脚本
+## 运行任意命令或脚本
 
 使用 `kite run COMMAND` 运行任意命令. 它会自动尝试检查 `COMMAND` 是
-否是 `script|alias|plugin|system-cmd` 中的一个命令. 匹配成功则执行.
+否是 `alias|script|plugin|system-cmd` 中的一个命令. 匹配成功则执行.
 
 ```shell
 $ kite run {script|alias|plugin|system-cmd}
@@ -344,6 +344,10 @@ $ kite script -l
 ```
 
 > TIP: 你可以自定义配置任意的 `scripts` 命令, 请查看 `$config/module/scripts.yml`
+
+### 运行定义脚本
+
+### 运行脚本文件
 
 ## sys 系统命令组
 

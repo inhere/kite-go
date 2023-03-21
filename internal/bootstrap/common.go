@@ -4,6 +4,7 @@ import (
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/structs"
 	"github.com/gookit/i18n"
+	"github.com/inhere/kite-go"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/internal/initlog"
 	"github.com/inhere/kite-go/pkg/lcproxy"

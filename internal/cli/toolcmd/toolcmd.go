@@ -6,6 +6,7 @@ import (
 	"github.com/inhere/kite-go/internal/cli/fscmd"
 	"github.com/inhere/kite-go/internal/cli/pkgcmd"
 	"github.com/inhere/kite-go/internal/cli/syscmd"
+	"github.com/inhere/kite-go/internal/cli/taskcmd"
 	"github.com/inhere/kite-go/internal/cli/toolcmd/convcmd"
 	"github.com/inhere/kite-go/internal/cli/toolcmd/doccmd"
 	"github.com/inhere/kite-go/internal/cli/toolcmd/mdcmd"
@@ -36,6 +37,7 @@ var ToolsCmd = &gcli.Command{
 		doccmd.DocumentCmd,
 		mdcmd.MkDownCmd,
 		syscmd.NewQuickOpenCmd(),
+		taskcmd.TaskManageCmd,
 		// jsoncmd.JSONToolCmd,
 	},
 	Config: func(c *gcli.Command) {

@@ -18,6 +18,7 @@ var DevToolsCmd = &gcli.Command{
 	Subs: []*gcli.Command{
 		HotReloadServe,
 		IDEAToolCmd,
+		ProjectCmd,
 		gencmd.CodeGenCmd,
 		javacmd.JavaToolCmd,
 		gocmd.GoToolsCmd,

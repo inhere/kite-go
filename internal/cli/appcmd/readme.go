@@ -3,6 +3,7 @@ package appcmd
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/byteutil"
+	"github.com/inhere/kite-go"
 	"github.com/inhere/kite-go/internal/apputil"
 )
 
