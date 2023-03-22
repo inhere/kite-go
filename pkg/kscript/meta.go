@@ -26,6 +26,10 @@ type ScriptInfo struct {
 	Platform []string
 	// Output target. default is stdout
 	Output string
+	// Vars for run script. allow exec a command line TODO
+	Vars map[string]string
+	// Ext enable ext: proxy, clip
+	Ext string
 
 	// Name for script
 	Name string
@@ -46,6 +50,36 @@ type ScriptInfo struct {
 	File    string
 	BinName string
 	FileExt string // eg: .go
+}
+
+func newDefinedScriptInfo(name string, info any, fbType string) (*ScriptInfo, error) {
+	si := &ScriptInfo{Name: name}
+
+	switch typVal := info.(type) {
+	case string: // one command
+		si.Cmds = []string{typVal}
+	case []any: // as commands
+		si.Cmds = arrutil.SliceToStrings(typVal)
+	case map[string]any: // as structured
+		data := maputil.Data(typVal)
+		si.Type = data.Str("type")
+		si.Desc = data.Str("desc")
+		si.Workdir = data.Str("workdir")
+
+		err := si.loadArgsDefine(data.Get("args"))
+		if err != nil {
+			return nil, err
+		}
+
+		si.Cmds = data.Strings("cmds")
+		si.Vars = data.StringMap("vars")
+		si.Env = data.StringMap("env")
+	default:
+		return nil, errorx.Rawf("invalid config of the script %q", name)
+	}
+
+	si.WithFallbackType(fbType)
+	return si, nil
 }
 
 var argReg = regexp.MustCompile(`\$\d{1,2}`)
@@ -73,11 +107,12 @@ func (si *ScriptInfo) IsDefined() bool {
 	return si.File == ""
 }
 
-// InitType on not set
-func (si *ScriptInfo) InitType(typ string) {
+// WithFallbackType on not set
+func (si *ScriptInfo) WithFallbackType(typ string) *ScriptInfo {
 	if si.Type == "" {
 		si.Type = typ
 	}
+	return si
 }
 
 // args type: string, strings

@@ -116,7 +116,11 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 	if runOpts.script {
 		c.Infof("TIP: will direct run %q as script name (by --script)\n", name)
 
-		// TODO search ...
+		if runOpts.search {
+			ret := app.Scripts.Search(name, args, 10)
+			show.AList("Results of search:", ret)
+			return nil
+		}
 
 		if runOpts.verbose {
 			ctx.BeforeFn = func(si *kscript.ScriptInfo, ctx *kscript.RunCtx) {

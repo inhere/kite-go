@@ -8,7 +8,7 @@ import (
 	"github.com/gookit/config/v2/ini"
 	"github.com/gookit/config/v2/toml"
 	"github.com/gookit/config/v2/yaml"
-	"github.com/gookit/goutil/arrutil"
+	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/maputil"
@@ -39,8 +39,6 @@ type Runner struct {
 	TypeShell string `json:"type_shell"`
 	// ParseEnv var on script command
 	ParseEnv bool `json:"parse_env"`
-	// Aliases script name aliases map
-	Aliases map[string]string `json:"aliases"`
 
 	// ScriptDirs script file dirs, allow multi
 	ScriptDirs []string `json:"script_dirs"`
@@ -70,10 +68,6 @@ type Runner struct {
 
 // InitLoad define scripts and script files.
 func (r *Runner) InitLoad() error {
-	if len(r.Aliases) > 0 {
-		// TODO format
-	}
-
 	if err := r.LoadDefineScripts(); err != nil {
 		return err
 	}
@@ -145,8 +139,33 @@ func (r *Runner) LoadScriptFiles() error {
 }
 
 // Search by name
-func (r *Runner) Search(name string, ctx *RunCtx) error {
-	return nil
+func (r *Runner) Search(name string, args []string, limit int) map[string]string {
+	result := make(map[string]string)
+	limit = mathutil.Min(limit, 3)
+	goutil.MustOK(r.InitLoad())
+
+	// TODO use args for limit search
+
+	for sName, sInfo := range r.Scripts {
+		if strutil.IContains(sName, name) {
+			result[sName] = strutil.Truncate(goutil.String(sInfo), 48, "...")
+			if limit > 0 && len(result) >= limit {
+				return result
+			}
+		}
+	}
+
+	// search script files
+	for fName, fPath := range r.scriptFiles {
+		if strutil.IContains(fName, name) {
+			result[fName] = fPath
+			if limit > 0 && len(result) >= limit {
+				return result
+			}
+		}
+	}
+
+	return result
 }
 
 /*
@@ -356,36 +375,7 @@ func (r *Runner) ScriptDefineInfo(name string) (*ScriptInfo, error) {
 	if !ok {
 		return nil, nil // not found TODO ErrNotFund
 	}
-	return r.newDefinedScriptInfo(name, info)
-}
-
-func (r *Runner) newDefinedScriptInfo(name string, info any) (*ScriptInfo, error) {
-	si := &ScriptInfo{Name: name}
-
-	switch typVal := info.(type) {
-	case string: // on command
-		si.Cmds = []string{typVal}
-	case []any: // as commands
-		si.Cmds = arrutil.SliceToStrings(typVal)
-	case map[string]any: // as structured
-		data := maputil.Data(typVal)
-		si.Type = data.Str("type")
-		si.Desc = data.Str("desc")
-		si.Workdir = data.Str("workdir")
-
-		err := si.loadArgsDefine(data.Get("args"))
-		if err != nil {
-			return nil, err
-		}
-
-		si.Cmds = data.Strings("cmds")
-		si.Env = data.StringMap("env")
-	default:
-		return nil, errorx.Rawf("invalid config of the script %q", name)
-	}
-
-	si.InitType(r.TypeShell)
-	return si, nil
+	return newDefinedScriptInfo(name, info, r.TypeShell)
 }
 
 // ScriptFileInfo info get
