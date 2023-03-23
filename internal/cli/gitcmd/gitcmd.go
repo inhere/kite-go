@@ -72,7 +72,7 @@ func SubCmdNotFound(ctx *gcli.HookCtx) (stop bool) {
 	}
 
 	stop = true
-	err := cmdr.NewGitCmd(name, args...).ToOSStdout().Run()
+	err := cmdr.NewGitCmd(name, args...).PrintCmdline().ToOSStdout().Run()
 	if err != nil {
 		ee, ok := err.(*exec.ExitError)
 		if ok && ee.ProcessState != nil {

@@ -7,7 +7,6 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/gcli/v3/show"
-	"github.com/gookit/gitw"
 	"github.com/gookit/gitw/gitutil"
 	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/strutil"
@@ -147,7 +146,7 @@ func acpHandleFunc(c *gcli.Command, args []string, cfg *gitx.Config) error {
 		show.AList("Command settings", cmdConf)
 	}
 
-	gr := gitw.NewRepo(acpOpts.Workdir)
+	lp := cfg.LoadRepo(acpOpts.Workdir)
 	rr := cmdutil.NewRunner(func(rr *cmdutil.Runner) {
 		rr.DryRun = acpOpts.DryRun
 		rr.Confirm = acpOpts.Confirm
@@ -160,11 +159,18 @@ func acpHandleFunc(c *gcli.Command, args []string, cfg *gitx.Config) error {
 		rr.GitCmd("status").GitCmd("add", ".")
 	}
 
-	message := acpOpts.buildMsg(cmdConf.Str("template"), gr.CurBranchName())
+	branch := lp.CurBranchName()
+	message := acpOpts.buildMsg(cmdConf.Str("template"), branch)
 	rr.GitCmd("commit", "-m", message)
 
 	if runPush {
-		rr.GitCmd("push")
+		// eg: git push --set-upstream origin master
+		if !lp.HasOriginBranch(branch) {
+			rr.GitCmd("push", "--set-upstream", lp.DefaultRemote, branch)
+		} else {
+			rr.GitCmd("push")
+
+		}
 	}
 	return rr.Run()
 }
