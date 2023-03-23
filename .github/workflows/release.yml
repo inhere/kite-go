@@ -16,12 +16,13 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+      - run: git fetch --force --tags
 
       - name: Setup Go Faster
         uses: WillAbides/setup-go-faster@v1.8.0
         timeout-minutes: 3
         with:
-          go-version: 1.19
+          go-version: 1.20
 
       - name: Setup ENV
         # https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
@@ -33,6 +34,14 @@ jobs:
         run: |
           go install github.com/gookit/gitw/cmd/chlog@latest
           chlog -config .github/changelog.yml -output changelog.md prev last
+
+      - uses: goreleaser/goreleaser-action@v4
+        with:
+          distribution: goreleaser
+          version: latest
+          args: release --clean --config .github/goreleaser.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build bin packages
         run: make build-all
