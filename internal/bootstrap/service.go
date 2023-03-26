@@ -10,6 +10,7 @@ import (
 	"github.com/inhere/kite-go/pkg/httptpl"
 	"github.com/inhere/kite-go/pkg/kiteext"
 	"github.com/inhere/kite-go/pkg/kscript"
+	"github.com/inhere/kite-go/pkg/quickjump"
 )
 
 // addServiceBoot handle
@@ -110,4 +111,15 @@ func addServiceBoot(ka *app.KiteApp) {
 		return nil
 	})
 
+	ka.AddBootFuncs(func(ka *app.KiteApp) error {
+		app.QJump = quickjump.NewQuickJump()
+		app.QJump.PathResolve = apputil.ResolvePath
+
+		err := app.Cfg().MapOnExists("quick_jump", app.QJump)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
 }

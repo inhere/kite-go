@@ -13,6 +13,7 @@ import (
 	"github.com/inhere/kite-go/pkg/kiteext"
 	"github.com/inhere/kite-go/pkg/kscript"
 	"github.com/inhere/kite-go/pkg/lcproxy"
+	"github.com/inhere/kite-go/pkg/quickjump"
 )
 
 const (
@@ -45,6 +46,8 @@ var (
 
 	Scripts *kscript.Runner
 	Plugins *kiteext.PluginRunner
+
+	QJump *quickjump.QuickJump
 
 	// PathMap data
 	PathMap *kiteext.PathMap
