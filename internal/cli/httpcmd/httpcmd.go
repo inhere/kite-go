@@ -14,6 +14,7 @@ var HttpCmd = &gcli.Command{
 		SendRequestCmd,
 		SendTemplateCmd,
 		TemplateInfoCmd,
+		DecodeQueryCmd,
 		NewEchoServerCmd(),
 		NewFileServerCmd(),
 	},

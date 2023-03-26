@@ -3,6 +3,7 @@
 .DS_Store
 .env
 *.prof
+*.log
 #build exe files
 /htu
 /kit

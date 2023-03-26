@@ -7,10 +7,12 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/gcli/v3/show"
+	"github.com/gookit/gitw"
 	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/errorx"
+	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/netutil/httpreq"
 	"github.com/gookit/goutil/stdio"
@@ -27,6 +29,7 @@ var stOpts = struct {
 	tplName  string
 	userVars gflag.KVString
 	verbose  gcli.VerbLevel
+	plugins  gflag.String
 }{
 	userVars: cflag.NewKVString(),
 }
@@ -40,6 +43,10 @@ var SendTemplateCmd = &gcli.Command{
 ## Examples
 
 {$fullCmd} -d gitlab --api api-build.json5 -e prod -v name=order
+
+## use variable in template
+
+{$fullCmd} -d gitlab --plug git,fs --api api-build.json5 -e prod -v group={{git.group}} -v repoName={{git.repo}}
 `,
 	Config: func(c *gcli.Command) {
 		c.StrOpt2(&stOpts.envName, "env, e", "sets env name for run template")
@@ -47,6 +54,7 @@ var SendTemplateCmd = &gcli.Command{
 		c.StrOpt2(&stOpts.domain, "domain, d", "the domain or topic name")
 		c.StrOpt2(&stOpts.hcFile, "http-file, hc-file, hcf", "the ide http client file name or path")
 		c.StrOpt2(&stOpts.tplName, "tpl-name, api", "the API template name or file name")
+		c.VarOpt2(&stOpts.plugins, "plugin,plug", "enable some plugins on exec request. allow:git,fs\ne.g. --plugin=plugin1,plugin2")
 		c.VarOpt2(&stOpts.userVars, "vars, var, v", "custom sets some variables on request. format: `KEY=VALUE`")
 
 		// todo: loop query, send topic, send by template
@@ -76,6 +84,31 @@ var SendTemplateCmd = &gcli.Command{
 			vs.LoadSMap(uv)
 		}
 
+		if len(stOpts.plugins) > 0 {
+			wDir := c.WorkDir()
+			names := stOpts.plugins.Strings()
+			for _, name := range names {
+				switch name {
+				case "fs":
+					vs.LoadSMap(map[string]string{
+						"fs.dir":  fsutil.Name(wDir),
+						"fs.path": wDir,
+					})
+				case "git":
+					if gitw.IsGitDir(wDir) {
+						lp := gitw.NewRepo(wDir)
+						if ri := lp.FirstRemoteInfo(); ri != nil {
+							vs.LoadSMap(map[string]string{
+								"git.group":    ri.Group,
+								"git.repo":     ri.Repo,
+								"git.repoPath": ri.RepoPath(),
+							})
+						}
+					}
+				}
+			}
+		}
+
 		if len(vs) > 0 {
 			// c.Infof("send request without some variables")
 			show.AList("Variables:", vs)
@@ -86,7 +119,9 @@ var SendTemplateCmd = &gcli.Command{
 		t.BeforeSend = func(r *http.Request) {
 			cliutil.Yellowln("REQUEST:")
 			cliutil.Greenf("%s %s\n\n", r.Method, r.URL.String())
-			fmt.Println(httpreq.HeaderToString(r.Header))
+			if len(r.Header) > 0 {
+				fmt.Println(httpreq.HeaderToString(r.Header))
+			}
 		}
 
 		if err := t.Send(vs, dc.Header); err != nil {
