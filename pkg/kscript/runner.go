@@ -291,6 +291,21 @@ func (r *Runner) runDefineScript(si *ScriptInfo, inArgs []string, ctx *RunCtx) e
 	shell := strutil.OrElse(ctx.Type, si.Type)
 	workdir := strutil.OrElse(ctx.Workdir, si.Workdir)
 
+	// build context vars
+	argStr := strings.Join(inArgs, " ")
+	vars := map[string]string{
+		// 是一个字符串参数数组
+		"$@": argStr,
+		"$*": strutil.Quote(argStr), // 把所有参数合并成一个字符串
+		// context info
+		"$workdir": workdir,
+	}
+
+	for i, val := range inArgs {
+		key := "$" + mathutil.String(i+1)
+		vars[key] = val
+	}
+
 	// exec each command
 	for _, line := range si.Cmds {
 		if len(line) == 0 {
@@ -315,7 +330,7 @@ func (r *Runner) runDefineScript(si *ScriptInfo, inArgs []string, ctx *RunCtx) e
 			continue
 		}
 
-		line = r.handleCmdline(line, inArgs, si)
+		line = r.handleCmdline(line, vars, si)
 
 		var cmd *cmdr.Cmd
 		if shell != "" {
@@ -338,20 +353,7 @@ func (r *Runner) runDefineScript(si *ScriptInfo, inArgs []string, ctx *RunCtx) e
 }
 
 // process vars and env
-func (r *Runner) handleCmdline(line string, args []string, si *ScriptInfo) string {
-	argStr := strings.Join(args, " ")
-	vars := map[string]string{
-		"$@": argStr,                // 是一个字符串参数数组
-		"$*": strutil.Quote(argStr), // 把所有参数合并成一个字符串
-		// context info
-		"$workdir": si.Workdir,
-	}
-
-	for i, val := range args {
-		key := "$" + mathutil.String(i+1)
-		vars[key] = val
-	}
-
+func (r *Runner) handleCmdline(line string, vars map[string]string, si *ScriptInfo) string {
 	line = strutil.Replaces(line, vars)
 
 	// eg: $SHELL

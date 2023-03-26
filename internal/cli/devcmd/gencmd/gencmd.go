@@ -16,9 +16,9 @@ import (
 // CodeGenCmd instance
 var CodeGenCmd = &gcli.Command{
 	Name: "cgen",
-	Desc: "code generate",
+	Desc: "quickly code generate",
 	Subs: []*gcli.Command{
-		ParseTemplate,
+		ParseTemplateCmd,
 	},
 }
 
@@ -26,7 +26,8 @@ var genOpts = struct {
 	tpl string
 }{}
 
-var ParseTemplate = &gcli.Command{
+// ParseTemplateCmd instance
+var ParseTemplateCmd = &gcli.Command{
 	Name: "parse",
 	Desc: "parse template for generate code",
 	Func: func(c *gcli.Command, args []string) error {
