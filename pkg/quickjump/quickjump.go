@@ -3,6 +3,7 @@ package quickjump
 import (
 	"runtime"
 
+	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/jsonutil"
 	"github.com/gookit/goutil/strutil"
@@ -11,6 +12,24 @@ import (
 	"github.com/gookit/slog"
 	"github.com/inhere/kite-go/pkg/common"
 )
+
+const (
+	ShellBash = "bash"
+	ShellZsh  = "zsh"
+	ShellFish = "fish" // TODO
+)
+
+// ShellTplMap shell templates
+var ShellTplMap = map[string]string{
+	ShellBash: JumpBashTpl,
+	ShellZsh:  JumpZshTpl,
+}
+
+// IsSupported check shell name is supported
+func IsSupported(name string) bool {
+	_, ok := ShellTplMap[name]
+	return ok
+}
 
 // QuickJump struct
 type QuickJump struct {
@@ -29,7 +48,8 @@ type QuickJump struct {
 // NewQuickJump new quick jump instance
 func NewQuickJump() *QuickJump {
 	return &QuickJump{
-		Metadata: NewMetadata(),
+		Metadata:   NewMetadata(),
+		CheckExist: true,
 		PathResolver: common.PathResolver{
 			PathResolve: fsutil.ResolvePath,
 		},
@@ -140,17 +160,58 @@ func (m *Metadata) Match(name string) string {
 	return ""
 }
 
+// SearchNamed named paths
+func (m *Metadata) SearchNamed(keywords []string, limit int, withName bool) []string {
+	var paths []string
+	for name, dirPath := range m.NamedPaths {
+		if arrutil.StringsHas(keywords, name) || strutil.ContainsAll(dirPath, keywords) {
+			if withName {
+				paths = append(paths, name+":"+dirPath)
+			} else {
+				paths = append(paths, dirPath)
+			}
+
+			if limit > 0 && len(paths) >= limit {
+				break
+			}
+		}
+	}
+
+	return paths
+}
+
+// SearchHistory named paths
+func (m *Metadata) SearchHistory(keywords []string, limit int) []string {
+	var paths []string
+
+	for _, dirPath := range m.Histories {
+		if strutil.ContainsAll(dirPath, keywords) {
+			paths = append(paths, dirPath)
+			if limit > 0 && len(paths) >= limit {
+				return paths
+			}
+		}
+	}
+
+	return paths
+}
+
 // SearchByString search named paths and history paths
-func (m *Metadata) SearchByString(keywords string, limit int) []string {
-	return m.Search(strutil.Split(keywords, " "), limit)
+func (m *Metadata) SearchByString(keywords string, limit int, withName bool) []string {
+	return m.Search(strutil.Split(keywords, " "), limit, withName)
 }
 
 // Search named paths and history paths
-func (m *Metadata) Search(keywords []string, limit int) []string {
+func (m *Metadata) Search(keywords []string, limit int, withName bool) []string {
 	var paths []string
-	for _, dirPath := range m.NamedPaths {
-		if strutil.ContainsAll(dirPath, keywords) {
-			paths = append(paths, dirPath)
+	for name, dirPath := range m.NamedPaths {
+		if arrutil.StringsHas(keywords, name) || strutil.ContainsAll(dirPath, keywords) {
+			if withName {
+				paths = append(paths, name+":"+dirPath)
+			} else {
+				paths = append(paths, dirPath)
+			}
+
 			if limit > 0 && len(paths) >= limit {
 				return paths
 			}

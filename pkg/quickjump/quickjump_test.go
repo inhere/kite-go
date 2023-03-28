@@ -24,7 +24,7 @@ func TestQuickJump_Save(t *testing.T) {
 	})
 	assert.Eq(t, "/path3/to/sub3", qj.Match("name3"))
 
-	ss := qj.Search([]string{"path3", "home"}, 3)
+	ss := qj.Search([]string{"path3", "home"}, 3, true)
 	assert.NotEmpty(t, ss)
 	assert.Len(t, ss, 1)
 	assert.Eq(t, "/path3/to/home", ss[0])

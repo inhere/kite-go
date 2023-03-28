@@ -1,12 +1,17 @@
 package toolcmd
 
 import (
+	"strings"
+
 	"github.com/gookit/color/colorp"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/gcli/v3/show"
-	"github.com/gookit/goutil/errorx"
+	"github.com/gookit/goutil/dump"
+	"github.com/gookit/goutil/stdio"
+	"github.com/gookit/goutil/sysutil"
 	"github.com/inhere/kite-go/internal/app"
+	"github.com/inhere/kite-go/pkg/quickjump"
 )
 
 // AutoJumpCmd command
@@ -39,19 +44,22 @@ var AutoJumpListCmd = &gcli.Command{
 		c.AddArg("type", "the jump info type name. allow: prev,last,history,all")
 	},
 	Func: func(c *gcli.Command, _ []string) error {
-		show.MList(app.QJump)
+		colorp.Infof("Jump storage datafile: %s\n", app.QJump.Datafile())
+		colorp.Greenln("Jump storage data in local:")
+		dump.P(app.QJump.Metadata)
+		show.MList(app.QJump.Metadata)
 		return nil
 	},
 }
 
 var jsOpts = struct {
-	Bind string `flag:"set the bind func name;false;$SHELL"`
+	Bind string `flag:"set the bind func name;false;jump;func"`
 }{}
 
 // AutoJumpShellCmd command
 var AutoJumpShellCmd = &gcli.Command{
 	Name:    "shell",
-	Aliases: []string{"active"},
+	Aliases: []string{"active", "script"},
 	Desc:    "Generate shell script for give shell env name.",
 	Help: `
   Enable quick jump for bash(add to <mga>~/.bashrc</>):
@@ -65,14 +73,35 @@ Enable quick jump for zsh(add to <mga>~/.zshrc</>):
     <mga>eval "$(kite tool jump shell --bind j zsh)"</>
 `,
 	Config: func(c *gcli.Command) {
-		c.UseSimpleRule()
-		c.MustFromStruct(&jsOpts)
+		c.MustFromStruct(&jsOpts, gflag.TagRuleSimple)
 		c.AddArg("shell", "The shell name. eg: bash, zsh, fish, etc.")
 	},
 	Func: func(c *gcli.Command, _ []string) error {
-		return errorx.New("TODO")
+		shellName := c.Arg("shell").String()
+		if shellName == "" {
+			shellName = sysutil.CurrentShell(true)
+		}
+
+		if !quickjump.IsSupported(shellName) {
+			colorp.Redf("The shell %q is not supported yet!\n", shellName)
+			return nil
+		}
+
+		script, err := quickjump.GenScript(shellName, jsOpts.Bind)
+		if err != nil {
+			return err
+		}
+
+		stdio.WriteString(script)
+		return nil
 	},
 }
+
+var ajmOpts = struct {
+	OnlyPath bool `flag:"only-path;only show the path, dont with name"`
+	Limit    int  `flag:"limit the match count;false;10"`
+	Scope    int  `flag:"scopes for search, allow: 0=match all,1=from named,2=from history;false;0"`
+}{}
 
 // AutoJumpMatchCmd command
 var AutoJumpMatchCmd = &gcli.Command{
@@ -80,10 +109,34 @@ var AutoJumpMatchCmd = &gcli.Command{
 	Aliases: []string{"hint", "search"},
 	Desc:    "Match directory paths by given keywords",
 	Config: func(c *gcli.Command) {
-
+		c.MustFromStruct(&ajmOpts, gflag.TagRuleSimple)
+		c.AddArg("keywords", "The keywords to match", true, false)
 	},
 	Func: func(c *gcli.Command, _ []string) error {
-		return errorx.New("TODO")
+		var results []string
+		keywords := c.Arg("keywords").SplitToStrings(" ")
+
+		// from named
+		if ajmOpts.Scope == 1 {
+			results = app.QJump.SearchNamed(keywords, ajmOpts.Limit, !ajmOpts.OnlyPath)
+		} else if ajmOpts.Scope == 2 {
+			results = app.QJump.SearchHistory(keywords, ajmOpts.Limit)
+		} else {
+			results = app.QJump.Search(keywords, ajmOpts.Limit, !ajmOpts.OnlyPath)
+		}
+
+		var sb strings.Builder
+		matchNum := len(results)
+
+		for i, dirPath := range results {
+			sb.WriteString(dirPath)
+			if matchNum != i+1 {
+				sb.WriteByte('\n')
+			}
+		}
+
+		stdio.WriteString(sb.String())
+		return nil
 	},
 }
 
@@ -93,10 +146,14 @@ var AutoJumpGetCmd = &gcli.Command{
 	Aliases: []string{"path"},
 	Desc:    "Get the real directory path by given name.",
 	Config: func(c *gcli.Command) {
-
+		// TODO empty use workdir
+		c.AddArg("name", "The target directory name or path.", true)
 	},
 	Func: func(c *gcli.Command, _ []string) error {
-		return errorx.New("TODO")
+		name := c.Arg("name").String()
+		dirPath := app.QJump.Match(name)
+		stdio.WriteString(dirPath)
+		return nil
 	},
 }
 
@@ -114,7 +171,7 @@ var AutoJumpSetCmd = &gcli.Command{
 		path := c.Arg("path").String()
 
 		if app.QJump.AddNamed(name, path) {
-			colorp.Successf("Set jump name %q to path %q success\n", name, path)
+			colorp.Successf("Set jump name %q to path %q\n", name, path)
 		} else {
 			colorp.Warnln("Set jump name %q to path %q failed", name, path)
 		}
@@ -131,7 +188,7 @@ var ajcOpts = struct {
 var AutoJumpChdirCmd = &gcli.Command{
 	Name:    "chdir",
 	Aliases: []string{"into", "to"},
-	Desc:    "add target directory path to history, by the jump dir hooks.",
+	Desc:    "add directory path to history, by the jump dir hooks.",
 	Config: func(c *gcli.Command) {
 		c.MustFromStruct(&ajcOpts, gflag.TagRuleSimple)
 		c.AddArg("path", "The real directory path", true)
@@ -140,9 +197,14 @@ var AutoJumpChdirCmd = &gcli.Command{
 		path := c.Arg("path").String()
 
 		if app.QJump.AddHistory(path) {
-
+			app.L.Infof("Add jump path %q success", path)
+			if !ajcOpts.Quiet {
+				colorp.Successf("Add jump path %q success\n", path)
+			}
+		} else {
+			colorp.Warnf("Add jump path %q failed", path)
 		}
 
-		return errorx.New("TODO")
+		return nil
 	},
 }
