@@ -1,6 +1,7 @@
 package httptpl
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"io"
@@ -53,9 +54,11 @@ type Template struct {
 	Form maputil.Map `json:"form"`
 	// BodyFile will read file contents as body
 	BodyFile string `json:"body_file"`
+	// body buffer on build request
+	bodyBuf *bytes.Buffer
 
 	// BeforeSend hook
-	BeforeSend func(r *http.Request)
+	BeforeSend func(r *http.Request, body *bytes.Buffer)
 
 	// Resp http response data check
 	Resp *httpreq.Resp `json:"response"`
@@ -108,7 +111,7 @@ func (t *Template) Send(vars maputil.Data, hs map[string]string) error {
 
 	opt := &httpreq.ReqOption{}
 	if t.BeforeSend != nil {
-		t.BeforeSend(req)
+		t.BeforeSend(req, t.bodyBuf)
 	}
 
 	// send request
@@ -218,11 +221,13 @@ func (t *Template) BuildRequestBody(vars maputil.Data) (io.Reader, error) {
 
 	if len(data) > 0 {
 		data = rpl.Replace(data, vars)
-
 		if len(rpl.MissVars()) > 0 {
 			return nil, errorx.Rawf("input missing variables %v", rpl.MissVars())
 		}
-		return strings.NewReader(data), nil
+
+		t.bodyBuf = new(bytes.Buffer)
+		t.bodyBuf.WriteString(data)
+		return t.bodyBuf, nil
 	}
 	return nil, nil
 }

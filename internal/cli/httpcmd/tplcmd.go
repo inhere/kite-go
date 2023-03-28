@@ -1,6 +1,7 @@
 package httpcmd
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 
@@ -116,11 +117,15 @@ var SendTemplateCmd = &gcli.Command{
 			c.Infof("Send request without any variables \n")
 		}
 
-		t.BeforeSend = func(r *http.Request) {
+		t.BeforeSend = func(r *http.Request, b *bytes.Buffer) {
 			cliutil.Yellowln("REQUEST:")
 			cliutil.Greenf("%s %s\n\n", r.Method, r.URL.String())
 			if len(r.Header) > 0 {
 				fmt.Println(httpreq.HeaderToString(r.Header))
+			}
+
+			if b != nil && b.Len() > 0 {
+				fmt.Println(b.String())
 			}
 		}
 
