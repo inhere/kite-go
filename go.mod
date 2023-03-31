@@ -11,7 +11,7 @@ require (
 	github.com/go-openapi/swag v0.22.3
 	github.com/goccy/go-yaml v1.10.1
 	github.com/gomarkdown/markdown v0.0.0-20230313173142-2ced44d5b584
-	github.com/gookit/color v1.5.2
+	github.com/gookit/color v1.5.3
 	github.com/gookit/config/v2 v2.2.1
 	github.com/gookit/event v1.0.6
 	github.com/gookit/gcli/v3 v3.2.1
