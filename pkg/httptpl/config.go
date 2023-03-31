@@ -224,14 +224,16 @@ func (d *DomainConfig) BuildVars(envName, envFile string) (maputil.Data, error) 
 	}
 
 	// load env vars
-	if envFile != "" {
-		em, err := LoadEnvsByFile(d.PathResolver(envFile))
-		if err != nil {
-			return nil, err
+	if envName != "" {
+		if envFile != "" {
+			em, err := LoadEnvsByFile(d.PathResolver(envFile))
+			if err != nil {
+				return nil, err
+			}
+			vs.Load(em[envName])
+		} else if ev, ok := d.LookupVars(envName); ok {
+			vs.Load(ev)
 		}
-		vs.Load(em[envName])
-	} else if ev, ok := d.LookupVars(envName); ok {
-		vs.Load(ev)
 	}
 
 	return vs, nil

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 
@@ -51,7 +52,7 @@ type Template struct {
 	// JSON body data, will auto add content type
 	JSON any `json:"json"`
 	// Form body data, will auto add content type
-	Form maputil.Map `json:"form"`
+	Form map[string]any `json:"form"`
 	// BodyFile will read file contents as body
 	BodyFile string `json:"body_file"`
 	// body buffer on build request
@@ -100,7 +101,9 @@ func (t *Template) FromHCString(s string) error {
 	return nil
 }
 
-var rpl = textutil.NewVarReplacer("{{,}}").WithParseEnv().DisableFlatten()
+var rpl = textutil.NewVarReplacer("{{,}}", func(vp *textutil.VarReplacer) {
+	vp.WithParseEnv().WithParseDefault().DisableFlatten().KeepMissingVars()
+})
 
 // Send request with variables
 func (t *Template) Send(vars maputil.Data, hs map[string]string) error {
@@ -126,20 +129,26 @@ func (t *Template) Send(vars maputil.Data, hs map[string]string) error {
 
 // BuildRequest instance
 func (t *Template) BuildRequest(vars maputil.Data, hs map[string]string) (*http.Request, error) {
+	rpl.ResetMissVars()
+
 	// build URL
-	url := t.URL
+	apiUrl := rpl.Replace(t.URL, vars)
 	if len(t.Query) > 0 {
-		q := httpreq.ToQueryValues(t.Query)
-		if strings.ContainsRune(url, '?') {
-			url += "&" + q.Encode()
+		q := make(url.Values)
+		for k, v := range t.Query {
+			strV := strutil.SafeString(v)
+			q.Set(k, rpl.Replace(strV, vars))
+		}
+
+		if strings.ContainsRune(apiUrl, '?') {
+			apiUrl += "&" + q.Encode()
 		} else {
-			url += "?" + q.Encode()
+			apiUrl += "?" + q.Encode()
 		}
 	}
 
-	url = rpl.Replace(url, vars)
-	if len(rpl.MissVars()) > 0 {
-		return nil, errorx.Rawf("input missing variables %v", rpl.MissVars())
+	if missVars := rpl.MissVars(); len(missVars) > 0 {
+		return nil, errorx.Rawf("input missing variables %v", missVars)
 	}
 
 	// build body
@@ -149,7 +158,7 @@ func (t *Template) BuildRequest(vars maputil.Data, hs map[string]string) (*http.
 	}
 
 	// create request
-	r, err := http.NewRequest(t.Method, url, body)
+	r, err := http.NewRequest(t.Method, apiUrl, body)
 	if err != nil {
 		return nil, err
 	}
@@ -178,10 +187,7 @@ func (t *Template) BuildRequestBody(vars maputil.Data) (io.Reader, error) {
 
 	var data string
 
-	if t.Form != nil {
-		data = httpreq.ToQueryValues(t.Form).Encode()
-		t.Header[httpctype.Key] = httpctype.Form
-	} else if t.JSON != nil {
+	if t.JSON != nil {
 		bs, err := json.Marshal(t.JSON)
 		if err != nil {
 			return nil, err
@@ -189,6 +195,9 @@ func (t *Template) BuildRequestBody(vars maputil.Data) (io.Reader, error) {
 
 		data = byteutil.String(bs)
 		t.Header[httpctype.Key] = httpctype.JSON
+	} else if len(t.Form) > 0 {
+		data = httpreq.ToQueryValues(t.Form).Encode()
+		t.Header[httpctype.Key] = httpctype.Form
 	} else if t.BodyFile != "" {
 		bs, err := os.ReadFile(t.BodyFile)
 		if err != nil {

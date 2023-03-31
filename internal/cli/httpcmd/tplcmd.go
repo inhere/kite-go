@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/gookit/color/colorp"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/gcli/v3/show"
@@ -114,7 +115,7 @@ var SendTemplateCmd = &gcli.Command{
 			// c.Infof("send request without some variables")
 			show.AList("Variables:", vs)
 		} else {
-			c.Infof("Send request without any variables \n")
+			c.Infoln("Send template request without any variables")
 		}
 
 		t.BeforeSend = func(r *http.Request, b *bytes.Buffer) {
@@ -127,6 +128,7 @@ var SendTemplateCmd = &gcli.Command{
 			if b != nil && b.Len() > 0 {
 				fmt.Println(b.String())
 			}
+			colorp.Cyanln("\n-------------------------------------------------------------------------\n", "")
 		}
 
 		if err := t.Send(vs, dc.Header); err != nil {
