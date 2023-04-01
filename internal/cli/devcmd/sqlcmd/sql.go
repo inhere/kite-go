@@ -8,6 +8,7 @@ var SQLToolCmd = &gcli.Command{
 	Desc: "SQL tools",
 	Subs: []*gcli.Command{
 		Conv2Mkdown,
-		Conv2Struct,
+		Conv2StructCmd,
+		Conv2JSONCmd,
 	},
 }
