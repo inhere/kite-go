@@ -120,6 +120,6 @@ func addServiceBoot(ka *app.KiteApp) {
 			return err
 		}
 
-		return nil
+		return app.QJump.Init()
 	})
 }

@@ -85,14 +85,14 @@ build: $(GO_DEPENDENCIES) clean ## Build jx-labs binary for current OS
 	CGO_ENABLED=$(CGO_ENABLED) $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME) $(MAIN_SRC_FILE)
 
 install: $(GO_DEPENDENCIES) ## Install the kite binary to gopath/bin
-	GOBIN=${GOPATH}/bin $(GO) install $(BUILDFLAGS) $(MAIN_SRC_FILE)
+	GOBIN=${GOPATH}/bin $(GO) install $(BUILDFLAGS) ./cmd/kite
 	@ls -alh ${GOPATH}/bin/kite
 
 install2: $(GO_DEPENDENCIES) ## Install the kit binary to gopath/bin
 	go build $(BUILDFLAGS) -o $(GOPATH)/bin/kit ./cmd/kite
 	@ls -alh ${GOPATH}/bin/kit
 
-install3: install2 win linux ## Build for local and Linux and Windows then copy to Windows(Local dev)
+install3: install win linux ## Build for local and Linux and Windows then copy to Windows(Local dev)
 	cp -f build/kite-windows-amd64.exe /Volumes/inhere-win/Users/inhere/bin/kite.exe
 	cp -f build/kite-linux-amd64 /Volumes/inhere-win/Users/inhere/bin/kite
 

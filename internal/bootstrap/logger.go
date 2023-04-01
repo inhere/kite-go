@@ -12,6 +12,7 @@ func BootLogger(ka *app.KiteApp) error {
 	// output log to file
 	logger := slog.New()
 	logger.CallerFlag = slog.CallerFlagFull
+	app.L = logger
 	app.Add(app.ObjLog, logger)
 
 	confMap := app.Cfg().SubDataMap(app.ObjLog)

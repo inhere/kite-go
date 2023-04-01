@@ -22,6 +22,7 @@ var ManageCmd = &gcli.Command{
 		KiteAliasCmd,
 		BackendServeCmd,
 		CommandMapCmd,
+		LogWriteCmd,
 	},
 }
 
