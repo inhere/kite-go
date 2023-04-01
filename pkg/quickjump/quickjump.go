@@ -41,6 +41,10 @@ type QuickJump struct {
 	DataDir string `json:"data_dir"`
 	// CheckExist check path is exists
 	CheckExist bool `json:"check_exist"`
+	// SlashPath if true, will replace the path separator to slash
+	//
+	// - Useful on Windows
+	SlashPath bool `json:"slash_path"`
 	// NamedPaths pre-define named paths
 	NamedPaths map[string]string `json:"named_paths"`
 }
@@ -49,6 +53,7 @@ type QuickJump struct {
 func NewQuickJump() *QuickJump {
 	return &QuickJump{
 		Metadata:   NewMetadata(),
+		SlashPath:  true,
 		CheckExist: true,
 		PathResolver: common.PathResolver{
 			PathResolve: fsutil.ResolvePath,
@@ -64,6 +69,7 @@ func (j *QuickJump) Init() error {
 
 	j.init = true
 	j.checkExist = j.CheckExist
+	j.slashPath = j.SlashPath
 	j.changedHook = func() {
 		slog.ErrorT(j.saveToFile())
 	}
@@ -121,6 +127,7 @@ type Metadata struct {
 	NamedPaths map[string]string `json:"named_paths"`
 	Histories  map[string]string `json:"histories"`
 
+	slashPath   bool
 	checkExist  bool
 	changedHook func()
 }
@@ -152,10 +159,9 @@ func (m *Metadata) Match(name string) string {
 		return dirPath
 	}
 
-	for _, dirPath := range m.Histories {
-		if strutil.IContains(dirPath, name) {
-			return dirPath
-		}
+	ss := m.SearchByString(name, 1, false)
+	if len(ss) > 0 {
+		return ss[0]
 	}
 	return ""
 }
@@ -163,8 +169,10 @@ func (m *Metadata) Match(name string) string {
 // SearchNamed named paths
 func (m *Metadata) SearchNamed(keywords []string, limit int, withName bool) []string {
 	var paths []string
+	noKw := len(keywords) == 0
+
 	for name, dirPath := range m.NamedPaths {
-		if arrutil.StringsHas(keywords, name) || strutil.ContainsAll(dirPath, keywords) {
+		if noKw || arrutil.StringsHas(keywords, name) || strutil.ContainsAll(dirPath, keywords) {
 			if withName {
 				paths = append(paths, name+":"+dirPath)
 			} else {
@@ -183,9 +191,10 @@ func (m *Metadata) SearchNamed(keywords []string, limit int, withName bool) []st
 // SearchHistory named paths
 func (m *Metadata) SearchHistory(keywords []string, limit int) []string {
 	var paths []string
+	noKw := len(keywords) == 0
 
 	for _, dirPath := range m.Histories {
-		if strutil.ContainsAll(dirPath, keywords) {
+		if noKw || strutil.ContainsAll(dirPath, keywords) {
 			paths = append(paths, dirPath)
 			if limit > 0 && len(paths) >= limit {
 				return paths
@@ -204,8 +213,10 @@ func (m *Metadata) SearchByString(keywords string, limit int, withName bool) []s
 // Search named paths and history paths
 func (m *Metadata) Search(keywords []string, limit int, withName bool) []string {
 	var paths []string
+	noKw := len(keywords) == 0
+
 	for name, dirPath := range m.NamedPaths {
-		if arrutil.StringsHas(keywords, name) || strutil.ContainsAll(dirPath, keywords) {
+		if noKw || arrutil.StringsHas(keywords, name) || strutil.ContainsAll(dirPath, keywords) {
 			if withName {
 				paths = append(paths, name+":"+dirPath)
 			} else {
@@ -219,7 +230,7 @@ func (m *Metadata) Search(keywords []string, limit int, withName bool) []string 
 	}
 
 	for _, dirPath := range m.Histories {
-		if strutil.ContainsAll(dirPath, keywords) {
+		if noKw || strutil.ContainsAll(dirPath, keywords) {
 			paths = append(paths, dirPath)
 			if limit > 0 && len(paths) >= limit {
 				return paths
@@ -247,6 +258,9 @@ func (m *Metadata) addNamed(name string, pathStr string) (ok bool) {
 		}
 
 		ok = true
+		if m.slashPath {
+			pathStr = fsutil.SlashPath(pathStr)
+		}
 		m.NamedPaths[name] = pathStr
 	}
 	return
@@ -265,21 +279,25 @@ func (m *Metadata) AddNamedPaths(pathMap map[string]string) (ok bool) {
 }
 
 // AddHistory add history path
-func (m *Metadata) AddHistory(pathStr string) bool {
+func (m *Metadata) AddHistory(pathStr string) (string, bool) {
 	if len(pathStr) == 0 {
-		return false
+		return "", false
 	}
 
 	pathStr = fsutil.Realpath(pathStr)
 	if pathStr == m.LastPath {
-		return false
+		return pathStr, true
+	}
+
+	if m.slashPath {
+		pathStr = fsutil.SlashPath(pathStr)
 	}
 
 	m.LastPath, m.PrevPath = pathStr, m.LastPath
 	m.Histories[strutil.Md5(pathStr)] = pathStr
 	m.fireHook()
 
-	return true
+	return pathStr, true
 }
 
 // CleanHistories refresh histories, remove invalid paths

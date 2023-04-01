@@ -9,6 +9,7 @@ import (
 	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/stdio"
+	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/pkg/quickjump"
@@ -105,16 +106,17 @@ var ajmOpts = struct {
 
 // AutoJumpMatchCmd command
 var AutoJumpMatchCmd = &gcli.Command{
-	Name:    "match",
-	Aliases: []string{"hint", "search"},
+	Name:    "search",
+	Aliases: []string{"hint", "match"},
 	Desc:    "Match directory paths by given keywords",
 	Config: func(c *gcli.Command) {
 		c.MustFromStruct(&ajmOpts, gflag.TagRuleSimple)
-		c.AddArg("keywords", "The keywords to match", true, false)
+		c.AddArg("keywords", "The keywords to match, allow limit by multi. eg: 'limit1 limit2'")
 	},
 	Func: func(c *gcli.Command, _ []string) error {
 		var results []string
-		keywords := c.Arg("keywords").SplitToStrings(" ")
+		kwString := c.Arg("keywords").String()
+		keywords := strutil.Split(strings.Trim(kwString, ` '"`), " ")
 
 		// from named
 		if ajmOpts.Scope == 1 {
@@ -127,6 +129,7 @@ var AutoJumpMatchCmd = &gcli.Command{
 
 		var sb strings.Builder
 		matchNum := len(results)
+		app.L.Infof("input search keywords %q, search results: %v", kwString, results)
 
 		for i, dirPath := range results {
 			sb.WriteString(dirPath)
@@ -151,8 +154,11 @@ var AutoJumpGetCmd = &gcli.Command{
 	},
 	Func: func(c *gcli.Command, _ []string) error {
 		name := c.Arg("name").String()
-		dirPath := app.QJump.Match(name)
+		dirPath := app.QJump.Match(strings.Trim(name, ` '"`))
+
+		app.L.Infof("input match name is %q, match dirPath: %s", name, dirPath)
 		stdio.WriteString(dirPath)
+
 		return nil
 	},
 }
@@ -191,18 +197,22 @@ var AutoJumpChdirCmd = &gcli.Command{
 	Desc:    "add directory path to history, by the jump dir hooks.",
 	Config: func(c *gcli.Command) {
 		c.MustFromStruct(&ajcOpts, gflag.TagRuleSimple)
-		c.AddArg("path", "The real directory path", true)
+		c.AddArg("path", "The real directory path. if empty, use current workdir")
 	},
 	Func: func(c *gcli.Command, _ []string) error {
 		path := c.Arg("path").String()
+		if len(path) == 0 {
+			return c.NewErrf("path is empty or invalid")
+		}
 
-		if app.QJump.AddHistory(path) {
-			app.L.Infof("Add jump path %q success", path)
+		realPath, ok := app.QJump.AddHistory(path)
+		if ok {
+			app.L.Infof("Add jump path %q success", realPath)
 			if !ajcOpts.Quiet {
-				colorp.Successf("Add jump path %q success\n", path)
+				colorp.Successf("Into %q\n", realPath)
 			}
 		} else {
-			colorp.Warnf("Add jump path %q failed", path)
+			colorp.Warnf("Invalid path %q\n", realPath)
 		}
 
 		return nil
