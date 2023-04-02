@@ -9,7 +9,6 @@ import (
 	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/stdio"
-	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/pkg/quickjump"
@@ -98,6 +97,12 @@ Enable quick jump for zsh(add to <mga>~/.zshrc</>):
 	},
 }
 
+const (
+	ScopeAll = iota
+	ScopeNamed
+	ScopeHistory
+)
+
 var ajmOpts = struct {
 	OnlyPath bool `flag:"only-path;only show the path, dont with name"`
 	Limit    int  `flag:"limit the match count;false;10"`
@@ -111,17 +116,17 @@ var AutoJumpMatchCmd = &gcli.Command{
 	Desc:    "Match directory paths by given keywords",
 	Config: func(c *gcli.Command) {
 		c.MustFromStruct(&ajmOpts, gflag.TagRuleSimple)
-		c.AddArg("keywords", "The keywords to match, allow limit by multi. eg: 'limit1 limit2'")
+		c.AddArg("keywords", "The keywords to match, allow limit by multi", false, true)
 	},
 	Func: func(c *gcli.Command, _ []string) error {
 		var results []string
-		kwString := c.Arg("keywords").String()
-		keywords := strutil.Split(strings.Trim(kwString, ` '"`), " ")
+		keywords := c.Arg("keywords").Strings()
+		keywords = app.QJump.FormatKeywords(keywords)
 
 		// from named
-		if ajmOpts.Scope == 1 {
+		if ajmOpts.Scope == ScopeNamed {
 			results = app.QJump.SearchNamed(keywords, ajmOpts.Limit, !ajmOpts.OnlyPath)
-		} else if ajmOpts.Scope == 2 {
+		} else if ajmOpts.Scope == ScopeHistory {
 			results = app.QJump.SearchHistory(keywords, ajmOpts.Limit)
 		} else {
 			results = app.QJump.Search(keywords, ajmOpts.Limit, !ajmOpts.OnlyPath)
@@ -129,7 +134,7 @@ var AutoJumpMatchCmd = &gcli.Command{
 
 		var sb strings.Builder
 		matchNum := len(results)
-		app.L.Infof("input search keywords %q, search results: %v", kwString, results)
+		app.L.Infof("input search keywords %v, search results: %v", keywords, results)
 
 		for i, dirPath := range results {
 			sb.WriteString(dirPath)
@@ -143,22 +148,29 @@ var AutoJumpMatchCmd = &gcli.Command{
 	},
 }
 
+var ajgOpts = struct {
+	Quiet bool `flag:"quiet mode, dont report error on missing"`
+}{}
+
 // AutoJumpGetCmd command
 var AutoJumpGetCmd = &gcli.Command{
 	Name:    "get",
 	Aliases: []string{"path"},
 	Desc:    "Get the real directory path by given name.",
 	Config: func(c *gcli.Command) {
-		// TODO empty use workdir
-		c.AddArg("name", "The target directory name or path.", true)
+		c.MustFromStruct(&ajgOpts, gflag.TagRuleSimple)
+		c.AddArg("keywords", "The target directory name or path or keywords.", true, true)
 	},
 	Func: func(c *gcli.Command, _ []string) error {
-		name := c.Arg("name").String()
-		dirPath := app.QJump.Match(strings.Trim(name, ` '"`))
+		keywords := c.Arg("keywords").Strings()
+		dirPath := app.QJump.CheckOrMatch(keywords)
 
-		app.L.Infof("input match name is %q, match dirPath: %s", name, dirPath)
+		if !ajgOpts.Quiet && len(dirPath) == 0 {
+			return c.NewErrf("not found path by keywords: %v", keywords)
+		}
+
+		app.L.Infof("input keywords: %v, match dirPath: %s", keywords, dirPath)
 		stdio.WriteString(dirPath)
-
 		return nil
 	},
 }
@@ -207,7 +219,7 @@ var AutoJumpChdirCmd = &gcli.Command{
 
 		realPath, ok := app.QJump.AddHistory(path)
 		if ok {
-			app.L.Infof("Add jump path %q success", realPath)
+			app.L.Infof("jump to path %q success", realPath)
 			if !ajcOpts.Quiet {
 				colorp.Successf("Into %q\n", realPath)
 			}

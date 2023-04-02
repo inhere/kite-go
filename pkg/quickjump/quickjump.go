@@ -2,6 +2,7 @@ package quickjump
 
 import (
 	"runtime"
+	"strings"
 
 	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/fsutil"
@@ -140,26 +141,56 @@ func NewMetadata() *Metadata {
 	}
 }
 
-// Match path by input name
-func (m *Metadata) Match(name string) string {
-	if name == "." {
-		return sysutil.Workdir()
+// FormatKeywords handle
+func (m *Metadata) FormatKeywords(keywords []string) []string {
+	ln := len(keywords)
+	if ln == 0 {
+		return keywords
 	}
 
-	// return prev path
-	if len(name) == 0 || name == "-" {
-		return m.PrevPath
+	// from bash/zsh: "php order" => [php, order]
+	if ln == 1 {
+		return strutil.Split(strings.Trim(keywords[0], ` '"`), " ")
+	}
+	return keywords
+}
+
+// CheckOrMatch path by input keywords(name,path,...)
+func (m *Metadata) CheckOrMatch(keywords []string) string {
+	keywords = m.FormatKeywords(keywords)
+
+	ln := len(keywords)
+	if ln == 0 {
+		return ""
 	}
 
-	if fsutil.IsDir(name) {
-		return name
+	if ln == 1 {
+		first := keywords[0]
+		if first == "." {
+			return sysutil.Workdir()
+		}
+
+		// return prev path
+		if len(first) == 0 || first == "-" {
+			return m.PrevPath
+		}
+
+		if fsutil.IsDir(first) {
+			return fsutil.Realpath(first)
+		}
+
+		if dirPath, ok := m.NamedPaths[first]; ok {
+			return dirPath
+		}
+
+		ss := m.SearchByString(first, 1, false)
+		if len(ss) > 0 {
+			return ss[0]
+		}
+		return ""
 	}
 
-	if dirPath, ok := m.NamedPaths[name]; ok {
-		return dirPath
-	}
-
-	ss := m.SearchByString(name, 1, false)
+	ss := m.Search(keywords, 1, false)
 	if len(ss) > 0 {
 		return ss[0]
 	}
