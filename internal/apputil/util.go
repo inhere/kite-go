@@ -7,9 +7,9 @@ import (
 	"github.com/alecthomas/chroma/quick"
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/gitw"
 	"github.com/gookit/goutil/cliutil"
-	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/maputil"
 	"github.com/inhere/kite-go/internal/app"
@@ -107,6 +107,6 @@ func RenderContents(s, format, style string) error {
 func ApplyProxyEnv() {
 	app.Lcp.Apply(func(lp *lcproxy.LocalProxy) {
 		cliutil.Infoln("TIP: auto enable set proxy ENV vars, will set", lp.EnvKeys())
-		dump.NoLoc(lp)
+		show.AList("Proxy Settings", lp)
 	})
 }

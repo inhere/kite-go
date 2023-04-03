@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/gomarkdown/markdown"
+	gomd "github.com/gomarkdown/markdown"
 	gmhtml "github.com/gomarkdown/markdown/html"
 	gmparser "github.com/gomarkdown/markdown/parser"
 	"github.com/gookit/color"
@@ -53,17 +53,18 @@ type md2html struct {
 const (
 	defaultTitle = ""
 	// driver names
-	driverBF = "bf"
-	driverGM = "gm"
+	driverBF  = "bf"
+	driverGDM = "gdm"
+	driverGMD = "gmd"
 )
 
 var mh = md2html{}
 
 var (
 	drivers = map[string]string{
-		"bf": "blackfriday",
-		"gm": "gomarkdown",
-		"gd": "goldmark",
+		"bf":  "blackfriday",
+		"gmd": "gomarkdown",
+		"gdm": "goldmark",
 	}
 )
 
@@ -113,9 +114,8 @@ var Markdown2HTML = &gcli.Command{
 		c.StrOpt(&mh.driver, "driver", "", "bf",
 			`set the markdown renderer driver.
 allow:
-bf - blackfriday
-gm - gomarkdown
-gd - goldmark
+gm,gmd,gomd - gomarkdown
+gd,gdm 		- goldmark
 `)
 
 		c.AddArg("files", "the listed files will be render to html", false, true)
@@ -150,14 +150,17 @@ hello
 ### h3
 `
 
-	if mh.driver == driverBF {
+	switch mh.driver {
+	case driverBF:
 		err = mh.blackFriday([]byte(mdString), args)
-	} else {
+	case driverGMD, "gm", "gomd", "gomarkdown":
 		err = mh.goMarkdown([]byte(mdString), args)
+	default: // driverGMD
+		err = mh.goldMark([]byte(mdString), args)
 	}
 
 	// color.Success.Println("Complete")
-	return
+	return err
 }
 
 func (mh md2html) driverName() string {
@@ -165,7 +168,7 @@ func (mh md2html) driverName() string {
 		return name
 	}
 
-	return drivers[driverBF]
+	return drivers[driverGMD]
 }
 
 func (mh md2html) blackFriday(input []byte, args []string) (err error) {
@@ -203,10 +206,10 @@ func (mh md2html) goMarkdown(input []byte, args []string) (err error) {
 		gmparser.Strikethrough |
 		gmparser.SpaceHeadings
 
-	var renderer markdown.Renderer
+	var renderer gomd.Renderer
 	if mh.latex {
 		// render the data into LaTeX
-		// renderer = markdown.LatexRenderer(0)
+		// renderer = gomd.LatexRenderer(0)
 		color.Comment.Println("unsupported")
 		return
 	} else {
@@ -245,7 +248,7 @@ func (mh md2html) goMarkdown(input []byte, args []string) (err error) {
 	// parse and render
 	psr := gmparser.NewWithExtensions(extensions)
 
-	htmlBts := markdown.ToHTML(input, psr, renderer)
+	htmlBts := gomd.ToHTML(input, psr, renderer)
 
 	return mh.outToWriter(htmlBts)
 }
