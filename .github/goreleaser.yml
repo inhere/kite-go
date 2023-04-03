@@ -1,5 +1,14 @@
 # Docs: https://goreleaser.com
 # from https://github.com/pgrok/pgrok/blob/main/.goreleaser.pgrokd.yml
+#
+# usage:
+#  goreleaser build --snapshot --clean -f .github/goreleaser.yml
+#
+dist: build/dist
+before:
+  hooks:
+    - go mod tidy
+project_name: kite
 builds:
   - main: ./cmd/kite
     binary: kite
@@ -13,6 +22,9 @@ builds:
     goarch:
       - amd64
       - arm64
+    hooks:
+      post:
+        - upx -6 "{{ .Path }}"
 archives:
   - format: tar.gz
     wrap_in_directory: false

@@ -4,11 +4,16 @@
 .env
 *.prof
 *.log
+
 #build exe files
-/htu
 /kit
 /kite
+
+# files
+/changelog.md
+/kite.yml
+
+# dirs
+/build/kite-*
+/build/dist
 /tmp
-/custom
-kite.yml
-build/kite-*

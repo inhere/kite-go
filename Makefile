@@ -86,6 +86,7 @@ build: $(GO_DEPENDENCIES) clean ## Build jx-labs binary for current OS
 
 install: $(GO_DEPENDENCIES) ## Install the kite binary to gopath/bin
 	GOBIN=${GOPATH}/bin $(GO) install $(BUILDFLAGS) ./cmd/kite
+	upx -6 --no-progress ${GOPATH}/bin/kite
 	@ls -alh ${GOPATH}/bin/kite
 
 install2: $(GO_DEPENDENCIES) ## Install the kit binary to gopath/bin
@@ -110,24 +111,29 @@ build-all:linux linux-arm win win-arm darwin darwin-arm ## Build for Linux,OSX,W
 
 linux: ## Build for Linux
 	GOOS=linux GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-linux-amd64 $(MAIN_SRC_FILE)
+	upx -6 --no-progress build/$(NAME)-linux-amd64
 	chmod +x build/$(NAME)-linux-amd64
 
 linux-arm: ## Build for Linux ARM64
 	GOOS=linux GOARCH=arm $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-linux-arm $(MAIN_SRC_FILE)
+	upx -6 --no-progress build/$(NAME)-linux-arm
 	chmod +x build/$(NAME)-linux-arm
 
 win: ## Build for Windows
 	GOOS=windows GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-windows-amd64.exe $(MAIN_SRC_FILE)
+	upx -6 --no-progress build/$(NAME)-windows-amd64.exe
 
 win-arm: ## Build for Windows arm64
 	GOOS=windows GOARCH=arm64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-windows-arm64.exe $(MAIN_SRC_FILE)
 
 darwin: ## Build for OSX AMD
 	GOOS=darwin GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-darwin-amd64 $(MAIN_SRC_FILE)
+	upx -6 --no-progress build/$(NAME)-darwin-amd64
 	chmod +x build/$(NAME)-darwin-amd64
 
 darwin-arm: ## Build for OSX ARM64
 	GOOS=darwin GOARCH=arm64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-darwin-arm64 $(MAIN_SRC_FILE)
+	upx -6 --no-progress build/$(NAME)-darwin-arm64
 	chmod +x build/$(NAME)-darwin-arm64
 
 .PHONY: release

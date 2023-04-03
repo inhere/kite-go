@@ -6,24 +6,26 @@
 
 ## Git 仓库
 
-* [https://github.com/inhere/kite](https://github.com/inhere/kite)  PHP 版本，功能较为完善，已开发使用较久。
-* [https://github.com/inhere/kite-go](https://github.com/inhere/kite-go) Go 语言版本，暂时只有常用功能。
+* [https://github.com/inhere/kite-go](https://github.com/inhere/kite-go) Go 语言版本
+* [https://github.com/inhere/kite](https://github.com/inhere/kite)  PHP 版本，不再维护。
 
 ## 主要功能
 
-* git 常用命令操作
-* gitlab 常用命令操作
-* github 常用命令操作
-* 字符串处理工具: 分析，格式化，提取信息，转换
-* json 处理工具: 格式化，查找，过滤等
-* go, php, java 代码生成，转换等
-* json, yaml, sql 格式化，转换
-* 系统、环境信息查看
-* 快速运行内置脚本
-* 快速运行系统命令
-* 文件查找匹配，处理
-* 批量运行命令
-* 文档搜索、查看等
+* `kite g/git` git 常用命令操作
+* `kite gl` gitlab 常用命令操作
+* `kite gh` github 常用命令操作
+* `kite str/text` 字符串处理工具: 分析，格式化，提取信息，转换
+* `kite json` json 处理工具: 格式化，查找，过滤等
+* go, php, java 代码生成，转换等 TODO
+* json, yaml, sql 格式化，查看，转换
+* `kite tool jump` 记录并快速跳转目录
+* `kite sys` 系统、环境信息查看
+* `kite run` 快速运行系统命令
+* `kite script` 快速运行内置脚本
+* `kite fs` 文件查找匹配，处理
+* `kite http` http 服务(echo,fs),快速发送请求等
+* `kite brun` 批量运行命令 TODO
+* `kite doc` 文档搜索、查看等 TODO
 
 ## 安装
 
@@ -77,12 +79,15 @@ kite COMMAND SUBCOMMAND # 运行一个子级命令
 
 ```bash
 ## aliases for kite
-# NOTICE: zsh plugin support add aliases
 alias kg="kite git"
 alias kgl="kite gitlab"
 alias kgh="kite github"
 alias kj="kite json"
+alias kjson="kite json"
 alias kstr="kite text"
+alias kdev="kite dev"
+alias ktool="kite tool"
+alias kjump="kite tool jump"
 ```
 
 ## Git 命令使用
@@ -93,7 +98,7 @@ alias kstr="kite text"
 $ kite g # 查看封装的可用的 git 命令
 ```
 
-> TIP: 通过 `kite git CMD` 运行未知命令会自动转发到系统上的 `git` 下面执行. 因此, 可以执行任何 `git` 命令.
+> **Note**: 通过 `kite git CMD` 运行未知命令会自动转发到系统上的 `git` 下面执行. 因此, 可以执行任何 `git` 命令.
 
 ## Gitlab 命令使用
 
@@ -103,7 +108,7 @@ $ kite g # 查看封装的可用的 git 命令
 $ kite gl # 查看封装的可用的 gitlab 命令
 ```
 
-> TIP: 通过 `kite gl CMD` 运行未知命令会自动转发到 `kite git` 命令组下面执行. 因此, 可以执行任何 git 命令.
+> **Note**: 通过 `kite gl CMD` 运行未知命令会自动转发到 `kite git` 命令组下面执行. 因此, 可以执行任何 git 命令.
 
 ### 配置Gitlab
 
@@ -147,7 +152,7 @@ gitlab:
   fork_mode: true
 ```
 
-> TIP: gitlab 的配置默认会继承 `gitx.yml->git` 的配置信息.
+> **Note**: gitlab 的配置默认会继承 `gitx.yml->git` 的配置信息.
 
 ### 其他gitlab命令
 
@@ -159,7 +164,7 @@ $ kite gl open # 快速在浏览器打开当前仓库
 
 GitHub 大部分命令与 `git` `gitlab` 组下面的相同. 同样提供了 `ac` `acp` `clone` `open` 等命令.
 
-> TIP: 通过 `kite gh CMD` 运行未知命令会自动转发到 `kite git` 命令组下面执行.
+> **Note**: 通过 `kite gh CMD` 运行未知命令会自动转发到 `kite git` 命令组下面执行.
 
 ### 配置
 
@@ -170,7 +175,7 @@ GitHub 大部分命令与 `git` `gitlab` 组下面的相同. 同样提供了 `ac
 GITHUB_USER=inhere
 ```
 
-> TIP: `github` 的配置默认会继承 `gitx.yml->git` 的配置信息.
+> **Note**: `github` 的配置默认会继承 `gitx.yml->git` 的配置信息.
 
 ### 快速克隆仓库
 
@@ -275,7 +280,7 @@ $ kite app info
 
 使用kite别名可以快速运行一些常用子命令. `kite app alias` 可以方便的查看配置的 kite 内置命令别名列表. 
 
-> 可以直接运行 `kite env`, 就是因为配置了别名 `env: sys env`. `kite env` 等同于在执行 `kite sys env`
+> **Note**: 可以直接运行 `kite env`, 就是因为配置了别名 `env: sys env`. `kite env` 等同于在执行 `kite sys env`
 
 ```shell
 $ kite app alias -l
@@ -343,7 +348,7 @@ $ kite run --script -l
 $ kite script -l
 ```
 
-> TIP: 你可以自定义配置任意的 `scripts` 命令, 请查看 `$config/module/scripts.yml`
+> **Note**: 你可以自定义配置任意的 `scripts` 命令, 请查看 `$config/module/scripts.yml`
 
 ### 运行定义脚本
 
@@ -370,7 +375,7 @@ $ kite sys clip -r # read contents
 $ kite sys clip -w "some contents" # read contents
 ```
 
-> TIP: 你会发现在 kite 里很多操作 `字符串` 或者 `文件` 的命令都支持读取剪切板数据.
+> **Note**: 你会发现在 kite 里很多操作 `字符串` 或者 `文件` 的命令都支持读取剪切板数据.
 
 ### 搜索查找可执行文件
 
@@ -399,7 +404,7 @@ $ kite env -s term
 
 展开ENV变量信息:
 
-> `--expand` 将会把变量值按系统分隔符分割为多行方便查看.
+> **Note**: `--expand` 将会把变量值按系统分隔符分割为多行方便查看.
 
 ```shell
 $ kite sys env --expand path
