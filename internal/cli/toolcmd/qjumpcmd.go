@@ -14,8 +14,8 @@ import (
 	"github.com/inhere/kite-go/pkg/quickjump"
 )
 
-// AutoJumpCmd command
-var AutoJumpCmd = &gcli.Command{
+// QuickJumpCmd command
+var QuickJumpCmd = &gcli.Command{
 	Name:    "jump",
 	Aliases: []string{"goto"},
 	Desc:    "Jump helps you navigate faster by your history.",
@@ -26,13 +26,11 @@ var AutoJumpCmd = &gcli.Command{
 		AutoJumpGetCmd,
 		AutoJumpSetCmd,
 		AutoJumpChdirCmd,
+		QuickJumpCleanCmd,
 	},
 	Config: func(c *gcli.Command) {
 
 	},
-	// Func: func(c *gcli.Command, _ []string) error {
-	// 	return errorx.New("TODO")
-	// },
 }
 
 // AutoJumpListCmd command
@@ -227,6 +225,26 @@ var AutoJumpChdirCmd = &gcli.Command{
 			colorp.Warnf("Invalid path %q\n", realPath)
 		}
 
+		return nil
+	},
+}
+
+// QuickJumpCleanCmd command
+var QuickJumpCleanCmd = &gcli.Command{
+	Name:    "clean",
+	Aliases: []string{"clear"},
+	Desc:    "clean invalid directory paths from history",
+	Config: func(c *gcli.Command) {
+		c.AddArg("path", "The history directory path. if empty, clean all invalid dirs")
+	},
+	Func: func(c *gcli.Command, args []string) error {
+		ss := app.QJump.CleanHistories()
+
+		if len(ss) > 0 {
+			show.AList("Cleaned invalid paths", ss)
+		} else {
+			colorp.Infoln("No invalid paths to clean")
+		}
 		return nil
 	},
 }

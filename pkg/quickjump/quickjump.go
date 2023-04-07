@@ -15,6 +15,12 @@ import (
 )
 
 const (
+	StatusErr = iota
+	StatusAdd // new add
+	StatusRpt // repeat add
+)
+
+const (
 	ShellBash = "bash"
 	ShellZsh  = "zsh"
 	ShellFish = "fish" // TODO
@@ -30,6 +36,11 @@ var ShellTplMap = map[string]string{
 func IsSupported(name string) bool {
 	_, ok := ShellTplMap[name]
 	return ok
+}
+
+// IsStatusAdd check
+func IsStatusAdd(st int) bool {
+	return st == StatusAdd
 }
 
 // QuickJump struct
@@ -119,7 +130,7 @@ func (j *QuickJump) datafileName() string {
 
 // Metadata struct for quick jump
 type Metadata struct {
-	datafile string
+	// datafile string
 
 	Datetime string `json:"datetime"`
 	LastPath string `json:"last_path"`
@@ -274,76 +285,94 @@ func (m *Metadata) Search(keywords []string, limit int, withName bool) []string 
 
 // AddNamed add named path
 func (m *Metadata) AddNamed(name string, pathStr string) (ok bool) {
-	if ok = m.addNamed(name, pathStr); ok {
+	st := m.addNamed(name, pathStr)
+	if st == StatusAdd {
 		m.fireHook()
 	}
-	return ok
+	return st != StatusErr
 }
 
 // addNamed add named path
-func (m *Metadata) addNamed(name string, pathStr string) (ok bool) {
+func (m *Metadata) addNamed(name string, pathStr string) (st int) {
 	if len(name) > 0 && len(pathStr) > 0 {
-		pathStr = fsutil.Realpath(pathStr)
-		if m.checkExist && !fsutil.IsDir(pathStr) {
-			return false
+		if _, ok := m.NamedPaths[name]; ok {
+			return StatusRpt
 		}
 
-		ok = true
+		pathStr = fsutil.Realpath(pathStr)
+		if m.checkExist && !fsutil.IsDir(pathStr) {
+			return StatusErr
+		}
+
 		if m.slashPath {
 			pathStr = fsutil.SlashPath(pathStr)
 		}
+
+		// add
 		m.NamedPaths[name] = pathStr
+		return StatusAdd
 	}
-	return
+	return StatusErr
 }
 
 // AddNamedPaths add named path
 func (m *Metadata) AddNamedPaths(pathMap map[string]string) (ok bool) {
+	var added bool
 	for name, path := range pathMap {
-		if ok = m.addNamed(name, path); !ok {
+		st := m.addNamed(name, path)
+		if st == StatusErr {
 			return false
+		}
+		if IsStatusAdd(st) {
+			added = true
 		}
 	}
 
-	m.fireHook()
-	return
+	if added {
+		m.fireHook()
+	}
+	return true
 }
 
 // AddHistory add history path
-func (m *Metadata) AddHistory(pathStr string) (string, bool) {
-	if len(pathStr) == 0 {
+func (m *Metadata) AddHistory(dirPath string) (string, bool) {
+	if len(dirPath) == 0 {
 		return "", false
 	}
 
-	pathStr = fsutil.Realpath(pathStr)
-	if pathStr == m.LastPath {
-		return pathStr, true
+	dirPath = fsutil.Realpath(dirPath)
+	if dirPath == m.LastPath {
+		return dirPath, true
 	}
 
 	if m.slashPath {
-		pathStr = fsutil.SlashPath(pathStr)
+		dirPath = fsutil.SlashPath(dirPath)
+	}
+	m.LastPath, m.PrevPath = dirPath, m.LastPath
+
+	// check is new add
+	hisKey := strutil.Md5(dirPath)
+	if _, ok := m.Histories[hisKey]; !ok {
+		m.Histories[hisKey] = dirPath
+		m.fireHook()
 	}
 
-	m.LastPath, m.PrevPath = pathStr, m.LastPath
-	m.Histories[strutil.Md5(pathStr)] = pathStr
-	m.fireHook()
-
-	return pathStr, true
+	return dirPath, true
 }
 
 // CleanHistories refresh histories, remove invalid paths
-func (m *Metadata) CleanHistories() (n int) {
+func (m *Metadata) CleanHistories() (ss []string) {
 	for k, v := range m.Histories {
 		if !fsutil.IsDir(v) {
 			delete(m.Histories, k)
-			n++
+			ss = append(ss, v)
 		}
 	}
 
-	if n > 0 {
+	if len(ss) > 0 {
 		m.fireHook()
 	}
-	return n
+	return ss
 }
 
 // CleanHistories refresh histories, remove invalid paths
