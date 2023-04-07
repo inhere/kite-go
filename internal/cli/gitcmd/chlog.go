@@ -25,7 +25,7 @@ var (
 	// ChangelogCmd instance
 	ChangelogCmd = &gcli.Command{
 		Name:    "chlog",
-		Desc:    "batch pull multi git directory by `git pull`",
+		Desc:    "Generate changelog message for git repository",
 		Aliases: []string{"cl", "clog", "changelog"},
 		Examples: `
   {$binWithCmd} last head

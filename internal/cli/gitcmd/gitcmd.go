@@ -5,6 +5,7 @@ import (
 	"os/exec"
 	"syscall"
 
+	"github.com/gookit/color/colorp"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/events"
 	"github.com/gookit/goutil/cliutil"
@@ -62,6 +63,7 @@ func SubCmdNotFound(ctx *gcli.HookCtx) (stop bool) {
 	pName := ctx.Cmd.Name
 	name := ctx.Str("name")
 	args := ctx.Strings("args")
+	colorp.Infoln("[GIT] Workdir:", ctx.Cmd.WorkDir())
 
 	if name[0] == '@' {
 		rawNa := name

@@ -13,7 +13,7 @@ import (
 func NewBranchCmd() *gcli.Command {
 	return &gcli.Command{
 		Name:    "branch",
-		Desc:    "checkout an new branch for development from `source` remote",
+		Desc:    "git branch commands extension",
 		Aliases: []string{"br"},
 		Subs: []*gcli.Command{
 			BranchDeleteCmd,

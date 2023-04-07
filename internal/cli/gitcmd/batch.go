@@ -15,21 +15,11 @@ var BatchCmd = &gcli.Command{
 	Desc:    "provide some useful dev tools commands",
 	Subs: []*gcli.Command{
 		BatchRunCmd,
-		BatchStatusCmd,
 		BatchPullCmd,
 	},
 	Config: func(c *gcli.Command) {
 
 	},
-	// Func: func(c *gcli.Command, _ []string) error {
-	// 	return errorx.New("TODO")
-	// },
-}
-
-var BatchStatusCmd = &gcli.Command{
-	Name:    "status",
-	Desc:    "checkout an new branch for development from `dist` remote",
-	Aliases: []string{"st"},
 }
 
 var btrOpts = struct {
@@ -38,7 +28,7 @@ var btrOpts = struct {
 }{}
 var BatchRunCmd = &gcli.Command{
 	Name:    "run",
-	Desc:    "checkout an new branch for development from `dist` remote",
+	Desc:    "batch run git command in the given dirs",
 	Aliases: []string{"exec"},
 	Config: func(c *gcli.Command) {
 		btrOpts.BindCommonFlags(c)

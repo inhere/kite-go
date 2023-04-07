@@ -15,7 +15,7 @@ import (
 // TagCmd instance
 var TagCmd = &gcli.Command{
 	Name: "tag",
-	Desc: "git tag commands",
+	Desc: "extra git tag commands",
 	Subs: []*gcli.Command{
 		TagListCmd,
 		TagCreateCmd,

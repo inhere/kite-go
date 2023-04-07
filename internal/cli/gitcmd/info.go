@@ -37,7 +37,6 @@ var RemoteInfoCmd = &gcli.Command{
 		if err != nil {
 			return err
 		}
-
 		return nil
 	},
 }

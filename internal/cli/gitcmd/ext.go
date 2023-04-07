@@ -90,7 +90,7 @@ func NewGitEmojisCmd() *gcli.Command {
 
 	return &gcli.Command{
 		Name:    "emoji",
-		Desc:    "checkout an new branch for development from `dist` remote",
+		Desc:    "git emojis list or rendering on give contents",
 		Aliases: []string{"moji"},
 		Config: func(c *gcli.Command) {
 			c.BoolOpt2(&geOpts.list, "list, ls", "list all git emojis")
