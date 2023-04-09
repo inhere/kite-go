@@ -48,7 +48,7 @@ var GitCommands = &gcli.Command{
 
 		c.On(events.OnCmdSubNotFound, SubCmdNotFound)
 		c.On(events.OnCmdRunBefore, func(ctx *gcli.HookCtx) bool {
-			c.Infoln("[GIT] Workdir:", c.WorkDir())
+			c.Infoln("[kite.GIT] Workdir:", c.WorkDir())
 			return false
 		})
 	},
@@ -63,7 +63,6 @@ func SubCmdNotFound(ctx *gcli.HookCtx) (stop bool) {
 	pName := ctx.Cmd.Name
 	name := ctx.Str("name")
 	args := ctx.Strings("args")
-	colorp.Infoln("[GIT] Workdir:", ctx.Cmd.WorkDir())
 
 	if name[0] == '@' {
 		rawNa := name
@@ -72,6 +71,8 @@ func SubCmdNotFound(ctx *gcli.HookCtx) (stop bool) {
 	} else {
 		cliutil.Warnf("%s: subcommand %q is not found, will call `git %s` on system\n", pName, name, name)
 	}
+
+	colorp.Infoln("[kite.GIT] Workdir:", ctx.Cmd.WorkDir())
 
 	stop = true
 	err := cmdr.NewGitCmd(name, args...).PrintCmdline().ToOSStdout().Run()
@@ -98,14 +99,14 @@ func RedirectToGitx(ctx *gcli.HookCtx) (stop bool) {
 
 	pName := ctx.Cmd.Name
 	sName := ctx.Str("name")
-	cliutil.Warnf("%s: subcommand '%s' not found, will redirect to run `kite git %s`\n", pName, sName, sName)
-	cmdbiz.ProxyCC.AutoSetByName(pName, sName)
+	args := ctx.Cmd.RawArgs()
+	cliutil.Warnf("%s: subcommand '%s' not found, redirect to run `kite git %s`, args: %v\n", pName, sName, sName, args[1:])
+	cmdbiz.ProxyCC.AutoSetByName(pName, sName, args[1:])
 
 	// dump.P(ctx.App.CommandNames(), ctx.App.HasCommand("git"))
-	err := ctx.App.RunCmd("git", ctx.Cmd.RawArgs())
+	err := ctx.App.RunCmd("git", args)
 	if err != nil {
 		dump.P(err)
 	}
-
 	return true
 }

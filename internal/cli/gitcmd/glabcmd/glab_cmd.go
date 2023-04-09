@@ -41,7 +41,7 @@ var GitLabCmd = &gcli.Command{
 
 		c.On(events.OnCmdRunBefore, func(ctx *gcli.HookCtx) (stop bool) {
 			wd := c.WorkDir()
-			c.Infoln("[GLab] Workdir:", wd)
+			c.Infoln("[kite.GLab] Workdir:", wd)
 
 			if glOpts.autoGit {
 				// auto find .git dir in parent.

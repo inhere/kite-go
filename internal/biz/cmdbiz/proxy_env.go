@@ -9,6 +9,7 @@ import (
 
 // ProxyCmdConf struct
 type ProxyCmdConf struct {
+	// CommandIds eg: [git, git:clone, git:tag:*]
 	CommandIds []string `json:"command_ids"`
 	// GroupLimits eg: {github: {acp, update}}
 	GroupLimits map[string][]string `json:"group_limits"`
@@ -18,8 +19,8 @@ type ProxyCmdConf struct {
 var ProxyCC = &ProxyCmdConf{}
 
 // AutoSetByName handle
-func (pcc *ProxyCmdConf) AutoSetByName(group, sub string) {
-	if pcc.IsMatchName(group, sub) {
+func (pcc *ProxyCmdConf) AutoSetByName(group, sub string, args []string) {
+	if pcc.IsMatchName(group, sub, args) {
 		apputil.ApplyProxyEnv()
 	}
 }
@@ -49,10 +50,27 @@ func (pcc *ProxyCmdConf) IsMatchCmd(c *gcli.Command) bool {
 }
 
 // IsMatchName by config
-func (pcc *ProxyCmdConf) IsMatchName(group, sub string) bool {
+func (pcc *ProxyCmdConf) IsMatchName(group, sub string, args []string) bool {
+	// collect all arguments
+	nodes := []string{group, sub}
+	for _, arg := range args {
+		if len(arg) == 0 || arg[0] == '-' {
+			break
+		}
+		nodes = append(nodes, arg)
+	}
+
+	// match command ids
 	cmdId := strutil.Join(gcli.CommandSep, group, sub)
-	if arrutil.StringsHas(pcc.CommandIds, cmdId) {
-		return true
+	cmdId2 := strutil.JoinList(gcli.CommandSep, nodes)
+	for _, idStr := range pcc.CommandIds {
+		if cmdId == idStr || cmdId2 == idStr {
+			return true
+		}
+
+		if strutil.MatchNodePath(idStr, cmdId2, gcli.CommandSep) {
+			return true
+		}
 	}
 
 	if subs, ok := pcc.GroupLimits[group]; ok {

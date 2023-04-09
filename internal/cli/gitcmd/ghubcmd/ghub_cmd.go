@@ -5,9 +5,13 @@ import (
 	"github.com/gookit/gcli/v3/events"
 	"github.com/gookit/goutil/errorx"
 	"github.com/inhere/kite-go/internal/app"
+	"github.com/inhere/kite-go/internal/biz/cmdbiz"
 	"github.com/inhere/kite-go/internal/cli/gitcmd"
 	"github.com/inhere/kite-go/pkg/gitx"
 )
+
+// GhOpts object
+var GhOpts = cmdbiz.CommonOpts{}
 
 // GithubCmd commands
 var GithubCmd = &gcli.Command{
@@ -26,8 +30,9 @@ var GithubCmd = &gcli.Command{
 		gitcmd.NewOpenRemoteCmd(configProvider),
 	},
 	Config: func(c *gcli.Command) {
+		GhOpts.BindCommonFlags(c)
 		c.On(events.OnCmdRunBefore, func(ctx *gcli.HookCtx) (stop bool) {
-			c.Infoln("[GHab] Workdir:", c.WorkDir())
+			c.Infoln("[kite.GHab] Workdir:", c.WorkDir())
 			return false
 		})
 

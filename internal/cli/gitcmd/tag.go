@@ -34,10 +34,10 @@ var TagListCmd = &gcli.Command{
 }
 
 var tcOpts = struct {
-	Next    bool   `flag:"create next version tag;false;n"`
-	Hash    string `flag:"create tag by commit hash;false;cid"`
-	Message string `flag:"tag message;false;m"`
-	Version string `flag:"tag version, eg: v2.0.1;false;v"`
+	Next    bool   `flag:"create next version tag;false;;n"`
+	Hash    string `flag:"create tag by commit hash;false;;cid"`
+	Message string `flag:"tag message;false;;m"`
+	Version string `flag:"tag version, eg: v2.0.1;false;;v"`
 }{}
 
 // TagCreateCmd instance
@@ -45,6 +45,11 @@ var TagCreateCmd = &gcli.Command{
 	Name:    "create",
 	Aliases: []string{"new"},
 	Desc:    "create new tag by `git tag`",
+	Help: `
+# Examples:
+  {$fullCmd} --next
+  {$fullCmd} -v v2.0.1
+`,
 	Config: func(c *gcli.Command) {
 		c.MustFromStruct(&tcOpts, gflag.TagRuleSimple)
 	},
@@ -90,8 +95,8 @@ var TagCreateCmd = &gcli.Command{
 			"Dry Run":     GitOpts.DryRun,
 		})
 
-		if interact.Unconfirmed("ensure create and push tag?") {
-			colorp.Infoln("Quit create tag")
+		if interact.Unconfirmed("Ensure create and push new tag?", true) {
+			colorp.Infoln("Quit, Bye!")
 			return nil
 		}
 
@@ -105,7 +110,7 @@ var TagCreateCmd = &gcli.Command{
 			return err
 		}
 
-		colorp.Successf("Successful create tag: %s", nextVer)
+		colorp.Successf("Successful create tag: %s\n", nextVer)
 		return nil
 	},
 }
