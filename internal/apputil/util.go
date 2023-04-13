@@ -65,17 +65,18 @@ func GitCfgByCmdID(c *gcli.Command) (cfg *gitx.Config) {
 }
 
 // ResolvePath for input path
-func ResolvePath(path string) string {
-	path = app.Vars.Replace(path)
-
-	if app.IsAliasPath(path) {
-		return app.App().ResolvePath(path)
+func ResolvePath(pathStr string) string {
+	pathStr = app.Vars.Replace(pathStr)
+	if app.IsAliasPath(pathStr) {
+		return app.App().ResolvePath(pathStr)
 	}
 
-	if fsutil.IsAbsPath(path) {
-		return path
+	pathStr = fsutil.ResolvePath(pathStr)
+	if fsutil.IsAbsPath(pathStr) {
+		return pathStr
 	}
-	return app.App().PathBuild(path)
+
+	return app.App().PathBuild(pathStr)
 }
 
 // ResolveSep char

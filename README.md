@@ -21,8 +21,8 @@
 * `kite tool jump` 记录并快速跳转目录
 * `kite sys` 系统、环境信息查看
 * `kite run` 快速运行系统命令
-* `kite script` 快速运行内置脚本
-* `kite fs` 文件查找匹配，处理
+  * `kite script` 快速运行内置脚本
+* `kite fs/file` 内容查看, 查找，处理, 渲染等
 * `kite http` http 服务(echo,fs),快速发送请求等
 * `kite brun` 批量运行命令 TODO
 * `kite doc` 文档搜索、查看等 TODO
@@ -37,7 +37,7 @@ curl https://raw.githubusercontent.com/inhere/kite-go/main/cmd/install.sh | bash
 
 **从代理下载安装脚本**
 
-```shell
+```bash
 curl https://ghproxy.com/https://raw.githubusercontent.com/inhere/kite-go/main/cmd/install.sh | bash -s proxy
 ```
 
@@ -90,6 +90,49 @@ alias ktool="kite tool"
 alias kjump="kite tool jump"
 ```
 
+## `jump` 目录快速跳转
+
+`kite tool jump` 可以记录历史并快速跳转到指定目录.
+
+### 启用快速跳转
+
+为 `bash` 启用快速跳转(add to `~/.bashrc`):
+
+```shell
+# 默认跳转函数为: jump
+eval "$(kite tool jump shell bash)"
+```
+
+为 `zsh` 启用快速跳转(add to `~/.zshrc`):
+
+```shell
+# 默认跳转函数为: jump
+eval "$(kite tool jump shell zsh)"
+# 设置绑定的跳转函数为: j
+eval "$(kite tool jump shell --bind j zsh)"
+```
+
+### 快速跳转使用
+
+```shell
+j ~/Workspace/godev/gookit/kite-go # 首次跳转到目录后将会记住
+j kite go # 快速跳转到 ~/Workspace/godev/gookit/kite-go 目录
+```
+
+### 添加命名目录
+
+```shell
+$ kite jump add wp ~/Workspace
+# 添加之后可以使用名称跳转
+$ j wp
+```
+
+### 查看跳转历史
+
+```shell
+$ kite jump list
+```
+
 ## Git 命令使用
 
 `kite git` 提供了一些 git 命令行快速使用命令的封装.
@@ -99,6 +142,8 @@ $ kite g # 查看封装的可用的 git 命令
 ```
 
 > **Note**: 通过 `kite git CMD` 运行未知命令会自动转发到系统上的 `git` 下面执行. 因此, 可以执行任何 `git` 命令.
+
+
 
 ## Gitlab 命令使用
 

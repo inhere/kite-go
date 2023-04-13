@@ -94,8 +94,8 @@ install2: $(GO_DEPENDENCIES) ## Install the kit binary to gopath/bin
 	@ls -alh ${GOPATH}/bin/kit
 
 install3: install win linux ## Build for local and Linux and Windows then copy to Windows(Local dev)
-	cp -f build/kite-windows-amd64.exe /Volumes/inhere-win/Users/inhere/bin/kite.exe
-	cp -f build/kite-linux-amd64 /Volumes/inhere-win/Users/inhere/bin/kite
+	cp -f build/kite-windows-amd64.exe /Volumes/inhere-win/tools/bin/kite.exe
+	cp -f build/kite-linux-amd64 /Volumes/inhere-win/tools/bin/kite
 
 tidy-deps: ## Cleans up dependencies
 	$(GO) mod tidy

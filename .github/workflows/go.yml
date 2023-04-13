@@ -26,6 +26,40 @@ jobs:
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
+        path: main
+
+    - name: Checkout deps repo
+      working-directory: ${{ github.workspace }}
+      run: |
+        git clone --depth=0  https://github.com/gookit/goutil
+
+    - name: Checkout deps repo - goutil
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        repository: gookit/goutil
+        path: goutil
+
+    - name: Checkout deps repo - greq
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        repository: gookit/greq
+        path: greq
+
+    - name: Checkout deps repo - greq
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        repository: gookit/greq
+        path: greq
+
+    - name: Checkout deps repo - gcli
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        repository: gookit/gcli
+        path: gcli
 
     - name: Setup Go Faster
       uses: WillAbides/setup-go-faster@v1.8.0
@@ -33,10 +67,14 @@ jobs:
       with:
         go-version: ${{ matrix.go_version }}
 
-    #mkdir -p ${{ github.workspace }}/go/src/github.com/${{ github.repository }}
+    # pwd == ${{ github.workspace }}
+    # mkdir -p ${{ github.workspace }}/go/src/github.com/${{ github.repository }}
     - name: Prepare go workspace
       run: |
-        echo "GOPATH=${{ github.workspace }}/go" >> $GITHUB_ENV
+        pwd
+        ls -al ../
+        cp .github/go.work.example ../go.work
+        git clone https://github.com/gookit/goutil ${{ github.workspace }}/../goutil
         echo "${{ github.workspace }}/go/bin" >> $GITHUB_PATH
 
     - name: Run unit tests
@@ -44,8 +82,8 @@ jobs:
       # must add " for profile.cov on Windows OS
       # go test -v -coverprofile="profile.cov" ./...
       run: |
-        echo ${{ github.workspace }}
         pwd
+        go mod tidy
         make install
         kite -V
         kite
