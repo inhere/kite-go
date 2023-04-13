@@ -47,9 +47,7 @@ func addCommands(cli *gcli.App) {
 		jsoncmd.JSONToolCmd,
 		toolcmd.ToolsCmd,
 		toolcmd.RunAnyCmd,
-		builtin.GenAutoComplete(func(c *gcli.Command) {
-			c.Hidden = true
-		}),
+		builtin.GenAutoComplete().WithHidden(),
 	)
 
 	// app.Add(filewatcher.FileWatcher(nil))

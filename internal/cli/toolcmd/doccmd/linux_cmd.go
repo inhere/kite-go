@@ -7,6 +7,9 @@ import (
 )
 
 // LinuxCmd instance
+// https://github.com/jaywcjlove/linux-command/tree/master/command  linux commands zh-CN documents
+//   - raw contents eg: https://raw.githubusercontent.com/jaywcjlove/linux-command/master/command/accept.md
+//     结构使用 https://raw.githubusercontent.com/jaywcjlove/linux-command/master/dist/data.json
 var LinuxCmd = &gcli.Command{
 	Name:    "linux",
 	Aliases: []string{"lin", "linux-cmd"},
