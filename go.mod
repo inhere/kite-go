@@ -21,7 +21,7 @@ require (
 	github.com/gookit/i18n v1.1.4
 	github.com/gookit/ini/v2 v2.2.2
 	github.com/gookit/rux v1.3.4
-	github.com/gookit/slog v0.5.0
+	github.com/gookit/slog v0.5.1
 	github.com/gookit/view v1.0.2
 	github.com/titanous/json5 v1.0.0
 	github.com/yosuke-furukawa/json5 v0.1.1
