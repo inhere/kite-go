@@ -1,0 +1,84 @@
+package gitcmd
+
+import (
+	"github.com/gookit/color/colorp"
+	"github.com/gookit/gcli/v3"
+	"github.com/gookit/goutil/errorx"
+	"github.com/inhere/kite-go/internal/apputil"
+	"github.com/inhere/kite-go/internal/biz/cmdbiz"
+	"github.com/inhere/kite-go/pkg/cmdutil"
+)
+
+var coOpts = struct {
+	cmdbiz.CommonOpts
+}{}
+
+// NewCheckoutCmd instance
+func NewCheckoutCmd() *gcli.Command {
+	return &gcli.Command{
+		Name:    "checkout",
+		Desc:    "checkout to another branch and update to latest",
+		Aliases: []string{"co", "switch"},
+		Config: func(c *gcli.Command) {
+			coOpts.BindCommonFlags(c)
+
+			c.AddArg("branchName", "the target branch name", true)
+		},
+		Func: func(c *gcli.Command, args []string) error {
+			cfg := apputil.GitCfgByCmdID(c)
+			rp := cfg.LoadRepo(coOpts.Workdir)
+
+			branchName := c.Arg("branchName").String()
+
+			defRemote := rp.DefaultRemote
+			srcRemote := rp.SourceRemote
+			defBranch := rp.DefaultBranch
+
+			rr := cmdutil.NewRunner(func(rr *cmdutil.Runner) {
+				rr.DryRun = acpOpts.DryRun
+				rr.Confirm = acpOpts.Confirm
+				rr.OutToStd = true
+			})
+
+			// local - checkout and pull
+			if rp.HasLocalBranch(branchName) {
+				rr.GitCmd("checkout", branchName).
+					GitCmd("pull", "-np", defRemote)
+
+				if rp.HasSourceBranch(branchName) {
+					rr.GitCmd("pull", srcRemote, branchName)
+				}
+
+				rr.GitCmd("pull", "-np", srcRemote, defBranch)
+				return rr.Run()
+			}
+
+			// fetch remotes and check branch exists
+			colorp.Infoln("Fetch remotes and check branch exists")
+			rr.GitCmd("fetch", "-np", defRemote).GitCmd("fetch", "-np", srcRemote)
+			if err := rr.Run(); err != nil {
+				return err
+			}
+
+			if rp.HasOriginBranch(branchName) {
+				// git checkout --track origin/NAME
+				rr.GitCmd("checkout", "--track", rp.OriginBranch(branchName))
+
+				if rp.HasSourceBranch(branchName) {
+					rr.GitCmd("pull", srcRemote, branchName)
+				}
+
+				rr.GitCmd("pull", "-np", srcRemote, defBranch)
+				return rr.Run()
+			}
+
+			if rp.HasSourceBranch(branchName) {
+				rr.GitCmd("checkout", srcRemote+"/"+branchName).
+					GitCmd("push", "-u", defRemote, branchName)
+				return rr.Run()
+			}
+
+			return errorx.Rawf("want checkout branch %q not exists", branchName)
+		},
+	}
+}
