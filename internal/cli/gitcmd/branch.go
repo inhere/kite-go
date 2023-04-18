@@ -1,9 +1,13 @@
 package gitcmd
 
 import (
+	"strings"
+
+	"github.com/gookit/color/colorp"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/basefn"
 	"github.com/gookit/goutil/errorx"
+	"github.com/gookit/goutil/timex"
 	"github.com/inhere/kite-go/internal/apputil"
 	"github.com/inhere/kite-go/internal/biz/cmdbiz"
 	"github.com/inhere/kite-go/pkg/cmdutil"
@@ -69,6 +73,9 @@ var BranchCreateCmd = &gcli.Command{
 		srcRemote := rp.SourceRemote
 		defBranch := rp.DefaultBranch
 		newBranch := c.Arg("branch").String()
+		if strings.Contains(newBranch, "{ymd}") {
+			newBranch = strings.Replace(newBranch, "{ymd}", timex.Now().DateFormat("ymd"), -1)
+		}
 
 		rr := cmdutil.NewRunner(func(rr *cmdutil.Runner) {
 			rr.DryRun = acpOpts.DryRun
@@ -82,12 +89,32 @@ var BranchCreateCmd = &gcli.Command{
 			return rr.Run()
 		}
 
+		// fetch remotes and check branch exists
+		colorp.Infoln("Fetch remotes and check branch exists")
+		rr.GitCmd("fetch", "-np", defRemote).GitCmd("fetch", "-np", srcRemote)
+		if err := rr.Run(); err != nil {
+			return err
+		}
+
+		if rp.HasOriginBranch(newBranch) {
+			colorp.Warnf("the branch %q already exists in remote %q\n", newBranch, defRemote)
+			return rp.QuickRun("checkout", newBranch)
+		}
+
+		if rp.HasSourceBranch(newBranch) {
+			colorp.Warnf("the branch %q already exists in remote %q\n", newBranch, srcRemote)
+			rr.GitCmd("checkout", newBranch).GitCmd("push", "-u", defRemote, newBranch)
+			return rr.Run()
+		}
+
+		// do checkout new branch and push to remote
+		colorp.Infoln("Do checkout new branch and push to remote")
 		curBranch := rp.CurBranchName()
 		if defBranch != curBranch {
 			rr.GitCmd("checkout", defBranch)
 		}
 
-		rr.GitCmd("pull", "-np", srcRemote, defBranch)
+		rr.GitCmd("pull", srcRemote, defBranch)
 		rr.GitCmd("checkout", "-b", newBranch)
 		rr.GitCmd("push", "-u", defRemote, newBranch)
 
