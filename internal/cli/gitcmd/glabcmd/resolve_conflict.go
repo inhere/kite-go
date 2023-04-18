@@ -1,6 +1,7 @@
 package glabcmd
 
 import (
+	"github.com/gookit/color/colorp"
 	"github.com/gookit/gcli/v3"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/internal/biz/cmdbiz"
@@ -30,6 +31,7 @@ var ResolveConflictCmd = &gcli.Command{
 		gl := app.Glab()
 		lr := gl.LoadRepo(rcOpts.Workdir)
 
+		curBr := lr.CurBranchName()
 		br := c.Arg("branch").String()
 		br = lr.ResolveBranch(br)
 
@@ -38,12 +40,21 @@ var ResolveConflictCmd = &gcli.Command{
 			rr.DryRun = rcOpts.DryRun
 		})
 
-		rr.GitCmd("fetch", "-np")
+		// fetch all remotes to latest
+		rr.GitCmd("fetch", "-np", gl.DefaultRemote)
+		rr.GitCmd("fetch", "-np", gl.SourceRemote)
 
 		if lr.HasLocalBranch(br) {
-			rr.GitCmd("checkout", br).
-				GitCmd("push", "-u", gl.DefaultRemote).
-				GitCmd("pull")
+			rr.GitCmd("checkout", br)
+
+			if lr.HasOriginBranch(br) {
+				rr.GitCmd("pull", gl.DefaultRemote, br)
+			} else {
+				rr.GitCmd("push", "-u", gl.DefaultRemote, br)
+			}
+
+			// update the branch codes from source remote
+			rr.GitCmd("pull", gl.SourceRemote, br)
 		} else if lr.HasOriginBranch(br) {
 			// git checkout --track origin/NAME
 			rr.GitCmd("checkout", "--track", gl.OriginBranch(br)).
@@ -55,17 +66,19 @@ var ResolveConflictCmd = &gcli.Command{
 			return c.NewErrf("branch %q not found in local and remotes", br)
 		}
 
-		curBr := lr.CurBranchName()
-		rr.GitCmd("pull", gl.SourceRemote, curBr)
-
 		if err := rr.Run(); err != nil {
 			return err
 		}
+		c.Println("---------------------------------------------------------------------")
 
-		c.Println("---------------------------------------------------------")
-		c.Successln("Complete. please resolve conflicts by tools or manual...")
-		c.Warnln("TIP: Can execute follow command after resolved for quick commit:")
-		c.Infoln("  git add . && git commit && git push && kite gl pr -o head && git checkout", curBr)
+		// pull target branch from source remote, will merge to current branch
+		_ = lr.Cmd("pull", gl.SourceRemote, curBr).Run()
+
+		c.Println("---------------------------------------------------------------------")
+		colorp.Successln("Now, please resolve conflicts by tools or manual ...")
+		colorp.Infoln("TIP 1: If you want stop resolve, can run:\n  git merge --abort && git checkout", curBr)
+		colorp.Warnln("TIP 2: Can execute follow command after resolved for quick commit:")
+		colorp.Infoln("  git add . && git commit && git push && kite gl pr -o head && git checkout", curBr)
 		return nil
 	},
 }

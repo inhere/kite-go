@@ -1,6 +1,7 @@
 package gitcmd
 
 import (
+	"github.com/gookit/color/colorp"
 	"github.com/gookit/gcli/v3"
 	"github.com/inhere/kite-go/internal/biz/cmdbiz"
 	"github.com/inhere/kite-go/pkg/cmdutil"
@@ -91,7 +92,7 @@ func updateHandleFunc(c *gcli.Command, _ []string, cfg *gitx.Config) (err error)
 	}
 
 	if !rp.IsForkMode() {
-		c.Infoln("Do update repository data from remote ...")
+		colorp.Infoln("Do update repository data from remote ...")
 		return rp.Cmd("pull", "-np").Run()
 	}
 
@@ -105,7 +106,7 @@ func updateHandleFunc(c *gcli.Command, _ []string, cfg *gitx.Config) (err error)
 	rr.GitCmd("pull", "-np")
 
 	if !rp.HasSourceRemote() {
-		c.Warnf(
+		colorp.Warnf(
 			"TIP: the source remote %q is not added, please add by `git remote add %s URL`\n",
 			srcRemote, srcRemote,
 		)
@@ -124,6 +125,11 @@ func updateHandleFunc(c *gcli.Command, _ []string, cfg *gitx.Config) (err error)
 		rr.GitCmd("push")
 	}
 
-	c.Infoln("Do update repository data from remotes ...")
+	colorp.Infoln("Do update repository data from remotes ...")
 	return rr.Run()
+}
+
+func updateBranch() error {
+
+	return nil
 }

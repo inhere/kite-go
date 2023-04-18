@@ -96,6 +96,8 @@ var BranchCreateCmd = &gcli.Command{
 			return err
 		}
 
+		rr.Reset()
+
 		if rp.HasOriginBranch(newBranch) {
 			colorp.Warnf("the branch %q already exists in remote %q\n", newBranch, defRemote)
 			return rp.QuickRun("checkout", newBranch)
