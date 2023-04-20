@@ -3,9 +3,9 @@ package gitcmd
 import (
 	"github.com/gookit/color/colorp"
 	"github.com/gookit/gcli/v3"
+	"github.com/inhere/kite-go/internal/apputil"
 	"github.com/inhere/kite-go/internal/biz/cmdbiz"
 	"github.com/inhere/kite-go/pkg/cmdutil"
-	"github.com/inhere/kite-go/pkg/gitx"
 )
 
 var upOpts = struct {
@@ -23,7 +23,7 @@ On fork_mode=true:
 `
 
 // NewUpdatePushCmd instance
-func NewUpdatePushCmd(cfgGetter gitx.ConfigProviderFn) *gcli.Command {
+func NewUpdatePushCmd() *gcli.Command {
 	return &gcli.Command{
 		Name:    "update-push",
 		Desc:    "Update code from remotes, then push to default remote",
@@ -39,13 +39,13 @@ func NewUpdatePushCmd(cfgGetter gitx.ConfigProviderFn) *gcli.Command {
 			})
 		},
 		Func: func(c *gcli.Command, args []string) error {
-			return updateHandleFunc(c, args, cfgGetter())
+			return updateHandleFunc(c, args)
 		},
 	}
 }
 
 // NewUpdateCmd instance
-func NewUpdateCmd(cfgGetter gitx.ConfigProviderFn) *gcli.Command {
+func NewUpdateCmd() *gcli.Command {
 	return &gcli.Command{
 		Name:    "update",
 		Desc:    "Update code from remote repositories",
@@ -56,12 +56,13 @@ func NewUpdateCmd(cfgGetter gitx.ConfigProviderFn) *gcli.Command {
 		},
 		Func: func(c *gcli.Command, args []string) error {
 			upOpts.notPush = true
-			return updateHandleFunc(c, args, cfgGetter())
+			return updateHandleFunc(c, args)
 		},
 	}
 }
 
-func updateHandleFunc(c *gcli.Command, _ []string, cfg *gitx.Config) (err error) {
+func updateHandleFunc(c *gcli.Command, _ []string) (err error) {
+	cfg := apputil.GitCfgByCmdID(c)
 	rp := cfg.LoadRepo(upOpts.Workdir)
 	c.Infoln("TIP: pre-check for update repository data")
 

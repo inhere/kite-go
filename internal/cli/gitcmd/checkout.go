@@ -42,6 +42,7 @@ func NewCheckoutCmd() *gcli.Command {
 
 			// local - checkout and pull
 			if rp.HasLocalBranch(branchName) {
+				colorp.Infof("Checkout branch %q from local and update it.\n", branchName)
 				rr.GitCmd("checkout", branchName).
 					GitCmd("pull", "-np", defRemote)
 
@@ -56,11 +57,12 @@ func NewCheckoutCmd() *gcli.Command {
 			// fetch remotes and check branch exists
 			colorp.Infoln("Fetch remotes and check branch exists")
 			rr.GitCmd("fetch", "-np", defRemote).GitCmd("fetch", "-np", srcRemote)
-			if err := rr.Run(); err != nil {
+			if err := rr.RunReset(); err != nil {
 				return err
 			}
 
 			if rp.HasOriginBranch(branchName) {
+				colorp.Infof("- checkout branch %q from origin %q\n", branchName, rp.DefaultRemote)
 				// git checkout --track origin/NAME
 				rr.GitCmd("checkout", "--track", rp.OriginBranch(branchName))
 
@@ -73,7 +75,8 @@ func NewCheckoutCmd() *gcli.Command {
 			}
 
 			if rp.HasSourceBranch(branchName) {
-				rr.GitCmd("checkout", srcRemote+"/"+branchName).
+				colorp.Infof("- checkout branch %q from origin %q\n", branchName, rp.SourceRemote)
+				rr.GitCmd("checkout", "-b", branchName, srcRemote+"/"+branchName).
 					GitCmd("push", "-u", defRemote, branchName)
 				return rr.Run()
 			}

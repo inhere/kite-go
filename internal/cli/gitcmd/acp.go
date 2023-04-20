@@ -16,7 +16,6 @@ import (
 	"github.com/inhere/kite-go/internal/apputil"
 	"github.com/inhere/kite-go/internal/biz/cmdbiz"
 	"github.com/inhere/kite-go/pkg/cmdutil"
-	"github.com/inhere/kite-go/pkg/gitx"
 )
 
 type acpOptModel struct {
@@ -107,7 +106,7 @@ func acpConfigFunc(c *gcli.Command, bindNp bool) {
 }
 
 // NewAddCommitPush command
-func NewAddCommitPush(cfgGetter gitx.ConfigProviderFn) *gcli.Command {
+func NewAddCommitPush() *gcli.Command {
 	return &gcli.Command{
 		Name: "acp",
 		Desc: "run `git add/commit/push` at once command",
@@ -117,13 +116,13 @@ func NewAddCommitPush(cfgGetter gitx.ConfigProviderFn) *gcli.Command {
 		},
 		Func: func(c *gcli.Command, args []string) error {
 			// acpOpts.notPush = false
-			return acpHandleFunc(c, args, cfgGetter())
+			return acpHandleFunc(c, args)
 		},
 	}
 }
 
 // NewAddCommitCmd instance
-func NewAddCommitCmd(cfgGetter gitx.ConfigProviderFn) *gcli.Command {
+func NewAddCommitCmd() *gcli.Command {
 	return &gcli.Command{
 		Name: "ac",
 		Desc: "run `git add/commit` at once command",
@@ -132,12 +131,14 @@ func NewAddCommitCmd(cfgGetter gitx.ConfigProviderFn) *gcli.Command {
 			acpConfigFunc(c, false)
 		},
 		Func: func(c *gcli.Command, args []string) error {
-			return acpHandleFunc(c, args, cfgGetter())
+			return acpHandleFunc(c, args)
 		},
 	}
 }
 
-func acpHandleFunc(c *gcli.Command, args []string, cfg *gitx.Config) error {
+func acpHandleFunc(c *gcli.Command, args []string) error {
+	cfg := apputil.GitCfgByCmdID(c)
+
 	runPush := !acpOpts.notPush
 	confKey := apputil.CmdConfigKey(cfg.HostType, c.Name)
 	cmdConf := app.Cfg().SubDataMap(confKey)
