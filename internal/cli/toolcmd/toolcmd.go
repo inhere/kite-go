@@ -31,7 +31,7 @@ var ToolsCmd = &gcli.Command{
 		// ScriptCmd,
 		RandomCmd,
 		MathCalcCmd,
-		ScriptCmd,
+		// ScriptCmd,
 		TranslateCmd,
 		convcmd.NewTime2dateCmd(),
 		convcmd.NewConvPathSepCmd(),

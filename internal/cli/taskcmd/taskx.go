@@ -4,12 +4,19 @@ import "github.com/gookit/gcli/v3"
 
 // TaskManageCmd instance
 var TaskManageCmd = &gcli.Command{
-	Name: "task",
-	Desc: "Task manage tools command",
+	Name:    "task",
+	Desc:    "Task/Script run and management command",
+	Aliases: []string{"scripts", "script"},
 	Subs: []*gcli.Command{
 		TaskList,
 		TaskInfo,
 		TaskRun,
+	},
+	Config: func(c *gcli.Command) {
+
+	},
+	Func: func(c *gcli.Command, args []string) error {
+		return nil
 	},
 }
 
