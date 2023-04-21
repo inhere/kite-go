@@ -29,6 +29,7 @@ var stOpts = struct {
 	// ide http client file
 	hcFile   string
 	tplName  string
+	timeout  int
 	userVars gflag.KVString
 	verbose  gcli.VerbLevel
 	plugins  gflag.String
@@ -51,6 +52,7 @@ var SendTemplateCmd = &gcli.Command{
 {$fullCmd} -d gitlab --plug git,fs --api api-build.json5 -e prod -v group={{git.group}} -v repoName={{git.repo}}
 `,
 	Config: func(c *gcli.Command) {
+		c.IntOpt2(&stOpts.timeout, "timeout, t", "sets the request timeout, unit: ms. default: 500")
 		c.StrOpt2(&stOpts.envName, "env, e", "sets env name for run template")
 		c.StrOpt2(&stOpts.envFile, "env-file", "custom sets env file for run template")
 		c.StrOpt2(&stOpts.domain, "domain, d", "the domain or topic name")
@@ -131,7 +133,10 @@ var SendTemplateCmd = &gcli.Command{
 			colorp.Cyanln("\n-------------------------------------------------------------------------\n", "")
 		}
 
-		if err := t.Send(vs, dc.Header); err != nil {
+		opt := &httpreq.Option{
+			Timeout: stOpts.timeout,
+		}
+		if err := t.Send(vs, dc.Header, opt); err != nil {
 			return err
 		}
 

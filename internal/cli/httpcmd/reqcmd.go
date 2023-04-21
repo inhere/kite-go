@@ -67,8 +67,8 @@ var SendRequestCmd = &gcli.Command{
 			apiUrl = httpreq.AppendQueryToURLString(apiUrl, httpreq.ToQueryValues(reqOpts.query.Data()))
 		}
 
-		reqOpts := &httpreq.ReqOption{
-			HeaderMap: reqOpts.headers.Data(),
+		reqOpts := &greq.Option{
+			HeaderM: reqOpts.headers.Data(),
 		}
 		resp, err := hc.SendWithOpt(apiUrl, reqOpts)
 		if err != nil {

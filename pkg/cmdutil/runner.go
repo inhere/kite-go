@@ -54,3 +54,13 @@ func (r *Runner) Run() error {
 	}
 	return err
 }
+
+// RunReset run and reset
+func (r *Runner) RunReset() error {
+	if err := r.Run(); err != nil {
+		return err
+	}
+
+	r.Reset()
+	return nil
+}
