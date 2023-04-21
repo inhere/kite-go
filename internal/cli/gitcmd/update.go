@@ -10,7 +10,8 @@ import (
 
 var upOpts = struct {
 	cmdbiz.CommonOpts
-	notPush bool
+	notPush  bool
+	fetchAll bool
 }{}
 
 const upHelp = `
@@ -37,6 +38,7 @@ func NewUpdatePushCmd() *gcli.Command {
 				Desc:   "dont push update to default remote",
 				Shorts: []string{"np"},
 			})
+			c.BoolOpt2(&upOpts.fetchAll, "fetch-all,fetch,fa", "only fetch all remotes with option -np, dont run pull")
 		},
 		Func: func(c *gcli.Command, args []string) error {
 			return updateHandleFunc(c, args)
@@ -53,6 +55,7 @@ func NewUpdateCmd() *gcli.Command {
 		Aliases: []string{"up"},
 		Config: func(c *gcli.Command) {
 			upOpts.BindCommonFlags(c)
+			c.BoolOpt2(&upOpts.fetchAll, "fetch-all,fetch,fa", "only fetch all remotes with option -np, dont run pull")
 		},
 		Func: func(c *gcli.Command, args []string) error {
 			upOpts.notPush = true
@@ -74,6 +77,10 @@ func updateHandleFunc(c *gcli.Command, _ []string) (err error) {
 		return c.NewErrf(
 			"not found default remote %q, please add it by `git remote add %s URL`",
 			defRemote, defRemote)
+	}
+
+	if upOpts.fetchAll {
+		return rp.Cmd("fetch", "--all", "-np").Run()
 	}
 
 	defBranch := rp.DefaultBranch
