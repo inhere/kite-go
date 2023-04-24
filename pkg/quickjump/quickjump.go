@@ -201,6 +201,7 @@ func (m *Metadata) CheckOrMatch(keywords []string) string {
 		return ""
 	}
 
+	// search by multiple keywords
 	ss := m.Search(keywords, 1, false)
 	if len(ss) > 0 {
 		return ss[0]
@@ -258,7 +259,7 @@ func (m *Metadata) Search(keywords []string, limit int, withName bool) []string 
 	noKw := len(keywords) == 0
 
 	for name, dirPath := range m.NamedPaths {
-		if noKw || arrutil.StringsHas(keywords, name) || strutil.ContainsAll(dirPath, keywords) {
+		if noKw || arrutil.StringsHas(keywords, name) || strutil.SimpleMatch(dirPath, keywords) {
 			if withName {
 				paths = append(paths, name+":"+dirPath)
 			} else {
@@ -272,7 +273,7 @@ func (m *Metadata) Search(keywords []string, limit int, withName bool) []string 
 	}
 
 	for _, dirPath := range m.Histories {
-		if noKw || strutil.ContainsAll(dirPath, keywords) {
+		if noKw || strutil.SimpleMatch(dirPath, keywords) {
 			paths = append(paths, dirPath)
 			if limit > 0 && len(paths) >= limit {
 				return paths

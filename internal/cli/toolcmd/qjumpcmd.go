@@ -157,7 +157,7 @@ var AutoJumpGetCmd = &gcli.Command{
 	Desc:    "Get the real directory path by given name.",
 	Config: func(c *gcli.Command) {
 		c.MustFromStruct(&ajgOpts, gflag.TagRuleSimple)
-		c.AddArg("keywords", "The target directory name or path or keywords.", true, true)
+		c.AddArg("keywords", "The target directory name or path or keywords.\n Start with ^ for exclude", true, true)
 	},
 	Func: func(c *gcli.Command, _ []string) error {
 		keywords := c.Arg("keywords").Strings()
