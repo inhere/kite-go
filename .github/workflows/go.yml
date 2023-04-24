@@ -31,35 +31,12 @@ jobs:
     - name: Checkout deps repo
       working-directory: ${{ github.workspace }}
       run: |
-        git clone --depth=0  https://github.com/gookit/goutil
-
-    - name: Checkout deps repo - goutil
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-        repository: gookit/goutil
-        path: goutil
-
-    - name: Checkout deps repo - greq
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-        repository: gookit/greq
-        path: greq
-
-    - name: Checkout deps repo - greq
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-        repository: gookit/greq
-        path: greq
-
-    - name: Checkout deps repo - gcli
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-        repository: gookit/gcli
-        path: gcli
+        pwd
+        ls -al ../
+        git clone --depth=1  https://github.com/gookit/goutil
+        git clone --depth=1  https://github.com/gookit/gcli
+        git clone --depth=1  https://github.com/gookit/greq
+        git clone --depth=1  https://github.com/gookit/gitw
 
     - name: Setup Go Faster
       uses: WillAbides/setup-go-faster@v1.8.0

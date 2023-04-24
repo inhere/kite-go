@@ -93,14 +93,11 @@ install2: $(GO_DEPENDENCIES) ## Install the kit binary to gopath/bin
 	go build $(BUILDFLAGS) -o $(GOPATH)/bin/kit ./cmd/kite
 	@ls -alh ${GOPATH}/bin/kit
 
-install3: install win linux ## Build for local and Linux and Windows then copy to Windows(Local dev)
+install3: install win linux cp-build-to-win ## Build for local and Linux and Windows then copy to Windows(Local dev)
+
+cp-build-to-win: ## Cleans up dependencies
 	cp -f build/kite-windows-amd64.exe /Volumes/inhere-win/tools/bin/kite.exe
 	cp -f build/kite-linux-amd64 /Volumes/inhere-win/tools/bin/kite
-
-tidy-deps: ## Cleans up dependencies
-	$(GO) mod tidy
-	# mod tidy only takes compile dependencies into account, let's make sure we capture tooling dependencies as well
-	@$(MAKE) install-generate-deps
 
 pprof-cli: ## generate pprof file and start an web-ui
 	go run ./_examples/pprof-cli.go
