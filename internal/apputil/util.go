@@ -60,7 +60,7 @@ func GitCfgByCmdID(c *gcli.Command) (cfg *gitx.Config) {
 		cfg = app.Gitx()
 	}
 
-	c.Infof("TIP: auto select git config type: %s(by cmd ID: %s)\n", cfg.HostType, c.ID())
+	c.Infof("TIP: auto select git config type: %s(by cmd ID %q)\n", cfg.HostType, c.ID())
 	return cfg
 }
 
