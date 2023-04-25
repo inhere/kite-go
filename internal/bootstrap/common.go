@@ -31,12 +31,12 @@ func BootAppInfo(ka *app.KiteApp) error {
 	}
 
 	ka.Info = &app.Info{
-		Branch:    kite_go.Branch,
-		Version:   kite_go.Version,
-		Revision:  kite_go.Revision,
-		GoVersion: kite_go.GoVersion,
-		PublishAt: kite_go.PublishAt,
-		UpdatedAt: kite_go.UpdatedAt,
+		Branch:    kite.Branch,
+		Version:   kite.Version,
+		Revision:  kite.Revision,
+		GoVersion: kite.GoVersion,
+		PublishAt: kite.PublishAt,
+		UpdatedAt: kite.UpdatedAt,
 	}
 
 	initlog.L.Info("init kite application info:", structs.ToString(ka.Info))

@@ -19,7 +19,7 @@ var ReadmeCmd = &gcli.Command{
 
 	},
 	Func: func(c *gcli.Command, _ []string) error {
-		str := byteutil.SafeString(kite_go.EmbedFs.ReadFile("README.md"))
+		str := byteutil.SafeString(kite.EmbedFs.ReadFile("README.md"))
 		// fmt.Println(byteutil.SafeString(kite.EmbedFs.ReadFile("README.md")))
 
 		return apputil.RenderContents(str, "markdown", "github")

@@ -69,7 +69,7 @@ var KiteInitCmd = &gcli.Command{
 				return nil
 			}
 
-			text := byteutil.SafeString(kite_go.EmbedFs.ReadFile(".example.env"))
+			text := byteutil.SafeString(kite.EmbedFs.ReadFile(".example.env"))
 			_, err := fsutil.PutContents(dotenvFile, text, fsutil.FsCWTFlags)
 			return err
 		}, func(ctx *structs.Data) error {
@@ -84,7 +84,7 @@ var KiteInitCmd = &gcli.Command{
 				return nil
 			}
 
-			text := byteutil.SafeString(kite_go.EmbedFs.ReadFile("kite.example.yml"))
+			text := byteutil.SafeString(kite.EmbedFs.ReadFile("kite.example.yml"))
 			_, err := fsutil.PutContents(confFile, text, fsutil.FsCWTFlags)
 			return err
 		}, func(ctx *structs.Data) error {
@@ -103,7 +103,7 @@ var KiteInitCmd = &gcli.Command{
 				return nil
 			}
 
-			return exportEmbedDir(kite_go.EmbedFs, "config", baseDir+"/config", true)
+			return exportEmbedDir(kite.EmbedFs, "config", baseDir+"/config", true)
 		})
 
 		cliutil.Warnln("\nStarting init:")
@@ -139,7 +139,7 @@ func exportEmbedDir(efs embed.FS, dirPath, dstDir string, exportSub bool) error 
 			continue
 		}
 
-		text := byteutil.SafeString(kite_go.EmbedFs.ReadFile(path))
+		text := byteutil.SafeString(kite.EmbedFs.ReadFile(path))
 		_, err = fsutil.PutContents(dstFile, text, fsutil.FsCWTFlags)
 		if err != nil {
 			cliutil.Errorln("   ERROR")

@@ -2,7 +2,7 @@ package bootstrap
 
 import (
 	"github.com/gookit/gcli/v3"
-	kite_go "github.com/inhere/kite-go"
+	"github.com/inhere/kite-go"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/internal/cli"
 )
@@ -12,10 +12,10 @@ func BootCli(_ *app.KiteApp) error {
 	cliApp := gcli.NewApp(func(a *gcli.App) {
 		a.Name = "Kite"
 		a.Desc = "Personal developer tool command application"
-		a.Version = kite_go.Version
+		a.Version = kite.Version
 	})
 	// some info
-	cliApp.Logo.Text = kite_go.Banner
+	cliApp.Logo.Text = kite.Banner
 
 	// load commands
 	cli.Boot(cliApp)

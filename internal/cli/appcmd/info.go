@@ -29,10 +29,10 @@ var KiteInfoCmd = &gcli.Command{
 			"dotenv file":   app.App().DotenvFile(),
 			"config files":  app.Cfg().LoadedFiles(),
 			"language":      "TODO",
-			"version":       kite_go.Version,
-			"build date":    kite_go.BuildDate,
-			"go version":    kite_go.GoVersion,
-			"github repo":   kite_go.GithubRepo,
+			"version":       kite.Version,
+			"build date":    kite.BuildDate,
+			"go version":    kite.GoVersion,
+			"github repo":   kite.GithubRepo,
 			// "i18n files": i18n.Default().LoadFile(),
 		}, nil)
 
