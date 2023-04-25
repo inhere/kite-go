@@ -22,6 +22,7 @@ var TextOperateCmd = &gcli.Command{
 		StrSplitCmd,
 		StrMatchCmd,
 		TextSearchCmd,
+		TextReplaceCmd,
 		NewTemplateCmd(),
 		convcmd.NewTime2dateCmd(),
 		// TODO
@@ -47,6 +48,8 @@ var splitOpts = struct {
 	join string
 	text string
 
+	// rowNum int
+
 	count  bool
 	noTrim bool
 	// quick fetch
@@ -68,7 +71,7 @@ var StrSplitCmd = &gcli.Command{
 		c.VarOpt2(&splitOpts.get, "get, i", "get values by indexes, multi by comma")
 
 		c.BoolOpt2(&splitOpts.noTrim, "no-trim", "do not trim input text contents")
-		c.BoolOpt2(&splitOpts.count, "count, c", "get first part from split strings")
+		c.BoolOpt2(&splitOpts.count, "count, c", "count item number of split strings")
 		c.BoolOpt2(&splitOpts.first, "first, f", "get first part from split strings")
 		c.BoolOpt2(&splitOpts.last, "last, l", "get last part from split strings")
 
