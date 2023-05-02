@@ -10,6 +10,7 @@ require (
 	github.com/go-openapi/spec v0.20.9
 	github.com/go-openapi/swag v0.22.3
 	github.com/goccy/go-yaml v1.11.0
+	github.com/gofrs/uuid/v5 v5.0.0
 	github.com/gomarkdown/markdown v0.0.0-20230313173142-2ced44d5b584
 	github.com/gookit/color v1.5.3
 	github.com/gookit/config/v2 v2.2.1

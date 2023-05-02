@@ -115,9 +115,15 @@ eval "$(kite tool jump shell --bind j zsh)"
 ### 快速跳转使用
 
 ```shell
-j ~/Workspace/godev/gookit/kite-go # 首次跳转到目录后将会记住
-j kite go # 快速跳转到 ~/Workspace/godev/gookit/kite-go 目录
+$ j ~/Workspace/godev/gookit/kite-go # 首次跳转到目录后将会记住
+$ j kite go # 快速跳转到 ~/Workspace/godev/gookit/kite-go 目录
+$ j kite # 可以双击 TAB 自动补全历史目录路径
 ```
+
+> **Note**: 可以使用多个关键字确定目录(如 `j kite go` ), 但是关键字必须是目录名的一部分.
+
+- `^` 表示匹配排除目录名 `kite go ^pkg` 目录路径包含 `kite,go` 不包含 `pkg` 的目录
+- `$` 表示必须以目录名结尾.
 
 ### 添加命名目录
 
