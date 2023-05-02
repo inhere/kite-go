@@ -8,7 +8,9 @@ import (
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/gitw"
 	"github.com/gookit/goutil/basefn"
-	"github.com/gookit/goutil/errorx"
+	"github.com/gookit/goutil/cliutil"
+	"github.com/gookit/goutil/strutil/textutil"
+	"github.com/gookit/goutil/sysutil/cmdr"
 	"github.com/gookit/goutil/timex"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/internal/apputil"
@@ -24,7 +26,7 @@ func NewBranchCmd() *gcli.Command {
 		Desc:    "git branch commands extension",
 		Aliases: []string{"br"},
 		Subs: []*gcli.Command{
-			BranchDeleteCmd,
+			// BranchDeleteCmd,
 			BranchCreateCmd,
 			BranchListCmd,
 			BranchSetupCmd,
@@ -35,11 +37,14 @@ func NewBranchCmd() *gcli.Command {
 var blOpts = struct {
 	cmdbiz.CommonOpts
 	Remote string `flag:"desc=only show branches on the remote;shorts=r"`
-	Match  string `flag:"desc=the branch name match pattern;shorts=p,m"`
-	Regex  bool   `flag:"desc=enable regex for match pattern;shorts=reg"`
+	Match  string `flag:"desc=the branch name match pattern, default use glob mode;shorts=p,m"`
+	Regex  bool   `flag:"desc=enable regexp for match pattern;shorts=reg"`
+	Limit  int    `flag:"desc=limit the max match branches;shorts=n"`
 	All    bool   `flag:"desc=display all branches;shorts=a"`
 	Exec   string `flag:"desc=execute command for each branch;shorts=x"`
 	Delete bool   `flag:"desc=delete matched branches;shorts=d"`
+	Fetch  bool   `flag:"desc=fetch remote branches before search;shorts=f"`
+	Update bool   `flag:"desc=update branches after exec/delete;shorts=u"`
 }{}
 
 // BranchListCmd instance
@@ -48,24 +53,34 @@ var BranchListCmd = &gcli.Command{
 	Desc:    "list or search branches on local or remote",
 	Aliases: []string{"search", "ls"},
 	Examples: `
-# list branches by glob pattern
+# List branches by glob pattern
 {$fullCmd} -m "fea*"
 
-# list branches by regex pattern
+# List branches by regex pattern
 {$fullCmd} --reg -m "fea_\d+"
+# match like fix_23_04
+{$fullCmd} --reg -m "f[a-z]*_[0-9]+_\d+"
 
-# find and delete remote branches
-{$fullCmd} -r origin -x "git push {remote} --delete {branch}"
+# Find and delete remote branches
+{$fullCmd} -r origin -m fix_* --delete
+# or
+{$fullCmd} -r origin -m fix_* -x "git push {remote} --delete {branch}"
 `,
 	Config: func(c *gcli.Command) {
 		blOpts.BindCommonFlags(c)
 		c.MustFromStruct(&blOpts, gflag.TagRuleNamed)
-		c.AddArg("match", "the branch name match pattern, same as --match|-m|-p")
+		c.AddArg("match", "the branch name match pattern, same as --match|-m|-p").WithAfterFn(func(arg *gcli.CliArg) error {
+			blOpts.Match = arg.String()
+			return nil
+		})
 	},
 	Func: func(c *gcli.Command, args []string) error {
 		rp := app.Gitx().LoadRepo(blOpts.Workdir)
-		if err := rp.FetchAll("-np"); err != nil {
-			return err
+
+		if blOpts.Fetch {
+			if err := rp.FetchAll("-np"); err != nil {
+				return err
+			}
 		}
 
 		colorp.Infoln("Load repo branches ...")
@@ -84,18 +99,80 @@ var BranchListCmd = &gcli.Command{
 			brs = bis.Locales()
 		}
 
+		if blOpts.Match == "" {
+			colorp.Cyanf("Branches on %q(total: %d)\n", tle, len(brs))
+			for i, info := range brs {
+				colorp.Infof(" %-24s %s\n", info.Short, info.HashMsg)
+				if blOpts.Limit > 0 && i+1 >= blOpts.Limit {
+					break
+				}
+			}
+			return nil
+		}
+
 		var number int
 		matcher := gitx.NewBranchMatcher(blOpts.Match, blOpts.Regex)
+		colorp.Cyanf("Branches on %q(total: %d, %s)\n", tle, len(brs), matcher.String())
 
-		colorp.Infof("Branches on %s\n", tle)
+		rp.SetDryRun(blOpts.DryRun)
+		if blOpts.Confirm && !cliutil.Confirm("Do you want to continue?") {
+			colorp.Cyanln("Canceled")
+			return nil
+		}
+
+		var execCmd *cmdr.Cmd
+		if blOpts.Exec != "" {
+			execCmd = cmdr.NewCmdline(blOpts.Exec).
+				WithWorkDir(rp.Dir()).
+				WithDryRun(blOpts.DryRun).
+				PrintCmdline()
+		}
+
 		for _, info := range brs {
-			if matcher.Match(info.Short) {
-				number++
-				colorp.Infof(" - %16s %s\n", info.Name, info.HashMsg)
+			if !matcher.Match(info.Short) {
+				continue
+			}
+
+			number++
+			if blOpts.Delete {
+				// git branch -d feature-*
+				// git push origin --delete feature-*
+				colorp.Warnf("Do delete branch: %s\n", info.Name)
+				if err := rp.BranchDelete(info.Short, info.Remote); err != nil {
+					return err
+				}
+			} else if execCmd != nil {
+				vs := map[string]string{
+					"branch": info.Short,
+					"hash":   info.Hash,
+					"remote": info.Remote,
+				}
+				spl := textutil.NewVarReplacer("{,}")
+
+				execCmd = cmdr.NewCmdline(spl.RenderSimple(blOpts.Exec, vs)).
+					WithWorkDir(rp.Dir()).
+					WithDryRun(blOpts.DryRun).
+					PrintCmdline()
+
+				if err := execCmd.Run(); err != nil {
+					return err
+				}
+			} else {
+				colorp.Infof(" %-24s %s\n", info.Short, info.HashMsg)
+			}
+
+			if blOpts.Limit > 0 && number >= blOpts.Limit {
+				break
 			}
 		}
 
-		colorp.Infoln("Match Total:", number)
+		colorp.Cyanln("Match Number:", number)
+
+		if blOpts.Update {
+			if err := rp.FetchAll("-np"); err != nil {
+				return err
+			}
+		}
 		return nil
 	},
 }
@@ -185,23 +262,6 @@ var BranchCreateCmd = &gcli.Command{
 			rr.GitCmd("push", srcRemote, newBranch)
 		}
 		return rr.Run()
-	},
-}
-
-var bdOpts = struct {
-	cmdbiz.CommonOpts
-	Remote string `flag:"desc=remote name for delete branches;shorts=r"`
-}{}
-
-// BranchDeleteCmd instance
-var BranchDeleteCmd = &gcli.Command{
-	Name:    "del",
-	Desc:    "delete one or more branches from local and remote",
-	Aliases: []string{"d", "rm", "delete"},
-	Func: func(c *gcli.Command, args []string) error {
-		// git branch -d feature-*
-		// git push origin --delete feature-*
-		return errorx.New("TODO")
 	},
 }
 

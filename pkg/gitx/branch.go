@@ -1,6 +1,7 @@
 package gitx
 
 import (
+	"fmt"
 	"regexp"
 
 	"github.com/gookit/goutil/strutil"
@@ -8,6 +9,7 @@ import (
 
 // BranchMatcher interface
 type BranchMatcher interface {
+	fmt.Stringer
 	// Match branch name, no remote prefix
 	Match(branch string) bool
 }
@@ -22,6 +24,11 @@ func (g *GlobMatch) Match(branch string) bool {
 	return strutil.GlobMatch(g.pattern, branch)
 }
 
+// String get string
+func (g *GlobMatch) String() string {
+	return "glob: " + g.pattern
+}
+
 // RegexMatch handle regex matching
 type RegexMatch struct {
 	pattern string
@@ -31,6 +38,11 @@ type RegexMatch struct {
 // Match branch name by regex pattern
 func (r *RegexMatch) Match(branch string) bool {
 	return r.regex.MatchString(branch)
+}
+
+// String get string
+func (r *RegexMatch) String() string {
+	return "regex: " + r.pattern
 }
 
 // NewBranchMatcher create a new branch matcher

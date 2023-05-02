@@ -11,6 +11,7 @@ import (
 
 var coOpts = struct {
 	cmdbiz.CommonOpts
+	NotPush bool `flag:"desc=not push to remote after checkout;shorts=n"`
 }{}
 
 // NewCheckoutCmd instance
@@ -58,6 +59,14 @@ func NewCheckoutCmd() *gcli.Command {
 				}
 
 				rr.GitCmd("pull", "-np", srcRemote, defBranch)
+
+				if !coOpts.NotPush {
+					if rp.UpstreamRemote() == defRemote {
+						rr.GitCmd("push")
+					} else {
+						rr.GitCmd("push", "-u", defRemote, branchName)
+					}
+				}
 				return rr.Run()
 			}
 
