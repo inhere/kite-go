@@ -29,7 +29,7 @@ var ToolsCmd = &gcli.Command{
 		convcmd.ConvBaseCmd,
 		// RunAnyCmd,
 		// ScriptCmd,
-		RandomCmd,
+		// RandomCmd,
 		MathCalcCmd,
 		// ScriptCmd,
 		TranslateCmd,

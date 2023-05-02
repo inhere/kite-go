@@ -23,6 +23,8 @@ var TextOperateCmd = &gcli.Command{
 		StrMatchCmd,
 		TextSearchCmd,
 		TextReplaceCmd,
+		NewUuidCmd(),
+		NewRandomStrCmd(),
 		NewTemplateCmd(),
 		convcmd.NewTime2dateCmd(),
 		// TODO
