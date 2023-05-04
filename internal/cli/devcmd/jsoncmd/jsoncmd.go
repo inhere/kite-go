@@ -8,9 +8,9 @@ import (
 
 	"github.com/goccy/go-yaml"
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/goutil/fmtutil"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/stdio"
+	"github.com/gookit/goutil/strutil"
 	"github.com/inhere/kite-go/internal/apputil"
 	"github.com/yosuke-furukawa/json5/encoding/json5"
 )
@@ -29,6 +29,8 @@ var JSONToolCmd = &gcli.Command{
 var jvOpts = struct {
 	json5 bool
 	query string
+	// compressed, not format output
+	compressed bool
 }{}
 
 // JSONQueryCmd instance
@@ -39,6 +41,7 @@ var JSONQueryCmd = &gcli.Command{
 	Config: func(c *gcli.Command) {
 		c.BoolOpt2(&jvOpts.json5, "json5, 5", "mark input contents is json5 format")
 		c.StrOpt2(&jvOpts.query, "query, path, q, p", "The path for query sub value")
+		c.BoolOpt2(&jvOpts.compressed, "compressed, c", "compressed output, not format")
 
 		c.AddArg("json", "input JSON contents for format")
 		c.AddArg("path", "The path for query sub value, same of --path")
@@ -73,12 +76,31 @@ var JSONQueryCmd = &gcli.Command{
 		}
 
 		// query value
-		bs, err := fmtutil.StringOrJSON(mp.Get(jvOpts.query))
+		value := mp.Get(jvOpts.query)
+		s, err := strutil.StringOrErr(value)
+		if err == nil {
+			stdio.Writeln(s)
+			return nil
+		}
+
+		bs, err := json.Marshal(value)
 		if err != nil {
 			return err
 		}
 
-		stdio.WriteBytes(bs)
+		if jvOpts.compressed {
+			stdio.WritelnBytes(bs)
+			return nil
+		}
+
+		// format output
+		var buf bytes.Buffer
+		err = json.Indent(&buf, bs, "", "    ")
+		if err != nil {
+			return err
+		}
+
+		stdio.WriteBytes(buf.Bytes())
 		return nil
 	},
 }
