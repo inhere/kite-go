@@ -1,6 +1,7 @@
 package toolcmd
 
 import (
+	"github.com/gookit/color/colorp"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/gcli/v3/show"
@@ -89,19 +90,25 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 		cd, changed := fsutil.SearchNameUpx(wd, runOpts.chdir)
 		if changed {
 			wd = cd
-			cliutil.Yellowf("TIP: auto find the %q and will chdir to %s", runOpts.chdir, cd)
+			colorp.Yellowf("TIP: auto find the %q and will chdir to %s", runOpts.chdir, cd)
+		} else if cd == "" {
+			colorp.Warnf("TIP: can not find the %q in %s or parent", runOpts.chdir, wd)
 		}
+	}
+
+	if runOpts.verbose {
+		colorp.Infoln("(verbose=true) Run command on workdir:", wd)
 	}
 
 	// direct run system command
 	if runOpts.system {
-		c.Infof("TIP: will direct run system command %q (by --system)\n", name)
+		colorp.Infof("TIP: will direct run system command %q (by --system)\n", name)
 		return cmdr.NewCmd(name, args...).WorkDirOnNE(wd).FlushRun()
 	}
 
 	// direct run as cmd-alias
 	if runOpts.alias {
-		c.Infof("TIP: will direct run app command alias %q (by --alias)\n", name)
+		colorp.Infof("TIP: will direct run app command alias %q (by --alias)\n", name)
 		return cmdbiz.RunKiteCmdByAlias(name, args)
 	}
 
@@ -114,7 +121,7 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 
 	// direct run as script
 	if runOpts.script {
-		c.Infof("TIP: will direct run %q as script name (by --script)\n", name)
+		colorp.Infof("TIP: will direct run %q as script name (by --script)\n", name)
 
 		if runOpts.search {
 			ret := app.Scripts.Search(name, args, 10)

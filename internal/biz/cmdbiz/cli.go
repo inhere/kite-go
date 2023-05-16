@@ -31,7 +31,7 @@ func (co *CommonOpts) BindCommonFlags(c *gcli.Command) {
 		}
 		return nil
 	}))
-	c.BoolOpt2(&co.Confirm, "confirm", "confirm ask before executing command")
+	c.BoolOpt2(&co.Confirm, "confirm,C", "confirm ask before executing command")
 }
 
 // BindCommonFlags1 for some git commands

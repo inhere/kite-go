@@ -44,7 +44,9 @@ var AutoJumpListCmd = &gcli.Command{
 	Func: func(c *gcli.Command, _ []string) error {
 		colorp.Infof("Jump storage datafile: %s\n", app.QJump.Datafile())
 		colorp.Greenln("Jump storage data in local:")
-		dump.P(app.QJump.Metadata)
+
+		dp := dump.NewWithOptions(dump.WithoutPosition(), dump.SkipPrivate())
+		dp.Println(app.QJump.Metadata)
 		show.MList(app.QJump.Metadata)
 		return nil
 	},
