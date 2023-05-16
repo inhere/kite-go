@@ -7,8 +7,11 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/gitw"
+	"github.com/gookit/gitw/brinfo"
+	"github.com/gookit/gitw/gitutil"
 	"github.com/gookit/goutil/basefn"
 	"github.com/gookit/goutil/cliutil"
+	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/strutil/textutil"
 	"github.com/gookit/goutil/sysutil/cmdr"
 	"github.com/gookit/goutil/timex"
@@ -16,7 +19,6 @@ import (
 	"github.com/inhere/kite-go/internal/apputil"
 	"github.com/inhere/kite-go/internal/biz/cmdbiz"
 	"github.com/inhere/kite-go/pkg/cmdutil"
-	"github.com/inhere/kite-go/pkg/gitx"
 )
 
 // NewBranchCmd instance
@@ -26,12 +28,89 @@ func NewBranchCmd() *gcli.Command {
 		Desc:    "git branch commands extension",
 		Aliases: []string{"br"},
 		Subs: []*gcli.Command{
-			// BranchDeleteCmd,
+			BranchDeleteCmd,
 			BranchCreateCmd,
 			BranchListCmd,
 			BranchSetupCmd,
 		},
 	}
+}
+
+var bdOpts = struct {
+	cmdbiz.CommonOpts
+	Fetch  bool   `flag:"desc=fetch remote branches before search;shorts=f"`
+	Remote string `flag:"desc=only find branches on the remote;shorts=r"`
+}{}
+
+// BranchDeleteCmd quickly delete branches
+var BranchDeleteCmd = &gcli.Command{
+	Name:    "delete",
+	Desc:    "delete branches",
+	Aliases: []string{"del", "rm"},
+	Examples: `
+# Delete local branches
+{$fullCmd} fix_1 fix_2 fea_1
+{$fullCmd} "fea*" # use glob match
+{$fullCmd} "prefix:fea" # use prefix match
+{$fullCmd} "suffix:_dev" # use suffix match
+{$fullCmd} "regex:fix_\d+" # use regex match
+
+# Delete remote branches
+{$fullCmd} -r origin fix_* # use glob match
+`,
+	Config: func(c *gcli.Command) {
+		c.MustFromStruct(&bdOpts)
+		c.AddArg("branches", "the branch names or match pattern(glob mode)", true, true)
+	},
+	Func: func(c *gcli.Command, args []string) error {
+		rp := app.Gitx().LoadRepo(blOpts.Workdir)
+		if blOpts.Fetch {
+			if err := rp.FetchAll("-np"); err != nil {
+				return err
+			}
+		}
+
+		matcher := brinfo.NewMulti()
+		patterns := c.Arg("branches").Strings()
+
+		var branches []string
+		for _, pattern := range patterns {
+			if gitutil.IsBranchName(pattern) {
+				branches = append(branches, pattern)
+				continue
+			}
+
+			// as match pattern
+			matcher.Add(brinfo.NewMatcher(pattern))
+		}
+
+		bis := rp.BranchInfos()
+		opt := &gitw.SearchOpt{Flag: gitw.BrSearchLocal, Remote: bdOpts.Remote}
+		if bdOpts.Remote != "" {
+			opt.Flag = gitw.BrSearchRemote
+		}
+
+		brs := bis.SearchV2(matcher, opt)
+		num := len(brs)
+
+		rp.SetDryRun(blOpts.DryRun)
+		colorp.Cyanf("Will delete %d branches, Glob match number %d\n", num+len(branches), num)
+
+		if blOpts.Confirm && !cliutil.Confirm("Do you want to continue?") {
+			colorp.Cyanln("Canceled")
+			return nil
+		}
+
+		for _, info := range brs {
+			// git branch -d feature-*
+			// git push origin --delete feature-*
+			colorp.Warnf("Do delete branch: %s\n", info.Name)
+			if err := rp.BranchDelete(info.Short, info.Remote); err != nil {
+				return err
+			}
+		}
+		return nil
+	},
 }
 
 var blOpts = struct {
@@ -55,6 +134,8 @@ var BranchListCmd = &gcli.Command{
 	Examples: `
 # List branches by glob pattern
 {$fullCmd} -m "fea*"
+# List branches by prefix pattern
+{$fullCmd} -m "prefix:fea-"
 
 # List branches by regex pattern
 {$fullCmd} --reg -m "fea_\d+"
@@ -86,20 +167,20 @@ var BranchListCmd = &gcli.Command{
 		colorp.Infoln("Load repo branches ...")
 		bis := rp.BranchInfos()
 
-		tle := "Local"
-		var brs []*gitw.BranchInfo
-
-		if blOpts.All {
-			tle = "Local+Remotes"
-			brs = bis.All()
-		} else if blOpts.Remote != "" {
-			tle = blOpts.Remote
-			brs = bis.Remotes(blOpts.Remote)
-		} else {
-			brs = bis.Locales()
-		}
-
 		if blOpts.Match == "" {
+			tle := "Local"
+			var brs []*gitw.BranchInfo
+
+			if blOpts.All {
+				tle = "Local+Remotes"
+				brs = bis.All()
+			} else if blOpts.Remote != "" {
+				tle = blOpts.Remote
+				brs = bis.Remotes(blOpts.Remote)
+			} else {
+				brs = bis.Locales()
+			}
+
 			colorp.Cyanf("Branches on %q(total: %d)\n", tle, len(brs))
 			for i, info := range brs {
 				colorp.Infof(" %-24s %s\n", info.Short, info.HashMsg)
@@ -110,30 +191,31 @@ var BranchListCmd = &gcli.Command{
 			return nil
 		}
 
-		var number int
-		matcher := gitx.NewBranchMatcher(blOpts.Match, blOpts.Regex)
-		colorp.Cyanf("Branches on %q(total: %d, %s)\n", tle, len(brs), matcher.String())
+		// ------ search branches
 
-		rp.SetDryRun(blOpts.DryRun)
+		tle := "Local"
+		if blOpts.All {
+			tle = "Local+Remotes"
+		} else if blOpts.Remote != "" {
+			tle = blOpts.Remote
+		}
+
+		typName := strutil.OrCond(blOpts.Regex, "regexp", "")
+		matcher := brinfo.NewMatcher(blOpts.Match, typName)
+
+		opt := &gitw.SearchOpt{Flag: gitw.BrSearchLocal, Remote: blOpts.Remote, Limit: blOpts.Limit}
+		brs := bis.SearchV2(matcher, opt)
+		colorp.Cyanf("Branches on %q(found: %d, %s)\n", tle, len(brs), matcher.String())
+
 		if blOpts.Confirm && !cliutil.Confirm("Do you want to continue?") {
 			colorp.Cyanln("Canceled")
 			return nil
 		}
 
-		var execCmd *cmdr.Cmd
-		if blOpts.Exec != "" {
-			execCmd = cmdr.NewCmdline(blOpts.Exec).
-				WithWorkDir(rp.Dir()).
-				WithDryRun(blOpts.DryRun).
-				PrintCmdline()
-		}
+		spl := textutil.NewVarReplacer("{,}")
+		rp.SetDryRun(blOpts.DryRun)
 
 		for _, info := range brs {
-			if !matcher.Match(info.Short) {
-				continue
-			}
-
-			number++
 			if blOpts.Delete {
 				// git branch -d feature-*
 				// git push origin --delete feature-*
@@ -141,15 +223,14 @@ var BranchListCmd = &gcli.Command{
 				if err := rp.BranchDelete(info.Short, info.Remote); err != nil {
 					return err
 				}
-			} else if execCmd != nil {
+			} else if blOpts.Exec != "" {
 				vs := map[string]string{
 					"branch": info.Short,
 					"hash":   info.Hash,
 					"remote": info.Remote,
 				}
-				spl := textutil.NewVarReplacer("{,}")
 
-				execCmd = cmdr.NewCmdline(spl.RenderSimple(blOpts.Exec, vs)).
+				execCmd := cmdr.NewCmdline(spl.RenderSimple(blOpts.Exec, vs)).
 					WithWorkDir(rp.Dir()).
 					WithDryRun(blOpts.DryRun).
 					PrintCmdline()
@@ -160,13 +241,7 @@ var BranchListCmd = &gcli.Command{
 			} else {
 				colorp.Infof(" %-24s %s\n", info.Short, info.HashMsg)
 			}
-
-			if blOpts.Limit > 0 && number >= blOpts.Limit {
-				break
-			}
 		}
-
-		colorp.Cyanln("Match Number:", number)
 
 		if blOpts.Update {
 			if err := rp.FetchAll("-np"); err != nil {
