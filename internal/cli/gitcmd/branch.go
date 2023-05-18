@@ -11,7 +11,6 @@ import (
 	"github.com/gookit/gitw/gitutil"
 	"github.com/gookit/goutil/basefn"
 	"github.com/gookit/goutil/cliutil"
-	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/strutil/textutil"
 	"github.com/gookit/goutil/sysutil/cmdr"
 	"github.com/gookit/goutil/timex"
@@ -59,8 +58,9 @@ var BranchDeleteCmd = &gcli.Command{
 {$fullCmd} -r origin fix_* # use glob match
 `,
 	Config: func(c *gcli.Command) {
+		bdOpts.BindCommonFlags(c)
 		c.MustFromStruct(&bdOpts)
-		c.AddArg("branches", "the branch names or match pattern(glob mode)", true, true)
+		c.AddArg("branches", "the branch names or match pattern(can with match mode)", true, true)
 	},
 	Func: func(c *gcli.Command, args []string) error {
 		rp := app.Gitx().LoadRepo(blOpts.Workdir)
@@ -117,7 +117,6 @@ var blOpts = struct {
 	cmdbiz.CommonOpts
 	Remote string `flag:"desc=only show branches on the remote;shorts=r"`
 	Match  string `flag:"desc=the branch name match pattern, default use glob mode;shorts=p,m"`
-	Regex  bool   `flag:"desc=enable regexp for match pattern;shorts=reg"`
 	Limit  int    `flag:"desc=limit the max match branches;shorts=n"`
 	All    bool   `flag:"desc=display all branches;shorts=a"`
 	Exec   string `flag:"desc=execute command for each branch;shorts=x"`
@@ -134,13 +133,14 @@ var BranchListCmd = &gcli.Command{
 	Examples: `
 # List branches by glob pattern
 {$fullCmd} -m "fea*"
+{$fullCmd} -m "glob:fix_2[1|2]*"
 # List branches by prefix pattern
 {$fullCmd} -m "prefix:fea-"
 
 # List branches by regex pattern
-{$fullCmd} --reg -m "fea_\d+"
+{$fullCmd} -m "regex:fea_\d+"
 # match like fix_23_04
-{$fullCmd} --reg -m "f[a-z]*_[0-9]+_\d+"
+{$fullCmd} -m "regex:f[a-z]*_[0-9]+_\d+"
 
 # Find and delete remote branches
 {$fullCmd} -r origin -m fix_* --delete
@@ -200,8 +200,7 @@ var BranchListCmd = &gcli.Command{
 			tle = blOpts.Remote
 		}
 
-		typName := strutil.OrCond(blOpts.Regex, "regexp", "")
-		matcher := brinfo.NewMatcher(blOpts.Match, typName)
+		matcher := brinfo.NewMatcher(blOpts.Match)
 
 		opt := &gitw.SearchOpt{Flag: gitw.BrSearchLocal, Remote: blOpts.Remote, Limit: blOpts.Limit}
 		brs := bis.SearchV2(matcher, opt)
@@ -304,8 +303,8 @@ var BranchCreateCmd = &gcli.Command{
 
 		// fetch remotes and check branch exists
 		colorp.Infoln("Fetch remotes and check branch exists")
-		rr.GitCmd("fetch", "-np", defRemote).GitCmd("fetch", "-np", srcRemote)
-		if err := rr.Run(); err != nil {
+		rr.GitCmd("fetch", "-a", "-np")
+		if err := rr.RunReset(); err != nil {
 			return err
 		}
 

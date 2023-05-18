@@ -3,15 +3,17 @@ package gitcmd
 import (
 	"path/filepath"
 
+	"github.com/gookit/color/colorp"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gitw"
 	"github.com/gookit/gitw/chlog"
+	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/dump"
 )
 
 var (
 	chlogOpts = struct {
-		limit     gcli.String
+		limit     cflag.String
 		sha1      string
 		sha2      string
 		style     string
@@ -61,14 +63,15 @@ The style for generate for changelog.
 			c.BoolOpt2(&chlogOpts.unShallow, "unshallow", "Convert to a complete warehouse, useful on GitHub Action.")
 		},
 		Func: func(c *gcli.Command, args []string) error {
-			baseDir := c.Arg("baseDir").String()
-			absDir, err := filepath.Abs(baseDir)
+			// baseDir := c.Arg("baseDir").String()
+			absDir, err := filepath.Abs(c.WorkDir())
 			if err != nil {
 				return err
 			}
 
 			repo := gitw.NewRepo(absDir)
-			dump.P(repo.DefaultRemoteInfo())
+			colorp.Infoln("chlog options:")
+			dump.NoLoc(repo.DefaultRemoteInfo())
 
 			cl := chlog.New()
 			cl.Formatter = &chlog.MarkdownFormatter{
@@ -82,10 +85,15 @@ The style for generate for changelog.
 
 			chlogOpts.sha1 = c.Arg("oldVersion").String()
 			chlogOpts.sha2 = c.Arg("newVersion").String()
-			dump.P(chlogOpts)
+			colorp.Infoln("chlog options:")
+			dump.NoLoc(chlogOpts)
 
 			// fetch git log
 			cl.FetchGitLog(chlogOpts.sha1, chlogOpts.sha2, "--no-merges")
+			if cl.LogIsEmpty() {
+				colorp.Infoln("Not found change log in two hash version")
+				return nil
+			}
 
 			if err = cl.Generate(); err != nil {
 				return err

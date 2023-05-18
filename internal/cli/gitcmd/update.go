@@ -67,7 +67,17 @@ func NewUpdateCmd() *gcli.Command {
 func updateHandleFunc(c *gcli.Command, _ []string) (err error) {
 	cfg := apputil.GitCfgByCmdID(c)
 	rp := cfg.LoadRepo(upOpts.Workdir)
+	rp.SetDryRun(upOpts.DryRun)
 	c.Infoln("TIP: pre-check for update repository data")
+
+	// update remote info
+	err = rp.Cmd("fetch", "--all", "-np").Run()
+	if err != nil {
+		return err
+	}
+	if upOpts.fetchAll {
+		return nil
+	}
 
 	defRemote := rp.DefaultRemote
 	srcRemote := rp.SourceRemote
@@ -77,10 +87,6 @@ func updateHandleFunc(c *gcli.Command, _ []string) (err error) {
 		return c.NewErrf(
 			"not found default remote %q, please add it by `git remote add %s URL`",
 			defRemote, defRemote)
-	}
-
-	if upOpts.fetchAll {
-		return rp.Cmd("fetch", "--all", "-np").Run()
 	}
 
 	defBranch := rp.DefaultBranch

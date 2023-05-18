@@ -43,7 +43,7 @@ func NewCheckoutCmd() *gcli.Command {
 
 			// fetch remotes
 			colorp.Infoln("Fetch remotes and check branch exists")
-			rr.GitCmd("fetch", "-np", defRemote).GitCmd("fetch", "-np", srcRemote)
+			rr.GitCmd("fetch", "-a", "-np")
 			if err := rr.RunReset(); err != nil {
 				return err
 			}
