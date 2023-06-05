@@ -9,12 +9,19 @@ plugin:
     - plugins # relative base dir.
     - ${GOPATH}/bin
 
-# scripts for kite
+# scripts in kite
 script:
+  # script file dir.
   script_dirs:
     - scripts # relative base dir.
+  define_dir: $config/scripts
   define_files:
     - $config/module/scripts.yml
+    - ?$config/module/scripts.$os.yml
+  type_shell:  # bash, sh, zsh or empty for run each command
+  parse_env: true # parse ENV var in command line.
+  scripts:
+    test1: echo hello
 
 # quick package manage
 package:
@@ -27,7 +34,14 @@ jenkins:
   host_url: xyz
   api_token:
 
+# quick jump manage
 quick_jump:
   data_dir: $data
-  aliases:
-    home: ~
+  check_exist: true
+  named_paths:
+    home: '~'
+
+# https://cht.sh config
+cheat:
+  #  cache_dir: $tmp/cheat
+  cache_dir: ~/.kite/tmp/cheat

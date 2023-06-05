@@ -104,7 +104,16 @@ var DecodeQueryCmd = &gcli.Command{
 			return err
 		}
 
-		show.AList("Decoded Query:", values)
+		mp := make(map[string]any, len(values))
+		for key, val := range values {
+			if len(val) == 1 {
+				mp[key] = val[0]
+			} else {
+				mp[key] = val
+			}
+		}
+
+		show.AList("Decoded Query:", mp)
 		return nil
 	},
 }

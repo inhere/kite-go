@@ -12,7 +12,7 @@ import (
 // CommonOpts some common vars struct
 type CommonOpts struct {
 	Proxy   bool
-	DryRun  bool
+	DryRun  bool `flag:"name=dry-run;desc=run workflow, but dont real execute command;shorts=dry"`
 	Confirm bool
 	Workdir string
 	GitHost string

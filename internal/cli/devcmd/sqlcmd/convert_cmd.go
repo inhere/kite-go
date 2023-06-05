@@ -7,7 +7,6 @@ import (
 
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/arrutil"
-	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/jsonutil"
 	"github.com/gookit/goutil/strutil"
 	"github.com/inhere/kite-go/internal/apputil"
@@ -35,32 +34,40 @@ var Conv2JSONCmd = &gcli.Command{
 		c.AddArg("sql", "the insert SQL. allow: @c")
 	},
 	Func: func(c *gcli.Command, _ []string) error {
-		insertSql := c.Arg("sql").String()
-		insertSql, err := apputil.ReadSource(insertSql)
+		insertSql, err := apputil.ReadSource(c.Arg("sql").String())
 		if err != nil {
 			return err
 		}
 
 		fieldStr, valueStr := strutil.TrimCut(insertSql, " VALUES ")
 		if len(valueStr) == 0 {
-			return errors.New("not found VALUES in SQL")
+			return errors.New("not found keywords 'VALUES' in SQL")
 		}
 
 		// spit fields
 		fields := strutil.Split(strutil.Trim(fieldStr, " ()"), ",")
+		if len(fields) > 0 {
+			_, first := strutil.QuietCut(fields[0], "(")
+			fields[0] = first
+		}
+
 		fields = arrutil.Map(fields, func(obj string) (val string, ok bool) {
 			return strings.Trim(obj, " ` "), true
 		})
-		dump.P(fields)
+		// dump.P(fields)
 
 		// split values
 		values := strutil.Split(strutil.Trim(valueStr, " ();"), ", ")
-		values = arrutil.Map(values, func(obj string) (val string, ok bool) {
-			return strings.TrimSpace(obj), true
+		anyVals := arrutil.Map(values, func(obj string) (val any, ok bool) {
+			obj = strings.TrimSpace(obj)
+			if strutil.IsNumeric(obj) {
+				return strutil.Int2(obj), true
+			}
+			return strings.Trim(obj, "'\""), true
 		})
-		dump.P(values)
+		// dump.P(values)
 
-		mp := arrutil.CombineToSMap(fields, values)
+		mp := arrutil.CombineToMap(fields, anyVals)
 		bs, err := jsonutil.EncodePretty(mp)
 		if err != nil {
 			return err
