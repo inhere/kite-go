@@ -1,7 +1,6 @@
 package textcmd
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 
@@ -49,16 +48,25 @@ var TextReplaceCmd = &gcli.Command{
 			trOpts.From, trOpts.To = strutil.QuietCut(strings.Trim(trOpts.Expr, "/"), "/")
 		}
 
-		var dst string
+		var ret string
 		if trOpts.Regex {
 			reg := regexp.MustCompile(trOpts.From)
-			dst = reg.ReplaceAllString(src, trOpts.To)
+			ret = reg.ReplaceAllString(src, trOpts.To)
 		} else {
-			dst = strings.ReplaceAll(src, trOpts.From, trOpts.To)
+			ret = strings.ReplaceAll(src, trOpts.From, trOpts.To)
 		}
 
-		fmt.Println(dst)
-		return nil
+		sw := kautorw.NewSourceWriter("")
+		err = sw.SetSrcFile(trOpts.text)
+
+		if trOpts.Write {
+			sw.WithDst("@src")
+			if err != nil {
+				return c.NewErrf("with option --write, but %s", err)
+			}
+		}
+
+		return sw.WriteString(ret)
 	},
 }
 
@@ -66,6 +74,7 @@ var ttOpts = struct {
 	vars gflag.KVString
 	text string
 
+	write   bool
 	engine  string
 	varFmt  string
 	varFile string
@@ -86,6 +95,7 @@ func NewTemplateCmd() *gcli.Command {
 			c.StrOpt2(&ttOpts.varFile, "var-file", "custom sets the variables file path")
 			c.StrOpt2(&ttOpts.output, "output,o", "custom sets the output target", gflag.WithDefault("stdout"))
 			c.VarOpt2(&ttOpts.vars, "vars,var,v", "sets template variables for render. format: `KEY=VALUE`")
+			c.BoolOpt2(&ttOpts.write, "write,w", "write result to src file, on input is filepath")
 
 			c.StrOpt2(&ttOpts.engine, "engine, eng", `select the template engine for rendering contents. 
 <b>Allow</>:
@@ -93,7 +103,7 @@ func NewTemplateCmd() *gcli.Command {
   simple/replace    - only support simple variables replace rendering
 `)
 
-			c.AddArg("text", "template file or contents for rendering").WithAfterFn(func(a *gflag.CliArg) error {
+			c.AddArg("text", "src template file or contents for rendering").WithAfterFn(func(a *gflag.CliArg) error {
 				ttOpts.text = a.String()
 				return nil
 			})
@@ -139,6 +149,14 @@ func NewTemplateCmd() *gcli.Command {
 			}
 
 			sw := kautorw.NewSourceWriter(ttOpts.output)
+			err = sw.SetSrcFile(trOpts.text)
+
+			if trOpts.Write {
+				sw.WithDst("@src")
+				if err != nil {
+					return c.NewErrf("with option --write, but %s", err)
+				}
+			}
 			return sw.WriteString(ret)
 		},
 	}
