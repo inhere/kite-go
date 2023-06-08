@@ -14,7 +14,7 @@ require (
 	github.com/gomarkdown/markdown v0.0.0-20230313173142-2ced44d5b584
 	github.com/gookit/color v1.5.3
 	github.com/gookit/config/v2 v2.2.1
-	github.com/gookit/event v1.0.6
+	github.com/gookit/event v1.1.0
 	github.com/gookit/gcli/v3 v3.2.1
 	github.com/gookit/gitw v0.3.4
 	github.com/gookit/goutil v0.6.8
