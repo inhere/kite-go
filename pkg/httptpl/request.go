@@ -106,7 +106,7 @@ var rpl = textutil.NewVarReplacer("{{,}}", func(vp *textutil.VarReplacer) {
 })
 
 // Send request with variables
-func (t *Template) Send(vars maputil.Data, hs map[string]string, opt *httpreq.ReqOption) error {
+func (t *Template) Send(vars maputil.Data, hs map[string]string, opt *httpreq.Option) error {
 	req, err := t.BuildRequest(vars, hs)
 	if err != nil {
 		return err
@@ -117,7 +117,7 @@ func (t *Template) Send(vars maputil.Data, hs map[string]string, opt *httpreq.Re
 	}
 
 	// send request
-	resp, err := httpreq.Std().SendRequest(req, opt)
+	resp, err := httpreq.SendRequest(req, opt)
 	if err != nil {
 		return err
 	}

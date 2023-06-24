@@ -1,10 +1,9 @@
 package httpcmd
 
 import (
-	"strings"
-
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/mathutil"
+	"github.com/gookit/goutil/testutil"
 	"github.com/gookit/rux"
 	"github.com/gookit/rux/render"
 )
@@ -27,33 +26,9 @@ func NewEchoServerCmd() *gcli.Command {
 				esOpts.port = uint(mathutil.RandInt(6000, 9999))
 			}
 
-			srv := rux.New(func(r *rux.Router) {
-
-			})
-
+			srv := rux.New(func(r *rux.Router) {})
 			srv.Any("/{all}", func(c *rux.Context) {
-				bs, err := c.RawBodyData()
-				if err != nil {
-					c.AbortThen().AddError(err)
-					return
-				}
-
-				data := rux.M{
-					"method":  c.Req.Method,
-					"headers": c.Req.Header,
-					"uri":     c.Req.RequestURI,
-					"query":   c.QueryValues(),
-					"body":    string(bs),
-				}
-
-				if strings.Contains(c.ContentType(), "/json") {
-					objJson := rux.M{}
-					if err := c.BindJSON(&objJson); err != nil {
-						c.AbortThen().AddError(err)
-						return
-					}
-					data["json"] = objJson
-				}
+				data := testutil.BuildEchoReply(c.Req)
 
 				// c.JSON(200, data)
 				c.Respond(200, data, render.NewJSONIndented())

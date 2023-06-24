@@ -10,7 +10,6 @@ import (
 	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/cliutil"
-	"github.com/gookit/goutil/netutil/httpctype"
 	"github.com/gookit/goutil/netutil/httpreq"
 	"github.com/gookit/greq"
 	"github.com/inhere/kite-go/internal/apputil"
@@ -45,14 +44,7 @@ var SendRequestCmd = &gcli.Command{
 	},
 	Func: func(c *gcli.Command, _ []string) error {
 		hc := greq.New()
-		hc.Method(reqOpts.method)
-
-		if reqOpts.json {
-			hc.ContentType(httpctype.JSON)
-		}
-		if reqOpts.data != "" {
-			hc.AnyBody(reqOpts.data)
-		}
+		hc.DefaultMethod(reqOpts.method)
 
 		hc.BeforeSend = func(r *http.Request) {
 			cliutil.Yellowln("REQUEST:")
@@ -62,14 +54,21 @@ var SendRequestCmd = &gcli.Command{
 			}
 		}
 
-		apiUrl := c.Arg("url").String()
+		b := hc.Builder()
+		b.SetHeaderMap(reqOpts.headers.Data())
+
+		if reqOpts.json {
+			b.JSONType()
+		}
+		if reqOpts.data != "" {
+			b.AnyBody(reqOpts.data)
+		}
 		if !reqOpts.query.IsEmpty() {
-			apiUrl = httpreq.AppendQueryToURLString(apiUrl, httpreq.ToQueryValues(reqOpts.query.Data()))
+			b.WithQuerySMap(reqOpts.query.Data())
 		}
 
-		reqOpts := &greq.Option{
-			HeaderM: reqOpts.headers.Data(),
-		}
+		reqOpts := greq.NewOpt()
+		apiUrl := c.Arg("url").String()
 		resp, err := hc.SendWithOpt(apiUrl, reqOpts)
 		if err != nil {
 			return err

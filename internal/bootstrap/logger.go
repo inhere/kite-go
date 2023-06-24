@@ -3,6 +3,7 @@ package bootstrap
 import (
 	"github.com/gookit/slog"
 	"github.com/gookit/slog/handler"
+	"github.com/gookit/slog/rotatefile"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/internal/initlog"
 )
@@ -22,6 +23,8 @@ func BootLogger(ka *app.KiteApp) error {
 	}
 
 	logCfg := handler.NewConfig(
+		handler.WithRotateTime(rotatefile.EveryDay),
+		handler.WithRotateMode(rotatefile.ModeCreate),
 		handler.WithLogLevel(slog.LevelByName(confMap.Str("level"))),
 		handler.WithLogfile(ka.PathResolve(confMap.Str("logfile"))),
 		handler.WithLevelMode(uint8(confMap.Uint("level_mode"))),

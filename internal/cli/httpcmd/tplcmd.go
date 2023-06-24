@@ -19,9 +19,11 @@ import (
 	"github.com/gookit/goutil/netutil/httpreq"
 	"github.com/gookit/goutil/stdio"
 	"github.com/inhere/kite-go/internal/app"
+	"github.com/inhere/kite-go/internal/biz/cmdbiz"
 )
 
 var stOpts = struct {
+	cmdbiz.CommonOpts
 	envName string
 	envFile string
 	// topic  string
@@ -52,6 +54,7 @@ var SendTemplateCmd = &gcli.Command{
 {$fullCmd} -d gitlab --plug git,fs --api api-build.json5 -e prod -v group={{git.group}} -v repoName={{git.repo}}
 `,
 	Config: func(c *gcli.Command) {
+		stOpts.BindCommonFlags(c)
 		c.IntOpt2(&stOpts.timeout, "timeout, t", "sets the request timeout, unit: ms. default: 500")
 		c.StrOpt2(&stOpts.envName, "env, e", "sets env name for run template")
 		c.StrOpt2(&stOpts.envFile, "env-file", "custom sets env file for run template")

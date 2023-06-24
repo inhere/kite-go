@@ -43,14 +43,18 @@ func LoadEnvsByFile(envFile string) (EnvsMap, error) {
 // DomainConfig struct.
 // name: domain, topic, collection
 type DomainConfig struct {
+	// Name domain name
 	Name string `json:"name"`
 	// ConfigFile domain config file path
 	ConfigFile string `json:"config_file"`
 	// PathResolver handler
 	PathResolver func(path string) string
 
-	// TplDir path for request templates
-	TplDir string   `json:"tpl_dir"`
+	// TplDir path for request templates.
+	//
+	// default is: {ConfigFile Dir}/{domainName}
+	TplDir string `json:"tpl_dir"`
+	// TplExt allowed template file ext list
 	TplExt []string `json:"tpl_ext"`
 
 	// Vars global variables
@@ -77,6 +81,16 @@ type DomainConfig struct {
 	//		"jenkins.http": Templates{set: [Template, ...]}
 	// 	}
 	tsMap map[string]*Templates
+}
+
+// NewDomainConfig instance
+func NewDomainConfig(name, configFile string) *DomainConfig {
+	return &DomainConfig{
+		Name:       name,
+		ConfigFile: configFile,
+		// default sets
+		// PathResolver: fsutil.ResolvePath,
+	}
 }
 
 // Init some info, load domain config
