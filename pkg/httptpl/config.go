@@ -48,7 +48,7 @@ type DomainConfig struct {
 	// ConfigFile domain config file path
 	ConfigFile string `json:"config_file"`
 	// PathResolver handler
-	PathResolver func(path string) string
+	PathResolver func(path string) string `json:"-"`
 
 	// TplDir path for request templates.
 	//

@@ -31,11 +31,12 @@ var stOpts = struct {
 	// ide http client file
 	hcFile   string
 	tplName  string
-	timeout  int
+	timeout  int // ms
 	userVars gflag.KVString
 	verbose  gcli.VerbLevel
 	plugins  gflag.String
 }{
+	timeout:  500,
 	userVars: cflag.NewKVString(),
 }
 
@@ -63,6 +64,8 @@ var SendTemplateCmd = &gcli.Command{
 		c.StrOpt2(&stOpts.tplName, "tpl-name, api", "the API template name or file name")
 		c.VarOpt2(&stOpts.plugins, "plugin,plug", "enable some plugins on exec request. allow:git,fs\ne.g. --plugin=plugin1,plugin2")
 		c.VarOpt2(&stOpts.userVars, "vars, var, v", "custom sets some variables on request. format: `KEY=VALUE`")
+		c.VarOpt2(&stOpts.verbose, "verbose, vv", `sets the verbose level.
+allow: 0...5 OR crazy, debug, info, warn, error, quiet. default: quiet`)
 
 		// todo: loop query, send topic, send by template
 		// eg:
@@ -86,10 +89,7 @@ var SendTemplateCmd = &gcli.Command{
 			return err
 		}
 
-		uv := stOpts.userVars.Data()
-		if len(uv) > 0 {
-			vs.LoadSMap(uv)
-		}
+		vs.LoadSMap(stOpts.userVars.Data())
 
 		if len(stOpts.plugins) > 0 {
 			wDir := c.WorkDir()
@@ -116,38 +116,53 @@ var SendTemplateCmd = &gcli.Command{
 			}
 		}
 
-		if len(vs) > 0 {
-			// c.Infof("send request without some variables")
-			show.AList("Variables:", vs)
-		} else {
-			c.Infoln("Send template request without any variables")
-		}
+		t.SetTimeout(stOpts.timeout)
 
-		t.BeforeSend = func(r *http.Request, b *bytes.Buffer) {
-			cliutil.Yellowln("REQUEST:")
-			cliutil.Greenf("%s %s\n\n", r.Method, r.URL.String())
-			if len(r.Header) > 0 {
-				fmt.Println(httpreq.HeaderToString(r.Header))
+		if stOpts.verbose > gcli.VerbWarn {
+			show.AList("Request Options:", map[string]any{
+				"timeout(ms)": t.Timeout,
+			})
+
+			if len(vs) > 0 {
+				// c.Infof("send request without some variables")
+				show.AList("Variables:", vs)
+			} else {
+				c.Infoln("Send template request without any variables")
 			}
 
-			if b != nil && b.Len() > 0 {
-				fmt.Println(b.String())
+			t.BeforeSend = func(r *http.Request, b *bytes.Buffer) {
+				cliutil.Yellowln("REQUEST:")
+				cliutil.Greenf("%s %s\n\n", r.Method, r.URL.String())
+				if len(r.Header) > 0 {
+					fmt.Println(httpreq.HeaderToString(r.Header))
+				}
+
+				if b != nil && b.Len() > 0 {
+					fmt.Println(b.String())
+				}
+				colorp.Cyanln("\n-------------------------------------------------------------------------\n", "")
 			}
-			colorp.Cyanln("\n-------------------------------------------------------------------------\n", "")
+			t.AfterSend = func(resp *httpreq.Resp, err error) {
+				if err != nil {
+					return
+				}
+
+				cliutil.Yellowln("RESPONSE:")
+				if resp.IsEmptyBody() {
+					fmt.Print(resp.String())
+				} else {
+					fmt.Println(resp.String())
+				}
+			}
 		}
 
-		opt := &httpreq.Option{
-			Timeout: stOpts.timeout,
-		}
-		if err := t.Send(vs, dc.Header, opt); err != nil {
+		opt := httpreq.NewOpt()
+		if err = t.Send(vs, dc.Header, opt); err != nil {
 			return err
 		}
 
-		cliutil.Yellowln("RESPONSE:")
-		if t.Resp.IsEmptyBody() {
-			fmt.Print(t.Resp.String())
-		} else {
-			fmt.Println(t.Resp.String())
+		if stOpts.verbose <= gcli.VerbWarn {
+			fmt.Println(t.Resp.BodyString())
 		}
 		return nil
 	},

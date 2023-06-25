@@ -60,7 +60,7 @@ func (m *Manager) Domain(name string) (*DomainConfig, error) {
 
 	// auto load domain config from m.DefaultDir
 	if dir := m.DefaultDir; dir != "" {
-		confFile := fmt.Sprintf("%s/%s-domain.%s", dir, name, m.DefaultExt)
+		confFile := fmt.Sprintf("%s/%s-domain.%s", m.PathResolver(dir), name, m.DefaultExt)
 
 		if fsutil.IsFile(confFile) {
 			dc = NewDomainConfig(name, confFile)

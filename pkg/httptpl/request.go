@@ -46,6 +46,8 @@ type Template struct {
 	Header map[string]string `json:"header"`
 	// BasicAuth config
 	BasicAuth *httpreq.BasicAuthConf `json:"basic_auth"`
+	// Timeout for request, unit: ms
+	Timeout int `json:"timeout"`
 
 	// Body for request
 	Body any `json:"body"`
@@ -59,7 +61,9 @@ type Template struct {
 	bodyBuf *bytes.Buffer
 
 	// BeforeSend hook
-	BeforeSend func(r *http.Request, body *bytes.Buffer)
+	BeforeSend func(r *http.Request, body *bytes.Buffer) `json:"-"`
+	// AfterSend hook
+	AfterSend func(w *httpreq.Resp, err error) `json:"-"`
 
 	// Resp http response data check
 	Resp *httpreq.Resp `json:"response"`
@@ -101,6 +105,13 @@ func (t *Template) FromHCString(s string) error {
 	return nil
 }
 
+// SetTimeout for request
+func (t *Template) SetTimeout(ms int) {
+	if ms > -1 {
+		t.Timeout = ms
+	}
+}
+
 var rpl = textutil.NewVarReplacer("{{,}}", func(vp *textutil.VarReplacer) {
 	vp.WithParseEnv().WithParseDefault().DisableFlatten().KeepMissingVars()
 })
@@ -116,14 +127,18 @@ func (t *Template) Send(vars maputil.Data, hs map[string]string, opt *httpreq.Op
 		t.BeforeSend(req, t.bodyBuf)
 	}
 
-	// send request
-	resp, err := httpreq.SendRequest(req, opt)
-	if err != nil {
-		return err
-	}
+	// make option
+	opt = httpreq.MakeOpt(opt)
+	opt.Timeout = t.Timeout
 
-	t.Resp = httpreq.NewResp(resp)
-	return nil
+	// send request
+	resp, err := httpreq.WrapResp(httpreq.SendRequest(req, opt))
+	t.Resp = resp
+
+	if t.AfterSend != nil {
+		t.AfterSend(resp, err)
+	}
+	return err
 }
 
 // BuildRequest instance

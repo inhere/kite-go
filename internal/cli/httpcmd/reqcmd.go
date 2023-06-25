@@ -13,9 +13,11 @@ import (
 	"github.com/gookit/goutil/netutil/httpreq"
 	"github.com/gookit/greq"
 	"github.com/inhere/kite-go/internal/apputil"
+	"github.com/inhere/kite-go/internal/biz/cmdbiz"
 )
 
 var reqOpts = struct {
+	cmdbiz.CommonOpts
 	// url  string
 	data string
 	json bool
@@ -34,6 +36,8 @@ var SendRequestCmd = &gcli.Command{
 	Aliases: []string{"req", "curl"},
 	Desc:    "send http request like curl, ide-http-client",
 	Config: func(c *gcli.Command) {
+		reqOpts.BindProxyConfirm(c)
+
 		c.BoolOpt2(&reqOpts.json, "j,json", "set use json content type")
 		c.StrOpt2(&reqOpts.method, "method, m", "set the reqeust method, default is GET", gflag.WithDefault("GET"))
 		c.VarOpt2(&reqOpts.headers, "header, H", "set custom headers, eg: \"Content-Type: application/json\"")

@@ -20,7 +20,7 @@ func NewFileServerCmd() *gcli.Command {
 		Desc:    "start an simple file http server",
 		Aliases: []string{"fs-serve", "fs-srv", "fss"},
 		Config: func(c *gcli.Command) {
-			fsOpts.BindCommonFlags1(c)
+			fsOpts.BindWorkdirDryRun(c)
 			c.UintOpt(&fsOpts.port, "port", "P", 0, "custom the echo server port, default will use random `port`")
 		},
 		Func: func(c *gcli.Command, args []string) error {
