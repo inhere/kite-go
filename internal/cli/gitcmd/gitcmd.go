@@ -2,14 +2,20 @@ package gitcmd
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"syscall"
 
 	"github.com/gookit/color/colorp"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/events"
+	"github.com/gookit/gcli/v3/gflag"
+	"github.com/gookit/gitw"
+	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/dump"
+	"github.com/gookit/goutil/fsutil"
+	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/sysutil/cmdr"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/internal/biz/cmdbiz"
@@ -17,7 +23,10 @@ import (
 )
 
 // GitOpts object
-var GitOpts = cmdbiz.CommonOpts{}
+var GitOpts = struct {
+	AutoChDir
+	cmdbiz.CommonOpts
+}{}
 
 // GitCommands commands for use git
 var GitCommands = &gcli.Command{
@@ -46,6 +55,7 @@ var GitCommands = &gcli.Command{
 	},
 	Config: func(c *gcli.Command) {
 		GitOpts.BindCommonFlags(c)
+		GitOpts.BindChdirFlags(c)
 
 		c.On(events.OnCmdSubNotFound, SubCmdNotFound)
 		c.On(events.OnCmdRunBefore, func(ctx *gcli.HookCtx) bool {
@@ -110,4 +120,27 @@ func RedirectToGitx(ctx *gcli.HookCtx) (stop bool) {
 		dump.P(err)
 	}
 	return true
+}
+
+// AutoChDir auto change dir
+type AutoChDir struct {
+	// AutoGit auto find .git dir in parent.
+	AutoGit bool
+}
+
+// BindChdirFlags for auto change dir
+func (a *AutoChDir) BindChdirFlags(c *gcli.Command) {
+	wd := c.WorkDir()
+
+	c.BoolOpt2(&a.AutoGit, "auto-root, auto-git", "auto find .git dir in parent and chdir to it", gflag.WithValidator(func(val string) error {
+		if strutil.QuietBool(val) {
+			repoDir, changed := fsutil.SearchNameUpx(wd, gitw.GitDir)
+			if changed {
+				goutil.MustOK(os.Chdir(repoDir))
+				c.ChWorkDir(repoDir)
+				cliutil.Yellowf("NOTICE: auto founded git root and will chdir to: %s\n", repoDir)
+			}
+		}
+		return nil
+	}))
 }

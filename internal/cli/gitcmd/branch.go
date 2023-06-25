@@ -303,7 +303,7 @@ var BranchCreateCmd = &gcli.Command{
 
 		// fetch remotes and check branch exists
 		colorp.Infoln("Fetch remotes and check branch exists")
-		rr.GitCmd("fetch", "-a", "-np")
+		rr.GitCmd("fetch", "--all", "-np")
 		if err := rr.RunReset(); err != nil {
 			return err
 		}

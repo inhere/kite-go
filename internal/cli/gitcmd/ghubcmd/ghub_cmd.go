@@ -11,7 +11,10 @@ import (
 )
 
 // GhOpts object
-var GhOpts = cmdbiz.CommonOpts{}
+var GhOpts = struct {
+	gitcmd.AutoChDir
+	cmdbiz.CommonOpts
+}{}
 
 // GithubCmd commands
 var GithubCmd = &gcli.Command{
@@ -31,6 +34,7 @@ var GithubCmd = &gcli.Command{
 	},
 	Config: func(c *gcli.Command) {
 		GhOpts.BindCommonFlags(c)
+		GhOpts.BindChdirFlags(c)
 		c.On(events.OnCmdRunBefore, func(ctx *gcli.HookCtx) (stop bool) {
 			c.Infoln("[kite.GHab] Workdir:", c.WorkDir())
 			return false

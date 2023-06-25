@@ -26,7 +26,7 @@ func NewInitFlowCmd() *gcli.Command {
 		Desc:    "init repo remote and other info for current project",
 		Aliases: []string{"setup"},
 		Config: func(c *gcli.Command) {
-			ifOpts.BindCommonFlags1(c)
+			ifOpts.BindWorkdirDryRun(c)
 		},
 		Func: func(c *gcli.Command, args []string) (err error) {
 			cfg := apputil.GitCfgByCmdID(c)
