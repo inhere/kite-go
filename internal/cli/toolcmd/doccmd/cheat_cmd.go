@@ -99,10 +99,7 @@ func NewCheatCmd() *gcli.Command {
 				searchApi := ChtHost + "~" + chtOpt.Search
 				colorp.Infoln("will send request to", searchApi)
 
-				reqOpt := greq.NewOpt(func(opt *greq.Option) {
-					opt.HeaderM[greq.HeaderUAgent] = greq.AgentCURL
-				})
-				resp, err := greq.GetDo(searchApi, reqOpt)
+				resp, err := greq.GetDo(searchApi, greq.WithUserAgent(greq.AgentCURL))
 				if err != nil {
 					return err
 				}
@@ -158,10 +155,7 @@ func queryCheat(topic string, queries []string, refresh bool) (string, error) {
 	}
 
 	colorp.Infoln("will send request to", chtApiUrl)
-	reqOpt := greq.NewOpt(func(opt *greq.Option) {
-		opt.HeaderM[greq.HeaderUAgent] = greq.AgentCURL
-	})
-	resp, err := greq.GetDo(chtApiUrl, reqOpt)
+	resp, err := greq.GetDo(chtApiUrl, greq.WithUserAgent(greq.AgentCURL))
 	if err != nil {
 		return "", err
 	}

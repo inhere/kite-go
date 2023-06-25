@@ -89,7 +89,7 @@ var FileFindCmd = &gcli.Command{
 {$fullCmd} -t dir --nr -x "ls -l {dir}" .
 `,
 	Config: func(c *gcli.Command) {
-		ffOpts.BindCommonFlags1(c)
+		ffOpts.BindWorkdirDryRun(c)
 		c.MustFromStruct(&ffOpts, gflag.TagRuleNamed)
 		c.AddArg("dirs", "the find directory, multi by comma or multi input. same as <mga>--dirs</>").
 			SetArrayed().

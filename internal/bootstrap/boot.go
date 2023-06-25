@@ -15,15 +15,20 @@ var defaultBaseDir string
 
 // MustRun boot and run app
 func MustRun(ka *app.KiteApp) {
+	// boot app
+	MustBoot(ka)
+
+	// to run
+	app.Run()
+}
+
+// MustBoot boot app, if it has error will exit
+func MustBoot(ka *app.KiteApp) {
 	if err := Boot(ka); err != nil {
 		cliutil.Errorp(" ERROR ")
 		fmt.Println(err)
 		os.Exit(-1)
 	}
-	// goutil.MustOK(err)
-
-	// to run
-	app.Run()
 }
 
 // Boot app

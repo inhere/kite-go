@@ -35,6 +35,8 @@ type KiteApp struct {
 	*Info
 	*Config
 	*gcli.Context
+	// AfterPreFn hook on after app pre-bootloaders booted
+	AfterPreFn func(ka *KiteApp) error
 
 	// pre-bootloaders
 	preLoaders []BootLoader
@@ -82,6 +84,13 @@ func (ka *KiteApp) Boot() error {
 	err := ka.runBootloaders(ka.preLoaders)
 	if err != nil {
 		return err
+	}
+
+	// call after pre-bootloaders booted
+	if ka.AfterPreFn != nil {
+		if err := ka.AfterPreFn(ka); err != nil {
+			return err
+		}
 	}
 
 	return ka.runBootloaders(ka.bootloaders)

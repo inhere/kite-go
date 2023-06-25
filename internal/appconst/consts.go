@@ -1,7 +1,7 @@
 package appconst
 
 const (
-	// EnvInitLogLevel key
+	// EnvInitLogLevel key. eg: export KITE_INIT_LOG=debug
 	EnvInitLogLevel = "KITE_INIT_LOG"
 	// EnvKiteVerbose level.
 	EnvKiteVerbose = "KITE_VERBOSE"
