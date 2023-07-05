@@ -1,10 +1,15 @@
 package cli
 
 import (
+	"os"
+
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/builtin"
 	"github.com/gookit/gcli/v3/events"
+	"github.com/gookit/gcli/v3/gflag"
+	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/cliutil"
+	"github.com/gookit/goutil/fsutil"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/internal/biz/cmdbiz"
 	"github.com/inhere/kite-go/internal/cli/appcmd"
@@ -61,10 +66,31 @@ func addAliases(cli *gcli.App) {
 	cli.AddAliases("app:config", "conf", "config")
 }
 
+var autoDir string
+
 func addListener(cli *gcli.App) {
 	cli.On(events.OnAppInitAfter, func(ctx *gcli.HookCtx) (stop bool) {
 		app.Log().Info("kite cli app init completed")
 		return
+	})
+
+	// bind new app options
+	cli.On(events.OnAppBindOptsAfter, func(ctx *gcli.HookCtx) (stop bool) {
+		cli.Flags().StrOpt2(&autoDir, "auto-dir,chdir", "auto find dir by name and change workdir",
+			gflag.WithValidator(func(val string) error {
+				if val == "" {
+					return nil
+				}
+
+				relDir, changed := fsutil.SearchNameUpx(cli.WorkDir(), val)
+				if changed {
+					goutil.MustOK(os.Chdir(relDir))
+					cli.ChWorkDir(relDir)
+					cliutil.Yellowf("NOTICE: auto founded dirname %q and will chdir to: %s\n", val, relDir)
+				}
+				return nil
+			}))
+		return false
 	})
 
 	cli.On(events.OnCmdRunBefore, func(ctx *gcli.HookCtx) (stop bool) {

@@ -18,7 +18,7 @@ import (
 // JSONToolCmd instance
 var JSONToolCmd = &gcli.Command{
 	Name: "json",
-	Desc: "json tool commands",
+	Desc: "json format, convert tool commands",
 	Subs: []*gcli.Command{
 		JSONQueryCmd,
 		JSONToYAMLCmd,

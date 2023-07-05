@@ -16,9 +16,9 @@ func BootCli(_ *app.KiteApp) error {
 	})
 	// some info
 	cliApp.Logo.Text = kite.Banner
+	app.Add(app.ObjCli, cliApp)
 
 	// load commands
 	cli.Boot(cliApp)
-	app.Add(app.ObjCli, cliApp)
 	return nil
 }

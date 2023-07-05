@@ -27,11 +27,11 @@ func BootLogger(ka *app.KiteApp) error {
 		handler.WithRotateMode(rotatefile.ModeCreate),
 		handler.WithLogLevel(slog.LevelByName(confMap.Str("level"))),
 		handler.WithLogfile(ka.PathResolve(confMap.Str("logfile"))),
-		handler.WithLevelMode(uint8(confMap.Uint("level_mode"))),
+		handler.WithLevelMode(slog.LevelMode(confMap.Uint("level_mode"))),
 		handler.WithBuffSize(confMap.Int("buffer_size")),
 	)
 
-	initlog.L.Infof("init the kite logger, logfile: %s", logCfg.Logfile)
+	initlog.L.Infof("init the kite logger, rotate_mode:%s logfile: %s", logCfg.RotateMode, logCfg.Logfile)
 
 	h1, err := logCfg.CreateHandler()
 	if err != nil {
