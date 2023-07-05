@@ -2,8 +2,7 @@ package httpcmd
 
 import (
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/goutil/dump"
-	"github.com/gookit/rux/handlers"
+	"github.com/gookit/rux/pkg/handlers"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/internal/web"
 	"github.com/inhere/kite-go/pkg/httpserve"
@@ -44,11 +43,8 @@ var HttpServeCmd = &gcli.Command{
 		})
 	},
 	Func: func(c *gcli.Command, args []string) error {
-
-		dump.P(httpServeOpts)
-
+		// dump.P(httpServeOpts)
 		s := httpserve.New()
-
 		r := s.Rux()
 		r.Use(handlers.PanicsHandler())
 

@@ -17,6 +17,7 @@ var HttpCmd = &gcli.Command{
 		DecodeQueryCmd,
 		NewEchoServerCmd(),
 		NewFileServerCmd(),
+		NewHookServerCmd(),
 	},
 	Config: func(c *gcli.Command) {
 

@@ -1,0 +1,60 @@
+/*
+webhook 任务配置文件 hooks.json
+
+success-http-response-code: 指定成功时返回的 HTTP 状态码
+trigger-rule-mismatch-http-response-code: 失败状态码
+include-command-output-in-response： 是否等待执行结果，相当于同步异步
+pass-arguments-to-command：参数解析，传递到脚本
+trigger-rule：校验规则
+*/
+
+{
+  "name": "some-hook",
+  // if true, will not wait for command to finish, will return a task id.
+  // if false, will wait for command to finish and return its output in response
+  "async": true,
+  "execute_command": "/home/someone/script/index.sh",
+  "command_working_directory": "/home/someone/",
+  "response_message": "Executing someone webhook...",
+  "success_http_response_code": 200,
+  "trigger_rule_mismatch_http_response_code": 401,
+  "include_command_output_in_response": false,
+  "pass_args_to_command": [
+    {
+      "source": "payload", // source allow: payload, header, query
+      "name": "head_commit.id"
+    },
+    {
+      "source": "payload",
+      "name": "pusher.name"
+    },
+    {
+      "source": "payload",
+      "name": "pusher.email"
+    }
+  ],
+  "trigger_rule": {
+    "and": [
+      {
+        "match": {
+          "type": "payload_hmac_sha1",
+          "secret": "some ... secret",
+          "parameter": {
+            "source": "header",
+            "name": "X-Hub-Signature"
+          }
+        }
+      },
+      {
+        "match": {
+          "type": "value",
+          "value": "refs/heads/main",
+          "parameter": {
+            "source": "payload",
+            "name": "ref"
+          }
+        }
+      }
+    ]
+  }
+}

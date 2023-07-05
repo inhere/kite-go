@@ -5,7 +5,7 @@ import (
 	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/goutil/testutil"
 	"github.com/gookit/rux"
-	"github.com/gookit/rux/render"
+	"github.com/gookit/rux/pkg/render"
 )
 
 // NewEchoServerCmd instance
