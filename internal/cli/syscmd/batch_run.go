@@ -10,25 +10,27 @@ import (
 	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
+	"github.com/gookit/goutil/strutil/textutil"
+	"github.com/gookit/goutil/sysutil/cmdr"
 	"github.com/inhere/kite-go/internal/biz/cmdbiz"
 )
 
+var btrOpts = struct {
+	cmdbiz.CommonOpts
+	cmdTpl  string
+	inDirs  gflag.String
+	allSub  bool
+	exclude gflag.Strings
+	// vars for command template
+	cmdVars gflag.KVString
+	// for range vars list, multi by comma
+	forVars gflag.String
+}{
+	// cmdVars: cflag.NewKVString(),
+}
+
 // NewBatchRunCmd instance
 func NewBatchRunCmd() *gcli.Command {
-	var btrOpts = struct {
-		cmdbiz.CommonOpts
-		cmdTpl  string
-		inDirs  gflag.String
-		allSub  bool
-		exclude gflag.Strings
-		// vars for command template
-		cmdVars gflag.KVString
-		// for range vars list, multi by comma
-		forVars gflag.String
-	}{
-		// cmdVars: cflag.NewKVString(),
-	}
-
 	return &gcli.Command{
 		Name:    "brun",
 		Aliases: []string{"batch-run"},
@@ -69,8 +71,8 @@ Build-in vars:
 				wkDirs = []string{c.WorkDir()}
 			}
 
-			cmdTpl := strings.TrimSpace(btrOpts.cmdTpl)
-			if cmdTpl == "" {
+			btrOpts.cmdTpl = strings.TrimSpace(btrOpts.cmdTpl)
+			if btrOpts.cmdTpl == "" {
 				return errors.New("please input command template")
 			}
 
@@ -81,15 +83,13 @@ Build-in vars:
 						if arrutil.StringsHas(btrOpts.exclude, ent.Name()) {
 							return nil
 						}
-
-						return runCmdInDir(path)
+						return runCmdInDir(path, c)
 					}, fsutil.OnlyFindDir)
 					if err != nil {
 						return err
 					}
 				} else {
-					err := runCmdInDir(dir)
-					if err != nil {
+					if err := runCmdInDir(dir, c); err != nil {
 						return err
 					}
 				}
@@ -100,7 +100,30 @@ Build-in vars:
 	}
 }
 
-func runCmdInDir(dirPath string) error {
+func runCmdInDir(dirPath string, c *gcli.Command) error {
+	pDir := fsutil.Dir(dirPath)
+	vars := btrOpts.cmdVars.Data()
+	vars.Load(map[string]string{
+		"pwd":        c.WorkDir(),
+		"path":       dirPath,
+		"dir":        fsutil.Name(dirPath),
+		"parent":     fsutil.Name(pDir),
+		"parentPath": pDir,
+	})
 
-	return nil
+	// render command template
+	rpl := textutil.NewVarReplacer("{,}")
+	str := rpl.ReplaceSMap(btrOpts.cmdTpl, vars)
+	ers := errorx.Errors{}
+
+	execCmd := cmdr.NewCmdline(str).
+		WithWorkDir(btrOpts.Workdir).
+		WithDryRun(btrOpts.DryRun).
+		OutputToOS().
+		PrintCmdline()
+
+	if err := execCmd.Run(); err != nil {
+		ers = append(ers, err)
+	}
+	return ers.ErrorOrNil()
 }

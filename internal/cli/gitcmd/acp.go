@@ -50,7 +50,7 @@ func (m *acpOptModel) buildMsg(tpl, brName string) string {
 	vars := map[string]any{
 		"branch":  brName,
 		"message": m.message,
-		"topic":   arrutil.Strings(topics).First(),
+		"topic":   arrutil.Strings(topics).First(""),
 		"emoji":   "", // TODO
 	}
 
@@ -136,7 +136,7 @@ func NewAddCommitCmd() *gcli.Command {
 	}
 }
 
-func acpHandleFunc(c *gcli.Command, args []string) error {
+func acpHandleFunc(c *gcli.Command, _ []string) error {
 	cfg := apputil.GitCfgByCmdID(c)
 
 	runPush := !acpOpts.notPush
@@ -154,8 +154,9 @@ func acpHandleFunc(c *gcli.Command, args []string) error {
 		rr.OutToStd = true
 	})
 
-	if len(args) > 0 {
-		rr.GitCmd("status", args...).GitCmd("add", args...)
+	files := c.Arg("files").Strings()
+	if len(files) > 0 {
+		rr.GitCmd("status", files...).GitCmd("add", files...)
 	} else { // add all changed files
 		rr.GitCmd("status").GitCmd("add", ".")
 	}

@@ -9,6 +9,7 @@ import (
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/cliutil"
+	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/internal/biz/cmdbiz"
@@ -67,6 +68,7 @@ func addAliases(cli *gcli.App) {
 }
 
 var autoDir string
+var workdir string
 
 func addListener(cli *gcli.App) {
 	cli.On(events.OnAppInitAfter, func(ctx *gcli.HookCtx) (stop bool) {
@@ -76,7 +78,7 @@ func addListener(cli *gcli.App) {
 
 	// bind new app options
 	cli.On(events.OnAppBindOptsAfter, func(ctx *gcli.HookCtx) (stop bool) {
-		cli.Flags().StrOpt2(&autoDir, "auto-dir,chdir", "auto find dir by name and change workdir",
+		cli.Flags().StrOpt2(&autoDir, "auto-dir,auto-chdir", "auto find dir by name and change workdir",
 			gflag.WithValidator(func(val string) error {
 				if val == "" {
 					return nil
@@ -90,6 +92,23 @@ func addListener(cli *gcli.App) {
 				}
 				return nil
 			}))
+
+		cli.Flags().StrOpt2(&workdir, "workdir,w", "set workdir for run app command",
+			gflag.WithValidator(func(val string) error {
+				if val == "" {
+					return nil
+				}
+
+				if !fsutil.DirExist(val) {
+					return errorx.Err("the workdir not exists: " + val)
+				}
+
+				goutil.MustOK(os.Chdir(val))
+				cli.ChWorkDir(val)
+				cliutil.Yellowf("NOTICE: set app workdir to: %s\n", val)
+				return nil
+			}),
+		)
 		return false
 	})
 
