@@ -33,7 +33,7 @@ var stOpts = struct {
 	tplName  string
 	timeout  int // ms
 	userVars gflag.KVString
-	verbose  gcli.VerbLevel
+	verbose  bool
 	plugins  gflag.String
 }{
 	timeout:  500,
@@ -64,8 +64,7 @@ var SendTemplateCmd = &gcli.Command{
 		c.StrOpt2(&stOpts.tplName, "tpl-name, api", "the API template name or file name")
 		c.VarOpt2(&stOpts.plugins, "plugin,plug", "enable some plugins on exec request. allow:git,fs\ne.g. --plugin=plugin1,plugin2")
 		c.VarOpt2(&stOpts.userVars, "vars, var, v", "custom sets some variables on request. format: `KEY=VALUE`")
-		c.VarOpt2(&stOpts.verbose, "verbose, vv", `sets the verbose level.
-allow: 0...5 OR crazy, debug, info, warn, error, quiet. default: quiet`)
+		c.BoolOpt2(&stOpts.verbose, "verbose, vv", `show more info about request and response`)
 
 		// todo: loop query, send topic, send by template
 		// eg:
@@ -118,7 +117,7 @@ allow: 0...5 OR crazy, debug, info, warn, error, quiet. default: quiet`)
 
 		t.SetTimeout(stOpts.timeout)
 
-		if stOpts.verbose > gcli.VerbWarn {
+		if stOpts.verbose {
 			show.AList("Request Options:", map[string]any{
 				"timeout(ms)": t.Timeout,
 			})
@@ -161,7 +160,7 @@ allow: 0...5 OR crazy, debug, info, warn, error, quiet. default: quiet`)
 			return err
 		}
 
-		if stOpts.verbose <= gcli.VerbWarn {
+		if !stOpts.verbose {
 			fmt.Println(t.Resp.BodyString())
 		}
 		return nil

@@ -128,7 +128,7 @@ func (t *Template) Send(vars maputil.Data, hs map[string]string, opt *httpreq.Op
 	}
 
 	// make option
-	opt = httpreq.MakeOpt(opt)
+	opt = httpreq.OptOrNew(opt)
 	opt.Timeout = t.Timeout
 
 	// send request
