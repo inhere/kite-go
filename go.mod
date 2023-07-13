@@ -16,13 +16,13 @@ require (
 	github.com/gookit/config/v2 v2.2.1
 	github.com/gookit/event v1.0.6
 	github.com/gookit/gcli/v3 v3.2.1
-	github.com/gookit/gitw v0.3.4
-	github.com/gookit/goutil v0.6.8
+	github.com/gookit/gitw v0.3.5
+	github.com/gookit/goutil v0.6.11
 	github.com/gookit/greq v0.2.0
 	github.com/gookit/i18n v1.1.4
 	github.com/gookit/ini/v2 v2.2.2
 	github.com/gookit/rux v1.3.4
-	github.com/gookit/slog v0.5.1
+	github.com/gookit/slog v0.5.3
 	github.com/gookit/view v1.0.2
 	github.com/titanous/json5 v1.0.0
 	github.com/yosuke-furukawa/json5 v0.1.1
@@ -38,7 +38,7 @@ require (
 	github.com/go-openapi/jsonpointer v0.19.6 // indirect
 	github.com/go-openapi/jsonreference v0.20.2 // indirect
 	github.com/gookit/filter v1.1.4 // indirect
-	github.com/gookit/gsr v0.0.8 // indirect
+	github.com/gookit/gsr v0.1.0 // indirect
 	github.com/gookit/validate v1.4.6 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/imdario/mergo v0.3.14 // indirect
@@ -63,10 +63,10 @@ require (
 	github.com/yuin/goldmark-emoji v1.0.1 // indirect
 	golang.org/x/crypto v0.7.0 // indirect
 	golang.org/x/net v0.8.0 // indirect
-	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.6.0 // indirect
-	golang.org/x/term v0.6.0 // indirect
-	golang.org/x/text v0.8.0 // indirect
+	golang.org/x/sync v0.3.0 // indirect
+	golang.org/x/sys v0.10.0 // indirect
+	golang.org/x/term v0.10.0 // indirect
+	golang.org/x/text v0.11.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
