@@ -200,6 +200,7 @@ func (t *Template) BuildRequestBody(vars maputil.Data) (io.Reader, error) {
 	}
 
 	var data string
+	var rplVar bool
 
 	if t.JSON != nil {
 		bs, err := json.Marshal(t.JSON)
@@ -210,7 +211,8 @@ func (t *Template) BuildRequestBody(vars maputil.Data) (io.Reader, error) {
 		data = byteutil.String(bs)
 		t.Header[httpctype.Key] = httpctype.JSON
 	} else if len(t.Form) > 0 {
-		data = httpreq.ToQueryValues(t.Form).Encode()
+		rplVar = true // TIP: must replace vars before encode
+		data = applyVarsForUV(httpreq.ToQueryValues(t.Form), vars).Encode()
 		t.Header[httpctype.Key] = httpctype.Form
 	} else if t.BodyFile != "" {
 		bs, err := os.ReadFile(t.BodyFile)
@@ -235,7 +237,8 @@ func (t *Template) BuildRequestBody(vars maputil.Data) (io.Reader, error) {
 
 				data = byteutil.String(bs)
 			case httpctype.KindForm:
-				data = httpreq.ToQueryValues(t.Body).Encode()
+				rplVar = true
+				data = applyVarsForUV(httpreq.ToQueryValues(t.Body), vars).Encode()
 			default:
 				return nil, errorx.Rawf("invalid body type for request %s", t.URL)
 			}
@@ -243,7 +246,10 @@ func (t *Template) BuildRequestBody(vars maputil.Data) (io.Reader, error) {
 	}
 
 	if len(data) > 0 {
-		data = rpl.Replace(data, vars)
+		if !rplVar {
+			data = rpl.Replace(data, vars)
+		}
+
 		if len(rpl.MissVars()) > 0 {
 			return nil, errorx.Rawf("input missing variables %v", rpl.MissVars())
 		}
@@ -253,6 +259,18 @@ func (t *Template) BuildRequestBody(vars maputil.Data) (io.Reader, error) {
 		return t.bodyBuf, nil
 	}
 	return nil, nil
+}
+
+func applyVarsForUV(uv url.Values, vars maputil.Data) url.Values {
+	cp := make(url.Values, len(uv))
+	for k, v := range uv {
+		cp[k] = make([]string, len(v))
+		for i, sv := range v {
+			cp[k][i] = rpl.Replace(sv, vars)
+		}
+	}
+
+	return cp
 }
 
 func (t *Template) RequestString(vars maputil.Data) string {
