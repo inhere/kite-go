@@ -4,6 +4,7 @@ import (
 	"io"
 	"strings"
 
+	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/stdio"
 	"github.com/gookit/goutil/sysutil/clipboard"
@@ -15,10 +16,10 @@ type WriterFn func(w *SourceWriter)
 // SourceWriter struct
 type SourceWriter struct {
 	err error
-	src string
 	dst string
 	// dstType real dst type name
 	dstType string
+	srcFile string
 	// FallbackType operate type on dst is empty.
 	FallbackType string
 }
@@ -30,6 +31,7 @@ func FallbackStdout() WriterFn {
 	}
 }
 
+// NewSourceWriter create a new instance
 func NewSourceWriter(dst string) *SourceWriter {
 	return &SourceWriter{
 		dst:     dst,
@@ -37,11 +39,28 @@ func NewSourceWriter(dst string) *SourceWriter {
 	}
 }
 
+// WithDst set dst target
+func (w *SourceWriter) WithDst(dst string) *SourceWriter {
+	w.dst = dst
+	return w
+}
+
+// SetSrcFile set src file path
+func (w *SourceWriter) SetSrcFile(srcPath string) error {
+	if !fsutil.IsFile(srcPath) {
+		return errorx.Err("input is not filepath")
+	}
+
+	w.srcFile = srcPath
+	return nil
+}
+
 func (w *SourceWriter) WriteFrom(r io.Reader) error {
 
 	return nil
 }
 
+// WriteString write string to dst
 func (w *SourceWriter) WriteString(s string) (err error) {
 	dst := w.dst
 	if len(dst) == 0 && w.FallbackType != "" {
@@ -55,10 +74,15 @@ func (w *SourceWriter) WriteString(s string) (err error) {
 	case "@o", "@out", "@stdout", "stdout":
 		w.dstType = TypeStdout
 		stdio.WriteString(s)
-	default: // to file
+	default: // write to file
 		if idx := strings.IndexByte(dst, '@'); idx == 0 {
 			dst = dst[1:]
 		}
+
+		if w.srcFile != "" && dst == "src" {
+			dst = w.srcFile
+		}
+
 		w.dstType = TypeFile
 		_, err = fsutil.PutContents(dst, s)
 	}

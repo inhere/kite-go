@@ -156,11 +156,11 @@ func showInfo(name string) (err error) {
 		return errorx.Rawf("app command alias %q is not exists", name)
 	}
 
-	if runOpts.script {
-		if err = app.Scripts.InitLoad(); err != nil {
-			return err
-		}
+	if err = app.Scripts.InitLoad(); err != nil {
+		return err
+	}
 
+	if runOpts.script || app.Scripts.IsDefinedScript(name) {
 		var si *kscript.ScriptInfo
 		si, err = app.Scripts.ScriptDefineInfo(name)
 		if err != nil {

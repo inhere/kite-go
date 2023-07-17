@@ -2,6 +2,7 @@ package cli
 
 import (
 	"os"
+	"time"
 
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/builtin"
@@ -67,8 +68,11 @@ func addAliases(cli *gcli.App) {
 	cli.AddAliases("app:config", "conf", "config")
 }
 
-var autoDir string
-var workdir string
+var (
+	autoDir string
+	workdir string
+	waitSec int
+)
 
 func addListener(cli *gcli.App) {
 	cli.On(events.OnAppInitAfter, func(ctx *gcli.HookCtx) (stop bool) {
@@ -77,7 +81,34 @@ func addListener(cli *gcli.App) {
 	})
 
 	// bind new app options
-	cli.On(events.OnAppBindOptsAfter, func(ctx *gcli.HookCtx) (stop bool) {
+	cli.On(events.OnAppBindOptsAfter, onAppBindOptsAfter(cli))
+
+	cli.On(events.OnCmdRunBefore, func(ctx *gcli.HookCtx) (stop bool) {
+		app.Log().Infof("%s: will run the command %q with args: %v", ctx.Name(), ctx.Cmd.ID(), ctx.Cmd.RawArgs())
+		cmdbiz.ProxyCC.AutoSetByCmd(ctx.Cmd)
+		return
+	})
+
+	cli.On(events.OnCmdRunAfter, func(ctx *gcli.HookCtx) (stop bool) {
+		app.Log().Infof("%s: kite cli app command %q run completed", ctx.Name(), ctx.Cmd.ID())
+		return
+	})
+
+	cli.On(events.OnAppRunAfter, func(ctx *gcli.HookCtx) (stop bool) {
+		if waitSec > 0 {
+			app.Log().Infof("will wait %d seconds after command run. cmd=%s", waitSec, ctx.Get("cmd"))
+			time.Sleep(time.Duration(waitSec) * time.Second)
+		}
+		return
+	})
+
+	cli.On(events.OnCmdNotFound, onCmdNotFound)
+}
+
+func onAppBindOptsAfter(cli *gcli.App) gcli.HookFunc {
+	return func(ctx *gcli.HookCtx) (stop bool) {
+		cli.Flags().IntOpt2(&waitSec, "wait", "wait some `seconds` after run command")
+
 		cli.Flags().StrOpt2(&autoDir, "auto-dir,auto-chdir", "auto find dir by name and change workdir",
 			gflag.WithValidator(func(val string) error {
 				if val == "" {
@@ -110,28 +141,17 @@ func addListener(cli *gcli.App) {
 			}),
 		)
 		return false
-	})
+	}
+}
 
-	cli.On(events.OnCmdRunBefore, func(ctx *gcli.HookCtx) (stop bool) {
-		app.Log().Infof("%s: will run the command %q with args: %v", ctx.Name(), ctx.Cmd.ID(), ctx.Cmd.RawArgs())
-		cmdbiz.ProxyCC.AutoSetByCmd(ctx.Cmd)
-		return
-	})
+func onCmdNotFound(ctx *gcli.HookCtx) (stop bool) {
+	name := ctx.Str("name")
+	args := ctx.Strings("args")
+	app.Log().Infof("%s: handle kite cli command not found: %s", ctx.Name(), name)
 
-	cli.On(events.OnCmdRunAfter, func(ctx *gcli.HookCtx) (stop bool) {
-		app.Log().Infof("%s: kite cli app command %q run completed", ctx.Name(), ctx.Cmd.ID())
-		return
-	})
-
-	cli.On(events.OnCmdNotFound, func(ctx *gcli.HookCtx) (stop bool) {
-		name := ctx.Str("name")
-		args := ctx.Strings("args")
-		app.Log().Infof("%s: handle kite cli command not found: %s", ctx.Name(), name)
-
-		if err := cmdbiz.RunAny(name, args, nil); err != nil {
-			cliutil.Warnln("RunAny Error >", err)
-		}
-		stop = true
-		return
-	})
+	if err := cmdbiz.RunAny(name, args, nil); err != nil {
+		cliutil.Warnln("RunAny Error >", err)
+	}
+	stop = true
+	return
 }
