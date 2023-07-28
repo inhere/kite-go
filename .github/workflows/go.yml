@@ -18,7 +18,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest] # , windows-latest
         go_version: ['1.20']
 
     steps:
@@ -27,16 +27,19 @@ jobs:
       with:
         fetch-depth: 0
 
+    # for all ctx vars: https://docs.github.com/en/actions/learn-github-actions/contexts#runner-context
+    # note: ls is not supported on Windows
     - name: Checkout deps repo
+      working-directory: ${{ runner.workspace }}
       run: |
         env
         pwd
         ls -al ../
-        git clone --depth=1  https://github.com/gookit/goutil ../goutil
-        git clone --depth=1  https://github.com/gookit/gcli  ../gcli
-        git clone --depth=1  https://github.com/gookit/greq ../greq
-        git clone --depth=1  https://github.com/gookit/gitw ../gitw
-        ls -al ../
+        git clone --depth=1  https://github.com/gookit/goutil
+        git clone --depth=1  https://github.com/gookit/gcli 
+        git clone --depth=1  https://github.com/gookit/greq
+        git clone --depth=1  https://github.com/gookit/gitw
+        ls -al .
 
     - name: Setup Go Faster
       uses: WillAbides/setup-go-faster@v1.8.0
