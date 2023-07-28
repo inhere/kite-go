@@ -26,15 +26,18 @@ jobs:
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
+      run: env
 
     - name: Checkout deps repo
       run: |
+        env
         pwd
         ls -al ../
-        git clone --depth=1  https://github.com/gookit/goutil
-        git clone --depth=1  https://github.com/gookit/gcli
-        git clone --depth=1  https://github.com/gookit/greq
-        git clone --depth=1  https://github.com/gookit/gitw
+        git clone --depth=1  https://github.com/gookit/goutil ../goutil
+        git clone --depth=1  https://github.com/gookit/gcli  ../gcli
+        git clone --depth=1  https://github.com/gookit/greq ../greq
+        git clone --depth=1  https://github.com/gookit/gitw ../gitw
+        ls -al ../
 
     - name: Setup Go Faster
       uses: WillAbides/setup-go-faster@v1.8.0
@@ -44,15 +47,14 @@ jobs:
 
     # pwd == ${{ github.workspace }}
     # mkdir -p ${{ github.workspace }}/go/src/github.com/${{ github.repository }}
+    # echo "${{ github.workspace }}/go/bin" >> $GITHUB_PATH
     - name: Prepare go workspace
       run: |
         pwd
         ls -al ../
-        cp kite-go/.github/go.work.example ../go.work
-        git clone https://github.com/gookit/goutil ${{ github.workspace }}/../goutil
-        echo "${{ github.workspace }}/go/bin" >> $GITHUB_PATH
+        cp .github/go.work.example ../go.work
 
-    - name: Run unit tests
+    - name: Build and run tests
       # run: go test -v -cover ./...
       # must add " for profile.cov on Windows OS
       # go test -v -coverprofile="profile.cov" ./...
