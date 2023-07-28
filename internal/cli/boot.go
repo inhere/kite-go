@@ -94,15 +94,16 @@ func addListener(cli *gcli.App) {
 		return
 	})
 
-	cli.On(events.OnAppRunAfter, func(ctx *gcli.HookCtx) (stop bool) {
+	cli.On(events.OnCmdNotFound, onCmdNotFound)
+
+	cli.On(events.OnAppExit, func(ctx *gcli.HookCtx) (stop bool) {
 		if waitSec > 0 {
-			app.Log().Infof("will wait %d seconds after command run. cmd=%s", waitSec, ctx.Get("cmd"))
+			app.Log().Infof("%s: will wait %d seconds before app exit. code=%d", ctx.Name(), waitSec, ctx.Int("code"))
 			time.Sleep(time.Duration(waitSec) * time.Second)
 		}
 		return
 	})
 
-	cli.On(events.OnCmdNotFound, onCmdNotFound)
 }
 
 func onAppBindOptsAfter(cli *gcli.App) gcli.HookFunc {

@@ -7,12 +7,15 @@
 ## run anything
 
 - [ ] scripts manage and run 
+- [ ] support expr. 
+  - related repo: https://github.com/antonmedv/expr https://github.com/hashicorp/go-bexpr
 
 ## backend serve
 
+- [ ] support backend server: `kited` `kite app:server`
 - [ ] cache metadata, provide quick command search
 
-## task serve
+## job/task serve
 
 - [ ] start a background server, listen an port/sock
 - [ ] can delivery task by tcp connection
