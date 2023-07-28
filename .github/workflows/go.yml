@@ -32,9 +32,7 @@ jobs:
     - name: Checkout deps repo
       working-directory: ${{ runner.workspace }}
       run: |
-        env
         pwd
-        ls -al ../
         git clone --depth=1  https://github.com/gookit/goutil
         git clone --depth=1  https://github.com/gookit/gcli 
         git clone --depth=1  https://github.com/gookit/greq
@@ -53,8 +51,8 @@ jobs:
     - name: Prepare go workspace
       run: |
         pwd
-        ls -al ../
         cp .github/go.work.example ../go.work
+        ls -al ../
 
     - name: Build and run tests
       # run: go test -v -cover ./...
@@ -62,6 +60,7 @@ jobs:
       # go test -v -coverprofile="profile.cov" ./...
       run: |
         pwd
+        cat ../go.work
         go mod tidy
         make install
         kite -V
