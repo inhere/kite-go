@@ -13,7 +13,6 @@ import (
 	"github.com/gookit/gitw"
 	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/cliutil"
-	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/sysutil/cmdr"
@@ -117,7 +116,7 @@ func RedirectToGitx(ctx *gcli.HookCtx) (stop bool) {
 	// dump.P(ctx.App.CommandNames(), ctx.App.HasCommand("git"))
 	err := ctx.App.RunCmd("git", args)
 	if err != nil {
-		dump.P(err)
+		colorp.Errorln(err)
 	}
 	return true
 }

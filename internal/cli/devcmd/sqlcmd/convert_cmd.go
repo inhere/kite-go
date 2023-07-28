@@ -61,7 +61,7 @@ var Conv2JSONCmd = &gcli.Command{
 		anyVals := arrutil.Map(values, func(obj string) (val any, ok bool) {
 			obj = strings.TrimSpace(obj)
 			if strutil.IsNumeric(obj) {
-				return strutil.Int2(obj), true
+				return strutil.SafeInt(obj), true
 			}
 			return strings.Trim(obj, "'\""), true
 		})

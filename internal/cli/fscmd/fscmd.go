@@ -18,7 +18,7 @@ var FsCmd = &gcli.Command{
 		RenameCmd,
 		DeleteCmd,
 		convcmd.NewConvPathSepCmd(),
-		textcmd.NewTemplateCmd(),
+		textcmd.NewTemplateCmd(), // template render
 		// filewatcher.FileWatcher(nil)
 	},
 }

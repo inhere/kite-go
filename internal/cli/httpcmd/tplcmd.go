@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gookit/color/colorp"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/gcli/v3/show"
@@ -139,7 +138,6 @@ var SendTemplateCmd = &gcli.Command{
 				if b != nil && b.Len() > 0 {
 					fmt.Println(b.String())
 				}
-				colorp.Cyanln("\n-------------------------------------------------------------------------\n", "")
 			}
 			t.AfterSend = func(resp *httpreq.Resp, err error) {
 				if err != nil {

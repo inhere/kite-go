@@ -1,8 +1,10 @@
 package fscmd
 
 import (
+	"bytes"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/gookit/color/colorp"
 	"github.com/gookit/gcli/v3"
@@ -14,6 +16,7 @@ import (
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/strutil/textutil"
 	"github.com/gookit/goutil/sysutil/cmdr"
+	"github.com/gookit/goutil/timex"
 	"github.com/inhere/kite-go/internal/biz/cmdbiz"
 )
 
@@ -31,17 +34,21 @@ var ffOpts = struct {
 	Ext     string `flag:"desc=match file ext, multi by comma. eg: .md,.txt;shorts=e"`
 	NotExt  string `flag:"desc=exclude match file ext, multi by comma;shorts=E,ne"`
 
+	Text    string `flag:"desc=match file content text, multi by comma;shorts=T"`
+	NotText string `flag:"desc=exclude match file content text, multi by comma;shorts=NT"`
+
 	User  string `flag:"desc=match file/dir owner user name;shorts=U"`
 	Group string `flag:"desc=match file/dir owner group name;shorts=G"`
-	Atime string `flag:"desc=match file access time, format: 5m, 1h, 1d, 1w(TODO);shorts=a,at"`
-	Mtime string `flag:"desc=match file modified time, format: 5m, 1h, 1d, 1w;shorts=m,mt"`
 	Depth int    `flag:"desc=the find depth. if eq 1 like ls command;shorts=D"`
 	Size  string `flag:"desc=match file size range, format: 20k, <20m, 10k-1m, 1m-20m, <1g;shorts=s"`
+	Mtime string `flag:"desc=match file modified time, format: 5m, 1h, 1d, 1w;shorts=m,mt"`
+	// Atime string `flag:"desc=match file access time, format: 5m, 1h, 1d, 1w(TODO);shorts=a,at"`
 
-	Exec   string `flag:"desc=execute command for each file/dir;shorts=x"`
-	Delete bool   `flag:"desc=delete matched files or dirs;shorts=del,rm"`
+	Exec    string `flag:"desc=execute command for each file/dir;shorts=x"`
+	Delete  bool   `flag:"desc=delete matched files or dirs;shorts=del,rm"`
+	Replace string `flag:"desc=replace matched file contents, FORMAT: <mga>OLD:NEW</>;shorts=r"`
 
-	Verb  bool `flag:"desc=show verbose info;shorts=v"`
+	Verb  bool `flag:"desc=show more verbose info;shorts=vv"`
 	Clear bool `flag:"desc=output clear find result;shorts=c"`
 
 	// NotRecursive find subdir
@@ -118,6 +125,7 @@ var FileFindCmd = &gcli.Command{
 			colorp.Warnln("Finding and results:")
 		}
 
+		st := time.Now()
 		spl := textutil.NewVarReplacer("{,}")
 		ers := errorx.Errors{}
 
@@ -134,6 +142,22 @@ var FileFindCmd = &gcli.Command{
 					colorp.Infoln("Dry run, skip delete")
 				} else if err := os.RemoveAll(elPath); err != nil {
 					ers = append(ers, err)
+				}
+				return
+			}
+
+			if ffOpts.Replace != "" {
+				old, nw := strutil.QuietCut(ffOpts.Replace, ":")
+				if ffOpts.DryRun {
+					colorp.Infof("Dry run, replace expr %q\n", ffOpts.Replace)
+				} else {
+					colorp.Infof("Replace contents for: %s\n", elPath)
+					err := fsutil.UpdateContents(elPath, func(bs []byte) []byte {
+						return bytes.Replace(bs, []byte(old), []byte(nw), -1)
+					})
+					if err != nil {
+						ers = append(ers, err)
+					}
 				}
 				return
 			}
@@ -167,7 +191,7 @@ var FileFindCmd = &gcli.Command{
 		}
 
 		if ff.Num() > 0 {
-			colorp.Successf("Total found %d paths\n", ff.Num())
+			colorp.Successf("Total found %d paths, elapsed time: %s\n", ff.Num(), timex.ElapsedNow(st))
 		} else {
 			colorp.Infoln("... Not found any paths")
 		}
@@ -205,6 +229,23 @@ func buildFinder() *finder.Finder {
 	}
 	if ffOpts.NotLike != "" {
 		ff.Not(finder.NameLikes(strutil.Split(ffOpts.NotLike, ",")))
+	}
+
+	if ffOpts.Text != "" {
+		ss := strutil.Split(ffOpts.Text, ",")
+		ff.MatchFile(finder.NewBodyMatchers(
+			finder.BodyMatcherFunc(func(filePath string, buf *bytes.Buffer) bool {
+				return strutil.ContainsOne(buf.String(), ss)
+			}),
+		))
+	}
+	if ffOpts.NotText != "" {
+		ss := strutil.Split(ffOpts.NotText, ",")
+		ff.NotFile(finder.NewBodyMatchers(
+			finder.BodyMatcherFunc(func(filePath string, buf *bytes.Buffer) bool {
+				return strutil.ContainsOne(buf.String(), ss)
+			}),
+		))
 	}
 
 	return ff

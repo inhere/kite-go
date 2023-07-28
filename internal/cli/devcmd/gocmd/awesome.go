@@ -194,7 +194,7 @@ func getStarNum(line string) int {
 	// match like **star:778**
 	ss := matchStar.FindStringSubmatch(line)
 	if len(ss) > 1 {
-		return strutil.Int2(ss[1])
+		return strutil.SafeInt(ss[1])
 	}
 
 	return 0

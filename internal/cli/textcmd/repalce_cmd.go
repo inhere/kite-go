@@ -141,7 +141,7 @@ func NewTemplateCmd() *gcli.Command {
 			ret := src
 			switch ttOpts.engine {
 			case "go", "go-tpl":
-				ret = strutil.RenderTemplate(src, varBox.Data(), nil)
+				ret = textutil.RenderGoTpl(src, varBox.Data())
 			case "simple", "replace":
 				ret = textutil.ReplaceVars(src, varBox.Data(), ttOpts.varFmt)
 			default:
