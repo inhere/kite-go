@@ -53,6 +53,7 @@ jobs:
         pwd
         cp .github/go.work.example ../go.work
         ls -al ../
+        go env GOWORK
 
     - name: Build and run tests
       # run: go test -v -cover ./...

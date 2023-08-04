@@ -34,7 +34,7 @@ func NewEchoServerCmd() *gcli.Command {
 				c.Respond(200, data, render.NewJSONIndented())
 			})
 
-			srv.Listen(mathutil.String(esOpts.port))
+			srv.Listen("127.0.0.1", mathutil.String(esOpts.port))
 			return srv.Err()
 		},
 	}

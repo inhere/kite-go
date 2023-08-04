@@ -18,6 +18,7 @@ var HttpCmd = &gcli.Command{
 		NewEchoServerCmd(),
 		NewFileServerCmd(),
 		NewHookServerCmd(),
+		NewOAPIServeCmd(),
 	},
 	Config: func(c *gcli.Command) {
 

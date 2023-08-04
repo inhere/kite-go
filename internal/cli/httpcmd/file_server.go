@@ -42,7 +42,7 @@ func NewFileServerCmd() *gcli.Command {
 				c.JSON(200, rux.M{"msg": "OK"})
 			})
 
-			srv.Listen(mathutil.String(fsOpts.port))
+			srv.Listen("127.0.0.1", mathutil.String(fsOpts.port))
 			return srv.Err()
 		},
 	}
