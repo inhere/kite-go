@@ -89,9 +89,14 @@ func (j *QuickJump) Init() error {
 }
 
 func (j *QuickJump) load() (err error) {
+	// check data dir
+	if j.DataDir == "" {
+		return nil
+	}
+
+	// load data from file
 	dFile := j.Datafile()
 
-	// load data
 	if fsutil.IsFile(dFile) {
 		err = jsonutil.ReadFile(dFile, j.Metadata)
 		if err != nil {

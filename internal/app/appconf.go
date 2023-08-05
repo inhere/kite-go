@@ -171,5 +171,5 @@ func joinPath(basePath string, subPaths []string) string {
 
 // IsAliasPath string, start with $
 func IsAliasPath(path string) bool {
-	return path[0] == PathAliasPrefix
+	return len(path) > 0 && path[0] == PathAliasPrefix
 }

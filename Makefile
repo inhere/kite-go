@@ -10,10 +10,12 @@ GO := go
 # short commit id
 REV := $(shell git rev-parse --short HEAD 2> /dev/null || echo 'unknown')
 ORG := inhere
+REPO := kite-go
+# exe name
 NAME := kite
 
-ORG_REPO := $(ORG)/$(NAME)
-RELEASE_ORG_REPO := $(ORG_REPO)
+ORG_REPO := $(ORG)/$(REPO)
+RELEASE_ORG_REPO := $(ORG)/$(NAME)
 ROOT_PACKAGE := github.com/$(ORG_REPO)
 GO_VERSION := $(shell $(GO) version | sed -e 's/^[^0-9.]*\([0-9.]*\).*/\1/')
 GO_DEPENDENCIES := $(call rwildcard,pkg/,*.go) $(call rwildcard,cmd/,*.go)
@@ -27,7 +29,8 @@ REPORTS_DIR=$(BUILD_TARGET)/reports
 GOTEST := $(GO) test
 
 # set dev version unless VERSION is explicitly set via environment
-VERSION ?= $(shell echo "$$(git for-each-ref refs/tags/ --count=1 --sort=-version:refname --format='%(refname:short)' 2>/dev/null)-dev+$(REV)" | sed 's/^v//')
+# manual set: make VERSION=1.2.3
+VERSION ?= $(shell echo "$$(git for-each-ref refs/tags/ --count=1 --sort=-version:refname --format='%(refname:short)' | echo 'main' 2>/dev/null)-dev+$(REV)" | sed 's/^v//')
 
 # Build flags for setting build-specific configuration at build time - defaults to empty
 #BUILD_TIME_CONFIG_FLAGS ?= ""
@@ -84,20 +87,20 @@ build: $(GO_DEPENDENCIES) clean ## Build jx-labs binary for current OS
 	go mod download
 	CGO_ENABLED=$(CGO_ENABLED) $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME) $(MAIN_SRC_FILE)
 
-install: $(GO_DEPENDENCIES) ## Install the kite binary to gopath/bin
-	GOBIN=${GOPATH}/bin $(GO) install $(BUILDFLAGS) ./cmd/kite
-	upx -6 --no-progress ${GOPATH}/bin/kite
+install: $(GO_DEPENDENCIES) darwin ## Install the kite binary to gopath/bin
+	cp -f build/kite-darwin-amd64 ${GOPATH}/bin/kite
 	@ls -alh ${GOPATH}/bin/kite
 
-install2: $(GO_DEPENDENCIES) ## Install the kit binary to gopath/bin
-	go build $(BUILDFLAGS) -o $(GOPATH)/bin/kit ./cmd/kite
-	@ls -alh ${GOPATH}/bin/kit
+install2: $(GO_DEPENDENCIES) ## Install the kite binary to gopath/bin
+	go build $(BUILDFLAGS) -o $(GOPATH)/bin/kite ./cmd/kite
+	@ls -alh ${GOPATH}/bin/kite
 
 install3: install win linux cp-build-to-win ## Build for local and Linux and Windows then copy to Windows(Local dev)
 
 cp-build-to-win: ## Cleans up dependencies
 	cp -f build/kite-windows-amd64.exe /Volumes/inhere-win/tools/bin/kite.exe
 	cp -f build/kite-linux-amd64 /Volumes/inhere-win/tools/bin/kite
+	cp -f build/kite-darwin-amd64 /Volumes/inhere-win/tools/bin/kite-darwin-amd64
 
 pprof-cli: ## generate pprof file and start an web-ui
 	go run ./_examples/pprof-cli.go
@@ -122,6 +125,7 @@ win: ## Build for Windows
 
 win-arm: ## Build for Windows arm64
 	GOOS=windows GOARCH=arm64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-windows-arm64.exe $(MAIN_SRC_FILE)
+	upx -6 --no-progress build/$(NAME)-windows-arm64.exe
 
 darwin: ## Build for OSX AMD
 	GOOS=darwin GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-darwin-amd64 $(MAIN_SRC_FILE)
