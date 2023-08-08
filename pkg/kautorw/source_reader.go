@@ -66,10 +66,15 @@ func NewSourceReader(src string, fns ...ReaderFn) *SourceReader {
 	}
 
 	sr.CheckResult = true
+	return sr.WithConfig(fns...)
+}
+
+// WithConfig setting.
+func (r *SourceReader) WithConfig(fns ...ReaderFn) *SourceReader {
 	for _, fn := range fns {
-		fn(sr)
+		fn(r)
 	}
-	return sr
+	return r
 }
 
 // TryString return string and error

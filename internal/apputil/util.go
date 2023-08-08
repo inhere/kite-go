@@ -48,6 +48,12 @@ func ReadSource(s string) (string, error) {
 		TryReadString()
 }
 
+// NewSReader create.
+func NewSReader(s string) *kautorw.SourceReader {
+	return kautorw.
+		NewSourceReader(s, kautorw.TryStdinOnEmpty(), kautorw.WithTrimSpace(), kautorw.WithCheckResult())
+}
+
 // GitCfgByCmdID get
 func GitCfgByCmdID(c *gcli.Command) (cfg *gitx.Config) {
 	id := c.ID()

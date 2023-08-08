@@ -4,7 +4,6 @@ import (
 	"io"
 	"strings"
 
-	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/stdio"
 	"github.com/gookit/goutil/sysutil/clipboard"
@@ -46,17 +45,19 @@ func (w *SourceWriter) WithDst(dst string) *SourceWriter {
 }
 
 // SetSrcFile set src file path
-func (w *SourceWriter) SetSrcFile(srcPath string) error {
-	if !fsutil.IsFile(srcPath) {
-		return errorx.Err("input is not filepath")
+func (w *SourceWriter) SetSrcFile(srcPath string) {
+	if fsutil.IsFile(srcPath) {
+		w.srcFile = srcPath
 	}
+}
 
-	w.srcFile = srcPath
-	return nil
+// HasSrcFile check has src file
+func (w *SourceWriter) HasSrcFile() bool {
+	return w.srcFile != ""
 }
 
 func (w *SourceWriter) WriteFrom(r io.Reader) error {
-
+	// TODO
 	return nil
 }
 
