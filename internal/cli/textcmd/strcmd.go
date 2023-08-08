@@ -26,7 +26,7 @@ var TextOperateCmd = &gcli.Command{
 		TextReplaceCmd,
 		NewUuidCmd(),
 		NewRandomStrCmd(),
-		NewTemplateCmd(),
+		NewTemplateCmd(false),
 		convcmd.NewTime2dateCmd(),
 		// TODO
 	},
