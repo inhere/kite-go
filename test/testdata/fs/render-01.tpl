@@ -1,0 +1,1 @@
+hi, my name is {{ name }}, age is {{age}}
