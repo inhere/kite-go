@@ -40,7 +40,7 @@ jobs:
         ls -al .
 
     - name: Setup Go Faster
-      uses: WillAbides/setup-go-faster@v1.9.1
+      uses: WillAbides/setup-go-faster@v1.10.0
       timeout-minutes: 3
       with:
         go-version: ${{ matrix.go_version }}
