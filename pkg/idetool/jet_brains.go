@@ -11,6 +11,10 @@ const (
 	IDEGoLand   = "GoLand"
 	IDEPhpStorm = "PhpStorm"
 	IDEWebStorm = "WebStorm"
+
+	IDEToolbox = "Toolbox"
+	// ToolboxStateFile state.json - 存储了所有安装的JB软件信息
+	ToolboxStateFile = "state.json"
 )
 
 // JetBrains struct

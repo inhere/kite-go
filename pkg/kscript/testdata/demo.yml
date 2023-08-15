@@ -1,0 +1,56 @@
+__setting:
+  vars:
+    name: value
+  env:
+    KEY: value
+  dotenv: [ '.env' ]
+  output: 'group'
+
+clone-demo:
+  check:
+    - git --version
+    - ls path/to/repo/.git
+  cmds: # clone on dir not exist, update on dir exist
+    - run: git clone
+      if: !dir_exist(path/to/repo/.git)
+    - run: git pull
+      if: sh(ls path/to/repo/.git)
+
+new-repo:
+  deps:
+    - clone-demo
+  cmds:
+    - git init
+    - git add .
+    - git commit -m "init"
+    - git remote add origin {{.GIT_REPO}}
+    - git push -u origin master
+  vars:
+    GIT_REPO:
+      type: prompt
+      message: "Please input git repo url:"
+
+clone:
+  cmds:
+    - git clone {{.GIT_REPO}}
+  vars:
+    GIT_REPO:
+      type: prompt
+      message: "Please input git repo url:"
+
+cond-cmd:
+  check:
+    - git --version
+    - ls path/to/repo/.git
+  cmds:
+    - run: git clone
+      if: !dir_exist(path/to/repo/.git)
+
+build:
+  cmds:
+    - go build -ldflags="-X main.Version={{.GIT_COMMIT}}" main.go
+  vars:
+    name: value
+    GIT_COMMIT:
+      type: sh
+      cmd: git log -n 1 --format=%h
