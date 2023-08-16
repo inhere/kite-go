@@ -112,6 +112,33 @@ eval "$(kite tool jump shell zsh)"
 eval "$(kite tool jump shell --bind j zsh)"
 ```
 
+### 可能的问题 
+
+- 如果在 `zsh` 中使用 `jump` 函数, 提示 `command not found: compdef` 错误.
+
+解决方法:
+
+```shell
+autoload -Uz compinit
+compinit
+```
+
+- zsh 提示 `zsh compinit: insecure directories, run compaudit for list` 错误
+
+解决方法: 
+
+找到有问题的目录, 并移除组写权限.
+
+```shell
+compaudit | xargs chmod g-w
+# or 
+# 查看有问题的目录,并调整权限
+compaudit
+chmod g-w /usr/local/share/zsh
+# or
+# chmod -R 755 /usr/local/share/zsh
+```
+
 ### 快速跳转使用
 
 ```shell
@@ -122,8 +149,8 @@ $ j kite # 可以双击 TAB 自动补全历史目录路径
 
 > **Note**: 可以使用多个关键字确定目录(如 `j kite go` ), 但是关键字必须是目录名的一部分.
 
-- `^` 表示匹配排除目录名 `kite go ^pkg` 目录路径包含 `kite,go` 不包含 `pkg` 的目录
-- `$` 表示必须以目录名结尾.
+- `^` 表示匹配排除目录名 `j kite go ^pkg` 目录路径包含 `kite,go` 不包含 `pkg` 的目录
+- `$` 表示必须以目录名结尾 eg: `j kite-go$` 只匹配 `kite-go` 结尾目录
 
 ### 添加命名目录
 

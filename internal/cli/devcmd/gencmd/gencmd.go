@@ -15,10 +15,12 @@ import (
 
 // CodeGenCmd instance
 var CodeGenCmd = &gcli.Command{
-	Name: "cgen",
-	Desc: "quickly code generate",
+	Name:    "gen",
+	Desc:    "quickly code or project generate",
+	Aliases: []string{"cgen", "generate"},
 	Subs: []*gcli.Command{
 		ParseTemplateCmd,
+		NewProjectCmd(),
 	},
 }
 

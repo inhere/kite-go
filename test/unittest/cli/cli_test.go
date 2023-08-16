@@ -5,6 +5,7 @@ import (
 
 	"github.com/gookit/color/colorp"
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/gookit/goutil/testutil/assert"
 	"github.com/gookit/slog"
@@ -12,6 +13,8 @@ import (
 	"github.com/inhere/kite-go/internal/bootstrap"
 	"github.com/inhere/kite-go/internal/initlog"
 )
+
+var tdataDir string
 
 func TestMain(m *testing.M) {
 	app.App().AfterPreFn = func(ka *app.KiteApp) error {
@@ -21,9 +24,15 @@ func TestMain(m *testing.M) {
 
 	bootstrap.MustBoot(app.App())
 
+	wkDir := sysutil.Workdir()
+	tdataDir = fsutil.Realpath("../../testdata")
+
 	// set verbose level
 	gcli.GOpts().Verbose = gcli.VerbDebug
-	colorp.Successln("the kite test application bootstrap success, workdir:", sysutil.Workdir())
+	colorp.Successf(
+		"the kite test application bootstrap success.\n workdir: %s\n testdata: %s",
+		wkDir, tdataDir,
+	)
 	m.Run()
 }
 
