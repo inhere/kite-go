@@ -12,11 +12,12 @@ var FsCmd = &gcli.Command{
 	Aliases: []string{"file"},
 	Desc:    "provide some useful file system commands",
 	Subs: []*gcli.Command{
-		NewFileCatCmd(),
 		FileFindCmd,
 		ListFilesCmd,
-		RenameCmd,
 		DeleteCmd,
+		RenameCmd,
+		NewFileCatCmd(),
+		NewReplaceCmd(),
 		convcmd.NewConvPathSepCmd(),
 		textcmd.NewTemplateCmd(true), // template render
 		// filewatcher.FileWatcher(nil)

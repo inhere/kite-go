@@ -10,6 +10,7 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/gcli/v3/show"
+	"github.com/gookit/goutil/byteutil"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/fsutil/finder"
@@ -46,13 +47,13 @@ var ffOpts = struct {
 
 	Exec    string `flag:"desc=execute command for each file/dir;shorts=x"`
 	Delete  bool   `flag:"desc=delete matched files or dirs;shorts=del,rm"`
-	Replace string `flag:"desc=replace matched file contents, FORMAT: <mga>OLD:NEW</>;shorts=r"`
+	Replace string `flag:"desc=replace matched file contents, FORMAT: <mga>OLD/NEW</>;shorts=r"`
 
 	Verb  bool `flag:"desc=show more verbose info;shorts=vv"`
 	Clear bool `flag:"desc=output clear find result;shorts=c"`
 
 	// NotRecursive find subdir
-	NotRecursive bool `flag:"desc=not recursive find subdir. equals <mga>--depth=1</>;shorts=nr"`
+	NotRecursive bool `flag:"desc=not recursive find sub-dir. equals <mga>--depth=1</>;shorts=nr"`
 	WithDotDir   bool `flag:"desc=include dot directories, start with <mga>.</>;shorts=dd"`
 	WithDotFile  bool `flag:"desc=include dot files, start with <mga>.</>;shorts=df"`
 
@@ -129,6 +130,12 @@ var FileFindCmd = &gcli.Command{
 		spl := textutil.NewVarReplacer("{,}")
 		ers := errorx.Errors{}
 
+		var old, nw []byte
+		if ffOpts.Replace != "" {
+			old, nw = byteutil.SafeCut([]byte(ffOpts.Replace), '/')
+			colorp.Infof("Will replace contents: %q -> %q\n", old, nw)
+		}
+
 		ff.EachElem(func(el finder.Elem) {
 			elPath := el.Path()
 			if ffOpts.Clear {
@@ -147,13 +154,12 @@ var FileFindCmd = &gcli.Command{
 			}
 
 			if ffOpts.Replace != "" {
-				old, nw := strutil.QuietCut(ffOpts.Replace, ":")
 				if ffOpts.DryRun {
-					colorp.Infof("Dry run, replace expr %q\n", ffOpts.Replace)
+					colorp.Infoln("Dry run replace contents")
 				} else {
 					colorp.Infof("Replace contents for: %s\n", elPath)
 					err := fsutil.UpdateContents(elPath, func(bs []byte) []byte {
-						return bytes.Replace(bs, []byte(old), []byte(nw), -1)
+						return bytes.Replace(bs, old, nw, -1)
 					})
 					if err != nil {
 						ers = append(ers, err)
