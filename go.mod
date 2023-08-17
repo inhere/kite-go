@@ -26,7 +26,7 @@ require (
 	github.com/gookit/view v1.0.2
 	github.com/titanous/json5 v1.0.0
 	github.com/yosuke-furukawa/json5 v0.1.1
-	github.com/yuin/goldmark v1.5.5
+	github.com/yuin/goldmark v1.5.6
 )
 
 require (
@@ -58,6 +58,7 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
+	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	github.com/yuin/goldmark-emoji v1.0.2 // indirect
