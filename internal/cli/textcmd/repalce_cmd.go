@@ -1,6 +1,7 @@
 package textcmd
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -12,7 +13,7 @@ import (
 )
 
 var trOpts = struct {
-	From string `flag:"replace text from"`
+	From string `flag:"replace text from;;;f"`
 	To   string `flag:"replace text to"`
 	// Expr like /FROM/TO/
 	Expr  string `flag:"quickly replace text by rule expression. FORMAT: /FROM/TO/"`
@@ -26,7 +27,7 @@ var trOpts = struct {
 var TextReplaceCmd = &gcli.Command{
 	Name:    "replace",
 	Aliases: []string{"repl", "rpl"},
-	Desc:    "simple and quickly replace text contents",
+	Desc:    "simple and quickly replace text or file contents",
 	Config: func(c *gcli.Command) {
 		c.MustFromStruct(&trOpts, gflag.TagRuleSimple)
 		c.AddArg("text", "input text contents for process. allow @c,@FILE").WithAfterFn(func(a *gflag.CliArg) error {
@@ -49,7 +50,7 @@ var TextReplaceCmd = &gcli.Command{
 			reg := regexp.MustCompile(trOpts.From)
 			ret = reg.ReplaceAllString(src, trOpts.To)
 		} else {
-			ret = strings.ReplaceAll(src, trOpts.From, trOpts.To)
+			ret = strings.ReplaceAll(src, apputil.ResolveSep(trOpts.From), apputil.ResolveSep(trOpts.To))
 		}
 
 		sw := kautorw.NewSourceWriter("")
@@ -64,4 +65,31 @@ var TextReplaceCmd = &gcli.Command{
 
 		return sw.WriteString(ret)
 	},
+}
+
+// NewStringJoinCmd new command
+func NewStringJoinCmd() *gcli.Command {
+	var opt = struct {
+		sep string
+	}{}
+
+	return &gcli.Command{
+		Name:    "join",
+		Aliases: []string{"j"},
+		Desc:    "quick join multi line string by separator",
+		Config: func(c *gcli.Command) {
+			c.StrOpt2(&opt.sep, "sep", "the separator for join, allow: NL,TAB", gflag.WithDefault(""))
+			c.AddArg("text", "input strings for join", true, true)
+		},
+		Func: func(c *gcli.Command, _ []string) error {
+			sep := apputil.ResolveSep(opt.sep)
+			texts := c.Arg("text").Strings()
+			for i, str := range texts {
+				texts[i] = strings.ReplaceAll(str, "\n", sep)
+			}
+
+			fmt.Println(strings.Join(texts, sep))
+			return nil
+		},
+	}
 }

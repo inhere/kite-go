@@ -33,7 +33,7 @@ func NewUpdatePushCmd() *gcli.Command {
 		Config: func(c *gcli.Command) {
 			upOpts.BindCommonFlags(c)
 
-			c.BoolVar(&upOpts.notPush, &gcli.FlagMeta{
+			c.BoolVar(&upOpts.notPush, &gcli.CliOpt{
 				Name:   "not-push",
 				Desc:   "dont push update to default remote",
 				Shorts: []string{"np"},

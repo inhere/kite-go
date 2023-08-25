@@ -18,11 +18,11 @@ var tsOpts = struct {
 var TextSearchCmd = &gcli.Command{
 	Name:    "search",
 	Aliases: []string{"find"},
-	Desc:    "send http request like curl, ide-http-client",
+	Desc:    "search text by pattern, or directly match specified string: date, ip, email, url, phone, etc",
 	Config: func(c *gcli.Command) {
 		c.StrOpt2(&tsOpts.match, "match,m", "set sep char for split input, default is SPACE")
 		c.VarOpt2(&tsOpts.get, "get", "get values by indexes, multi by comma")
-		c.AddArg("text", "input text contents for process").WithAfterFn(func(a *gflag.CliArg) error {
+		c.AddArg("text", "input text contents for search").WithAfterFn(func(a *gflag.CliArg) error {
 			tsOpts.text = a.String()
 			return nil
 		})

@@ -20,7 +20,7 @@ var KiteInfoCmd = &gcli.Command{
 	Name: "info",
 	Desc: "show the kite tool information",
 	Func: func(c *gcli.Command, args []string) error {
-		show.AList("information", map[string]interface{}{
+		show.AList("information", map[string]any{
 			"user home dir": sysutil.UserHomeDir(),
 			"app bin dir":   c.Ctx.BinDir(),
 			"app bin file":  c.Ctx.BinFile(),
@@ -131,40 +131,6 @@ var KiteConfCmd = &gcli.Command{
 
 		c.Infoln("Config for key:", key)
 		dump.Clear(data)
-		return nil
-	},
-}
-
-var kpOpts = struct {
-	list bool
-}{}
-
-// KitePathCmd command
-var KitePathCmd = &gcli.Command{
-	Name: "path",
-	// Aliases: []string{"update-self", "up-self", "up"},
-	Desc: "show the path info on app by input name",
-	Config: func(c *gcli.Command) {
-		c.BoolOpt2(&kpOpts.list, "list, all, a, l", "display all paths for the kite")
-		c.AddArg("name", "special path name on the kite, allow: base, config, tmp")
-	},
-	Func: func(c *gcli.Command, args []string) error {
-		if kpOpts.list {
-			show.AList("Kite paths", app.App().Config)
-			return nil
-		}
-
-		name := c.Arg("name").String()
-		if name == "" {
-			return errorx.Raw("please input name for show path")
-		}
-
-		var path = app.App().PathByName(name)
-		if path == "" {
-			return errorx.Rawf("not found path for %q", name)
-		}
-
-		fmt.Println(path)
 		return nil
 	},
 }

@@ -39,7 +39,7 @@ func NewTemplateCmd(mustFile bool) *gcli.Command {
 			c.VarOpt2(&ttOpts.vars, "vars,var,v", "sets template variables for render. format: `KEY=VALUE`")
 			c.BoolOpt2(&ttOpts.write, "write,w", "write result to src file, on input is filepath")
 
-			c.StrOpt2(&ttOpts.engine, "engine, eng", `select the template engine for rendering contents. 
+			c.StrOpt2(&ttOpts.engine, "engine, eng", `select the template engine for rendering contents.
 <b>Allow</>:
   go/go-tpl         - will use go template engine and support expression
   simple/replace    - only support simple variables replace rendering
@@ -65,7 +65,11 @@ func NewTemplateCmd(mustFile bool) *gcli.Command {
 				return c.NewErrf("the input is not a file: %s", ttOpts.text)
 			}
 
-			srr := apputil.NewSReader(ttOpts.text).WithConfig(kautorw.WithDefaultAsFile())
+			srr := apputil.NewSReader(ttOpts.text)
+			if mustFile {
+				srr.WithConfig(kautorw.WithDefaultAsFile())
+			}
+
 			src, err := srr.TryReadString()
 			if err != nil {
 				return err

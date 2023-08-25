@@ -25,7 +25,6 @@ var SwaggerCmd = &gcli.Command{
 		Doc2MkDown,
 		GenCode,
 		InstallSwagGo,
-		InstallSwagUI,
 	},
 }
 

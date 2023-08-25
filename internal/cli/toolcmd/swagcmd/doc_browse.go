@@ -26,19 +26,19 @@ var DocBrowse = &gcli.Command{
 			"swagger.json",
 			"the swagger document file path",
 		)
-		c.StrVar(&docBrowseOpts.NodeName, &gcli.FlagMeta{
+		c.StrVar(&docBrowseOpts.NodeName, &gcli.CliOpt{
 			Name:   "node",
 			Shorts: []string{"n"},
 			Desc:   "show parts of the the documents.\nallow: tags, info, paths, defs, responses",
 			// must
 			// Required: true,
 		})
-		c.StrVar(&docBrowseOpts.PathName, &gcli.FlagMeta{
+		c.StrVar(&docBrowseOpts.PathName, &gcli.CliOpt{
 			Name:   "path",
 			Shorts: []string{"p"},
 			Desc:   "show path info of the the `documents.paths`. eg: /anything",
 		})
-		c.StrVar(&docBrowseOpts.Filter, &gcli.FlagMeta{
+		c.StrVar(&docBrowseOpts.Filter, &gcli.CliOpt{
 			Name: "filter",
 			Desc: "filter the results of path or node",
 		})
