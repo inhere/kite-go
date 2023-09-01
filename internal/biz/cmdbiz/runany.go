@@ -2,13 +2,13 @@ package cmdbiz
 
 import (
 	"github.com/gookit/gcli/v3/show"
-	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/cliutil/cmdline"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/gookit/goutil/sysutil/cmdr"
 	"github.com/inhere/kite-go/internal/app"
+	"github.com/inhere/kite-go/internal/initlog"
 	"github.com/inhere/kite-go/pkg/kscript"
 )
 
@@ -20,13 +20,13 @@ var Kas maputil.Aliases
 func RunAny(name string, args []string, ctx *kscript.RunCtx) error {
 	// maybe is kite command alias
 	if Kas.HasAlias(name) {
-		cliutil.Infof("TIP: %q is an cli command alias, will run it with %v\n", name, args)
+		initlog.L.Infof("TIP: %q is an cli command alias, will run it with %v\n", name, args)
 		return RunKiteCmdByAlias(name, args)
 	}
 
 	ctx = kscript.EnsureCtx(ctx)
 	ctx.BeforeFn = func(si *kscript.ScriptInfo, ctx *kscript.RunCtx) {
-		cliutil.Infof("TIP: %q is a script name, will run it with %v\n", name, args)
+		initlog.L.Infof("TIP: %q is a script name, will run it with %v\n", name, args)
 		show.AList("Script Info", si)
 		show.AList("Run Context", ctx)
 	}
@@ -45,7 +45,7 @@ func RunAny(name string, args []string, ctx *kscript.RunCtx) error {
 
 	// maybe is system command name
 	if sysutil.HasExecutable(name) {
-		cliutil.Infof("TIP: %q is a executable file on system, will run it with %v\n", name, args)
+		initlog.L.Infof("TIP: %q is a executable file on system, will run it with %v\n", name, args)
 		return cmdr.NewCmd(name, args...).FlushRun()
 	}
 	return errorx.Rawf("%q is not an alias OR script OR plugin OR system command name", name)

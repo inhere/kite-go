@@ -18,10 +18,12 @@ func addServiceBoot(ka *app.KiteApp) {
 
 	ka.AddBootFuncs(func(ka *app.KiteApp) error {
 		app.OpenMap = app.Cfg().StringMap("quick_open")
+		// access: $paths.xxx
 		app.PathMap = &kiteext.PathMap{
-			Aliases: app.Cfg().StringMap("pathmap"),
+			Aliases: app.Cfg().StringMap("path_map"),
 		}
 
+		// access: $gvs.xxx
 		app.Vars = kiteext.NewVarMap(app.Cfg().StringMap("global_vars"))
 		app.Vars.Aliases["$kite"] = app.Cli().BinName()
 

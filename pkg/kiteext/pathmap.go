@@ -8,7 +8,7 @@ import (
 
 // PathMap struct
 type PathMap struct {
-	maputil.Aliases `json:"pathmap"`
+	maputil.Aliases `json:"path_map"`
 }
 
 // Resolve path
