@@ -11,4 +11,5 @@ func AddRoutes(r *rux.Router) {
 
 	r.Controller("/", &controller.HomeController{})
 	r.Controller("/tasks", &controller.TaskController{})
+	r.Controller("/json", &controller.JSONPage{})
 }
