@@ -2,17 +2,18 @@ package convcmd
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/gcli/v3/show"
-	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
-	"github.com/gookit/goutil/mathutil"
-	"github.com/gookit/goutil/timex"
+	"github.com/gookit/goutil/strutil"
 	"github.com/inhere/kite-go/internal/apputil"
 )
+
+var convBaseOpts = struct {
+	From int `flag:"desc=from base type. allow: 2-64;shorts=f;default=10"`
+	To   int `flag:"desc=to base type, if eq 1, will show: 2,10,16,32,36,62,64 base. allow: 1-64;shorts=t"`
+}{}
 
 // ConvBaseCmd command
 // Base
@@ -22,57 +23,38 @@ import (
 var ConvBaseCmd = &gcli.Command{
 	Name:    "conv-base",
 	Aliases: []string{"base", "cb"},
-	Desc:    "list the jump storage data in local",
+	Desc:    "Convert base data type. eg: binary, decimal(10), base8, hex(16), base64, base32 ...",
 	Config: func(c *gcli.Command) {
 		// random string(number,alpha,), int(range)
+		c.MustFromStruct(&convBaseOpts)
+		c.AddArg("input", "want convert base string contents")
 	},
-	Func: func(c *gcli.Command, _ []string) error {
-		return errorx.New("TODO")
-	},
-}
+	Func: func(c *gcli.Command, _ []string) (err error) {
+		str := c.Arg("input").String()
+		str, err = apputil.ReadSource(str)
+		if err != nil {
+			return err
+		}
 
-// NewTime2dateCmd instance
-func NewTime2dateCmd() *gcli.Command {
-	var timeRegex = regexp.MustCompile(`1\d{9}`)
-
-	return &gcli.Command{
-		Name:    "ts2date",
-		Aliases: []string{"ts", "t2d", "t2date"},
-		Desc:    "Quick convert all timestamp number to datetime",
-		Config: func(c *gcli.Command) {
-			c.AddArg("input", "want parsed input contents", true, true)
-		},
-		Func: func(c *gcli.Command, _ []string) (err error) {
-			var txt string
-			ss := c.Arg("input").Strings()
-			if len(ss) > 1 {
-				txt = strings.Join(ss, " ")
-			} else {
-				txt, err = apputil.ReadSource(ss[0])
-				if err != nil {
-					return err
+		c.Infoln("Input String:", str)
+		c.Warnln("Conv Results:")
+		commonBases := []int{2, 10, 16, 32, 36, 62, 64}
+		if convBaseOpts.To < 2 {
+			for _, toBase := range commonBases {
+				if toBase == convBaseOpts.From {
+					continue
 				}
+
+				dst := strutil.BaseConv(str, convBaseOpts.From, toBase)
+				fmt.Printf("convert to %d: %s\n", toBase, dst)
 			}
+		} else {
+			dst := strutil.BaseConv(str, convBaseOpts.From, convBaseOpts.To)
+			fmt.Printf("convert to %d: %s\n", convBaseOpts.To, dst)
+		}
 
-			c.Infoln("Input Contents:")
-			fmt.Println(txt + "\n")
-
-			times := timeRegex.FindAllString(txt, -1)
-			if len(times) == 0 {
-				return errorx.Raw("not found any timestamps")
-			}
-
-			mp := make(map[string]string, len(times))
-			for _, timeVal := range times {
-				mp[timeVal] = timex.FormatUnix(mathutil.SafeInt64(timeVal))
-			}
-
-			show.AList("Matched timestamps", mp, func(opts *show.ListOption) {
-				opts.SepChar = "  =>  "
-			})
-			return nil
-		},
-	}
+		return
+	},
 }
 
 var cpsOpts = struct {

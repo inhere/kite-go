@@ -34,6 +34,7 @@ var ToolsCmd = &gcli.Command{
 		// ScriptCmd,
 		TranslateCmd,
 		convcmd.NewTime2dateCmd(),
+		convcmd.NewDate2tsCmd(),
 		convcmd.NewConvPathSepCmd(),
 		syscmd.NewClipboardCmd(),
 		pkgcmd.PkgManageCmd,
