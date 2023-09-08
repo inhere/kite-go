@@ -48,7 +48,7 @@ var StrCountCmd = &gcli.Command{
 		}
 
 		fmt.Printf(
-			"raw len: %d\n, rune len: %d\n, utf8 len: %d\n, width: %d\n",
+			"raw length: %d\n - rune len: %d\n - utf8 len: %d\n - width: %d\n",
 			len(src),
 			len([]rune(src)),
 			strutil.Utf8Len(src),

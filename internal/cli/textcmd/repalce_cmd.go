@@ -13,12 +13,12 @@ import (
 )
 
 var trOpts = struct {
-	From string `flag:"replace text from;;;f"`
-	To   string `flag:"replace text to"`
+	From string `flag:"desc=replace text from;shorts=f"`
+	To   string `flag:"desc=replace text to;shorts=t"`
 	// Expr like /FROM/TO/
-	Expr  string `flag:"quickly replace text by rule expression. FORMAT: /FROM/TO/"`
-	Write bool   `flag:"write result to src file, on input is filepath;;;w"`
-	Regex bool   `flag:"replace text by regex expression, mark --from and --to as regex pattern;;;r"`
+	Expr  string `flag:"desc=quickly replace text by rule expression. FORMAT: /FROM/TO/"`
+	Write bool   `flag:"desc=write result to src file, on input is filepath;shorts=w"`
+	Regex bool   `flag:"desc=replace text by regex expression, mark --from and --to as regex pattern;shorts=r"`
 	// text string
 	text string
 }{}
@@ -29,14 +29,14 @@ var TextReplaceCmd = &gcli.Command{
 	Aliases: []string{"repl", "rpl"},
 	Desc:    "simple and quickly replace text or file contents",
 	Config: func(c *gcli.Command) {
-		c.MustFromStruct(&trOpts, gflag.TagRuleSimple)
+		c.MustFromStruct(&trOpts)
 		c.AddArg("text", "input text contents for process. allow @c,@FILE").WithAfterFn(func(a *gflag.CliArg) error {
 			trOpts.text = a.String()
 			return nil
 		})
 	},
 	Func: func(c *gcli.Command, _ []string) error {
-		src, err := apputil.ReadSource(tsOpts.text)
+		src, err := apputil.ReadSource(trOpts.text)
 		if err != nil {
 			return err
 		}

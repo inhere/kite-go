@@ -15,12 +15,24 @@ func TestCmd_fs_render(t *testing.T) {
 	tplText := "hi, my name is {{ name }}, age is {{age}}"
 	fsutil.MustSave(txtFile, tplText)
 
+	// use simple engine
 	st := app.Cli().RunLine("fs render -v name=Tom -v age=18 -w " + txtFile)
 	assert.Eq(t, st, 0)
 
 	s := fsutil.ReadString(txtFile)
 	fmt.Println(s)
 	assert.StrContains(t, s, "Tom")
+
+	// use lite engine
+	tplText = "hi, my name is {{ name | upper }}, age is {{age}}"
+	fsutil.MustSave(txtFile, tplText)
+
+	st = app.Cli().RunLine("fs render --eng lite -v name=Tom -v age=18 -w " + txtFile)
+	assert.Eq(t, st, 0)
+
+	s = fsutil.ReadString(txtFile)
+	fmt.Println(s)
+	assert.StrContains(t, s, "TOM")
 }
 
 // test for fscmd.NewReplaceCmd()

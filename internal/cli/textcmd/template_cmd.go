@@ -41,7 +41,8 @@ func NewTemplateCmd(mustFile bool) *gcli.Command {
 
 			c.StrOpt2(&ttOpts.engine, "engine, eng", `select the template engine for rendering contents.
 <b>Allow</>:
-  go/go-tpl         - will use go template engine and support expression
+  go/go-tpl         - will use go template engine, support expression and control flow
+  lite/lite-tpl     - will use lite template, support pipe expression, but not support control flow
   simple/replace    - only support simple variables replace rendering
 `)
 
@@ -93,6 +94,8 @@ func NewTemplateCmd(mustFile bool) *gcli.Command {
 			switch ttOpts.engine {
 			case "go", "go-tpl":
 				ret = textutil.RenderGoTpl(src, varBox.Data())
+			case "lite", "lite-tpl":
+				ret = textutil.RenderString(src, varBox.Data())
 			case "simple", "replace":
 				ret = textutil.ReplaceVars(src, varBox.Data(), ttOpts.varFmt)
 			default:

@@ -37,7 +37,7 @@ var jvOpts = struct {
 var JSONQueryCmd = &gcli.Command{
 	Name:    "view",
 	Aliases: []string{"get", "cat", "query"},
-	Desc:    "convert create table SQL to markdown table",
+	Desc:    "query value from JSON(5) contents",
 	Config: func(c *gcli.Command) {
 		c.BoolOpt2(&jvOpts.json5, "json5, 5", "mark input contents is json5 format")
 		c.StrOpt2(&jvOpts.query, "query, path, q, p", "The path for query sub value")

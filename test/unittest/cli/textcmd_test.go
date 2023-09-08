@@ -13,6 +13,6 @@ func TestCmd_text_replace(t *testing.T) {
 	_, err := fsutil.PutContents(txtFile, "hello world")
 	assert.NoError(t, err)
 
-	st := app.Cli().RunLine("txt replace -f hello -t hi " + txtFile)
+	st := app.Cli().RunLine("txt replace -f hello -t hi @" + txtFile)
 	assert.Eq(t, st, 0)
 }
