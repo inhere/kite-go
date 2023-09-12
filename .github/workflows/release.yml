@@ -35,7 +35,7 @@ jobs:
           go install github.com/gookit/gitw/cmd/chlog@latest
           chlog -config .github/changelog.yml -output changelog.md prev last
 
-      - uses: goreleaser/goreleaser-action@v4
+      - uses: goreleaser/goreleaser-action@v5
         with:
           distribution: goreleaser
           version: latest
