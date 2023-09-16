@@ -7,8 +7,9 @@ var SQLToolCmd = &gcli.Command{
 	Name: "sql",
 	Desc: "SQL tools",
 	Subs: []*gcli.Command{
-		Conv2Mkdown,
+		Create2Mkdown,
 		Conv2StructCmd,
-		Conv2JSONCmd,
+		Insert2JSONCmd,
+		NewCreate2JSONCmd(),
 	},
 }

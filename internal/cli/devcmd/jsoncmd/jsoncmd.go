@@ -37,7 +37,7 @@ var jvOpts = struct {
 var JSONQueryCmd = &gcli.Command{
 	Name:    "view",
 	Aliases: []string{"get", "cat", "query"},
-	Desc:    "query value from JSON(5) contents",
+	Desc:    "format and query value from JSON(5) contents",
 	Config: func(c *gcli.Command) {
 		c.BoolOpt2(&jvOpts.json5, "json5, 5", "mark input contents is json5 format")
 		c.StrOpt2(&jvOpts.query, "query, path, q, p", "The path for query sub value")
@@ -65,7 +65,6 @@ var JSONQueryCmd = &gcli.Command{
 		var mp maputil.Data
 		if !jvOpts.json5 {
 			// TIP: gjson.Get() cannot find for "dev.host" : {"dev": {"host": "ip:port"}}
-			// return outputFmtJSON(gjson.Get(src, jvOpts.query).String())
 			if err = json.Unmarshal([]byte(src), &mp); err != nil {
 				return err
 			}
@@ -77,15 +76,16 @@ var JSONQueryCmd = &gcli.Command{
 
 		// query value
 		value := mp.Get(jvOpts.query)
-		s, err := strutil.StringOrErr(value)
+		s, err := strutil.ToStringWithFunc(value, nil)
 		if err == nil {
 			stdio.Writeln(s)
 			return nil
 		}
 
-		bs, err := json.Marshal(value)
-		if err != nil {
-			return err
+		// err != nil: use json format output
+		bs, err1 := json.Marshal(value)
+		if err1 != nil {
+			return err1
 		}
 
 		if jvOpts.compressed {

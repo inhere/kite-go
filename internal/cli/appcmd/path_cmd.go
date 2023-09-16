@@ -22,7 +22,7 @@ var KitePathCmd = &gcli.Command{
 	Desc:    "show the kite system path information",
 	Config: func(c *gcli.Command) {
 		c.BoolOpt2(&kpOpts.list, "list, all, a, l", "display all paths for the kite")
-		c.AddArg("name", "special path name on the kite, allow: base, config, tmp")
+		c.AddArg("path", "special alias path for resolve. prefix: base, config, tmp")
 	},
 	Func: func(c *gcli.Command, args []string) error {
 		if kpOpts.list {
@@ -30,14 +30,14 @@ var KitePathCmd = &gcli.Command{
 			return nil
 		}
 
-		name := c.Arg("name").String()
-		if name == "" {
-			return errorx.Raw("please input name for show path")
+		path := c.Arg("path").String()
+		if path == "" {
+			return errorx.Raw("please input path for resolve")
 		}
 
-		var path = app.App().PathByName(name)
+		path = app.App().ResolvePath(path)
 		if path == "" {
-			return errorx.Rawf("not found path for %q", name)
+			return errorx.Rawf("not found path for %q", path)
 		}
 
 		fmt.Println(path)
@@ -47,7 +47,7 @@ var KitePathCmd = &gcli.Command{
 
 // paCmdOpts struct
 type paCmdOpts struct {
-	List bool `flag:"list all path alias map;;;l"`
+	List bool `flag:"desc=list all user path alias map;shorts=a,l"`
 	Name string
 }
 
@@ -57,10 +57,10 @@ func NewPathMapCmd() *gcli.Command {
 
 	return &gcli.Command{
 		Name:    "pathmap",
-		Aliases: []string{"path-alias", "userpath", "pmap"},
-		Desc:    "show user custom path mapping in app(config:path_map)",
+		Aliases: []string{"path-alias", "pmap", "pmp"},
+		Desc:    "show user custom path mapping in kite(config:path_map)",
 		Config: func(c *gcli.Command) {
-			goutil.MustOK(c.UseSimpleRule().FromStruct(paOpts))
+			goutil.MustOK(c.FromStruct(paOpts))
 			c.AddArg("name", "get path of the input alias name").WithAfterFn(func(a *gflag.CliArg) error {
 				paOpts.Name = a.String()
 				return nil

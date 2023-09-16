@@ -12,23 +12,10 @@ import (
 	"github.com/inhere/kite-go/internal/apputil"
 )
 
-// Conv2StructCmd convert create table SQL to Go struct
-var Conv2StructCmd = &gcli.Command{
-	Name:    "struct",
-	Aliases: []string{"to-struct", "tostruct", "go-struct"},
-	Desc:    "convert create table SQL to Go struct",
-	Config: func(c *gcli.Command) {
-
-	},
-	Func: func(c *gcli.Command, _ []string) error {
-		return errors.New("TODO")
-	},
-}
-
-// Conv2JSONCmd convert INSERT SQL to JSON object
-var Conv2JSONCmd = &gcli.Command{
-	Name:    "to-json",
-	Aliases: []string{"tomap", "json"},
+// Insert2JSONCmd convert INSERT SQL to JSON object
+var Insert2JSONCmd = &gcli.Command{
+	Name:    "i2json",
+	Aliases: []string{"i2map", "ijson"},
 	Desc:    "convert INSERT ROW SQL to JSON object",
 	Config: func(c *gcli.Command) {
 		c.AddArg("sql", "the insert SQL. allow: @c")

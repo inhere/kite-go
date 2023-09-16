@@ -2,7 +2,6 @@ package fscmd
 
 import (
 	"github.com/gookit/gcli/v3"
-	"github.com/inhere/kite-go/internal/cli/textcmd"
 	"github.com/inhere/kite-go/internal/cli/toolcmd/convcmd"
 )
 
@@ -18,8 +17,8 @@ var FsCmd = &gcli.Command{
 		RenameCmd,
 		NewFileCatCmd(),
 		NewReplaceCmd(),
+		NewTemplateCmd(),
 		convcmd.NewConvPathSepCmd(),
-		textcmd.NewTemplateCmd(true), // template render
 		// filewatcher.FileWatcher(nil)
 	},
 }

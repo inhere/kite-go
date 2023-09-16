@@ -12,7 +12,7 @@ import (
 	"github.com/inhere/kite-go/pkg/pkgutil"
 )
 
-var ttOpts = struct {
+type templateCmdOpt struct {
 	vars gflag.KVString
 	text string
 
@@ -21,13 +21,15 @@ var ttOpts = struct {
 	varFmt  string
 	varFile string
 	output  string
-}{
-	engine: "simple",
-	vars:   cflag.NewKVString(),
 }
 
 // NewTemplateCmd instance
 func NewTemplateCmd(mustFile bool) *gcli.Command {
+	var ttOpts = templateCmdOpt{
+		engine: "simple",
+		vars:   cflag.NewKVString(),
+	}
+
 	return &gcli.Command{
 		Name:    "render",
 		Aliases: []string{"tpl-render"},
@@ -77,8 +79,9 @@ func NewTemplateCmd(mustFile bool) *gcli.Command {
 			}
 
 			varBox := pkgutil.NewConfig()
+			// load config file
 			if ttOpts.varFile != "" {
-				err := varBox.LoadFiles(ttOpts.varFile)
+				err = varBox.LoadFiles(ttOpts.varFile)
 				if err != nil {
 					return err
 				}
@@ -95,7 +98,10 @@ func NewTemplateCmd(mustFile bool) *gcli.Command {
 			case "go", "go-tpl":
 				ret = textutil.RenderGoTpl(src, varBox.Data())
 			case "lite", "lite-tpl":
-				ret = textutil.RenderString(src, varBox.Data())
+				tplE := textutil.NewLiteTemplate(func(opt *textutil.LiteTemplateOpt) {
+					opt.SetVarFmt(ttOpts.varFmt)
+				})
+				ret = tplE.RenderString(src, varBox.Data())
 			case "simple", "replace":
 				ret = textutil.ReplaceVars(src, varBox.Data(), ttOpts.varFmt)
 			default:

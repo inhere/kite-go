@@ -1,110 +1,186 @@
 package fscmd
 
 import (
-	"fmt"
+	"strings"
 
-	"github.com/gookit/config/v2"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
+	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/cflag"
-	"github.com/gookit/goutil/dump"
-	"github.com/gookit/goutil/fsutil/finder"
-	"github.com/gookit/goutil/strutil"
-	"github.com/inhere/kite-go/internal/apputil"
+	"github.com/gookit/goutil/cliutil"
+	"github.com/gookit/goutil/errorx"
+	"github.com/gookit/goutil/fsutil"
+	"github.com/gookit/goutil/strutil/textutil"
+	"github.com/inhere/kite-go/internal/app"
+	"github.com/inhere/kite-go/pkg/kautorw"
 	"github.com/inhere/kite-go/pkg/pkgutil"
 )
 
-// MultiRenderOpt options
-type MultiRenderOpt struct {
-	Engine  string         `flag:"desc=the template engine name. allow: simple, go;shorts=e;default=simple"`
-	VarFmt  string         `flag:"desc=custom sets the variable format in template;shorts=vf;default={{,}}"`
-	Vars    gflag.KVString `flag:"desc=set template vars. allow multi, like: --vars name=Tom --vars age=18;shorts=v"`
-	VarFile string         `flag:"desc=custom sets the variables file path. eg: --var-file tpl-vars.json"`
+type RenderFn func(src string, vars map[string]any) string
 
-	// dir for template files
-	Dir   string       `flag:"desc=the directory for find and render template files;shorts=d"`
-	Exts  string       `flag:"desc=want render template files exts. multi by comma, like: .go,.md;shorts=ext"`
-	Files gflag.String `flag:"desc=the template files. multi by comma, like: file1.tpl,file2.tpl;shorts=f"`
+type templateCmdOpt struct {
+	vars gflag.KVString
+	// files []string
 
-	// Include and Exclude match template files.
-	// eg: --include name:*.go --exclude name:*_test.go
-	Include gcli.Strings `flag:"desc=the include files rules;shorts=i,add"`
-	Exclude gcli.Strings `flag:"desc=the exclude files rules;shorts=e,not"`
-
-	Write bool `flag:"desc=write result to src file;shorts=w"`
-
-	init bool
-	vars *config.Config
+	write  bool
+	clipb  bool
+	engine string
+	varFmt string
+	config string
+	output string
+	tplDir string
 }
 
-// RenderFile render a template file
-func (o *MultiRenderOpt) initVars() error {
-	if o.init {
-		return nil
+func (o *templateCmdOpt) makeEng() (RenderFn, error) {
+	switch o.engine {
+	case "go", "go-tpl":
+		return func(src string, vars map[string]any) string {
+			return textutil.RenderGoTpl(src, vars)
+		}, nil
+	case "lite", "lite-tpl":
+		tplE := textutil.NewLiteTemplate(func(opt *textutil.LiteTemplateOpt) {
+			opt.SetVarFmt(o.varFmt)
+		})
+		return tplE.RenderString, nil
+	case "simple", "replace":
+		return textutil.NewVarReplacer(o.varFmt).Replace, nil
+	default:
+		return nil, errorx.Rawf("invalid engine name %q", o.engine)
 	}
-
-	o.init = true
-	o.vars = pkgutil.NewConfig()
-
-	// load vars from file
-	if o.VarFile != "" {
-		err := o.vars.LoadFiles(apputil.ResolvePath(o.VarFile))
-		if err != nil {
-			return err
-		}
-	}
-
-	// load vars from cli
-	o.vars.LoadSMap(o.Vars.SMap)
-
-	return nil
 }
 
-// RenderFile render a template file
-func (o *MultiRenderOpt) RenderFile(fPath string) error {
-	if err := o.initVars(); err != nil {
-		return err
-	}
-
-	// TODO
-	return nil
-}
-
-// NewRenderMultiCmd create a command
-func NewRenderMultiCmd() *gcli.Command {
-	var opts = MultiRenderOpt{
-		Vars: cflag.NewKVString(),
+// NewTemplateCmd instance
+func NewTemplateCmd() *gcli.Command {
+	var ttOpts = templateCmdOpt{
+		engine: "simple",
+		vars:   cflag.NewKVString(),
 	}
 
 	return &gcli.Command{
-		Name:    "render-multi",
-		Desc:    "render multi template files at once, allow use glob pattern, directory path",
-		Aliases: []string{"renders", "mtpl"},
+		Name:    "render",
+		Aliases: []string{"tpl", "tpl-render"},
+		Desc:    "quickly rendering given template files and with variables",
 		Config: func(c *gcli.Command) {
-			c.MustFromStruct(&opts)
+			c.StrOpt2(&ttOpts.varFmt, "var-fmt", "custom sets the variable format in template", gflag.WithDefault("{{,}}"))
+			c.StrOpt2(&ttOpts.config, "config,c", "custom config. allow sets the variables file path")
+			c.StrOpt2(&ttOpts.output, "output,o", "custom sets the output target", gflag.WithDefault("stdout"))
+			c.VarOpt2(&ttOpts.vars, "vars,var,v", "sets template variables for render. format: `KEY=VALUE`")
+			c.BoolOpt2(&ttOpts.write, "write,w", "write result to src file, on input is filepath")
+			c.BoolOpt2(&ttOpts.clipb, "clip,cb", "write result to the system clipboard")
+
+			c.StrOpt2(&ttOpts.engine, "engine, eng", `select the template engine for rendering contents.
+<b>Allow</>:
+  go/go-tpl         - will use go template engine, support expression and control flow
+  lite/lite-tpl     - will use lite template, support pipe expression, but not support control flow
+  simple/replace    - only support simple variables replace rendering
+`)
+
+			c.AddArg("files", "set template file(s) for rendering", true, true)
 		},
-		Func: func(c *gcli.Command, args []string) error {
-			dump.P(opts)
+		Help: `
+## Note
+ - support use path alias(kite,user). eg: @tpl_dir/some.tpl
 
-			if opts.Files != "" {
-				for _, fPath := range opts.Files.Strings() {
-					fmt.Println(fPath)
+## Output
+ - default output to stdout. same of -o=@stdout
+ - use --write option, will write result to src file, on input is filepath. same of -o=@src
+
+ ### use expr:
+   vars in expr:
+    - $fileName   - the file name of current file.
+    - $nameNoExt  - the file name of current file, not contains extension.
+
+   Example:
+    '@workdir/$fileName' will write result to workdir/$fileName
+
+## simple example
+  {$fullCmd} -v name=inhere -v age=234 'hi, {{name}}, age is {{ age }}'
+
+## go-tpl example
+  {$fullCmd} --eng go-tpl -v name=inhere -v age=234 'hi, {{.name}}, age is {{ .age }}'
+
+## use template file
+  {$fullCmd} --config /path/to/_config.yaml /path/to/my-template.tpl
+`,
+		Func: func(c *gcli.Command, _ []string) (err error) {
+			varBox := pkgutil.NewConfig()
+			runConf := pkgutil.NewConfig()
+			// load config file
+			if ttOpts.config != "" {
+				cfgFile := app.PathMap.Resolve(ttOpts.config)
+				err = runConf.LoadFiles(cfgFile)
+				if err != nil {
+					return err
+				}
+
+				// load custom vars from config file
+				cfgVars := runConf.SubDataMap("vars")
+				err = varBox.LoadData(map[string]any(cfgVars))
+				if err != nil {
+					return err
+				}
+
+				cfgSet := runConf.SubDataMap("settings")
+				if cfgSet != nil {
+					if v := cfgSet.Str("var_fmt"); len(v) > 0 {
+						ttOpts.varFmt = v
+					}
+					if v := cfgSet.Str("tpl_dir"); len(v) > 0 {
+						if strings.TrimLeft(v, "./") == "" {
+							v = fsutil.DirPath(cfgFile)
+						}
+						ttOpts.tplDir = v
+					}
+				}
+				show.AList("Loaded settings:", cfgSet)
+			}
+
+			if len(ttOpts.vars.Data()) > 0 {
+				varBox.LoadSMap(ttOpts.vars.Data())
+			}
+			show.AList("Loaded variables:", varBox.Data())
+
+			if len(ttOpts.tplDir) > 0 {
+				ttOpts.tplDir = app.PathMap.Resolve(ttOpts.tplDir)
+				app.PathMap.AddAlias("tpl_dir", ttOpts.tplDir)
+			}
+
+			// do rendering
+			engFn, err := ttOpts.makeEng()
+			if err != nil {
+				return err
+			}
+
+			sw := kautorw.NewSourceWriter(ttOpts.output)
+			if ttOpts.write {
+				sw.WithDst("@src")
+			} else if ttOpts.clipb {
+				sw.WithDst("@clip")
+			}
+
+			tplFiles := cliutil.SplitMulti(c.Arg("files").Strings(), ",")
+			openFlush := len(tplFiles) > 1 && sw.DstType() == kautorw.TypeClip
+
+			for _, file := range tplFiles {
+				file = app.PathMap.Resolve(file)
+				body, err := fsutil.ReadStringOrErr(file)
+				if err != nil {
+					c.Errorf("read file error: %s", err.Error())
+					continue
+				}
+
+				// rendering contents
+				str := engFn(body, varBox.Data())
+
+				sw.SetSrcFile(file)
+				if err = sw.WriteString(str); err != nil {
+					return err
 				}
 			}
 
-			// find in dir
-			if opts.Dir != "" {
-				ff := finder.NewFinder(opts.Dir).
-					WithExts(strutil.Split(opts.Exts, ","))
-				// set finder options
-				ff.IncludeRules(opts.Include.Strings())
-				ff.ExcludeRules(opts.Exclude.Strings())
-
-				for el := range ff.Find() {
-					fmt.Println(el)
-				}
+			if openFlush {
+				return sw.StopFlush()
 			}
-
 			return nil
 		},
 	}
