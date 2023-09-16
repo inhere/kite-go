@@ -6,9 +6,10 @@
 
 ## run anything
 
-- [ ] scripts manage and run 
-- [ ] support expr. 
-  - related repo: https://github.com/antonmedv/expr https://github.com/hashicorp/go-bexpr
+- [x] scripts manage and run 
+- [ ] enhance support expr. 
+  - related repo: https://github.com/antonmedv/expr
+  - https://github.com/hashicorp/go-bexpr
 
 ## backend serve
 
@@ -29,8 +30,13 @@
 
 ## other tools
 
-- [ ] quick jump dir
+- [x] quick jump dir
 - [ ] quick json,yml data query
+- [ ] 翻译命令
+  - https://translate.volcengine.com/api
+  - google 翻译
+  - 百度翻译
+  - 微软翻译
 
 ## fs tools
 

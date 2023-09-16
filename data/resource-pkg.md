@@ -173,6 +173,9 @@ gitlab:
 ### tasks
 
 - https://github.com/wagoodman/bashful  Use a yaml file to stitch together commands and bash snippits and run them with a bit of style. Why? Because your bash script should be quiet and shy-like (...and not such a loud mouth).
+- https://github.com/adnanh/webhook webhook is a lightweight incoming webhook server to run shell commands
+- https://github.com/hashicorp/go-plugin Golang plugin system over RPC.
+- https://github.com/bitfield/script Making it easy to write shell-like scripts in Go
 
 **cron job**
 
@@ -185,12 +188,7 @@ gitlab:
 
 - https://github.com/snail007/goproxy
 
-## others
-
-**image process**
-
-- https://github.com/nfnt/resize
-- https://github.com/esimov/caire
+## compile
 
 **compile**
 
@@ -208,6 +206,17 @@ gitlab:
 - https://github.com/antonmedv/expr
 - https://github.com/Knetic/govaluate
 
+**template**
+
+- https://github.com/CloudyKit/jet
+
+## others
+
+**image process**
+
+- https://github.com/nfnt/resize
+- https://github.com/esimov/caire
+
 **regexp**
 
 - https://github.com/dlclark/regexp2
@@ -215,9 +224,6 @@ gitlab:
 **other**
 
 - https://github.com/agiledragon/gomonkey gomonkey 是一个使单元测试中的猴子补丁变得容易的库
-- https://github.com/adnanh/webhook webhook is a lightweight incoming webhook server to run shell commands
-- https://github.com/hashicorp/go-plugin Golang plugin system over RPC.
-- https://github.com/bitfield/script Making it easy to write shell-like scripts in Go
 
 - https://github.com/sergi/go-diff
 - https://github.com/waigani/diffparser
@@ -229,6 +235,9 @@ gitlab:
   - https://github.com/Yash-Handa/logo-ls/tree/master/assets
 - https://github.com/kballard/go-shellquote
 - https://github.com/otiai10/copy Go copy directory recursively
+
+**go dump**
+
 - https://github.com/kr/pretty
 - https://github.com/davecgh/go-spew
   - https://github.com/kortschak/utter It's forks

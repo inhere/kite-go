@@ -41,7 +41,7 @@ webapp:
   port: 9091
 
 # path aliases map
-pathmap:
+path_map:
   home: ~
   gobin: ${GOPATH}/bin
 
@@ -49,7 +49,7 @@ quick_open:
   gh: https://github.com
 
 # aliases map for kite commands
-# can be use for quick run a subcommand, and allow with flags
+# can be used for quick run a subcommand, and allow with flags
 aliases:
   ac: git ac
   acp: git acp
