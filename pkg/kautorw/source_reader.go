@@ -10,7 +10,7 @@ import (
 	"github.com/gookit/goutil/sysutil/clipboard"
 )
 
-const typeMaxLen = 128
+const typeMaxLen = 164
 
 // ReaderFn type
 type ReaderFn func(r *SourceReader)
