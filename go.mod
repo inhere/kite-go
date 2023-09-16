@@ -9,7 +9,7 @@ require (
 	github.com/getkin/kin-openapi v0.120.0
 	github.com/go-openapi/spec v0.20.9
 	github.com/go-openapi/swag v0.22.4
-	github.com/goccy/go-yaml v1.11.0
+	github.com/goccy/go-yaml v1.11.1
 	github.com/gofrs/uuid/v5 v5.0.0
 	github.com/gomarkdown/markdown v0.0.0-20230716120725-531d2d74bc12
 	github.com/gookit/color v1.5.4
