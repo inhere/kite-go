@@ -30,7 +30,7 @@ func TestMain(m *testing.M) {
 	// set verbose level
 	gcli.GOpts().Verbose = gcli.VerbDebug
 	colorp.Successf(
-		"the kite test application bootstrap success.\n workdir: %s\n testdata: %s",
+		"the kite test application bootstrap success.\n workdir: %s\n testdata: %s\n",
 		wkDir, tdataDir,
 	)
 	m.Run()
