@@ -30,6 +30,17 @@ func IsDebug() bool {
 	return slog.LevelByName(KiteVerbose) >= slog.DebugLevel
 }
 
+// Info for kite app
+type Info struct {
+	Branch    string
+	Version   string
+	Revision  string
+	GoVersion string
+	BuildDate string
+	PublishAt string
+	UpdatedAt string
+}
+
 // KiteApp kite app container
 type KiteApp struct {
 	*Info

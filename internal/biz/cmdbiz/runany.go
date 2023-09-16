@@ -12,7 +12,7 @@ import (
 	"github.com/inhere/kite-go/pkg/kscript"
 )
 
-// Kas map data
+// Kas kite command alias map data
 var Kas maputil.Aliases
 
 // RunAny handle.

@@ -103,7 +103,7 @@ func loadIncludeConfigs(ka *app.KiteApp, cfg *config.Config) error {
 		file = bootVars.Replace(file)
 
 		// is relative path
-		if file[0] != app.OSPathSepChar && !app.IsAliasPath(file) {
+		if file[0] != app.OSPathSepChar && !app.HasAliasMark(file) {
 			filePath = ka.ConfigPath(file)
 		} else {
 			filePath = ka.PathResolve(file)

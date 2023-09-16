@@ -73,7 +73,7 @@ func GitCfgByCmdID(c *gcli.Command) (cfg *gitx.Config) {
 // ResolvePath for input path
 func ResolvePath(pathStr string) string {
 	pathStr = app.Vars.Replace(pathStr)
-	if app.IsAliasPath(pathStr) {
+	if app.HasAliasMark(pathStr) {
 		return app.App().ResolvePath(pathStr)
 	}
 
@@ -81,7 +81,6 @@ func ResolvePath(pathStr string) string {
 	if fsutil.IsAbsPath(pathStr) {
 		return pathStr
 	}
-
 	return app.App().PathBuild(pathStr)
 }
 

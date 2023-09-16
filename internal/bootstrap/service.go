@@ -19,8 +19,10 @@ func addServiceBoot(ka *app.KiteApp) {
 	ka.AddBootFuncs(func(ka *app.KiteApp) error {
 		app.OpenMap = app.Cfg().StringMap("quick_open")
 		// access: $paths.xxx
-		app.PathMap = &kiteext.PathMap{
-			Aliases: app.Cfg().StringMap("path_map"),
+		app.PathMap = kiteext.NewPathMap()
+		app.PathMap.AddAliasMap(app.Cfg().StringMap("path_map"))
+		app.PathMap.FallbackFn = func(path string) string {
+			return apputil.ResolvePath(path)
 		}
 
 		// access: $gvs.xxx
@@ -64,13 +66,13 @@ func addServiceBoot(ka *app.KiteApp) {
 			return err
 		}
 
-		ghub := github.New(cfg)
-		err = app.Cfg().MapOnExists(app.ObjGhub, ghub)
+		gh := github.New(cfg)
+		err = app.Cfg().MapOnExists(app.ObjGhub, gh)
 		if err != nil {
 			return err
 		}
 
-		app.Add(app.ObjGhub, ghub)
+		app.Add(app.ObjGhub, gh)
 		return nil
 	})
 

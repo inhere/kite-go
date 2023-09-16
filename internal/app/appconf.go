@@ -5,28 +5,19 @@ import (
 	"strings"
 
 	"github.com/gookit/goutil"
+	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/inhere/kite-go/internal/appconst"
 )
 
 // some special chars
 var (
-	PathAliasPrefix uint8 = '$'
+	// PathMarkPrefixes allowed path name prefix mark.
+	PathMarkPrefixes = []byte{'$', '#', '@'}
 
 	OSPathSepChar = uint8(os.PathSeparator)
 	OSPathSepStr  = string(os.PathSeparator)
 )
-
-// Info for kite app
-type Info struct {
-	Branch    string
-	Version   string
-	Revision  string
-	GoVersion string
-	BuildDate string
-	PublishAt string
-	UpdatedAt string
-}
 
 // Config struct of app
 //
@@ -38,6 +29,7 @@ type Config struct {
 	dotenvFile string
 	// the main config file path
 	confFile string
+
 	// BaseDir base data dir
 	BaseDir string `json:"base_dir" default:"${KITE_BASE_DIR}"`
 	// TmpDir tmp dir
@@ -56,6 +48,7 @@ type Config struct {
 }
 
 func (c *Config) ensurePaths() {
+	// c.prefixes = PathMarkPrefixes
 	if c.BaseDir == "" {
 		c.BaseDir = appconst.KiteDefaultBaseDir
 	}
@@ -96,19 +89,37 @@ func (c *Config) ConfigPath(subPaths ...string) string {
 	return joinPath(c.ConfigDir, subPaths)
 }
 
-// IsAliasPath alias
-func (c *Config) IsAliasPath(path string) bool {
-	return IsAliasPath(path)
+var sysAliases = []string{
+	// kite dir
+	"data",
+	"base", "root",
+	"tmp", "temp",
+	"cache", "caches",
+	"cfg", "conf", "config",
+	"res", "resource",
+	// os dir
+	"user", "home",
+	"workdir", "pwd",
 }
 
-// ResolvePath alias
+// IsPathAlias check is path alias name, without prefix char.
+func (c *Config) IsPathAlias(name string) bool {
+	return arrutil.InStrings(name, sysAliases)
+}
+
+// HasAliasMark check has alias mark
+func (c *Config) HasAliasMark(path string) bool {
+	return HasAliasMark(path)
+}
+
+// ResolvePath alias name.
 func (c *Config) ResolvePath(path string) string {
 	return c.PathResolve(path)
 }
 
 // PathResolve resolve path alias. "$base/tmp" => "path/to/base_dir/tmp"
 func (c *Config) PathResolve(path string) string {
-	if path == "" || path[0] != PathAliasPrefix {
+	if !HasAliasMark(path) {
 		return path
 	}
 
@@ -123,10 +134,10 @@ func (c *Config) PathResolve(path string) string {
 	if prefix := c.PathByName(name); len(prefix) > 0 {
 		return prefix + other
 	}
-	return path
+	return path[1:] // remove prefix char
 }
 
-// PathByName get
+// PathByName get path by alias name
 func (c *Config) PathByName(name string) string {
 	switch name {
 	case "data":
@@ -143,6 +154,8 @@ func (c *Config) PathByName(name string) string {
 		return c.ResourceDir
 	case "user", "home":
 		return sysutil.HomeDir()
+	case "workdir", "pwd":
+		return sysutil.Workdir()
 	}
 	return ""
 }
@@ -169,7 +182,7 @@ func joinPath(basePath string, subPaths []string) string {
 	return basePath + OSPathSepStr + strings.Join(subPaths, OSPathSepStr)
 }
 
-// IsAliasPath string, start with $
-func IsAliasPath(path string) bool {
-	return len(path) > 0 && path[0] == PathAliasPrefix
+// HasAliasMark check path string, start one of PathMarkPrefixes
+func HasAliasMark(path string) bool {
+	return len(path) > 0 && arrutil.In(path[0], PathMarkPrefixes)
 }
