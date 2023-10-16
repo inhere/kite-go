@@ -3,6 +3,7 @@ package fscmd
 import (
 	"strings"
 
+	"github.com/CloudyKit/jet/v6"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/gcli/v3/show"
@@ -31,8 +32,24 @@ type templateCmdOpt struct {
 	tplDir string
 }
 
+var jte = jet.NewSet(jet.NewInMemLoader())
+
 func (o *templateCmdOpt) makeEng() (RenderFn, error) {
 	switch o.engine {
+	case "jet": // github.com/CloudyKit/jet/v6
+		return func(src string, vars map[string]any) string {
+			jt, err := jte.Parse("temp-file.jet", src)
+			if err != nil {
+				return err.Error()
+			}
+
+			buf := new(strings.Builder)
+			err = jt.Execute(buf, nil, vars)
+			if err != nil {
+				return err.Error()
+			}
+			return buf.String()
+		}, nil
 	case "go", "go-tpl":
 		return func(src string, vars map[string]any) string {
 			return textutil.RenderGoTpl(src, vars)
@@ -52,7 +69,7 @@ func (o *templateCmdOpt) makeEng() (RenderFn, error) {
 // NewTemplateCmd instance
 func NewTemplateCmd() *gcli.Command {
 	var ttOpts = templateCmdOpt{
-		engine: "simple",
+		engine: "lite",
 		vars:   cflag.NewKVString(),
 	}
 
@@ -70,7 +87,8 @@ func NewTemplateCmd() *gcli.Command {
 
 			c.StrOpt2(&ttOpts.engine, "engine, eng", `select the template engine for rendering contents.
 <b>Allow</>:
-  go/go-tpl         - will use go template engine, support expression and control flow
+  jet               - use CloudyKit/jet template engine, support expression and control flow.
+  go/go-tpl         - will use go template engine, support expression and control flow.
   lite/lite-tpl     - will use lite template, support pipe expression, but not support control flow
   simple/replace    - only support simple variables replace rendering
 `)
@@ -125,6 +143,9 @@ func NewTemplateCmd() *gcli.Command {
 					if v := cfgSet.Str("var_fmt"); len(v) > 0 {
 						ttOpts.varFmt = v
 					}
+					if v := cfgSet.Str("engine"); len(v) > 0 {
+						ttOpts.engine = v
+					}
 					if v := cfgSet.Str("tpl_dir"); len(v) > 0 {
 						if strings.TrimLeft(v, "./") == "" {
 							v = fsutil.DirPath(cfgFile)
@@ -138,7 +159,9 @@ func NewTemplateCmd() *gcli.Command {
 			if len(ttOpts.vars.Data()) > 0 {
 				varBox.LoadSMap(ttOpts.vars.Data())
 			}
-			show.AList("Loaded variables:", varBox.Data())
+			show.AList("Loaded variables:", varBox.Data(), func(opts *show.ListOption) {
+				opts.IgnoreEmpty = false
+			})
 
 			if len(ttOpts.tplDir) > 0 {
 				ttOpts.tplDir = app.PathMap.Resolve(ttOpts.tplDir)

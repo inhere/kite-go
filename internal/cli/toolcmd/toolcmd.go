@@ -26,6 +26,7 @@ var ToolsCmd = &gcli.Command{
 		syscmd.NewEnvInfoCmd(),
 		appcmd.NewPathMapCmd(),
 		fscmd.NewFileCatCmd(),
+		DateCmd,
 		QuickJumpCmd,
 		convcmd.ConvBaseCmd,
 		// RunAnyCmd,
