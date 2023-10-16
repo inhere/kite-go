@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/testutil/assert"
 	"github.com/inhere/kite-go/internal/app"
@@ -11,6 +12,8 @@ import (
 
 // test for textcmd.NewTemplateCmd(true)
 func TestCmd_fs_render(t *testing.T) {
+	gcli.SetVerbose(gcli.VerbWarn)
+
 	txtFile := tdataDir + "/fs/render.txt"
 	tplText := "hi, my name is {{ name }}, age is {{age}}"
 	fsutil.MustSave(txtFile, tplText)
@@ -33,6 +36,13 @@ func TestCmd_fs_render(t *testing.T) {
 	s = fsutil.ReadString(txtFile)
 	fmt.Println(s)
 	assert.StrContains(t, s, "TOM")
+}
+
+func TestCmd_fs_render2(t *testing.T) {
+	gcli.SetVerbose(gcli.VerbWarn)
+
+	st := app.Cli().RunLine("fs render --config @home/Workspace/devops/tpl-files/deploy-aliyun-k8s/_config.yaml @tpl_dir/dev/deployment-java.tpl.yaml")
+	assert.Eq(t, st, 0)
 }
 
 // test for fscmd.NewReplaceCmd()

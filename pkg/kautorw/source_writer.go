@@ -100,6 +100,15 @@ func (w *SourceWriter) WriteFrom(r io.Reader) error {
 }
 
 // WriteString write string to dst
+func (w *SourceWriter) Write(bs []byte) (err error) {
+	if w.openFlush {
+		_, err = w.flushBuf.Write(bs)
+		return
+	}
+	return w.writeString(string(bs))
+}
+
+// WriteString write string to dst
 func (w *SourceWriter) WriteString(s string) (err error) {
 	if w.openFlush {
 		_, err = w.flushBuf.WriteString(s)
