@@ -27,7 +27,7 @@ require (
 	github.com/gookit/view v1.0.2
 	github.com/titanous/json5 v1.0.0
 	github.com/yosuke-furukawa/json5 v0.1.1
-	github.com/yuin/goldmark v1.5.6
+	github.com/yuin/goldmark v1.6.0
 )
 
 require (
