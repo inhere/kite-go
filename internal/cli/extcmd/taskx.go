@@ -1,4 +1,4 @@
-package taskcmd
+package extcmd
 
 import "github.com/gookit/gcli/v3"
 

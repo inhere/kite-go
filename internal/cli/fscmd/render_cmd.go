@@ -4,13 +4,16 @@ import (
 	"strings"
 
 	"github.com/CloudyKit/jet/v6"
+	"github.com/gookit/config/v2"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/gcli/v3/show"
+	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
+	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/strutil/textutil"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/pkg/kautorw"
@@ -20,8 +23,8 @@ import (
 type RenderFn func(src string, vars map[string]any) string
 
 type templateCmdOpt struct {
-	vars gflag.KVString
-	// files []string
+	vars  gflag.KVString
+	files string
 
 	write  bool
 	clipb  bool
@@ -32,11 +35,103 @@ type templateCmdOpt struct {
 	tplDir string
 }
 
-var jte = jet.NewSet(jet.NewInMemLoader())
+func (o *templateCmdOpt) loadConfig(varBox *config.Config) error {
+	// load config file
+	if o.config == "" {
+		return nil
+	}
+
+	// varBox := pkgutil.NewConfig()
+	runConf := pkgutil.NewConfig()
+	cfgFile := app.PathMap.Resolve(o.config)
+	err := runConf.LoadFiles(cfgFile)
+	if err != nil {
+		return err
+	}
+
+	// load custom vars from config file
+	err = varBox.LoadData(runConf.Sub("vars"))
+	if err != nil {
+		return err
+	}
+
+	cfgSet := runConf.SubDataMap("settings")
+	if !cfgSet.IsEmtpy() {
+		if v := cfgSet.Str("var_fmt"); len(v) > 0 {
+			o.varFmt = v
+		}
+		if v := cfgSet.Str("engine"); len(v) > 0 {
+			o.engine = v
+		}
+		if v := cfgSet.Str("tpl_dir"); len(v) > 0 {
+			if strings.TrimLeft(v, "./") == "" {
+				v = fsutil.DirPath(cfgFile)
+			}
+			o.tplDir = v
+		}
+	}
+	show.AList("Loaded settings:", cfgSet)
+
+	// load boot vars from input. eg: boot_var: [env, type]
+	for _, name := range cfgSet.Strings("boot_var") {
+		o.vars.IfValid(name, func(val string) {
+			_ = varBox.Set(name, val)
+		})
+	}
+
+	// load condition vars from input+config. eg: cond_var: [env, type]
+	names := cfgSet.Strings("cond_var")
+	for _, name := range names {
+		o.vars.IfValid(name, func(val string) {
+			_ = varBox.Set(name, val)
+		})
+		val := varBox.String(name)
+		if val == "" {
+			continue
+		}
+
+		// config key eg: env.qa
+		err := varBox.LoadData(runConf.Sub(name + "." + val))
+		if err != nil {
+			return err
+		}
+	}
+
+	// load united vars. eg: united_var: [[type, env], ...]
+	ssList, _ := cfgSet.Slice("united_var")
+	for _, item := range ssList {
+		var nodes []string
+		for _, name := range arrutil.MustToStrings(item) {
+			if val := varBox.String(name); val != "" {
+				nodes = append(nodes, val)
+			} else {
+				nodes = nil
+				break
+			}
+		}
+
+		if len(nodes) > 0 {
+			// config key: name.{name}-{env}. eg: type=php,env=qa key=type.php-qa
+			err := varBox.LoadData(runConf.Sub(strings.Join(nodes, ".")))
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	// load custom vars from command line
+	if !o.vars.IsEmpty() {
+		varBox.LoadSMap(o.vars.Data())
+	}
+	return nil
+}
 
 func (o *templateCmdOpt) makeEng() (RenderFn, error) {
 	switch o.engine {
 	case "jet": // github.com/CloudyKit/jet/v6
+		left, right := strutil.TrimCut(o.varFmt, ",")
+		jte := jet.NewSet(jet.NewInMemLoader(), jet.WithDelims(left, right))
+
 		return func(src string, vars map[string]any) string {
 			jt, err := jte.Parse("temp-file.jet", src)
 			if err != nil {
@@ -93,7 +188,8 @@ func NewTemplateCmd() *gcli.Command {
   simple/replace    - only support simple variables replace rendering
 `)
 
-			c.AddArg("files", "set template file(s) for rendering", true, true)
+			c.StrOpt2(&ttOpts.files, "files,tpl", "set template file(s) for rendering, multiple use ',' to split")
+			c.AddArg("files", "set template file(s) for rendering. same of --files", false, true)
 		},
 		Help: `
 ## Note
@@ -120,45 +216,14 @@ func NewTemplateCmd() *gcli.Command {
 ## use template file
   {$fullCmd} --config /path/to/_config.yaml /path/to/my-template.tpl
 `,
-		Func: func(c *gcli.Command, _ []string) (err error) {
+		Func: func(c *gcli.Command, _ []string) error {
 			varBox := pkgutil.NewConfig()
-			runConf := pkgutil.NewConfig()
 			// load config file
-			if ttOpts.config != "" {
-				cfgFile := app.PathMap.Resolve(ttOpts.config)
-				err = runConf.LoadFiles(cfgFile)
-				if err != nil {
-					return err
-				}
-
-				// load custom vars from config file
-				cfgVars := runConf.SubDataMap("vars")
-				err = varBox.LoadData(map[string]any(cfgVars))
-				if err != nil {
-					return err
-				}
-
-				cfgSet := runConf.SubDataMap("settings")
-				if cfgSet != nil {
-					if v := cfgSet.Str("var_fmt"); len(v) > 0 {
-						ttOpts.varFmt = v
-					}
-					if v := cfgSet.Str("engine"); len(v) > 0 {
-						ttOpts.engine = v
-					}
-					if v := cfgSet.Str("tpl_dir"); len(v) > 0 {
-						if strings.TrimLeft(v, "./") == "" {
-							v = fsutil.DirPath(cfgFile)
-						}
-						ttOpts.tplDir = v
-					}
-				}
-				show.AList("Loaded settings:", cfgSet)
+			err := ttOpts.loadConfig(varBox)
+			if err != nil {
+				return err
 			}
 
-			if len(ttOpts.vars.Data()) > 0 {
-				varBox.LoadSMap(ttOpts.vars.Data())
-			}
 			show.AList("Loaded variables:", varBox.Data(), func(opts *show.ListOption) {
 				opts.IgnoreEmpty = false
 			})
@@ -182,6 +247,13 @@ func NewTemplateCmd() *gcli.Command {
 			}
 
 			tplFiles := cliutil.SplitMulti(c.Arg("files").Strings(), ",")
+			if ttOpts.files != "" {
+				tplFiles = append(tplFiles, strings.Split(ttOpts.files, ",")...)
+			}
+			if len(tplFiles) == 0 {
+				return errorx.E("please input template file(s)")
+			}
+
 			openFlush := len(tplFiles) > 1 && sw.DstType() == kautorw.TypeClip
 
 			for _, file := range tplFiles {

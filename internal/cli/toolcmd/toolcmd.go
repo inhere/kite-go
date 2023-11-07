@@ -4,10 +4,10 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/errorx"
 	"github.com/inhere/kite-go/internal/cli/appcmd"
+	"github.com/inhere/kite-go/internal/cli/extcmd"
 	"github.com/inhere/kite-go/internal/cli/fscmd"
 	"github.com/inhere/kite-go/internal/cli/pkgcmd"
 	"github.com/inhere/kite-go/internal/cli/syscmd"
-	"github.com/inhere/kite-go/internal/cli/taskcmd"
 	"github.com/inhere/kite-go/internal/cli/textcmd"
 	"github.com/inhere/kite-go/internal/cli/toolcmd/convcmd"
 	"github.com/inhere/kite-go/internal/cli/toolcmd/doccmd"
@@ -44,7 +44,7 @@ var ToolsCmd = &gcli.Command{
 		doccmd.NewCheatCmd(),
 		mdcmd.MkDownCmd,
 		syscmd.NewQuickOpenCmd(),
-		taskcmd.TaskManageCmd,
+		extcmd.TaskManageCmd,
 		// jsoncmd.JSONToolCmd,
 		textcmd.NewMd5Cmd(),
 		textcmd.NewHashCmd(),

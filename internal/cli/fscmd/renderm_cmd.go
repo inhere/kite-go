@@ -19,7 +19,7 @@ type MultiRenderOpt struct {
 	engine  string
 	VarFmt  string         `flag:"desc=custom sets the variable format in template;shorts=vf;default={{,}}"`
 	VarFile string         `flag:"desc=custom sets the variables file path. eg: --var-file tpl-vars.json"`
-	Vars    gflag.KVString `flag:"desc=set template vars. allow multi, like: --vars name=Tom --vars age=18;shorts=v"`
+	Vars    gflag.KVString `flag:"desc=set template vars. allow multi, like: --vars name=Tom -v age=18;shorts=v"`
 
 	// dir for template files
 	Dir   string       `flag:"desc=the directory for find and render template files;shorts=d"`

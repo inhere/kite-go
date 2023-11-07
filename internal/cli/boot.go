@@ -54,6 +54,7 @@ func addCommands(cli *gcli.App) {
 		jsoncmd.JSONToolCmd,
 		toolcmd.ToolsCmd,
 		toolcmd.RunAnyCmd,
+		extcmd.PlugCmd,
 		builtin.GenAutoComplete().WithHidden(),
 	)
 

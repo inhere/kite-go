@@ -8,6 +8,7 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/goutil/arrutil"
+	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/strutil/textutil"
@@ -26,7 +27,7 @@ var btrOpts = struct {
 	// for range vars list, multi by comma
 	forVars gflag.String
 }{
-	// cmdVars: cflag.NewKVString(),
+	cmdVars: cflag.NewKVString(),
 }
 
 // NewBatchRunCmd instance
