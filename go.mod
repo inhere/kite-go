@@ -14,14 +14,14 @@ require (
 	github.com/gofrs/uuid/v5 v5.0.0
 	github.com/gomarkdown/markdown v0.0.0-20230716120725-531d2d74bc12
 	github.com/gookit/color v1.5.4
-	github.com/gookit/config/v2 v2.2.4
+	github.com/gookit/config/v2 v2.2.5
 	github.com/gookit/event v1.1.1
 	github.com/gookit/gcli/v3 v3.2.3
 	github.com/gookit/gitw v0.3.5
-	github.com/gookit/goutil v0.6.14
+	github.com/gookit/goutil v0.6.15
 	github.com/gookit/greq v0.3.0
 	github.com/gookit/i18n v1.1.4
-	github.com/gookit/ini/v2 v2.2.2
+	github.com/gookit/ini/v2 v2.2.3
 	github.com/gookit/rux v1.4.0
 	github.com/gookit/slog v0.5.4
 	github.com/gookit/view v1.0.2
@@ -31,6 +31,7 @@ require (
 )
 
 require (
+	dario.cat/mergo v1.0.0 // indirect
 	github.com/BurntSushi/toml v1.3.2 // indirect
 	github.com/CloudyKit/fastprinter v0.0.0-20200109182630-33d98a066a53 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
@@ -43,7 +44,6 @@ require (
 	github.com/gookit/gsr v0.1.0 // indirect
 	github.com/gookit/validate v1.5.0 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
-	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/invopop/yaml v0.2.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
@@ -66,10 +66,10 @@ require (
 	github.com/yuin/goldmark-emoji v1.0.2 // indirect
 	golang.org/x/crypto v0.11.0 // indirect
 	golang.org/x/net v0.12.0 // indirect
-	golang.org/x/sync v0.4.0 // indirect
-	golang.org/x/sys v0.13.0 // indirect
-	golang.org/x/term v0.13.0 // indirect
-	golang.org/x/text v0.13.0 // indirect
+	golang.org/x/sync v0.5.0 // indirect
+	golang.org/x/sys v0.15.0 // indirect
+	golang.org/x/term v0.15.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
