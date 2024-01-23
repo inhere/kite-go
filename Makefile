@@ -129,7 +129,7 @@ win-arm: ## Build for Windows arm64
 
 darwin: ## Build for OSX AMD
 	GOOS=darwin GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-darwin-amd64 $(MAIN_SRC_FILE)
-	upx -6 --no-progress build/$(NAME)-darwin-amd64
+	#upx -6 --no-progress build/$(NAME)-darwin-amd64
 	chmod +x build/$(NAME)-darwin-amd64
 
 darwin-arm: ## Build for OSX ARM64

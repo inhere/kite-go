@@ -7,7 +7,6 @@ import (
 
 	"github.com/gookit/color/colorp"
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/goutil/timex"
@@ -45,14 +44,14 @@ func NewTime2dateCmd() *gcli.Command {
 				return errorx.Raw("not found any timestamps")
 			}
 
-			mp := make(map[string]string, len(times))
+			fmtLines := make([]string, 0, len(times))
 			for _, timeVal := range times {
-				mp[timeVal] = timex.FormatUnix(mathutil.SafeInt64(timeVal))
+				dateStr := timex.FormatUnix(mathutil.SafeInt64(timeVal))
+				fmtLines = append(fmtLines, fmt.Sprintf("%s => <info>%s</>", timeVal, dateStr))
 			}
 
-			show.AList("Matched timestamps", mp, func(opts *show.ListOption) {
-				opts.SepChar = "  =>  "
-			})
+			c.Infoln("Parsed Results:")
+			c.Println(strings.Join(fmtLines, "\n"))
 			return nil
 		},
 	}
