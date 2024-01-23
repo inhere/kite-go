@@ -43,6 +43,7 @@ Build-in vars:
 	{pwd}  		  - current workdir path
 	{parent}  	  - parent dir name
 	{parentPath}  - parent dir full path
+	{item} 		  - current item in the for range list
 `,
 		Examples: `
 # run command multi times in all subdir
@@ -114,17 +115,37 @@ func runCmdInDir(dirPath string, c *gcli.Command) error {
 
 	// render command template
 	rpl := textutil.NewVarReplacer("{,}")
-	str := rpl.ReplaceSMap(btrOpts.cmdTpl, vars)
 	ers := errorx.Errors{}
 
-	execCmd := cmdr.NewCmdline(str).
-		WithWorkDir(btrOpts.Workdir).
-		WithDryRun(btrOpts.DryRun).
-		OutputToOS().
-		PrintCmdline()
+	// for range vars list
+	items := btrOpts.forVars.Strings()
+	if len(items) > 0 {
+		for _, item := range items {
+			vars.Set("item", item)
 
-	if err := execCmd.Run(); err != nil {
-		ers = append(ers, err)
+			cmdStr := rpl.ReplaceSMap(btrOpts.cmdTpl, vars)
+			execCmd := cmdr.NewCmdline(cmdStr).
+				WithWorkDir(btrOpts.Workdir).
+				WithDryRun(btrOpts.DryRun).
+				OutputToOS().
+				PrintCmdline()
+
+			if err := execCmd.Run(); err != nil {
+				ers = append(ers, err)
+			}
+		}
+	} else {
+		cmdStr := rpl.ReplaceSMap(btrOpts.cmdTpl, vars)
+		execCmd := cmdr.NewCmdline(cmdStr).
+			WithWorkDir(btrOpts.Workdir).
+			WithDryRun(btrOpts.DryRun).
+			OutputToOS().
+			PrintCmdline()
+
+		if err := execCmd.Run(); err != nil {
+			ers = append(ers, err)
+		}
 	}
+
 	return ers.ErrorOrNil()
 }
