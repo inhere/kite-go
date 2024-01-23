@@ -76,7 +76,7 @@ var JSONQueryCmd = &gcli.Command{
 
 		// query value
 		value := mp.Get(jvOpts.query)
-		s, err := strutil.ToStringWithFunc(value, nil)
+		s, err := strutil.ToStringWith(value)
 		if err == nil {
 			stdio.Writeln(s)
 			return nil

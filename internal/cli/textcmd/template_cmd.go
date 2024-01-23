@@ -6,7 +6,6 @@ import (
 	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/fsutil"
-	"github.com/gookit/goutil/strutil/textutil"
 	"github.com/inhere/kite-go/internal/apputil"
 	"github.com/inhere/kite-go/pkg/kautorw"
 	"github.com/inhere/kite-go/pkg/pkgutil"
@@ -93,20 +92,11 @@ func NewTemplateCmd(mustFile bool) *gcli.Command {
 			show.AList("Loaded variables:", varBox.Data())
 
 			// do rendering
-			ret := src
-			switch ttOpts.engine {
-			case "go", "go-tpl":
-				ret = textutil.RenderGoTpl(src, varBox.Data())
-			case "lite", "lite-tpl":
-				tplE := textutil.NewLiteTemplate(func(opt *textutil.LiteTemplateOpt) {
-					opt.SetVarFmt(ttOpts.varFmt)
-				})
-				ret = tplE.RenderString(src, varBox.Data())
-			case "simple", "replace":
-				ret = textutil.ReplaceVars(src, varBox.Data(), ttOpts.varFmt)
-			default:
-				return c.NewErrf("invalid engine name %q", ttOpts.engine)
+			engFn, err := pkgutil.NewTxtRender(ttOpts.engine, ttOpts.varFmt)
+			if err != nil {
+				return err
 			}
+			ret := engFn(src, varBox.Data())
 
 			sw := kautorw.NewSourceWriter(ttOpts.output)
 			sw.SetSrcFile(ttOpts.text)

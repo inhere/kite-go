@@ -3,7 +3,6 @@ package fscmd
 import (
 	"strings"
 
-	"github.com/CloudyKit/jet/v6"
 	"github.com/gookit/config/v2"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
@@ -13,8 +12,6 @@ import (
 	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
-	"github.com/gookit/goutil/strutil"
-	"github.com/gookit/goutil/strutil/textutil"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/pkg/kautorw"
 	"github.com/inhere/kite-go/pkg/pkgutil"
@@ -56,7 +53,7 @@ func (o *templateCmdOpt) loadConfig(varBox *config.Config) error {
 	}
 
 	cfgSet := runConf.SubDataMap("settings")
-	if !cfgSet.IsEmtpy() {
+	if !cfgSet.IsEmpty() {
 		if v := cfgSet.Str("var_fmt"); len(v) > 0 {
 			o.varFmt = v
 		}
@@ -126,39 +123,8 @@ func (o *templateCmdOpt) loadConfig(varBox *config.Config) error {
 	return nil
 }
 
-func (o *templateCmdOpt) makeEng() (RenderFn, error) {
-	switch o.engine {
-	case "jet": // github.com/CloudyKit/jet/v6
-		left, right := strutil.TrimCut(o.varFmt, ",")
-		jte := jet.NewSet(jet.NewInMemLoader(), jet.WithDelims(left, right))
-
-		return func(src string, vars map[string]any) string {
-			jt, err := jte.Parse("temp-file.jet", src)
-			if err != nil {
-				return err.Error()
-			}
-
-			buf := new(strings.Builder)
-			err = jt.Execute(buf, nil, vars)
-			if err != nil {
-				return err.Error()
-			}
-			return buf.String()
-		}, nil
-	case "go", "go-tpl":
-		return func(src string, vars map[string]any) string {
-			return textutil.RenderGoTpl(src, vars)
-		}, nil
-	case "lite", "lite-tpl":
-		tplE := textutil.NewLiteTemplate(func(opt *textutil.LiteTemplateOpt) {
-			opt.SetVarFmt(o.varFmt)
-		})
-		return tplE.RenderString, nil
-	case "simple", "replace":
-		return textutil.NewVarReplacer(o.varFmt).Replace, nil
-	default:
-		return nil, errorx.Rawf("invalid engine name %q", o.engine)
-	}
+func (o *templateCmdOpt) makeEng() (pkgutil.RenderFn, error) {
+	return pkgutil.NewTxtRender(o.engine, o.varFmt)
 }
 
 // NewTemplateCmd instance
