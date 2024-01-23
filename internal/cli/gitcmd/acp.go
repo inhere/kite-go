@@ -131,6 +131,7 @@ func NewAddCommitCmd() *gcli.Command {
 			acpConfigFunc(c, false)
 		},
 		Func: func(c *gcli.Command, args []string) error {
+			acpOpts.notPush = true // disable push
 			return acpHandleFunc(c, args)
 		},
 	}
@@ -143,7 +144,7 @@ func acpHandleFunc(c *gcli.Command, _ []string) error {
 	confKey := apputil.CmdConfigKey(cfg.HostType, c.Name)
 	cmdConf := app.Cfg().SubDataMap(confKey)
 
-	if !cmdConf.IsEmtpy() {
+	if !cmdConf.IsEmpty() {
 		show.AList("Command settings", cmdConf)
 	}
 

@@ -265,7 +265,12 @@ var BranchCreateCmd = &gcli.Command{
  2. git pull -np SOURCE_REMOTE DEFAULT_BRANCH
  3. git checkout -b NEW_BRANCH
  4. git push -u DEFAULT_REMOTE NEW_BRANCH
- 5. git push SOURCE_REMOTE NEW_BRANCH`,
+ 5. git push SOURCE_REMOTE NEW_BRANCH
+
+Note:
+ - if branch name is "fix_" or contains "{ymd}", will auto add current date string.
+   eg: fix_ => fix_210101
+`,
 	Aliases: []string{"n", "create"},
 	Config: func(c *gcli.Command) {
 		bcOpts.BindCommonFlags(c)
@@ -285,8 +290,11 @@ var BranchCreateCmd = &gcli.Command{
 		srcRemote := rp.SourceRemote
 		defBranch := rp.DefaultBranch
 		newBranch := c.Arg("branch").String()
-		if strings.Contains(newBranch, "{ymd}") {
-			newBranch = strings.Replace(newBranch, "{ymd}", timex.Now().DateFormat("ymd"), -1)
+		ymdString := timex.Now().DateFormat("ymd")
+		if newBranch == "fix_" { // keyword: fix_
+			newBranch = "fix_" + ymdString
+		} else if strings.Contains(newBranch, "{ymd}") { // fix_{ymd}
+			newBranch = strings.Replace(newBranch, "{ymd}", ymdString, -1)
 		}
 
 		rr := cmdutil.NewRunner(func(rr *cmdutil.Runner) {
