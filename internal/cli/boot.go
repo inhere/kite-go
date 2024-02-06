@@ -50,7 +50,7 @@ func addCommands(cli *gcli.App) {
 		syscmd.SysCmd,
 		appcmd.ManageCmd,
 		extcmd.UserExtCmd,
-		textcmd.TextOperateCmd,
+		textcmd.TextToolCmd,
 		jsoncmd.JSONToolCmd,
 		toolcmd.ToolsCmd,
 		toolcmd.RunAnyCmd,

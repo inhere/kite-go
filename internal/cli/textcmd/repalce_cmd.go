@@ -12,59 +12,61 @@ import (
 	"github.com/inhere/kite-go/pkg/kautorw"
 )
 
-var trOpts = struct {
-	From string `flag:"desc=replace text from;shorts=f"`
-	To   string `flag:"desc=replace text to;shorts=t"`
-	// Expr like /FROM/TO/
-	Expr  string `flag:"desc=quickly replace text by rule expression. FORMAT: /FROM/TO/"`
-	Write bool   `flag:"desc=write result to src file, on input is filepath;shorts=w"`
-	Regex bool   `flag:"desc=replace text by regex expression, mark --from and --to as regex pattern;shorts=r"`
-	// text string
-	text string
-}{}
+// NewReplaceCmd new command
+func NewReplaceCmd() *gcli.Command {
+	var trOpts = struct {
+		From string `flag:"desc=replace text from;shorts=f"`
+		To   string `flag:"desc=replace text to;shorts=t"`
+		// Expr like /FROM/TO/
+		Expr  string `flag:"desc=quickly replace text by rule expression. FORMAT: /FROM/TO/"`
+		Write bool   `flag:"desc=write result to src file, on input is filepath;shorts=w"`
+		Regex bool   `flag:"desc=replace text by regex expression, mark --from and --to as regex pattern;shorts=r"`
+		// text string
+		text string
+	}{}
 
-// TextReplaceCmd instance
-var TextReplaceCmd = &gcli.Command{
-	Name:    "replace",
-	Aliases: []string{"repl", "rpl"},
-	Desc:    "simple and quickly replace text or file contents",
-	Config: func(c *gcli.Command) {
-		c.MustFromStruct(&trOpts)
-		c.AddArg("text", "input text contents for process. allow @c,@FILE").WithAfterFn(func(a *gflag.CliArg) error {
-			trOpts.text = a.String()
-			return nil
-		})
-	},
-	Func: func(c *gcli.Command, _ []string) error {
-		src, err := apputil.ReadSource(trOpts.text)
-		if err != nil {
-			return err
-		}
-
-		if trOpts.Expr != "" {
-			trOpts.From, trOpts.To = strutil.QuietCut(strings.Trim(trOpts.Expr, "/"), "/")
-		}
-
-		var ret string
-		if trOpts.Regex {
-			reg := regexp.MustCompile(trOpts.From)
-			ret = reg.ReplaceAllString(src, trOpts.To)
-		} else {
-			ret = strings.ReplaceAll(src, apputil.ReplaceSep(trOpts.From), apputil.ReplaceSep(trOpts.To))
-		}
-
-		sw := kautorw.NewSourceWriter("")
-		sw.SetSrcFile(trOpts.text)
-
-		if trOpts.Write {
-			sw.WithDst(kautorw.DstSrc)
-			if !sw.HasSrcFile() {
-				return c.NewErrf("with option --write, but input is not a file")
+	return &gcli.Command{
+		Name:    "replace",
+		Aliases: []string{"repl", "rpl"},
+		Desc:    "simple and quickly replace text or file contents",
+		Config: func(c *gcli.Command) {
+			c.MustFromStruct(&trOpts)
+			c.AddArg("text", "input text contents for process. allow @c,@FILE").WithAfterFn(func(a *gflag.CliArg) error {
+				trOpts.text = a.String()
+				return nil
+			})
+		},
+		Func: func(c *gcli.Command, _ []string) error {
+			src, err := apputil.ReadSource(trOpts.text)
+			if err != nil {
+				return err
 			}
-		}
 
-		return sw.WriteString(ret)
-	},
+			if trOpts.Expr != "" {
+				trOpts.From, trOpts.To = strutil.QuietCut(strings.Trim(trOpts.Expr, "/"), "/")
+			}
+
+			var ret string
+			if trOpts.Regex {
+				reg := regexp.MustCompile(trOpts.From)
+				ret = reg.ReplaceAllString(src, trOpts.To)
+			} else {
+				ret = strings.ReplaceAll(src, apputil.ReplaceSep(trOpts.From), apputil.ReplaceSep(trOpts.To))
+			}
+
+			sw := kautorw.NewSourceWriter("")
+			sw.SetSrcFile(trOpts.text)
+
+			if trOpts.Write {
+				sw.WithDst(kautorw.DstSrc)
+				if !sw.HasSrcFile() {
+					return c.NewErrf("with option --write, but input is not a file")
+				}
+			}
+
+			return sw.WriteString(ret)
+		},
+	}
 }
 
 // NewStringJoinCmd new command

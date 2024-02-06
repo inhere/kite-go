@@ -8,34 +8,48 @@ import (
 	"github.com/inhere/kite-go/internal/apputil"
 )
 
-var matchOpts = struct {
-	get   gflag.String
-	text  string
-	match string
-}{}
+// NewTextParseCmd create
+func NewTextParseCmd() *gcli.Command {
+	parseOpts := struct {
+		Text      string `flag:"desc=input text contents for parse;shorts=t"`
+		Expr      string `flag:"desc=parse text item by expression pattern;shorts=e"`
+		Fields    string `flag:"desc=Set field names for data column, split by ','"`
+		GetCol    string `flag:"desc=get column values by indexes, multi by comma, start is 0. eg: 1,5"`
+		RowSep    string `flag:"desc=Set row separator;default=NL"`
+		ColSep    string `flag:"desc=Set column separator;default=SPACE"`
+		ColParser string `flag:"desc=Set column value parser;default=split"`
+	}{}
 
-// StrMatchCmd instance
-var StrMatchCmd = &gcli.Command{
-	Name:    "match",
-	Aliases: []string{"get"},
-	Desc:    "simple match and get special part in text",
-	Config: func(c *gcli.Command) {
-		c.StrOpt2(&matchOpts.match, "match,m", "match and get special part in text. eg: ip, ipv4, ts, date")
-		c.VarOpt2(&matchOpts.get, "get", "get values by indexes, multi by comma")
-		c.AddArg("text", "input text contents for process").WithAfterFn(func(a *gflag.CliArg) error {
-			matchOpts.text = a.String()
+	return &gcli.Command{
+		Name:    "parse",
+		Desc:    "parse text contents to collect metadata info",
+		Aliases: []string{"meta"},
+		Config: func(c *gcli.Command) {
+			c.MustFromStruct(&parseOpts)
+			c.AddArg("text", "input text contents for process").WithAfterFn(func(a *gflag.CliArg) error {
+				parseOpts.Text = a.String()
+				return nil
+			})
+		},
+		Examples: ``,
+		Help: `
+Special keywords:
+	- NL: '\n'
+	- TAB: '\t'
+	- SPACE: ' '
+    - COMMA: ','
+    - BLANK: any blank chars. eg: ' \t\n\r'
+`,
+		Func: func(c *gcli.Command, _ []string) error {
+			src, err := apputil.ReadSource(parseOpts.Text)
+			if err != nil {
+				return err
+			}
+
+			// TODO expr: {}
+
+			fmt.Println(src)
 			return nil
-		})
-	},
-	Func: func(c *gcli.Command, _ []string) error {
-		src, err := apputil.ReadSource(matchOpts.text)
-		if err != nil {
-			return err
-		}
-
-		// TODO ipv4
-
-		fmt.Println(src)
-		return nil
-	},
+		},
+	}
 }
