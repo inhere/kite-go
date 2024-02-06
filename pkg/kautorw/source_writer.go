@@ -39,7 +39,7 @@ func FallbackStdout() WriterFn {
 // NewSourceWriter create a new instance
 func NewSourceWriter(dst string) *SourceWriter {
 	return &SourceWriter{
-		dst: strutil.OrElse(dst, "@stdout"),
+		dst: strutil.OrElse(dst, DstStdout),
 		// dstType: TypeStdout,
 	}
 }

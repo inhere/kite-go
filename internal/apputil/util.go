@@ -98,6 +98,27 @@ func ResolveSep(sep string) string {
 	}
 }
 
+var sepRpl = strings.NewReplacer(
+	"\\n", "\n", "\\t", "\t", "\\s", " ",
+	"SPACE", " ", "NL", "\n", "TAB", "\t",
+)
+
+// ReplaceSep in string
+func ReplaceSep(s string) string {
+	if len(s) < 10 {
+		switch s {
+		case "SPACE":
+			return " "
+		case "NL", "NEWLINE":
+			return "\n"
+		case "TAB":
+			return "\t"
+		}
+	}
+
+	return sepRpl.Replace(s)
+}
+
 // RenderContents and output to stdout.
 // formatter see like formatters.TTY16m
 func RenderContents(s, format, style string) error {

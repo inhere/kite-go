@@ -50,14 +50,14 @@ var TextReplaceCmd = &gcli.Command{
 			reg := regexp.MustCompile(trOpts.From)
 			ret = reg.ReplaceAllString(src, trOpts.To)
 		} else {
-			ret = strings.ReplaceAll(src, apputil.ResolveSep(trOpts.From), apputil.ResolveSep(trOpts.To))
+			ret = strings.ReplaceAll(src, apputil.ReplaceSep(trOpts.From), apputil.ReplaceSep(trOpts.To))
 		}
 
 		sw := kautorw.NewSourceWriter("")
 		sw.SetSrcFile(trOpts.text)
 
 		if trOpts.Write {
-			sw.WithDst("@src")
+			sw.WithDst(kautorw.DstSrc)
 			if !sw.HasSrcFile() {
 				return c.NewErrf("with option --write, but input is not a file")
 			}

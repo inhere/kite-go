@@ -5,13 +5,13 @@ const (
 	DstStdin  = "@stdin"
 	DstStdout = "@stdout"
 	DstClip   = "@clip"
+	DstSrc    = "@src" // src file path
 )
 
 // types for read or write
 const (
 	TypeStdin  = "stdin"
 	TypeString = "string" // raw string
-
 	TypeStdout = "stdout"
 
 	TypeClip = "clip"

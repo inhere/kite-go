@@ -22,7 +22,8 @@ var TextOperateCmd = &gcli.Command{
 	Subs: []*gcli.Command{
 		StrCountCmd,
 		StrSplitCmd,
-		StrMatchCmd,
+		NewStrMatchCmd(),
+		NewTextParseCmd(),
 		TextSearchCmd,
 		TextReplaceCmd,
 		NewMd5Cmd(),
