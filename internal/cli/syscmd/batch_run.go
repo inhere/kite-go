@@ -22,10 +22,11 @@ var btrOpts = struct {
 	inDirs  gflag.String
 	allSub  bool
 	exclude gflag.Strings
-	// vars for command template
+	// custom vars for command template
 	cmdVars gflag.KVString
 	// for range vars list, multi by comma
-	forVars gflag.String
+	forVars  gflag.String
+	interval int
 }{
 	cmdVars: cflag.NewKVString(),
 }
@@ -56,8 +57,9 @@ Build-in vars:
 			c.StrOpt2(&btrOpts.cmdTpl, "cmd, c", "want execute `command` line or template, allow use vars. eg: {dir}")
 			c.VarOpt(&btrOpts.exclude, "exclude", "e", "exclude some subdir on with <cyan>--all-subdir</>")
 			c.VarOpt(&btrOpts.inDirs, "dirs", "d", "run command on the each dir path, multi by comma. default is workdir")
-			c.VarOpt2(&btrOpts.cmdVars, "vars,var,v", "sets template variables for render. format: `KEY=VALUE`")
+			c.VarOpt2(&btrOpts.cmdVars, "vars,var,v", "sets template variables for build command. format: `KEY=VALUE`")
 			c.VarOpt2(&btrOpts.forVars, "foreach,range,for", "for range vars list, multi by comma. use: {item}")
+			c.IntOpt2(&btrOpts.interval, "interval,i", "interval seconds between each command run")
 
 			c.AddArg("cmd", "same of option <cyan>--cmd</>, set execute command line template, allow vars").WithAfterFn(func(a *gflag.CliArg) error {
 				if btrOpts.cmdTpl == "" {

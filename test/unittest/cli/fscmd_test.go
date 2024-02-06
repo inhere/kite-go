@@ -41,7 +41,15 @@ func TestCmd_fs_render(t *testing.T) {
 func TestCmd_fs_render2(t *testing.T) {
 	gcli.SetVerbose(gcli.VerbWarn)
 
-	st := app.Cli().RunLine("fs render --config @home/Workspace/devops/tpl-files/deploy-aliyun-k8s/_config.yaml @tpl_dir/dev/deployment-java.tpl.yaml")
+	args := []string{
+		"fs", "render",
+		"--config", "@home/Workspace/devops/tpl-files/deploy-aliyun-k8s/_config.yaml",
+		"--tpl", "@tpl_dir/dev/deployment-java.tpl.yaml",
+		"-v", "env=qa",
+		"-v", "type=java",
+		"-v", "name=order-sync",
+	}
+	st := app.Cli().Run(args)
 	assert.Eq(t, st, 0)
 }
 
