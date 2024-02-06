@@ -91,7 +91,7 @@ install: $(GO_DEPENDENCIES) darwin ## Install the kite binary to gopath/bin
 	cp -f build/kite-darwin-amd64 ${GOPATH}/bin/kite
 	@ls -alh ${GOPATH}/bin/kite
 
-install2: $(GO_DEPENDENCIES) ## Install the kite binary to gopath/bin
+install2: $(GO_DEPENDENCIES) ## Install the kite to gopath/bin, without upx compress
 	go build $(BUILDFLAGS) -o $(GOPATH)/bin/kite ./cmd/kite
 	@ls -alh ${GOPATH}/bin/kite
 
@@ -129,12 +129,12 @@ win-arm: ## Build for Windows arm64
 
 darwin: ## Build for OSX AMD
 	GOOS=darwin GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-darwin-amd64 $(MAIN_SRC_FILE)
-	#upx -6 --no-progress build/$(NAME)-darwin-amd64
+	#upx -6 --no-progress build/$(NAME)-darwin-amd64 # upx has bug for macos 12+
 	chmod +x build/$(NAME)-darwin-amd64
 
 darwin-arm: ## Build for OSX ARM64
 	GOOS=darwin GOARCH=arm64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-darwin-arm64 $(MAIN_SRC_FILE)
-	upx -6 --no-progress build/$(NAME)-darwin-arm64
+	#upx -6 --no-progress build/$(NAME)-darwin-arm64
 	chmod +x build/$(NAME)-darwin-arm64
 
 .PHONY: release
