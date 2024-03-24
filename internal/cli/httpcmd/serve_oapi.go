@@ -173,7 +173,7 @@ func NewOAPIServeCmd() *gcli.Command {
 		Config: func(c *gcli.Command) {
 			c.UintOpt(&esOpts.port, "port", "P", 0, "custom the echo server port, default will use random `port`")
 			c.StrOpt2(&esOpts.style, "style,s", "the openapi doc UI style, support: redoc, elements, swagger")
-			c.StrOpt(&esOpts.uiHtml, "ui-html,ui", "the custom UI html file for render openapi doc")
+			c.StrOpt2(&esOpts.uiHtml, "ui-html,ui", "the custom UI html file for render openapi doc")
 
 			c.AddArg("docPath", "the open api doc file path, support: local file path, remote url", true)
 		},

@@ -85,10 +85,8 @@ var BranchDeleteCmd = &gcli.Command{
 		}
 
 		bis := rp.BranchInfos()
-		opt := &gitw.SearchOpt{Flag: gitw.BrSearchLocal, Remote: bdOpts.Remote}
-		if bdOpts.Remote != "" {
-			opt.Flag = gitw.BrSearchRemote
-		}
+		opt := &gitw.SearchOpt{Remote: bdOpts.Remote}
+		opt.Flag = basefn.OrValue(opt.Remote == "", gitw.BrSearchLocal, gitw.BrSearchRemote)
 
 		brs := bis.SearchV2(matcher, opt)
 		num := len(brs)
@@ -202,7 +200,9 @@ var BranchListCmd = &gcli.Command{
 
 		matcher := brinfo.NewMatcher(blOpts.Match)
 
-		opt := &gitw.SearchOpt{Flag: gitw.BrSearchLocal, Remote: blOpts.Remote, Limit: blOpts.Limit}
+		opt := &gitw.SearchOpt{Remote: blOpts.Remote, Limit: blOpts.Limit}
+		opt.Flag = basefn.OrValue(opt.Remote == "", gitw.BrSearchLocal, gitw.BrSearchRemote)
+
 		brs := bis.SearchV2(matcher, opt)
 		colorp.Cyanf("Branches on %q(found: %d, %s)\n", tle, len(brs), matcher.String())
 

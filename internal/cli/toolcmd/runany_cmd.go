@@ -90,9 +90,9 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 		cd, changed := fsutil.SearchNameUpx(wd, runOpts.chdir)
 		if changed {
 			wd = cd
-			colorp.Yellowf("TIP: auto find the %q and will chdir to %s", runOpts.chdir, cd)
+			colorp.Yellowf("TIP: auto find the %q and will chdir to %s\n", runOpts.chdir, cd)
 		} else if cd == "" {
-			colorp.Warnf("TIP: can not find the %q in %s or parent", runOpts.chdir, wd)
+			colorp.Warnf("TIP: can not find the %q in %s or parent\n", runOpts.chdir, wd)
 		}
 	}
 

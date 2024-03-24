@@ -116,7 +116,9 @@ var DecodeQueryCmd = &gcli.Command{
 			}
 		}
 
-		show.AList("Decoded Query:", mp)
+		show.AList("Decoded Query:", mp, func(opts *show.ListOption) {
+			// opts.KeyStyle = "" // disable color for key
+		})
 		return nil
 	},
 }
