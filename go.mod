@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/CloudyKit/jet/v6 v6.2.0
 	github.com/alecthomas/chroma v0.10.0
-	github.com/charmbracelet/glamour v0.6.0
+	github.com/charmbracelet/glamour v0.7.0
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/getkin/kin-openapi v0.123.0
 	github.com/go-openapi/spec v0.20.14
@@ -35,6 +35,7 @@ require (
 	dario.cat/mergo v1.0.0 // indirect
 	github.com/BurntSushi/toml v1.3.2 // indirect
 	github.com/CloudyKit/fastprinter v0.0.0-20200109182630-33d98a066a53 // indirect
+	github.com/alecthomas/chroma/v2 v2.8.0 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/dlclark/regexp2 v1.10.0 // indirect
