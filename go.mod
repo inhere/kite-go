@@ -28,7 +28,7 @@ require (
 	github.com/titanous/json5 v1.0.0
 	github.com/traefik/yaegi v0.15.1
 	github.com/yosuke-furukawa/json5 v0.1.1
-	github.com/yuin/goldmark v1.7.0
+	github.com/yuin/goldmark v1.7.1
 )
 
 require (
