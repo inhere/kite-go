@@ -7,7 +7,7 @@ require (
 	github.com/alecthomas/chroma v0.10.0
 	github.com/charmbracelet/glamour v0.7.0
 	github.com/fsnotify/fsnotify v1.7.0
-	github.com/getkin/kin-openapi v0.123.0
+	github.com/getkin/kin-openapi v0.124.0
 	github.com/go-openapi/spec v0.20.14
 	github.com/go-openapi/swag v0.22.9
 	github.com/goccy/go-yaml v1.11.3
