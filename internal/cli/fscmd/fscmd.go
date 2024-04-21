@@ -20,5 +20,6 @@ var FsCmd = &gcli.Command{
 		NewTemplateCmd(),
 		convcmd.NewConvPathSepCmd(),
 		// filewatcher.FileWatcher(nil)
+		// TODO tree command
 	},
 }

@@ -44,8 +44,8 @@ var RunAnyCmd = &gcli.Command{
 		c.BoolOpt2(&runOpts.alias, "alias", "dont check and direct run alias command on kite")
 		c.BoolOpt2(&runOpts.script, "script", "dont check and direct run user script on kite")
 		c.BoolOpt2(&runOpts.system, "system, sys", "dont check and direct run command on system")
-		c.StrOpt2(&runOpts.chdir, "chdir, cd", "auto find match dir and chdir as workdir")
 
+		c.StrOpt2(&runOpts.chdir, "chdir, cd", "auto find match dir and chdir as workdir")
 		c.VarOpt2(&runOpts.envMap, "env,e", "custom set ENV value on run command, format: `KEY=VALUE`")
 		c.VarOpt(&runOpts.wrapType, "type", "", "wrap shell type for run input script, allow: "+runOpts.wrapType.EnumString())
 

@@ -34,9 +34,9 @@ var DatePrintCmd = &gcli.Command{
 
 		s := tx.DateFormat(dateParseOpts.Format)
 		if dateParseOpts.Inline {
-			fmt.Print(s)
+			fmt.Print(s, " ", tx.Unix())
 		} else {
-			fmt.Println(s)
+			fmt.Println(s, tx.Unix())
 		}
 		return nil
 	},

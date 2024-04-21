@@ -6,4 +6,5 @@ use (
 	greq
 	goutil
 	kite-go
+	rux
 )
