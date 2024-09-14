@@ -10,7 +10,7 @@ import (
 	"github.com/gookit/goutil/maputil"
 )
 
-// ScriptInfo struct
+// ScriptInfo struct Info, Meta
 type ScriptInfo struct {
 
 	//
@@ -30,6 +30,8 @@ type ScriptInfo struct {
 	Vars map[string]string
 	// Ext enable ext: proxy, clip
 	Ext string
+	// Deps commands list
+	Deps []string
 
 	// Name for script
 	Name string
@@ -41,6 +43,11 @@ type ScriptInfo struct {
 	Args, ArgNames []string
 	// Cmds commands list
 	Cmds []string
+
+	// Silent mode, dont print exec command line.
+	Silent bool `json:"silent"`
+	// PreCond for run script. eg: test -f .env
+	PreCond string
 
 	//
 	// For script file
@@ -136,6 +143,32 @@ func (si *ScriptInfo) loadArgsDefine(args any) error {
 	return nil
 }
 
+// CmdInfo struct
+type CmdInfo struct {
+	si *ScriptInfo
+	// Workdir for run script
+	Workdir string
+	// Vars for run cmd. allow exec a command line TODO
+	Vars map[string]string
+	// Env setting for run
+	Env map[string]string
+	// Line command line for run. eg: go run main.go
+	Line string
+	// Type wrap for run. allow: sh, bash, zsh
+	Type string
+	// Msg on run fail
+	Msg string
+	// Silent mode, dont print exec command line.
+	Silent bool `json:"silent"`
+}
+
+// Variable struct
+type Variable struct {
+	// Type of variable, allow: sh, bash, zsh or empty.
+	Type  string
+	Value string
+}
+
 // RunCtx definition
 type RunCtx struct {
 	// Name for script run
@@ -150,6 +183,8 @@ type RunCtx struct {
 	Workdir string
 	// Env setting for run
 	Env map[string]string
+	// Silent mode, dont print exec command line.
+	Silent bool `json:"silent"`
 
 	// BeforeFn hook
 	BeforeFn func(si *ScriptInfo, ctx *RunCtx)

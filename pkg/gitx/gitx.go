@@ -1,6 +1,8 @@
 package gitx
 
 import (
+	"strings"
+
 	"github.com/gookit/gitw"
 	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/errorx"
@@ -64,7 +66,7 @@ func (g *GitLoc) HasSourceRemote() bool {
 // DefRemoteInfo data.
 func (g *GitLoc) DefRemoteInfo() *gitw.RemoteInfo {
 	ri := g.Repo.RemoteInfo(g.DefaultRemote)
-	if ri != nil {
+	if ri == nil {
 		goutil.Panicf("gitx: default remote %q is not found", g.DefaultRemote)
 	}
 	return ri
@@ -73,7 +75,7 @@ func (g *GitLoc) DefRemoteInfo() *gitw.RemoteInfo {
 // SrcRemoteInfo data.
 func (g *GitLoc) SrcRemoteInfo() *gitw.RemoteInfo {
 	ri := g.Repo.RemoteInfo(g.SourceRemote)
-	if ri != nil {
+	if ri == nil {
 		goutil.Panicf("gitx: main repo remote %q is not found", g.SourceRemote)
 	}
 	return ri
@@ -105,4 +107,13 @@ func (g *GitLoc) CheckRemote() error {
 // RepoDir path.
 func (g *GitLoc) RepoDir() string {
 	return g.Repo.Dir()
+}
+
+// ResolveBranch name
+func (g *GitLoc) ResolveBranch(brName string) (string, bool) {
+	switch strings.ToUpper(brName) {
+	case "", "@", "H", "HEAD":
+		return g.CurBranchName(), true
+	}
+	return g.ResolveAlias(brName), false
 }

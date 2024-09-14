@@ -22,6 +22,8 @@ var EmbedFs embed.FS
 // from http://patorjk.com/software/taag/#p=testall&f=Graffiti&t=Kite
 // font: Doom,Graffiti,Isometric1 - Isometric3, Ogre, Slant
 var Banner = `
+GoVersion: {{goVersion}}
+BuildDate: {{buildDate}}
  __  __     __     ______   ______
 /\ \/ /    /\ \   /\__  _\ /\  ___\
 \ \  _"-.  \ \ \  \/_/\ \/ \ \  __\

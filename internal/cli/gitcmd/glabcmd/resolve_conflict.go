@@ -33,7 +33,7 @@ var ResolveConflictCmd = &gcli.Command{
 
 		curBr := lr.CurBranchName()
 		br := c.Arg("branch").String()
-		br = lr.ResolveBranch(br)
+		br = lr.ResolveAlias(br)
 
 		rr := cmdutil.NewRunner(func(rr *cmdutil.Runner) {
 			rr.Workdir = rcOpts.Workdir

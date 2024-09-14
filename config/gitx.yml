@@ -6,8 +6,11 @@ git:
   default_branch: main
   # gitflow git fork mode for develop.
   fork_mode: false
+  disable_https: false
   source_remote: main
   default_remote: origin
+  # pull request URL format template
+  pr_url_format: "http://{host}/{repo_path}/compare/{into_branch}...{from_repo_path}:{from_branch}"
 
 # GitHub config, will extend common info from git.
 github:
@@ -29,6 +32,7 @@ gitlab:
   host_url: http://${GITLAB_HOST}
   # gitflow git fork mode for develop.
   fork_mode: true
+  disable_https: true
   # the source remote name.
   source_remote: ${GITLAB_SRC_REMOTE}
   # the default upstream remote name. default is origin.

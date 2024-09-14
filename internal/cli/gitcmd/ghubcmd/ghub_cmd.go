@@ -23,6 +23,7 @@ var GithubCmd = &gcli.Command{
 	Desc:    "useful tools for use github",
 	Subs: []*gcli.Command{
 		DownloadAssetCmd,
+		gitcmd.NewPullRequestCmd(),
 		gitcmd.BatchCmd,
 		gitcmd.NewBranchCmd(),
 		gitcmd.NewCloneCmd(configProvider),

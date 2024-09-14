@@ -1,0 +1,28 @@
+{
+    "port": 13000,
+    "datafile": "db.json",
+    "routes": [
+        {
+            "type": "static",
+            "method": "GET",
+            "path": "/public/assets/*"
+        },
+        {
+            "method": "GET",
+            "path": "/api/v1/users",
+            "response": {
+                "status": 200,
+                "body": [
+                    {
+                        "id": 1,
+                        "name": "John Doe"
+                    },
+                    {
+                        "id": 2,
+                        "name": "Jane Doe"
+                    }
+                ]
+            }
+        }
+    ]
+}

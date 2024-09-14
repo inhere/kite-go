@@ -9,12 +9,6 @@ import (
 	"github.com/inhere/kite-go/internal/biz/cmdbiz"
 )
 
-var CreatePRLink = &gcli.Command{
-	Name:    "pr",
-	Desc:    "create pull request link for current project",
-	Aliases: []string{"pr-link"},
-}
-
 // NewInitFlowCmd instance
 func NewInitFlowCmd() *gcli.Command {
 	var ifOpts = struct {

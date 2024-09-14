@@ -37,6 +37,11 @@ func (p *GlProject) GitLoc() *gitx.GitLoc {
 	return p.lp
 }
 
+// IsGitRepo check the project dir is git repo
+func (p *GlProject) IsGitRepo() bool {
+	return p.lp.IsGitRepo()
+}
+
 func (p *GlProject) CheckRemote() error {
 	if err := p.CheckDefaultRemote(); err != nil {
 		return err

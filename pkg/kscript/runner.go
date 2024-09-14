@@ -25,6 +25,10 @@ type Runner struct {
 	//
 	// format: {name: info, name2: info2, ...}
 	Scripts map[string]any `json:"scripts"`
+
+	// DefineDir scripts define dir, will read and add to Scripts
+	DefineDir string `json:"define_dir"`
+
 	// DefineFiles scripts define files, will read and add to Scripts
 	//
 	// Allow vars: $user, $os
@@ -33,6 +37,7 @@ type Runner struct {
 	//	- config/module/scripts.yml
 	//	- ?config/module/scripts.$os.yml  // start withs '?' - an optional file, load on exists.
 	DefineFiles []string `json:"define_files"`
+
 	// TypeShell wrapper for run each script.
 	//
 	// value like: bash, sh, zsh or empty for direct run command
@@ -299,6 +304,7 @@ func (r *Runner) runDefineScript(si *ScriptInfo, inArgs []string, ctx *RunCtx) e
 		"$*": strutil.Quote(argStr), // 把所有参数合并成一个字符串
 		// context info
 		"$workdir": workdir,
+		"$dirname": fsutil.Name(workdir),
 	}
 
 	for i, val := range inArgs {

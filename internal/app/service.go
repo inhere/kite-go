@@ -82,12 +82,12 @@ func Glab() *gitlab.GitLab {
 	return Get[*gitlab.GitLab](ObjGlab)
 }
 
-// Ghub get
+// Ghub config get
 func Ghub() *github.GitHub {
 	return Get[*github.GitHub](ObjGhub)
 }
 
-// Gitx get
+// Gitx config get
 func Gitx() *gitx.Config {
 	return Get[*gitx.Config](ObjGit)
 }

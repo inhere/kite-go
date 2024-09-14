@@ -27,6 +27,8 @@ type Config struct {
 	// ForkMode enable git fork mode for develop.
 	// If is False, use branch mode, will ignore SourceRemote setting.
 	ForkMode bool `json:"fork_mode"`
+	// DisableHTTPS disable https(eg: on PR/MR link). if is true, will use HTTP url.
+	DisableHTTPS bool `json:"disable_https"`
 	// SourceRemote the source remote name, it is center repo.
 	SourceRemote string `json:"source_remote"`
 	// DefaultRemote the default upstream remote name, use for develop. default: origin.
@@ -36,6 +38,8 @@ type Config struct {
 	DefaultBranch string `json:"default_branch"`
 	// BranchAliases branch aliases
 	BranchAliases maputil.Aliases `json:"branch_aliases"`
+	// PrUrlFormat pull request URL format template. can use var like {host}
+	PrUrlFormat string `json:"pr_url_format"`
 }
 
 // NewConfig instance
