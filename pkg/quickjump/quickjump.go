@@ -24,12 +24,15 @@ const (
 	ShellBash = "bash"
 	ShellZsh  = "zsh"
 	ShellFish = "fish" // TODO
+	ShellCmd  = "cmd"  // Windows cmd TODO
+	ShellPwsh = "pwsh" // Windows PowerShell
 )
 
 // ShellTplMap shell templates
 var ShellTplMap = map[string]string{
 	ShellBash: JumpBashTpl,
 	ShellZsh:  JumpZshTpl,
+	ShellPwsh: JumpPwshTpl,
 }
 
 // IsSupported check shell name is supported
