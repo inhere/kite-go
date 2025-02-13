@@ -2,6 +2,7 @@ package fscmd
 
 import (
 	"github.com/gookit/gcli/v3"
+	"github.com/inhere/kite-go/internal/cli/toolcmd/common"
 	"github.com/inhere/kite-go/internal/cli/toolcmd/convcmd"
 )
 
@@ -18,6 +19,7 @@ var FsCmd = &gcli.Command{
 		NewFileCatCmd(),
 		NewReplaceCmd(),
 		NewTemplateCmd(),
+		common.NewQuickOpenCmd(),
 		convcmd.NewConvPathSepCmd(),
 		// filewatcher.FileWatcher(nil)
 		// TODO tree command
