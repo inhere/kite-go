@@ -1,0 +1,20 @@
+# mode: top_config, setting
+__xfile_mode: setting
+__setting:
+  desc: Create an new project from base project repo
+  version: '1'
+  vars:
+     name: value
+  env:
+    KEY: value
+  dotenv: ['.env']
+  output: 'group'
+
+build:
+  cmds:
+    - go build -ldflags="-X main.Version={{.GIT_COMMIT}}" main.go
+  vars:
+    name: value
+    GIT_COMMIT:
+      type: sh
+      cmd: git log -n 1 --format=%h

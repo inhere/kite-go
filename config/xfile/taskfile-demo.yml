@@ -1,0 +1,66 @@
+#
+# taskfile please see https://taskfile.dev/zh-Hans/usage
+#
+
+name: new-repo-form-tpl
+desc: Create an new project from base project repo
+version: 3
+includes:
+  docs:
+    taskfile: ./docs/Taskfile.yml
+    dir: ./docs
+  backend:
+    aliases: [back]
+    taskfile: ./taskfiles/Docker.yml
+    vars:
+      DOCKER_IMAGE: backend_image
+env:
+  KEY: name
+dotenv: ['.env']
+workdir: ''
+
+# https://github.com/hashicorp/go-bexpr
+actions:
+  task1:
+    platforms: [windows]
+    dir: /data/www/inhere
+    cond:  when_changed
+    cmds:
+      - git checkout .
+      - git pull -f
+
+  task2:
+    deps: [task1]
+    dir: /data/www/inhere
+    cond:  once
+    cmds:
+      - git checkout .
+      - git pull -f
+
+  default:
+    desc: Build for production usage.
+    deps:
+      - task: echo_sth
+        vars: { TEXT: 'before 1' }
+      - task: echo_sth
+        vars: { TEXT: 'before 2' }
+    cmds:
+      - echo "after"
+
+  echo_sth:
+    cmds:
+      - echo {{.TEXT}}
+
+  main-task:
+    cmds:
+      - task: task-to-be-called
+      - task: another-task
+      - echo "Both done"
+
+  task-to-be-called:
+    cmds:
+      - echo "Task to be called"
+
+  another-task:
+    cmds:
+      - echo "Another task"

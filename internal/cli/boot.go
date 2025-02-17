@@ -52,6 +52,7 @@ func addCommands(cli *gcli.App) {
 		extcmd.UserExtCmd,
 		textcmd.TextToolCmd,
 		jsoncmd.JSONToolCmd,
+		toolcmd.XFileCmd,
 		toolcmd.ToolsCmd,
 		toolcmd.RunAnyCmd,
 		toolcmd.NewKScriptCmd(),
@@ -150,7 +151,7 @@ func onAppBindOptsAfter(cli *gcli.App) gcli.HookFunc {
 func onCmdNotFound(ctx *gcli.HookCtx) (stop bool) {
 	name := ctx.Str("name")
 	args := ctx.Strings("args")
-	app.Log().Infof("%s: handle kite cli command not found: %s", ctx.Name(), name)
+	app.Log().WithField("args", args).Infof("%s: handle kite cli command not found: %s", ctx.Name(), name)
 
 	if err := cmdbiz.RunAny(name, args, nil); err != nil {
 		cliutil.Warnln("RunAny Error >", err)

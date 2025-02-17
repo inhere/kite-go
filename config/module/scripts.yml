@@ -1,3 +1,7 @@
+#
+# kite scripts
+# config from ../extra.yml
+#
 
 echo: echo hi
 test:

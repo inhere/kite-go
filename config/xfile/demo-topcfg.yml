@@ -1,0 +1,34 @@
+# mode: top_cfg, setting
+__xfile_mode: top_cfg
+name: project
+version: 1.0
+author: inhere
+desc: Create an new project from base project repo
+
+env:
+  KEY: name
+env_path: add/new/path,add/new/path1
+dotenv: ['.env']
+output:
+workdir: ''
+default_cmd: cmd1
+
+# https://github.com/hashicorp/go-bexpr for condition
+
+commands:
+  cmd1:
+    desc: description for cmd1
+    type: bash
+    cmds: cat app.log | grep 'error'
+
+  cmd2:
+    desc: description for cmd1
+    # type: bash
+    workdir: path/to/dir
+    vars:
+      name1: value1
+    cmds:
+      - pwd
+      - git status
+      - git pull -np
+      - git status

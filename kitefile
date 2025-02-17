@@ -1,2 +1,4 @@
+# use yaml format
+
 test:
   echo hello

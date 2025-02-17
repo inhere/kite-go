@@ -40,7 +40,14 @@
 
 ## fs tools
 
-- [ ] find and clean *.log cache files
+- [ ] find and clean *.log and more files
 
 ## sys tools
 
+- [ ] system info
+
+## extra command
+
+支持调用外部命令
+
+- [ ] 调用 php 实现的命令

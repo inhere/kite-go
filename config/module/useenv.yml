@@ -1,0 +1,7 @@
+# name for use env
+node16:
+  path: /usr/local/env/node16
+
+node20:
+  path: /usr/local/env/node20
+

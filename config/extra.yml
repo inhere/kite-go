@@ -23,6 +23,11 @@ script:
   scripts:
     test1: echo hello
 
+# use env in kite
+use_env:
+  enable: true
+  config_file: $config/module/useenv.yml
+
 # quick package manage
 package:
   version: 1
