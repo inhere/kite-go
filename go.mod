@@ -8,8 +8,8 @@ require (
 	github.com/charmbracelet/glamour v0.7.0
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/getkin/kin-openapi v0.123.0
-	github.com/go-openapi/spec v0.20.14
-	github.com/go-openapi/swag v0.22.9
+	github.com/go-openapi/spec v0.21.0
+	github.com/go-openapi/swag v0.23.0
 	github.com/goccy/go-yaml v1.11.3
 	github.com/gofrs/uuid/v5 v5.1.0
 	github.com/gomarkdown/markdown v0.0.0-20231222211730-1d6d20845b47
@@ -40,8 +40,8 @@ require (
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/dlclark/regexp2 v1.10.0 // indirect
 	github.com/fatih/color v1.16.0 // indirect
-	github.com/go-openapi/jsonpointer v0.20.2 // indirect
-	github.com/go-openapi/jsonreference v0.20.4 // indirect
+	github.com/go-openapi/jsonpointer v0.21.0 // indirect
+	github.com/go-openapi/jsonreference v0.21.0 // indirect
 	github.com/gookit/filter v1.2.1 // indirect
 	github.com/gookit/gsr v0.1.0 // indirect
 	github.com/gookit/validate v1.5.2 // indirect
