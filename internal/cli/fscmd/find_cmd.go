@@ -14,6 +14,7 @@ import (
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/fsutil/finder"
+	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/strutil/textutil"
 	"github.com/gookit/goutil/sysutil/cmdr"
@@ -21,7 +22,7 @@ import (
 	"github.com/inhere/kite-go/internal/biz/cmdbiz"
 )
 
-var ffOpts = struct {
+type fsFindOptions struct {
 	cmdbiz.CommonOpts
 	Dirs string `flag:"desc=the find directory, multi by comma;shorts=in,dir"`
 
@@ -57,9 +58,14 @@ var ffOpts = struct {
 	WithDotDir   bool `flag:"desc=include dot directories, start with <mga>.</>;shorts=dd"`
 	WithDotFile  bool `flag:"desc=include dot files, start with <mga>.</>;shorts=df"`
 
+	ShowSize    bool `flag:"desc=show found file size;shorts=ss"`
+	Concurrency int  `flag:"desc=the number of concurrent workers;default=3;short=C"`
+
 	// runtime vars
 	dirs []string
-}{}
+}
+
+var ffOpts = fsFindOptions{}
 
 // FileFindCmd command
 var FileFindCmd = &gcli.Command{
@@ -127,71 +133,11 @@ var FileFindCmd = &gcli.Command{
 		}
 
 		st := time.Now()
-		spl := textutil.NewVarReplacer("{,}")
-		ers := errorx.Errors{}
-
-		var old, nw []byte
-		if ffOpts.Replace != "" {
-			old, nw = byteutil.SafeCut([]byte(ffOpts.Replace), '/')
-			colorp.Infof("Will replace contents: %q -> %q\n", old, nw)
+		// do find and handle
+		err := handleFsElem(ff)
+		if err != nil {
+			return err
 		}
-
-		ff.EachElem(func(el finder.Elem) {
-			elPath := el.Path()
-			if ffOpts.Clear {
-				fmt.Println(elPath)
-				return
-			}
-
-			if ffOpts.Delete {
-				colorp.Warnf("Delete path: %s\n", elPath)
-				if ffOpts.DryRun {
-					colorp.Infoln("Dry run, skip delete")
-				} else if err := os.RemoveAll(elPath); err != nil {
-					ers = append(ers, err)
-				}
-				return
-			}
-
-			if ffOpts.Replace != "" {
-				if ffOpts.DryRun {
-					colorp.Infoln("Dry run replace contents")
-				} else {
-					colorp.Infof("Replace contents for: %s\n", elPath)
-					err := fsutil.UpdateContents(elPath, func(bs []byte) []byte {
-						return bytes.Replace(bs, old, nw, -1)
-					})
-					if err != nil {
-						ers = append(ers, err)
-					}
-				}
-				return
-			}
-
-			if ffOpts.Exec == "" {
-				fmt.Println(el)
-				return
-			}
-
-			// exec command
-			vs := map[string]string{
-				"path": elPath,
-				"name": el.Name(),
-				"dir":  fsutil.Dir(elPath),
-			}
-
-			execCmd := cmdr.NewCmdline(spl.RenderSimple(ffOpts.Exec, vs)).
-				WithWorkDir(ffOpts.Workdir).
-				WithDryRun(ffOpts.DryRun).
-				OutputToOS().
-				PrintCmdline()
-
-			if err := execCmd.Run(); err != nil {
-				ers = append(ers, err)
-			}
-		})
-		// s.Stop("Find complete")
-
 		if ffOpts.Clear {
 			return ff.Err()
 		}
@@ -205,8 +151,94 @@ var FileFindCmd = &gcli.Command{
 	},
 }
 
+func handleFsElem(ff *finder.Finder) error {
+	spl := textutil.NewVarReplacer("{,}")
+	ers := errorx.Errors{}
+
+	var old, nw []byte
+	if ffOpts.Replace != "" {
+		old, nw = byteutil.SafeCut([]byte(ffOpts.Replace), '/')
+		colorp.Infof("Will replace contents: %q -> %q\n", old, nw)
+	}
+
+	var totalSize uint64
+	ff.EachElem(func(el finder.Elem) {
+		elPath := el.Path()
+		if ffOpts.Clear {
+			fmt.Println(elPath)
+			return
+		}
+
+		if ffOpts.Delete {
+			colorp.Warnf("Delete path: %s\n", elPath)
+			if ffOpts.DryRun {
+				colorp.Infoln("Dry run, skip delete")
+			} else if err := os.RemoveAll(elPath); err != nil {
+				ers = append(ers, err)
+			}
+			return
+		}
+
+		if ffOpts.Replace != "" {
+			if ffOpts.DryRun {
+				colorp.Infoln("Dry run replace contents")
+			} else {
+				colorp.Infof("Replace contents for: %s\n", elPath)
+				err := fsutil.UpdateContents(elPath, func(bs []byte) []byte {
+					return bytes.Replace(bs, old, nw, -1)
+				})
+				if err != nil {
+					ers = append(ers, err)
+				}
+			}
+			return
+		}
+
+		// simple print el path
+		if strutil.IsBlank(ffOpts.Exec) {
+			if ffOpts.ShowSize && !el.IsDir() {
+				fsInfo, _ := el.Info()
+				if fsInfo != nil {
+					hmSize := uint64(fsInfo.Size())
+					totalSize += hmSize
+					fmt.Printf("%s %s", el, mathutil.DataSize(hmSize))
+				} else {
+					fmt.Println(el)
+				}
+			} else {
+				fmt.Println(el)
+			}
+			return
+		}
+
+		// exec command
+		vs := map[string]string{
+			"path": elPath,
+			"name": el.Name(),
+			"dir":  fsutil.Dir(elPath),
+		}
+
+		execCmd := cmdr.NewCmdline(spl.RenderSimple(ffOpts.Exec, vs)).
+			WithWorkDir(ffOpts.Workdir).
+			WithDryRun(ffOpts.DryRun).
+			OutputToOS().
+			PrintCmdline()
+
+		if err := execCmd.Run(); err != nil {
+			ers = append(ers, err)
+		}
+	})
+	// s.Stop("Find complete")
+
+	if !ffOpts.Clear && ffOpts.ShowSize {
+		colorp.Infof("TOTAL SIZE: %s\n", mathutil.DataSize(totalSize))
+	}
+	return ers.ErrorOrNil()
+}
+
 func buildFinder() *finder.Finder {
 	cfg := finder.NewConfig(ffOpts.dirs...)
+	cfg.Concurrency = ffOpts.Concurrency
 	cfg.ExcludeDotDir = !ffOpts.WithDotDir
 	cfg.ExcludeDotFile = !ffOpts.WithDotFile
 
