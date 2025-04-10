@@ -4,6 +4,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/gookit/color/colorp"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/builtin"
 	"github.com/gookit/gcli/v3/events"
@@ -12,8 +13,11 @@ import (
 	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
+	"github.com/gookit/goutil/sysutil"
 	"github.com/inhere/kite-go/internal/app"
+	"github.com/inhere/kite-go/internal/appconst"
 	"github.com/inhere/kite-go/internal/biz/cmdbiz"
+	"github.com/inhere/kite-go/internal/cli/aicmd"
 	"github.com/inhere/kite-go/internal/cli/appcmd"
 	"github.com/inhere/kite-go/internal/cli/devcmd"
 	"github.com/inhere/kite-go/internal/cli/devcmd/jsoncmd"
@@ -41,6 +45,7 @@ func Boot(cli *gcli.App) {
 // addCommands commands to gcli.App
 func addCommands(cli *gcli.App) {
 	cli.Add(
+		aicmd.AICommand,
 		devcmd.DevToolsCmd,
 		fscmd.FsCmd,
 		gitcmd.GitCommands,
@@ -75,11 +80,17 @@ var (
 	autoDir string
 	workdir string
 	waitSec int
+	// set workdir by env KITE_WORKDIR
+	defWorkdir = sysutil.Getenv(appconst.EnvKiteWorkdir)
 )
 
 func addListener(cli *gcli.App) {
 	cli.On(events.OnAppInitAfter, func(ctx *gcli.HookCtx) (stop bool) {
 		app.Log().Info("kite cli app init completed")
+		err := changeWorkdir(cli, defWorkdir)
+		if err != nil {
+			colorp.Redln(err.Error())
+		}
 		return
 	})
 
@@ -130,18 +141,7 @@ func onAppBindOptsAfter(cli *gcli.App) gcli.HookFunc {
 
 		cli.Flags().StrOpt2(&workdir, "workdir,w", "set workdir for run app command",
 			gflag.WithValidator(func(val string) error {
-				if val == "" {
-					return nil
-				}
-
-				if !fsutil.DirExist(val) {
-					return errorx.Err("the workdir not exists: " + val)
-				}
-
-				goutil.MustOK(os.Chdir(val))
-				cli.ChWorkDir(val)
-				cliutil.Yellowf("NOTICE: set app workdir to: %s\n", val)
-				return nil
+				return changeWorkdir(cli, val)
 			}),
 		)
 		return false
@@ -158,4 +158,18 @@ func onCmdNotFound(ctx *gcli.HookCtx) (stop bool) {
 	}
 	stop = true
 	return
+}
+
+func changeWorkdir(cli *gcli.App, val string) error {
+	if val == "" {
+		return nil
+	}
+	if !fsutil.DirExist(val) {
+		return errorx.Err("The workdir not exists: " + val)
+	}
+
+	goutil.MustOK(os.Chdir(val))
+	cli.ChWorkDir(val)
+	cliutil.Yellowf("NOTICE: set app workdir to: %s\n", val)
+	return nil
 }
