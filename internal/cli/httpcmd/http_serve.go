@@ -2,7 +2,6 @@ package httpcmd
 
 import (
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/rux/pkg/handlers"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/internal/web"
 	"github.com/inhere/kite-go/pkg/httpserve"
@@ -39,26 +38,20 @@ var HttpServeCmd = &gcli.Command{
 			Name:   "port",
 			Shorts: []string{"p"},
 			Desc:   "port for the start http serve",
-			DefVal: 8080,
+			DefVal: 18080,
 		})
 	},
 	Func: func(c *gcli.Command, args []string) error {
 		// dump.P(httpServeOpts)
-		s := httpserve.New()
-		r := s.Rux()
-		r.Use(handlers.PanicsHandler())
+		s := httpserve.New(httpServeOpts.debug)
 
-		if httpServeOpts.debug {
-			r.Use(handlers.RequestLogger())
-		}
-
-		web.AddRoutes(r)
+		web.AddRoutes(s.Rux())
 
 		// quick start
-		r.Listen("127.0.0.1:18080")
+		// r.Listen("127.0.0.1:18080")
 		// apply global pre-handlers
 		// http.ListenAndServe(":18080", handlers.HTTPMethodOverrideHandler(r))
-
+		s.Start()
 		return nil
 	},
 }

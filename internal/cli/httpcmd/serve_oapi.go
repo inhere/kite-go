@@ -4,8 +4,10 @@ import (
 	"strings"
 
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/mathutil"
+	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/rux"
 )
 
@@ -171,7 +173,7 @@ func NewOAPIServeCmd() *gcli.Command {
 		Desc:    "start an open api doc UI http server",
 		Aliases: []string{"swag-ui", "oapi-ui", "swagger"},
 		Config: func(c *gcli.Command) {
-			c.UintOpt(&esOpts.port, "port", "P", 0, "custom the echo server port, default will use random `port`")
+			c.UintOpt(&esOpts.port, "port", "P", 18081, "custom the echo server port, default will use random `port`")
 			c.StrOpt2(&esOpts.style, "style,s", "the openapi doc UI style, support: redoc, elements, swagger")
 			c.StrOpt2(&esOpts.uiHtml, "ui-html,ui", "the custom UI html file for render openapi doc")
 
@@ -191,12 +193,15 @@ Some Example APIs:
 			}
 
 			docPath := c.Arg("docPath").String()
+			docPath = fsutil.SlashPath(docPath)
 
 			srv := rux.New()
 			if fsutil.IsFile(docPath) {
 				filePath := docPath
 				docPath = fsutil.Name(docPath)
 				srv.StaticFile(docPath, filePath)
+			} else if !strutil.IsHttpURL(docPath) {
+				return errorx.Raw("input docPath is a invalid local path")
 			}
 
 			srv.GET("/", func(c *rux.Context) {

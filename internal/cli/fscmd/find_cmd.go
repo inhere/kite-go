@@ -59,7 +59,7 @@ type fsFindOptions struct {
 	WithDotFile  bool `flag:"desc=include dot files, start with <mga>.</>;shorts=df"`
 
 	ShowSize    bool `flag:"desc=show found file size;shorts=ss"`
-	Concurrency int  `flag:"desc=the number of concurrent workers;default=3;short=C"`
+	Concurrency int  `flag:"desc=the number of concurrent workers;default=3;shorts=C"`
 
 	// runtime vars
 	dirs []string

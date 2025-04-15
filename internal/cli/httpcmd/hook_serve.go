@@ -3,7 +3,7 @@ package httpcmd
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/mathutil"
-	"github.com/gookit/rux/pkg/handlers"
+	"github.com/gookit/goutil/timex"
 	"github.com/inhere/kite-go/internal/web/webhook"
 	"github.com/inhere/kite-go/pkg/httpserve"
 )
@@ -35,22 +35,18 @@ func NewHookServerCmd() *gcli.Command {
 			c.MustFromStruct(&hookSrvOpts)
 		},
 		Func: func(c *gcli.Command, args []string) error {
-			s := httpserve.New()
-			r := s.Rux()
-			r.Use(handlers.PanicsHandler())
+			s := httpserve.New(hookSrvOpts.Debug)
 
 			if hookSrvOpts.Port < 500 {
-				hookSrvOpts.Port = uint(mathutil.RandInt(6000, 9999))
+				hookSrvOpts.Port = mathutil.SafeUint("1" + timex.Now().DateFormat("md")) // eg: 10425
 			}
+			s.SetHostPort("127.0.0.1", hookSrvOpts.Port)
 
-			if hookSrvOpts.Debug {
-				r.Use(handlers.ConsoleLogger())
-			}
-
-			webhook.Register(r)
+			webhook.Register(s.Rux())
 
 			// quick start
-			r.Listen("127.0.0.1", mathutil.String(hookSrvOpts.Port))
+			// r.Listen("127.0.0.1", mathutil.String(hookSrvOpts.Port))
+			s.Start()
 			return nil
 		},
 	}

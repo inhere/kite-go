@@ -4,7 +4,9 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/goutil/testutil"
+	"github.com/gookit/goutil/timex"
 	"github.com/gookit/rux"
+	"github.com/gookit/rux/pkg/handlers"
 	"github.com/gookit/rux/pkg/render"
 )
 
@@ -23,10 +25,11 @@ func NewEchoServerCmd() *gcli.Command {
 		},
 		Func: func(c *gcli.Command, args []string) error {
 			if esOpts.port < 1 {
-				esOpts.port = uint(mathutil.RandInt(6000, 9999))
+				esOpts.port = mathutil.SafeUint("1" + timex.Now().DateFormat("md")) // eg: 10425
 			}
 
 			srv := rux.New(func(r *rux.Router) {})
+			srv.Use(handlers.ConsoleLogger())
 			srv.Any("/{all}", func(c *rux.Context) {
 				data := testutil.BuildEchoReply(c.Req)
 
