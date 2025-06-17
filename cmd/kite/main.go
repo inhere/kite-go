@@ -7,8 +7,8 @@ import (
 
 // dev run:
 //
-//	go run ./bin/kite
-//	go run ./bin/kite
+//	go run ./cmd/kite
+//	go run ./cmd/kite <CMD>
 //
 // install:
 //

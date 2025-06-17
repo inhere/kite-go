@@ -70,7 +70,7 @@ func GitCfgByCmdID(c *gcli.Command) (cfg *gitx.Config) {
 	return cfg
 }
 
-// ResolvePath for input path
+// ResolvePath for an input path
 func ResolvePath(pathStr string) string {
 	pathStr = app.Vars.Replace(pathStr)
 	if app.HasAliasMark(pathStr) {
@@ -93,6 +93,8 @@ func ResolveSep(sep string) string {
 		return "\n"
 	case "TAB":
 		return "\t"
+	case "SLASH":
+		return "/"
 	default:
 		return sep
 	}
@@ -105,7 +107,7 @@ var sepRpl = strings.NewReplacer(
 
 // ReplaceSep in string
 func ReplaceSep(s string) string {
-	if len(s) < 10 {
+	if len(s) < 8 {
 		switch s {
 		case "SPACE":
 			return " "
@@ -113,6 +115,8 @@ func ReplaceSep(s string) string {
 			return "\n"
 		case "TAB":
 			return "\t"
+		case "SLASH":
+			return "/"
 		}
 	}
 

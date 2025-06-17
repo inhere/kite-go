@@ -10,6 +10,7 @@ import (
 )
 
 // PlugCmd for kite plugins
+// see https://github.com/traefik/yaegi
 var PlugCmd = &gcli.Command{
 	Name:   "plug",
 	Hidden: true,

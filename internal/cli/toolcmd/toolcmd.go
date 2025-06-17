@@ -2,7 +2,6 @@ package toolcmd
 
 import (
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/goutil/errorx"
 	"github.com/inhere/kite-go/internal/cli/appcmd"
 	"github.com/inhere/kite-go/internal/cli/extcmd"
 	"github.com/inhere/kite-go/internal/cli/fscmd"
@@ -35,7 +34,6 @@ var ToolsCmd = &gcli.Command{
 		// RandomCmd,
 		MathCalcCmd,
 		// ScriptCmd,
-		TranslateCmd,
 		convcmd.NewTime2dateCmd(),
 		convcmd.NewDate2tsCmd(),
 		convcmd.NewConvPathSepCmd(),
@@ -53,18 +51,5 @@ var ToolsCmd = &gcli.Command{
 	},
 	Config: func(c *gcli.Command) {
 
-	},
-}
-
-// TranslateCmd command
-var TranslateCmd = &gcli.Command{
-	Name:    "translate",
-	Aliases: []string{"trans", "tr", "fy"},
-	Desc:    "translate the input contents to the target language",
-	Config: func(c *gcli.Command) {
-		// random string(number,alpha,), int(range)
-	},
-	Func: func(c *gcli.Command, _ []string) error {
-		return errorx.New("TODO")
 	},
 }

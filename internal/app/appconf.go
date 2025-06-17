@@ -30,17 +30,17 @@ type Config struct {
 	// the main config file path
 	confFile string
 
-	// BaseDir base data dir
+	// BaseDir base data dir. default: ~/.kite-go
 	BaseDir string `json:"base_dir" default:"${KITE_BASE_DIR}"`
-	// TmpDir tmp dir
+	// TmpDir tmp dir. default in BaseDir/tmp
 	TmpDir string `json:"tmp_dir"`
-	// DataDir tmp dir
+	// DataDir tmp dir. default in BaseDir/data
 	DataDir string `json:"data_dir"`
-	// CacheDir cache dir
+	// CacheDir cache dir. default in BaseDir/tmp/cache
 	CacheDir string `json:"cache_dir"`
-	// ConfigDir config dir
+	// ConfigDir config dir. default in BaseDir/config
 	ConfigDir string `json:"config_dir"`
-	// ResourceDir resource dir
+	// ResourceDir resource dir. default in BaseDir/resource
 	ResourceDir string `json:"resource_dir"`
 	// IncludeConfig include config files.
 	// default file path relative the config_dir

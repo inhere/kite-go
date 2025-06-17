@@ -12,7 +12,6 @@ import (
 func BootEnv(ka *app.KiteApp) error {
 	if dotenvFile := findDotEnvFile(ka); dotenvFile != "" {
 		ka.SetDotenvFile(dotenvFile)
-
 		if err := dotenv.LoadFiles(dotenvFile); err != nil {
 			return err
 		}
@@ -28,8 +27,8 @@ func findDotEnvFile(ka *app.KiteApp) string {
 
 	maybeFiles := []string{
 		confFile,
-		ka.WorkDir() + "/" + fileName,
 		ka.BinDir() + "/" + fileName,
+		ka.WorkDir() + "/" + fileName,
 	}
 
 	for _, file := range maybeFiles {

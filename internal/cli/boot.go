@@ -86,9 +86,8 @@ var (
 
 func addListener(cli *gcli.App) {
 	cli.On(events.OnAppInitAfter, func(ctx *gcli.HookCtx) (stop bool) {
-		app.Log().Info("kite cli app init completed")
-		err := changeWorkdir(cli, defWorkdir)
-		if err != nil {
+		app.Log().WithField("workdir", cli.WorkDir()).Info("kite cli app init completed. osArgs:", os.Args[1:])
+		if err := changeWorkdir(cli, defWorkdir); err != nil {
 			colorp.Redln(err.Error())
 		}
 		return
@@ -98,7 +97,9 @@ func addListener(cli *gcli.App) {
 	cli.On(events.OnAppBindOptsAfter, onAppBindOptsAfter(cli))
 
 	cli.On(events.OnCmdRunBefore, func(ctx *gcli.HookCtx) (stop bool) {
-		app.Log().Infof("%s: will run the command %q with args: %v", ctx.Name(), ctx.Cmd.ID(), ctx.Cmd.RawArgs())
+		app.Log().
+			WithField("workdir", cli.WorkDir()).
+			Infof("%s: will run the command %q with args: %v", ctx.Name(), ctx.Cmd.ID(), ctx.Cmd.RawArgs())
 		cmdbiz.ProxyCC.AutoSetByCmd(ctx.Cmd)
 		return
 	})
@@ -151,10 +152,13 @@ func onAppBindOptsAfter(cli *gcli.App) gcli.HookFunc {
 func onCmdNotFound(ctx *gcli.HookCtx) (stop bool) {
 	name := ctx.Str("name")
 	args := ctx.Strings("args")
-	app.Log().WithField("args", args).Infof("%s: handle kite cli command not found: %s", ctx.Name(), name)
+	app.Log().
+		WithField("workdir", ctx.App.WorkDir()).
+		WithField("args", args).
+		Infof("%s: handle kite cli command not found: %s", ctx.Name(), name)
 
 	if err := cmdbiz.RunAny(name, args, nil); err != nil {
-		cliutil.Warnln("RunAny Error >", err)
+		colorp.Warnln("RunAny Error >", err)
 	}
 	stop = true
 	return
@@ -170,6 +174,6 @@ func changeWorkdir(cli *gcli.App, val string) error {
 
 	goutil.MustOK(os.Chdir(val))
 	cli.ChWorkDir(val)
-	cliutil.Yellowf("NOTICE: set app workdir to: %s\n", val)
+	colorp.Yellowf("NOTICE: set app workdir to: %s\n", val)
 	return nil
 }

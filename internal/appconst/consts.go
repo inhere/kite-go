@@ -10,6 +10,8 @@ const (
 	// EnvKiteConfig main config file env name
 	EnvKiteConfig = "KITE_CONFIG_FILE"
 	EnvKiteDotEnv = "KITE_DOTENV_FILE"
+	// EnvKiteWorkdir for override the workdir
+	EnvKiteWorkdir = "KITE_WORKDIR"
 
 	DotEnvFileName = ".env"
 	// KiteConfigName default main config filename

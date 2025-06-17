@@ -11,7 +11,7 @@ func NewOpenaiClient() *openai.Client {
 	envutil.OnExist("OPENAI_BASE_URL", func(val string) {
 		openaiConfig.BaseURL = val
 	})
-	envutil.OnExist("LLM_SERVICE_TYPE", func(val string) {
+	envutil.OnExist("LLM_SERVICE_API_TYPE", func(val string) {
 		openaiConfig.APIType = openai.APIType(val)
 	})
 
