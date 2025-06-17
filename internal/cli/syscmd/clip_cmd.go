@@ -5,7 +5,7 @@ import (
 
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil"
-	"github.com/gookit/goutil/sysutil/clipboard"
+	"github.com/gookit/goutil/x/clipboard"
 	"github.com/inhere/kite-go/internal/apputil"
 )
 

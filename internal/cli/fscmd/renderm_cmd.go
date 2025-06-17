@@ -8,8 +8,8 @@ import (
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/dump"
-	"github.com/gookit/goutil/fsutil/finder"
 	"github.com/gookit/goutil/strutil"
+	"github.com/gookit/goutil/x/finder"
 	"github.com/inhere/kite-go/internal/apputil"
 	"github.com/inhere/kite-go/pkg/pkgutil"
 )

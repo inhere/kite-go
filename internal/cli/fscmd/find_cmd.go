@@ -13,12 +13,12 @@ import (
 	"github.com/gookit/goutil/byteutil"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
-	"github.com/gookit/goutil/fsutil/finder"
 	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/strutil/textutil"
 	"github.com/gookit/goutil/sysutil/cmdr"
 	"github.com/gookit/goutil/timex"
+	"github.com/gookit/goutil/x/finder"
 	"github.com/inhere/kite-go/internal/biz/cmdbiz"
 )
 
@@ -201,7 +201,7 @@ func handleFsElem(ff *finder.Finder) error {
 				if fsInfo != nil {
 					hmSize := uint64(fsInfo.Size())
 					totalSize += hmSize
-					fmt.Printf("%s %s", el, mathutil.DataSize(hmSize))
+					fmt.Printf("%s %s\n", el, mathutil.DataSize(hmSize))
 				} else {
 					fmt.Println(el)
 				}

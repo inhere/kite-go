@@ -3,6 +3,7 @@ package httpcmd
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/mathutil"
+	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/testutil"
 	"github.com/gookit/goutil/timex"
 	"github.com/gookit/rux"
@@ -13,7 +14,8 @@ import (
 // NewEchoServerCmd instance
 func NewEchoServerCmd() *gcli.Command {
 	var esOpts = struct {
-		port uint
+		port   uint
+		export bool
 	}{}
 
 	return &gcli.Command{
@@ -22,6 +24,7 @@ func NewEchoServerCmd() *gcli.Command {
 		Aliases: []string{"echo-serve", "echo"},
 		Config: func(c *gcli.Command) {
 			c.UintOpt(&esOpts.port, "port", "P", 0, "custom the echo server port, default will use random `port`")
+			c.BoolOpt(&esOpts.export, "export", "e", false, "export the http server, will listen on 0.0.0.0")
 		},
 		Func: func(c *gcli.Command, args []string) error {
 			if esOpts.port < 1 {
@@ -37,7 +40,8 @@ func NewEchoServerCmd() *gcli.Command {
 				c.Respond(200, data, render.NewJSONIndented())
 			})
 
-			srv.Listen("127.0.0.1", mathutil.String(esOpts.port))
+			ip := strutil.OrCond(esOpts.export, "0.0.0.0", "127.0.0.1")
+			srv.Listen(ip, mathutil.String(esOpts.port))
 			return srv.Err()
 		},
 	}

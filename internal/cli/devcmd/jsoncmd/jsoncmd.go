@@ -9,8 +9,8 @@ import (
 	"github.com/goccy/go-yaml"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/maputil"
-	"github.com/gookit/goutil/stdio"
 	"github.com/gookit/goutil/strutil"
+	"github.com/gookit/goutil/x/stdio"
 	"github.com/inhere/kite-go/internal/apputil"
 	"github.com/yosuke-furukawa/json5/encoding/json5"
 )

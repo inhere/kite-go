@@ -16,7 +16,7 @@ import (
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/netutil/httpreq"
-	"github.com/gookit/goutil/stdio"
+	"github.com/gookit/goutil/x/stdio"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/internal/biz/cmdbiz"
 )

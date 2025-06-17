@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/gookit/goutil/fsutil"
-	"github.com/gookit/goutil/sysutil/clipboard"
+	"github.com/gookit/goutil/x/clipboard"
 )
 
 const typeMaxLen = 164

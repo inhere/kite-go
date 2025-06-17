@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/gookit/goutil/fsutil"
-	"github.com/gookit/goutil/stdio"
 	"github.com/gookit/goutil/strutil"
-	"github.com/gookit/goutil/sysutil/clipboard"
+	"github.com/gookit/goutil/x/clipboard"
+	"github.com/gookit/goutil/x/stdio"
 )
 
 // WriterFn type

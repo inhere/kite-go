@@ -5,9 +5,9 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/goutil/encodes/hashutil"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/strutil"
+	"github.com/gookit/goutil/x/encodes/hashutil"
 )
 
 // NewMd5Cmd instance

@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/goutil/fsutil/finder"
 	"github.com/gookit/goutil/strutil"
+	"github.com/gookit/goutil/x/finder"
 )
 
 type fileReplaceOpt struct {

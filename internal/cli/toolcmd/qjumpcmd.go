@@ -8,8 +8,8 @@ import (
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/dump"
-	"github.com/gookit/goutil/stdio"
 	"github.com/gookit/goutil/sysutil"
+	"github.com/gookit/goutil/x/stdio"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/pkg/quickjump"
 )

@@ -38,6 +38,7 @@ Special keywords:
 	- TAB: '\t'
 	- SPACE: ' '
     - COMMA: ','
+    - SLASH: '/'
     - BLANK: any blank chars. eg: ' \t\n\r'
 `,
 		Func: func(c *gcli.Command, _ []string) error {

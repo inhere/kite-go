@@ -3,7 +3,7 @@ package mdcmd
 import (
 	"github.com/charmbracelet/glamour"
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/goutil/stdio"
+	"github.com/gookit/goutil/x/stdio"
 	"github.com/inhere/kite-go/pkg/kautorw"
 )
 
