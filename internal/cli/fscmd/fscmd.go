@@ -16,6 +16,7 @@ var FsCmd = &gcli.Command{
 		ListFilesCmd,
 		DeleteCmd,
 		RenameCmd,
+		NewDirTreeCmd(),
 		NewFileCatCmd(),
 		NewReplaceCmd(),
 		NewTemplateCmd(),
