@@ -71,10 +71,15 @@ Enable quick jump for zsh(add to <mga>~/.zshrc</>):
     <mga>eval "$(kite tool jump shell zsh)"</>
     # set the bind func name is: j
     <mga>eval "$(kite tool jump shell --bind j zsh)"</>
+
+Enable quick jump for pwsh(add to <mga>$PROFILE</>):
+    # jump func is: j
+    <mga>kite tool jump shell --bind j pwsh | Out-String | Invoke-Expression</>
+
 `,
 	Config: func(c *gcli.Command) {
 		c.MustFromStruct(&jsOpts, gflag.TagRuleSimple)
-		c.AddArg("shell", "The shell name. eg: bash, zsh, fish, etc.")
+		c.AddArg("shell", "The shell name. allows: bash, zsh, fish, pwsh.")
 	},
 	Func: func(c *gcli.Command, _ []string) error {
 		shellName := c.Arg("shell").String()

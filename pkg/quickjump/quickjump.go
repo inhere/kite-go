@@ -54,7 +54,7 @@ type QuickJump struct {
 
 	// DataDir is data dir for save metadata files.
 	DataDir string `json:"data_dir"`
-	// CheckExist check path is exists
+	// CheckExist check path exists
 	CheckExist bool `json:"check_exist"`
 	// SlashPath if true, will replace the path separator to slash
 	//
