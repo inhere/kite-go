@@ -133,8 +133,7 @@ func onAppBindOptsAfter(cli *gcli.App) gcli.HookFunc {
 
 				relDir, changed := fsutil.SearchNameUpx(cli.WorkDir(), val)
 				if changed {
-					goutil.MustOK(os.Chdir(relDir))
-					cli.ChWorkDir(relDir)
+					goutil.MustOK(cli.ChWorkDir(relDir))
 					cliutil.Yellowf("NOTICE: auto founded dirname %q and will chdir to: %s\n", val, relDir)
 				}
 				return nil
@@ -172,8 +171,7 @@ func changeWorkdir(cli *gcli.App, val string) error {
 		return errorx.Err("The workdir not exists: " + val)
 	}
 
-	goutil.MustOK(os.Chdir(val))
-	cli.ChWorkDir(val)
+	goutil.MustOK(cli.ChWorkDir(val))
 	colorp.Yellowf("NOTICE: set app workdir to: %s\n", val)
 	return nil
 }

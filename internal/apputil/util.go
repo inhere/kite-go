@@ -77,11 +77,11 @@ func ResolvePath(pathStr string) string {
 		return app.App().ResolvePath(pathStr)
 	}
 
-	pathStr = fsutil.ResolvePath(pathStr)
-	if fsutil.IsAbsPath(pathStr) {
-		return pathStr
-	}
-	return app.App().PathBuild(pathStr)
+	return fsutil.ResolvePath(pathStr)
+	// if fsutil.IsAbsPath(pathStr) {
+	// 	return pathStr
+	// }
+	// return app.App().PathBuild(pathStr)
 }
 
 // ResolveSep char

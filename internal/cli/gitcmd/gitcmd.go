@@ -2,7 +2,6 @@ package gitcmd
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
 	"syscall"
 
@@ -135,8 +134,7 @@ func (a *AutoChDir) BindChdirFlags(c *gcli.Command) {
 		if strutil.QuietBool(val) {
 			repoDir, changed := fsutil.SearchNameUpx(wd, gitw.GitDir)
 			if changed {
-				goutil.MustOK(os.Chdir(repoDir))
-				c.ChWorkDir(repoDir)
+				goutil.MustOK(c.ChWorkDir(repoDir))
 				cliutil.Yellowf("NOTICE: auto founded git root and will chdir to: %s\n", repoDir)
 			}
 		}

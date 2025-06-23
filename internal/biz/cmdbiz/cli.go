@@ -41,5 +41,7 @@ func (co *CommonOpts) BindProxyConfirm(c *gcli.Command) {
 // BindWorkdirDryRun flags for some cli commands
 func (co *CommonOpts) BindWorkdirDryRun(c *gcli.Command) {
 	c.BoolOpt(&co.DryRun, "dry-run", "dry", false, "run workflow, but dont real execute command")
-	c.StrOpt(&co.Workdir, "workdir", "w", "", "the command workdir path, default is current dir")
+	c.StrOpt2(&co.Workdir, "workdir, w", "the command workdir path, default is current dir", gflag.WithHandler(func(val string) error {
+		return c.ChWorkDir(val)
+	}))
 }
