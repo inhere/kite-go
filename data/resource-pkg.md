@@ -79,6 +79,7 @@ data file: /dist/data.json
 - https://github.com/chzyer/readline **Useful**
 - https://github.com/c-bata/go-prompt
 - https://github.com/chriswalz/complete
+- https://github.com/hanslub42/rlwrap A readline wrapper
 
 **ssh**
 
@@ -200,11 +201,11 @@ gitlab:
 - https://github.com/goplus/gop
 - https://github.com/traefik/yaegi Yaegi 是另一个优雅的 Go 解释器。它在 Go 运行时之上为嵌入式解释器或交互式 shell 中的可执行 Go 脚本和插件提供支持。
 - https://github.com/d5/tengo 字节码编译的脚本语言
+- https://github.com/mvdan/sh 具有 bash 支持的 shell 解析器、格式化程序和解释器；包括 shfmt
 
 **expression evaluation**
 
 - https://github.com/expr-lang/expr 原 https://github.com/antonmedv/expr
-- https://github.com/Knetic/govaluate
 
 **template**
 

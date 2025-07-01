@@ -18,6 +18,7 @@ logger:
   use_json: false
   level: debug
   level_mode: 1
+  backup_num: 10
 
 srv_logger:
   logfile: $tmp/logs/kite-serve.log
