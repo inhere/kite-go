@@ -1,34 +1,35 @@
 module github.com/inhere/kite-go
 
-go 1.21
+go 1.23
 
 require (
-	github.com/CloudyKit/jet/v6 v6.2.0
+	github.com/CloudyKit/jet/v6 v6.3.1
 	github.com/alecthomas/chroma v0.10.0
-	github.com/charmbracelet/glamour v0.7.0
-	github.com/fsnotify/fsnotify v1.7.0
-	github.com/getkin/kin-openapi v0.123.0
+	github.com/charmbracelet/glamour v0.10.0
+	github.com/fsnotify/fsnotify v1.9.0
+	github.com/getkin/kin-openapi v0.132.0
 	github.com/go-openapi/spec v0.20.14
 	github.com/go-openapi/swag v0.22.9
-	github.com/goccy/go-yaml v1.11.3
-	github.com/gofrs/uuid/v5 v5.1.0
+	github.com/goccy/go-yaml v1.18.0
+	github.com/gofrs/uuid/v5 v5.3.2
 	github.com/gomarkdown/markdown v0.0.0-20231222211730-1d6d20845b47
 	github.com/gookit/color v1.5.4
 	github.com/gookit/config/v2 v2.2.5
 	github.com/gookit/event v1.1.2
 	github.com/gookit/gcli/v3 v3.2.3
 	github.com/gookit/gitw v0.3.5
-	github.com/gookit/goutil v0.6.15
-	github.com/gookit/greq v0.3.0
-	github.com/gookit/i18n v1.2.0
+	github.com/gookit/goutil v0.7.0
+	github.com/gookit/greq v0.4.0
+	github.com/gookit/i18n v1.2.1
 	github.com/gookit/ini/v2 v2.2.3
 	github.com/gookit/rux v1.4.0
-	github.com/gookit/slog v0.5.5
-	github.com/gookit/view v1.0.2
+	github.com/gookit/slog v0.5.8
+	github.com/gookit/easytpl v1.1.0
+	github.com/sashabaranov/go-openai v1.40.2
 	github.com/titanous/json5 v1.0.0
-	github.com/traefik/yaegi v0.15.1
+	github.com/traefik/yaegi v0.16.1
 	github.com/yosuke-furukawa/json5 v0.1.1
-	github.com/yuin/goldmark v1.7.0
+	github.com/yuin/goldmark v1.7.12
 )
 
 require (
@@ -38,6 +39,7 @@ require (
 	github.com/alecthomas/chroma/v2 v2.8.0 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
+	github.com/chzyer/readline v1.5.1 // indirect
 	github.com/dlclark/regexp2 v1.10.0 // indirect
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/go-openapi/jsonpointer v0.20.2 // indirect

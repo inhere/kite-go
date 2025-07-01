@@ -3,8 +3,8 @@ package controller
 import (
 	"os"
 
+	"github.com/gookit/easytpl"
 	"github.com/gookit/rux"
-	"github.com/gookit/view"
 	"github.com/inhere/kite-go/internal/appconst"
 )
 
@@ -47,5 +47,5 @@ func (*HomeController) ApiDoc(c *rux.Context) {
 	}
 
 	// c.HTML(200, nil)
-	c.AddError(view.Partial(c.Resp, "swagger.tpl", data))
+	c.AddError(easytpl.Partial(c.Resp, "swagger.tpl", data))
 }

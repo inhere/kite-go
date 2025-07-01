@@ -22,7 +22,7 @@ import (
 
 // GitOpts object
 var GitOpts = struct {
-	AutoChDir
+	AutoGitDir
 	cmdbiz.CommonOpts
 }{}
 
@@ -120,14 +120,15 @@ func RedirectToGitx(ctx *gcli.HookCtx) (stop bool) {
 	return true
 }
 
-// AutoChDir auto change dir
-type AutoChDir struct {
+// AutoGitDir auto change to .git dir
+type AutoGitDir struct {
 	// AutoGit auto find .git dir in parent.
 	AutoGit bool
+	GitHost string
 }
 
 // BindChdirFlags for auto change dir
-func (a *AutoChDir) BindChdirFlags(c *gcli.Command) {
+func (a *AutoGitDir) BindChdirFlags(c *gcli.Command) {
 	wd := c.WorkDir()
 
 	c.BoolOpt2(&a.AutoGit, "auto-root, auto-git", "auto find .git dir in parent and chdir to it", gflag.WithValidator(func(val string) error {

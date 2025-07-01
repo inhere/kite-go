@@ -4,6 +4,7 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/envutil"
+	"github.com/gookit/goutil/reflects"
 	"github.com/inhere/kite-go/internal/apputil"
 	"github.com/traefik/yaegi/interp"
 	"github.com/traefik/yaegi/stdlib"
@@ -26,8 +27,9 @@ var PlugCmd = &gcli.Command{
 		}
 
 		// dump.P(envutil.Getenv("GOPATH") + "/pkg/mod")
+		// 问题：需要依赖 GOPATH；自定义库需要 i.Eval import 才能使用
 
-		// create new interpreter
+		// create a new interpreter
 		i := interp.New(interp.Options{
 			GoPath: envutil.Getenv("GOPATH"),
 			// Args: []string{},
@@ -35,6 +37,7 @@ var PlugCmd = &gcli.Command{
 		if err := i.Use(stdlib.Symbols); err != nil {
 			return err
 		}
+		// i.Eval(`import github.com/gookit/goutil`)
 
 		// find plugin file
 		fPath := apputil.ResolvePath(name)
@@ -45,7 +48,10 @@ var PlugCmd = &gcli.Command{
 			return err
 		}
 
-		dump.P(v.Interface())
+		v = reflects.Indirect(v)
+		if v.IsValid() && !v.IsNil() {
+			dump.P(v.Interface())
+		}
 		return nil
 	},
 }

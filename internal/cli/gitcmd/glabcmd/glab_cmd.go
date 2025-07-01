@@ -4,12 +4,14 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/events"
 	"github.com/inhere/kite-go/internal/app"
+	"github.com/inhere/kite-go/internal/biz/cmdbiz"
 	"github.com/inhere/kite-go/internal/cli/gitcmd"
 	"github.com/inhere/kite-go/pkg/gitx"
 )
 
 var glOpts = struct {
-	gitcmd.AutoChDir
+	gitcmd.AutoGitDir
+	cmdbiz.CommonOpts
 }{}
 
 // GitLabCmd commands
@@ -32,6 +34,7 @@ var GitLabCmd = &gcli.Command{
 		gitcmd.NewOpenRemoteCmd(configProvider),
 	},
 	Config: func(c *gcli.Command) {
+		glOpts.BindCommonFlags(c)
 		glOpts.BindChdirFlags(c)
 
 		c.On(events.OnCmdRunBefore, func(ctx *gcli.HookCtx) (stop bool) {
