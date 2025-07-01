@@ -21,7 +21,7 @@ const (
 	ObjRux = "rux"
 
 	ObjConf = "config"
-	ObjLog  = "logger"
+	ObjLog = "logger" // console logger
 
 	ObjPlugin = "plugin"
 	ObjScript = "script"
@@ -32,10 +32,8 @@ const (
 )
 
 var (
-	// L kite logger
+	// L kite console logger
 	L *slog.Logger
-	// CL kite console logger
-	CL *slog.Logger
 	// SL server logger
 	SL *slog.Logger
 )

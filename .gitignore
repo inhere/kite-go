@@ -11,7 +11,10 @@
 
 # files
 /changelog.md
-/kite.yml
+kite.yml
+.kite.yml
+.kitefile
+.kite.script
 
 # dirs
 /build/kite-*

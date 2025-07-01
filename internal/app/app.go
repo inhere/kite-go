@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/gookit/slog"
@@ -22,7 +23,7 @@ const (
 )
 
 var (
-	KiteVerbose = sysutil.Getenv(appconst.EnvKiteVerbose, slog.WarnLevel.LowerName())
+	KiteVerbose = sysutil.Getenv(appconst.EnvKiteVerbose, slog.WarnLevel.Name())
 )
 
 // IsDebug mode
@@ -92,6 +93,14 @@ func (ka *KiteApp) AddLoader(bl BootLoader) *KiteApp {
 
 // Boot app start
 func (ka *KiteApp) Boot() error {
+	// if is debug mode
+	if IsDebug() {
+		initlog.Level = slog.DebugLevel.Name()
+		gcli.SetDebugMode()
+		cflag.SetDebug(true)
+	}
+
+	// run pre bootloaders
 	err := ka.runBootloaders(ka.preLoaders)
 	if err != nil {
 		return err
@@ -104,6 +113,7 @@ func (ka *KiteApp) Boot() error {
 		}
 	}
 
+	// run bootloaders
 	return ka.runBootloaders(ka.bootloaders)
 }
 
@@ -155,6 +165,8 @@ func App() *KiteApp {
 func Run() {
 	code := Cli().Run(nil)
 
+	// fire shutdown hooks
+	initlog.L.Debug("app.Run - fire shutdown hooks")
 	for _, fn := range kiteApp.shutdown {
 		fn()
 	}

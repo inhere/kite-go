@@ -519,7 +519,14 @@ local_proxy:
 ### Dev build
 
 ```shell
-KITE_INIT_LOG=debug go run ./cmd/kite
+KITE_VERBOSE=debug go run ./cmd/kite
+```
+
+Windows:
+
+```shell
+$env:KITE_VERBOSE='debug'
+go run ./cmd/kite
 ```
 
 ### Install to GOBIN

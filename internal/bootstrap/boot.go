@@ -36,7 +36,7 @@ func Boot(ka *app.KiteApp) error {
 	defaultBaseDir = sysutil.ExpandPath(sysutil.Getenv(appconst.EnvKiteBaseDir, appconst.KiteDefaultBaseDir))
 
 	ka.AddPreLoader(BootEnv, func(ka *app.KiteApp) error {
-		return initlog.Init(appconst.EnvInitLogLevel)
+		return initlog.Init()
 	})
 
 	ka.AddBootFuncs(

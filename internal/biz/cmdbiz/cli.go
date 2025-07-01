@@ -15,7 +15,6 @@ type CommonOpts struct {
 	DryRun  bool `flag:"name=dry-run;desc=run workflow, but dont real execute command;shorts=dry"`
 	Confirm bool
 	Workdir string
-	GitHost string
 }
 
 // BindCommonFlags for some git commands

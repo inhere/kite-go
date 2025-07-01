@@ -122,6 +122,7 @@ linux-arm: ## Build for Linux ARM64
 win: ## Build for Windows
 	GOOS=windows GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-windows-amd64.exe $(MAIN_SRC_FILE)
 	upx -6 --no-progress build/$(NAME)-windows-amd64.exe
+	ls -alh build/$(NAME)*
 
 win-arm: ## Build for Windows arm64
 	GOOS=windows GOARCH=arm64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-windows-arm64.exe $(MAIN_SRC_FILE)
