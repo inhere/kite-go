@@ -5,6 +5,7 @@ __setting:
     KEY: value
   dotenv: [ '.env' ]
   output: 'group'
+  include: [ 'xxx.yml' ]
 
 clone-demo:
   check:

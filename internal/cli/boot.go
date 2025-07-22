@@ -54,10 +54,10 @@ func addCommands(cli *gcli.App) {
 		httpcmd.HttpCmd,
 		syscmd.SysCmd,
 		appcmd.ManageCmd,
-		extcmd.UserExtCmd,
+		// extcmd.UserExtCmd,
 		textcmd.TextToolCmd,
 		jsoncmd.JSONToolCmd,
-		toolcmd.XFileCmd,
+		// extcmd.XFileCmd,
 		toolcmd.ToolsCmd,
 		toolcmd.RunAnyCmd,
 		toolcmd.NewKScriptCmd(),
@@ -86,7 +86,7 @@ var (
 
 func addListener(cli *gcli.App) {
 	cli.On(events.OnAppInitAfter, func(ctx *gcli.HookCtx) (stop bool) {
-		app.Log().WithField("workdir", cli.WorkDir()).Info("kite cli app init completed. osArgs:", os.Args[1:])
+		app.Log().WithValue("workdir", cli.WorkDir()).Info("kite cli app init completed. osArgs:", os.Args[1:])
 		if err := changeWorkdir(cli, defWorkdir); err != nil {
 			colorp.Redln(err.Error())
 		}
@@ -98,7 +98,7 @@ func addListener(cli *gcli.App) {
 
 	cli.On(events.OnCmdRunBefore, func(ctx *gcli.HookCtx) (stop bool) {
 		app.Log().
-			WithField("workdir", cli.WorkDir()).
+			WithValue("workdir", cli.WorkDir()).
 			Infof("%s: will run the command %q with args: %v", ctx.Name(), ctx.Cmd.ID(), ctx.Cmd.RawArgs())
 		cmdbiz.ProxyCC.AutoSetByCmd(ctx.Cmd)
 		return
@@ -152,8 +152,8 @@ func onCmdNotFound(ctx *gcli.HookCtx) (stop bool) {
 	name := ctx.Str("name")
 	args := ctx.Strings("args")
 	app.Log().
-		WithField("workdir", ctx.App.WorkDir()).
-		WithField("args", args).
+		WithValue("workdir", ctx.App.WorkDir()).
+		WithValue("args", args).
 		Infof("%s: handle kite cli command not found: %s", ctx.Name(), name)
 
 	if err := cmdbiz.RunAny(name, args, nil); err != nil {

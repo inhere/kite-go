@@ -1,11 +1,12 @@
-package extcmd
+package kcliapp
 
 import (
-	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/maputil"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/internal/apputil"
 )
+
+// kcliapp 用于扩展kite命令，可以通过 yaml, toml 文件定义一个简单的 cli 应用。
 
 // CmdAction struct
 type CmdAction struct {
@@ -63,40 +64,4 @@ func (ec *ExtraCmds) Info(name string) {
 
 func (ec *ExtraCmds) Run(args []string) {
 
-}
-
-var ueOpts = struct {
-	list bool
-	info string
-}{}
-
-// UserExtCmd instance TODO 暂时由 kscript.scriptApp 替代
-var UserExtCmd = &gcli.Command{
-	Name:    "xapp",
-	Aliases: []string{"xcmd", "uapp", "ucmd"},
-	Desc:    "manage and execute user extension cli app commands",
-	Subs: []*gcli.Command{
-		ListUserCmd,
-	},
-	Config: func(c *gcli.Command) {
-		c.BoolOpt2(&ueOpts.list, "list, ls", "display all user extra commands")
-		c.StrOpt2(&ueOpts.info, "info, show, i", "display info for the input command")
-
-		c.AddArg("command", "input command for execute")
-	},
-	Func: func(c *gcli.Command, args []string) error {
-
-		name := c.Arg("command").String()
-		if len(name) == 0 {
-			return c.NewErr("please input command name for handle")
-		}
-
-		return nil
-	},
-}
-
-var ListUserCmd = &gcli.Command{
-	Name:    "list",
-	Desc:    "list all added user commands",
-	Aliases: []string{"ls", "l"},
 }

@@ -119,16 +119,15 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 		Type:    runOpts.wrapType.String(),
 	}
 
-	// direct run as script
+	// direct run as a script
 	if runOpts.script {
-		colorp.Infof("TIP: will direct run %q as script name (by --script)\n", name)
-
 		if runOpts.search {
 			ret := app.Scripts.Search(name, args, 10)
 			show.AList("Results of search:", ret)
 			return nil
 		}
 
+		colorp.Infof("TIP: will direct run %q as script name (by --script)\n", name)
 		if runOpts.verbose {
 			ctx.BeforeFn = func(si *kscript.ScriptInfo, ctx *kscript.RunCtx) {
 				// cliutil.Infof("TIP: %q is a script name, will run it with %v\n", name, args)
@@ -141,6 +140,11 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 	}
 
 	// TODO search ...
+	if runOpts.search {
+		ret := app.Scripts.Search(name, args, 10)
+		show.AList("Search scripts:", ret)
+		return nil
+	}
 
 	// try alias, script, ...
 	return cmdbiz.RunAny(name, args, ctx)
@@ -199,7 +203,7 @@ func listInfos() (err error) {
 			return err
 		}
 		// dump.P(app.Scripts)
-		show.AList("loaded scripts", app.Scripts.DefinedScripts())
+		show.AList("loaded scripts tasks", app.Scripts.DefinedScripts())
 		show.AList("loaded script files", app.Scripts.ScriptFiles())
 		return
 	}

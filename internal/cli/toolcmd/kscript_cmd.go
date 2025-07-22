@@ -26,7 +26,7 @@ func NewKScriptCmd() *gcli.Command {
 func (rr ksRunner) NewCmd() *gcli.Command {
 	return &gcli.Command{
 		Name:    "script",
-		Aliases: []string{"run-s"},
+		Aliases: []string{"run-s", "xs", "rs"},
 		Desc:    "Run the kite script task/command by name",
 		Config:  rr.Config,
 		Func:    rr.Run,

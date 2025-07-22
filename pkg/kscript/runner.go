@@ -2,6 +2,7 @@ package kscript
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/gookit/config/v2"
@@ -17,19 +18,45 @@ import (
 	"github.com/gookit/goutil/strutil/textutil"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/gookit/goutil/sysutil/cmdr"
+	"github.com/gookit/goutil/x/ccolor"
+	"github.com/gookit/slog"
 )
 
-// Runner struct
+var settingsKey = "__settings"
+
+type RunnerMeta struct {
+	apps  []*ScriptApp
+	tasks []*ScriptTask
+	files []*ScriptFile
+}
+
+// Runner struct. TODO KRunner, ScriptRunner or ScriptManager
+//
+// 实现扩展的kite run命令，可以执行任何的 script-file, script-task, script-app 等等
 type Runner struct {
-	// Scripts config and loaded from DefineFiles.
-	//
-	// format: {name: info, name2: info2, ...}
-	Scripts map[string]any `json:"scripts"`
+	RunnerMeta
 
-	// DefineDir scripts define dir, will read and add to Scripts
-	DefineDir string `json:"define_dir"`
+	// PathResolver handler
+	PathResolver func(path string) string
 
-	// DefineFiles scripts define files, will read and add to Scripts
+	// ------------------------ config for script app --------------------
+
+	// ScriptApps 独立的 script app 定义文件目录. 每个定义文件是一个独立的cli app
+	//  - default will load from `$base/script-app`
+	ScriptApps []string `json:"script_apps"`
+	// ScriptAppExts script app file define extensions. eg: .yml, .yaml
+	ScriptAppExts []string `json:"script_app_exts"`
+
+	// 加载并解析后的 app 定义
+	apps map[string]*ScriptApp
+	// files loaded from ScriptApps. format: {filename: filepath, ...}
+	appFiles map[string]string
+	// mark script app loaded
+	appLoaded bool
+
+	// ------------------------ config for script task --------------------
+
+	// DefineFiles script tasks define files, will read and add to Scripts
 	//
 	// Allow vars: $user, $os
 	//
@@ -37,84 +64,174 @@ type Runner struct {
 	//	- config/module/scripts.yml
 	//	- ?config/module/scripts.$os.yml  // start withs '?' - an optional file, load on exists.
 	DefineFiles []string `json:"define_files"`
+	// 自动加载的task文件名称列表，无需设置扩展
+	//  - 将自动从当前目录或父级目录中寻找 script task 定义文件
+	//  - 找到第一个匹配的就停止
+	AutoTaskFiles []string `json:"auto_task_files"`
+	// 自动加载的task文件扩展名
+	AutoTaskExts []string `json:"auto_task_exts"`
+	// auto 向上搜索目录最大深度，默认为 6. 找到第一个匹配的就停止
+	AutoMaxDepth int `json:"auto_max_depth"`
 
+	// Scripts 通过配置定义的各种简单的任务命令。tasks config and loaded from DefineFiles.
+	//
+	// Format: {name: info, name2: info2, ...}
+	//
+	//  - special settings key: __settings, will read and merge to Settings
+	Scripts map[string]any `json:"scripts"`
+
+	// ParseEnv var on script command expr
+	ParseEnv bool `json:"parse_env"`
 	// TypeShell wrapper for run each script.
 	//
-	// value like: bash, sh, zsh or empty for direct run command
+	// value like: bash, sh, zsh, cmd, pwsh or empty for direct run command
 	TypeShell string `json:"type_shell"`
-	// ParseEnv var on script command
-	ParseEnv bool `json:"parse_env"`
 
-	// ScriptDirs script file dirs, allow multi
+	// 加载并解析后的 tasks 定义
+	// tasks *ScriptTasks TODO
+	tasks map[string]*ScriptTask
+	// mark script task loaded
+	taskLoaded bool
+	// settings for all script tasks.
+	//
+	// eg:
+	//  - vars: map[string]string built in vars map. group name: vars
+	//  - group: map[string]map[string]string grouped var map.
+	taskSettings TaskSettings
+
+	// ------------------------ config for script file --------------------
+
+	// ScriptDirs 独立的 script file 文件查找目录。例如 bash, python, php 等脚本文件
 	ScriptDirs []string `json:"script_dirs"`
+
 	// AllowedExt allowed script file extensions. eg: .go, .sh
 	AllowedExt []string `json:"allowed_ext"`
 	// FindBinByExt on run a script file
 	FindBinByExt bool `json:"find_bin_by_ext"`
-	// ExtToBinMap settings
+	// ExtToBinMap settings. key: ext, value: bin name or path
 	ExtToBinMap map[string]string `json:"ext_to_bin_map"`
-	// PathResolver handler
-	PathResolver func(path string) string
+	// BinPathMap settings. key: bin name, value: bin path
+	BinPathMap map[string]string `json:"bin_path_map"`
 
-	// loaded from ScriptDirs.
-	//
-	// format: {filename: filepath, ...}
+	// loaded from ScriptDirs. format: {filename: filepath, ...}
 	scriptFiles map[string]string
+	fileMetas map[string]*ScriptFile
 	// mark script loaded
 	fileLoaded   bool
-	defineLoaded bool
 }
 
 /*
 -----------
 --------------------------------- Init load ---------------------------------
------------
+----------- region T: Init load
 */
 
 // InitLoad define scripts and script files.
 func (r *Runner) InitLoad() error {
-	if err := r.LoadDefineScripts(); err != nil {
+	if err := r.LoadScriptTasks(); err != nil {
+		return err
+	}
+	if err := r.LoadScriptApps(); err != nil {
 		return err
 	}
 	return r.LoadScriptFiles()
 }
 
-// LoadDefineScripts from DefineFiles
-func (r *Runner) LoadDefineScripts() (err error) {
-	if r.defineLoaded {
+// LoadScriptApps from Runner.ScriptApps
+func (r *Runner) LoadScriptApps() (err error) {
+	if r.appLoaded {
+		return nil
+	}
+	r.appLoaded = true
+
+	return nil // TODO
+}
+
+// LoadScriptTasks from Runner.DefineFiles
+func (r *Runner) LoadScriptTasks() (err error) {
+	if r.taskLoaded {
 		return nil
 	}
 
-	r.defineLoaded = true
+	r.taskLoaded = true
 	loader := config.New("loader")
 	loader.AddDriver(ini.Driver)
 	loader.AddDriver(yaml.Driver)
 	loader.AddDriver(toml.Driver)
 
-	for _, fpath := range r.DefineFiles {
+	// 从配置的定义文件中加载
+	for _, fPath := range r.DefineFiles {
 		// optional file
 		var optional bool
-		if fpath[0] == '?' {
+		if fPath[0] == '?' {
 			optional = true
-			fpath = fpath[1:]
+			fPath = fPath[1:]
 		}
 
-		fpath = r.PathResolver(fpath)
+		fPath = r.PathResolver(fPath)
 		if optional {
-			err = loader.LoadExists(fpath)
+			err = loader.LoadExists(fPath)
 		} else {
-			err = loader.LoadFiles(fpath)
+			err = loader.LoadFiles(fPath)
 		}
 
 		if err != nil {
-			return err
+			return errorx.Errorf("load task file %q error: %s", fPath, err)
 		}
 
 		r.Scripts = maputil.SimpleMerge(loader.Data(), r.Scripts)
 		loader.ClearData()
 	}
 
+	// 从工作目录/父级目录自动加载
+	if fPath := r.findAutoTaskFile(); fPath != "" {
+		err = loader.LoadFiles(fPath)
+		if err != nil {
+			return errorx.Wrapf(err, "load auto task file %q error: %s", fPath, err)
+		}
+
+		r.Scripts = maputil.SimpleMerge(loader.Data(), r.Scripts)
+		loader.ClearData()
+	}
+
+	// load custom settings
+	if setData, ok := r.Scripts[settingsKey]; ok {
+		if setMap, ok1 := setData.(map[string]any); ok1 {
+			r.taskSettings.loadData(setMap)
+		}
+	}
+
 	return nil
+}
+
+// 从工作目录/父级目录自动查找 task 定义文件
+func (r *Runner) findAutoTaskFile() string {
+	findDir := sysutil.Workdir()
+	findLevel := 0
+
+	// 从当前目录或父级目录中寻找 script task 配置文件
+	for {
+		for _, fName := range r.AutoTaskFiles {
+			for _, ext := range r.AutoTaskExts {
+				fPath := findDir + "/" + fName + ext
+				if fsutil.IsFile(fPath) {
+					slog.Debugf("find auto task file %q", fPath)
+					return fPath
+				}
+			}
+		}
+
+		if findLevel >= r.AutoMaxDepth {
+			break
+		}
+
+		findLevel++
+		findDir = filepath.Dir(findDir)
+		if len(findDir) < 3 {
+			break
+		}
+	}
+	return ""
 }
 
 // LoadScriptFiles from the ScriptDirs
@@ -128,7 +245,7 @@ func (r *Runner) LoadScriptFiles() error {
 		dirPath = r.PathResolver(dirPath)
 		des, err := os.ReadDir(dirPath)
 		if err != nil {
-			return err
+			return errorx.Errorf("read dir %q error: %s", dirPath, err)
 		}
 
 		for _, ent := range des {
@@ -174,9 +291,9 @@ func (r *Runner) Search(name string, args []string, limit int) map[string]string
 }
 
 /*
------------
+----------- endregion
 --------------------------------- Run script ---------------------------------
------------
+----------- region T: Run script
 */
 
 // Run script or script-file by name and with args
@@ -203,6 +320,7 @@ func (r *Runner) TryRun(name string, args []string, ctx *RunCtx) (found bool, er
 		return found, err
 	}
 	if si != nil {
+		ccolor.Magentaln("Run script task: %s", name)
 		return found, r.runDefineScript(si, args, ctx)
 	}
 
@@ -213,6 +331,7 @@ func (r *Runner) TryRun(name string, args []string, ctx *RunCtx) (found bool, er
 	}
 
 	if si != nil {
+		ccolor.Magentaln("Run script file: %s", name)
 		return found, r.runScriptFile(si, args, ctx)
 	}
 	return false, nil
@@ -273,7 +392,7 @@ func (r *Runner) runScriptFile(si *ScriptInfo, inArgs []string, ctx *RunCtx) err
 		WithDryRun(ctx.DryRun).
 		AppendEnv(si.Env).
 		AddArgs(inArgs).
-		PrintCmdline().
+		PrintCmdline2().
 		FlushRun()
 }
 
@@ -318,7 +437,7 @@ func (r *Runner) runDefineScript(si *ScriptInfo, inArgs []string, ctx *RunCtx) e
 			continue
 		}
 
-		// redirect run other script
+		// redirect run another script
 		if line[0] == '@' {
 			name := line[1:]
 			osi, err := r.ScriptDefineInfo(name)
@@ -345,12 +464,7 @@ func (r *Runner) runDefineScript(si *ScriptInfo, inArgs []string, ctx *RunCtx) e
 			cmd = cmdr.NewCmdline(line)
 		}
 
-		err := cmd.WorkDirOnNE(workdir).
-			WithDryRun(ctx.DryRun).
-			AppendEnv(envMap).
-			PrintCmdline().
-			FlushRun()
-
+		err := cmd.WorkDirOnNE(workdir).WithDryRun(ctx.DryRun).AppendEnv(envMap).PrintCmdline2().FlushRun()
 		if err != nil {
 			return err
 		}
@@ -358,9 +472,12 @@ func (r *Runner) runDefineScript(si *ScriptInfo, inArgs []string, ctx *RunCtx) e
 	return nil
 }
 
+var rpl = textutil.NewVarReplacer("$").WithParseEnv().WithParseDefault()
+
 // process vars and env
 func (r *Runner) handleCmdline(line string, vars map[string]string, si *ScriptInfo) string {
 	line = strutil.Replaces(line, vars)
+	// TODO use rpl.Render(line, vars)
 
 	// eg: $SHELL
 	if r.ParseEnv && strutil.ContainsByte(line, '$') {
@@ -381,7 +498,7 @@ func (r *Runner) RawDefinedScript(name string) (any, bool) {
 func (r *Runner) ScriptDefineInfo(name string) (*ScriptInfo, error) {
 	info, ok := r.Scripts[name]
 	if !ok {
-		return nil, nil // not found TODO ErrNotFund
+		return nil, nil // not found TODO ErrNotFound
 	}
 	return newDefinedScriptInfo(name, info, r.TypeShell)
 }
@@ -390,32 +507,32 @@ func (r *Runner) ScriptDefineInfo(name string) (*ScriptInfo, error) {
 func (r *Runner) ScriptFileInfo(name string) (*ScriptInfo, error) {
 	// with ext
 	if inExt := fsutil.FileExt(name); len(inExt) > 0 {
-		fpath, ok := r.scriptFiles[name]
+		fPath, ok := r.scriptFiles[name]
 		if !ok {
 			return nil, nil
 		}
 
-		return r.newFileScriptItem(name, fpath, inExt)
+		return r.newFileScriptItem(name, fPath, inExt)
 	}
 
 	// auto check ext
 	for _, ext := range r.AllowedExt {
-		fpath, ok := r.scriptFiles[name+ext]
+		fPath, ok := r.scriptFiles[name+ext]
 		if !ok {
 			continue
 		}
 
-		return r.newFileScriptItem(name, fpath, ext)
+		return r.newFileScriptItem(name, fPath, ext)
 	}
 
 	// not found
 	return nil, nil
 }
 
-func (r *Runner) newFileScriptItem(name, fpath, ext string) (*ScriptInfo, error) {
+func (r *Runner) newFileScriptItem(name, fPath, ext string) (*ScriptInfo, error) {
 	si := &ScriptInfo{
 		Name:    name,
-		File:    fpath,
+		File: fPath,
 		FileExt: ext,
 		BinName: ext[1:],
 	}
