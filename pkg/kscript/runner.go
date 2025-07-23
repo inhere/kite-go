@@ -10,6 +10,7 @@ import (
 	"github.com/gookit/config/v2/toml"
 	"github.com/gookit/config/v2/yaml"
 	"github.com/gookit/goutil"
+	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/maputil"
@@ -41,15 +42,15 @@ type Runner struct {
 
 	// ------------------------ config for script app --------------------
 
-	// ScriptApps 独立的 script app 定义文件目录. 每个定义文件是一个独立的cli app
+	// ScriptAppDirs 独立的 script app 定义文件目录. 每个定义文件是一个独立的cli app
 	//  - default will load from `$base/script-app`
-	ScriptApps []string `json:"script_apps"`
+	ScriptAppDirs []string `json:"script_app_dirs"`
 	// ScriptAppExts script app file define extensions. eg: .yml, .yaml
 	ScriptAppExts []string `json:"script_app_exts"`
 
 	// 加载并解析后的 app 定义
 	apps map[string]*ScriptApp
-	// files loaded from ScriptApps. format: {filename: filepath, ...}
+	// files loaded from ScriptAppDirs. format: {filename: filepath, ...}
 	appFiles map[string]string
 	// mark script app loaded
 	appLoaded bool
@@ -117,7 +118,7 @@ type Runner struct {
 	scriptFiles map[string]string
 	fileMetas map[string]*ScriptFile
 	// mark script loaded
-	fileLoaded   bool
+	fileLoaded bool
 }
 
 /*
@@ -131,21 +132,48 @@ func (r *Runner) InitLoad() error {
 	if err := r.LoadScriptTasks(); err != nil {
 		return err
 	}
-	if err := r.LoadScriptApps(); err != nil {
-		return err
-	}
+
+	r.LoadScriptApps()
+
 	return r.LoadScriptFiles()
 }
 
+/* endregion
+--------------------------------- Load script apps ---------------------------------
+----------- region T: Load script apps
+*/
+
 // LoadScriptApps from Runner.ScriptApps
-func (r *Runner) LoadScriptApps() (err error) {
+func (r *Runner) LoadScriptApps() {
 	if r.appLoaded {
-		return nil
+		return
 	}
 	r.appLoaded = true
 
-	return nil // TODO
+	for _, dirPath := range r.ScriptAppDirs {
+		dirPath = r.PathResolver(dirPath)
+		des, err := os.ReadDir(dirPath)
+		if err != nil {
+			slog.Warnf("kscript: read dir %q error: %s", dirPath, err)
+			continue
+		}
+
+		for _, ent := range des {
+			fName := ent.Name()
+			if !ent.IsDir() {
+				nameNoExt := fsutil.NameNoExt(fName)
+				fullPath := dirPath + "/" + fName
+				r.appFiles[nameNoExt] = fullPath
+				slog.Debugf("kscript: load script app %q(path: %s)", nameNoExt, fullPath)
+			}
+		}
+	}
 }
+
+/* endregion
+--------------------------------- Load task files ---------------------------------
+----------- region T: Load task files
+*/
 
 // LoadScriptTasks from Runner.DefineFiles
 func (r *Runner) LoadScriptTasks() (err error) {
@@ -169,12 +197,12 @@ func (r *Runner) LoadScriptTasks() (err error) {
 		}
 
 		fPath = r.PathResolver(fPath)
-		if optional {
-			err = loader.LoadExists(fPath)
-		} else {
-			err = loader.LoadFiles(fPath)
+		if optional && !fsutil.IsFile(fPath) {
+			continue
 		}
 
+		slog.Debugf("load script task file %q", fPath)
+		err = loader.LoadFiles(fPath)
 		if err != nil {
 			return errorx.Errorf("load task file %q error: %s", fPath, err)
 		}
@@ -184,14 +212,16 @@ func (r *Runner) LoadScriptTasks() (err error) {
 	}
 
 	// 从工作目录/父级目录自动加载
-	if fPath := r.findAutoTaskFile(); fPath != "" {
-		err = loader.LoadFiles(fPath)
-		if err != nil {
-			return errorx.Wrapf(err, "load auto task file %q error: %s", fPath, err)
-		}
+	if fPaths := r.findAutoTaskFiles(); len(fPaths) > 0 {
+		for _, fPath := range fPaths {
+			err = loader.LoadFiles(fPath)
+			if err != nil {
+				return errorx.Wrapf(err, "load auto task file %q error: %s", fPath, err)
+			}
 
-		r.Scripts = maputil.SimpleMerge(loader.Data(), r.Scripts)
-		loader.ClearData()
+			r.Scripts = maputil.SimpleMerge(loader.Data(), r.Scripts)
+			loader.ClearData()
+		}
 	}
 
 	// load custom settings
@@ -204,20 +234,28 @@ func (r *Runner) LoadScriptTasks() (err error) {
 	return nil
 }
 
-// 从工作目录/父级目录自动查找 task 定义文件
-func (r *Runner) findAutoTaskFile() string {
+// 从工作目录/父级目录自动查找 task 定义文件,向上层级越高的文件在前面(先加载)
+func (r *Runner) findAutoTaskFiles() (ss []string) {
 	findDir := sysutil.Workdir()
-	findLevel := 0
+	findLevel := 1
 
 	// 从当前目录或父级目录中寻找 script task 配置文件
 	for {
+		// 一个目录下只匹配一个文件，找到一个就停止。
+		var founded bool
+
 		for _, fName := range r.AutoTaskFiles {
 			for _, ext := range r.AutoTaskExts {
 				fPath := findDir + "/" + fName + ext
 				if fsutil.IsFile(fPath) {
-					slog.Debugf("find auto task file %q", fPath)
-					return fPath
+					slog.Debugf("found task file %q", fPath)
+					ss = append(ss, fPath)
+					founded = true
+					break
 				}
+			}
+			if founded {
+				break
 			}
 		}
 
@@ -231,8 +269,18 @@ func (r *Runner) findAutoTaskFile() string {
 			break
 		}
 	}
-	return ""
+
+	// 倒序, 从最顶层开始
+	if len(ss) > 0 {
+		arrutil.Reverse(ss)
+	}
+	return
 }
+
+/* endregion
+--------------------------------- Load script files ---------------------------------
+----------- region T: Load script files
+*/
 
 // LoadScriptFiles from the ScriptDirs
 func (r *Runner) LoadScriptFiles() error {
@@ -245,13 +293,13 @@ func (r *Runner) LoadScriptFiles() error {
 		dirPath = r.PathResolver(dirPath)
 		des, err := os.ReadDir(dirPath)
 		if err != nil {
-			return errorx.Errorf("read dir %q error: %s", dirPath, err)
+			slog.Warnf("kscript: read dir %q error: %s", dirPath, err)
+			continue
 		}
 
 		for _, ent := range des {
 			fName := ent.Name()
 			if !ent.IsDir() {
-				// add
 				r.scriptFiles[fName] = dirPath + "/" + fName
 			}
 		}
@@ -320,7 +368,7 @@ func (r *Runner) TryRun(name string, args []string, ctx *RunCtx) (found bool, er
 		return found, err
 	}
 	if si != nil {
-		ccolor.Magentaln("Run script task: %s", name)
+		ccolor.Magentaln("Run script task:", name)
 		return found, r.runDefineScript(si, args, ctx)
 	}
 

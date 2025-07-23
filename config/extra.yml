@@ -13,7 +13,7 @@ plugin:
 script:
   # script file dir.
   script_dirs:
-    - scripts # relative base dir.
+    - $base/scripts # relative base dir.
   define_dir: $config/scripts
   define_files:
     - $config/module/scripts.yml
