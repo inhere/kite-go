@@ -26,9 +26,9 @@ import (
 var settingsKey = "__settings"
 
 type RunnerMeta struct {
-	apps  []*ScriptApp
-	tasks []*ScriptTask
-	files []*ScriptFile
+	// apps  []*ScriptApp
+	// tasks []*ScriptTask
+	// files []*ScriptFile
 }
 
 // Runner struct. TODO KRunner, ScriptRunner or ScriptManager
@@ -129,7 +129,7 @@ type Runner struct {
 
 // InitLoad define scripts and script files.
 func (r *Runner) InitLoad() error {
-	if err := r.LoadScriptTasks(); err != nil {
+	if err := r.LoadScriptTaskInfos(); err != nil {
 		return err
 	}
 
@@ -139,44 +139,12 @@ func (r *Runner) InitLoad() error {
 }
 
 /* endregion
---------------------------------- Load script apps ---------------------------------
------------ region T: Load script apps
-*/
-
-// LoadScriptApps from Runner.ScriptApps
-func (r *Runner) LoadScriptApps() {
-	if r.appLoaded {
-		return
-	}
-	r.appLoaded = true
-
-	for _, dirPath := range r.ScriptAppDirs {
-		dirPath = r.PathResolver(dirPath)
-		des, err := os.ReadDir(dirPath)
-		if err != nil {
-			slog.Warnf("kscript: read dir %q error: %s", dirPath, err)
-			continue
-		}
-
-		for _, ent := range des {
-			fName := ent.Name()
-			if !ent.IsDir() {
-				nameNoExt := fsutil.NameNoExt(fName)
-				fullPath := dirPath + "/" + fName
-				r.appFiles[nameNoExt] = fullPath
-				slog.Debugf("kscript: load script app %q(path: %s)", nameNoExt, fullPath)
-			}
-		}
-	}
-}
-
-/* endregion
 --------------------------------- Load task files ---------------------------------
 ----------- region T: Load task files
 */
 
-// LoadScriptTasks from Runner.DefineFiles
-func (r *Runner) LoadScriptTasks() (err error) {
+// LoadScriptTaskInfos from Runner.DefineFiles
+func (r *Runner) LoadScriptTaskInfos() (err error) {
 	if r.taskLoaded {
 		return nil
 	}
@@ -278,6 +246,38 @@ func (r *Runner) findAutoTaskFiles() (ss []string) {
 }
 
 /* endregion
+--------------------------------- Load script apps ---------------------------------
+----------- region T: Load script apps
+*/
+
+// LoadScriptApps from Runner.ScriptApps
+func (r *Runner) LoadScriptApps() {
+	if r.appLoaded {
+		return
+	}
+	r.appLoaded = true
+
+	for _, dirPath := range r.ScriptAppDirs {
+		dirPath = r.PathResolver(dirPath)
+		des, err := os.ReadDir(dirPath)
+		if err != nil {
+			slog.Warnf("kscript: read dir %q error: %s", dirPath, err)
+			continue
+		}
+
+		for _, ent := range des {
+			fName := ent.Name()
+			if !ent.IsDir() {
+				nameNoExt := fsutil.NameNoExt(fName)
+				fullPath := dirPath + "/" + fName
+				r.appFiles[nameNoExt] = fullPath
+				slog.Debugf("kscript: load script app %q(path: %s)", nameNoExt, fullPath)
+			}
+		}
+	}
+}
+
+/* endregion
 --------------------------------- Load script files ---------------------------------
 ----------- region T: Load script files
 */
@@ -300,7 +300,9 @@ func (r *Runner) LoadScriptFiles() error {
 		for _, ent := range des {
 			fName := ent.Name()
 			if !ent.IsDir() {
-				r.scriptFiles[fName] = dirPath + "/" + fName
+				fullPath := dirPath + "/" + fName
+				r.scriptFiles[fName] = fullPath
+				slog.Debugf("kscript: load script file %q(path: %s)", fName, fullPath)
 			}
 		}
 	}
@@ -353,7 +355,7 @@ func (r *Runner) Run(name string, args []string, ctx *RunCtx) error {
 	return err
 }
 
-// TryRun script or script-file by name and with args
+// TryRun script task or script-file by name and with args
 func (r *Runner) TryRun(name string, args []string, ctx *RunCtx) (found bool, err error) {
 	if err := r.InitLoad(); err != nil {
 		return false, err
@@ -362,89 +364,55 @@ func (r *Runner) TryRun(name string, args []string, ctx *RunCtx) (found bool, er
 	found = true
 	ctx = EnsureCtx(ctx).WithName(name)
 
-	// try check is script and run it.
-	si, err := r.ScriptDefineInfo(name)
+	// ------ try check is task and run it ------
+	si, err := r.LoadScriptTaskInfo(name)
 	if err != nil {
 		return found, err
 	}
 	if si != nil {
 		ccolor.Magentaln("Run script task:", name)
-		return found, r.runDefineScript(si, args, ctx)
+		return found, r.runScriptTask(si, args, ctx)
 	}
 
-	// try check and run script file.
-	si, err = r.ScriptFileInfo(name)
+	// ------ try check is file and run it ------
+	sf, err := r.LoadScriptFileInfo(name)
 	if err != nil {
 		return found, err
 	}
 
-	if si != nil {
+	if sf != nil {
 		ccolor.Magentaln("Run script file: %s", name)
-		return found, r.runScriptFile(si, args, ctx)
+		return found, r.runScriptFile(sf, args, ctx)
 	}
 	return false, nil
 }
 
-// RunDefinedScript by input name and with arguments
-func (r *Runner) RunDefinedScript(name string, args []string, ctx *RunCtx) error {
+/*
+----------- endregion
+--------------------------------- Run script task ---------------------------------
+----------- region T: Run script task
+*/
+
+// RunScriptTask by input name and with arguments
+func (r *Runner) RunScriptTask(name string, args []string, ctx *RunCtx) error {
 	if err := r.InitLoad(); err != nil {
 		return err
 	}
 
-	si, err := r.ScriptDefineInfo(name)
+	si, err := r.LoadScriptTaskInfo(name)
 	if err != nil {
 		return err
 	}
 
 	if si != nil {
 		ctx = EnsureCtx(ctx).WithName(name)
-		return r.runDefineScript(si, args, ctx)
+		return r.runScriptTask(si, args, ctx)
 	}
 	return errorx.Rawf("script %q is not exists", name)
 }
 
-// RunScriptFile by input name and with arguments
-func (r *Runner) RunScriptFile(name string, args []string, ctx *RunCtx) error {
-	if err := r.InitLoad(); err != nil {
-		return err
-	}
-
-	si, err := r.ScriptFileInfo(name)
-	if err != nil {
-		return err
-	}
-
-	if si != nil {
-		ctx = EnsureCtx(ctx).WithName(name)
-		return r.runScriptFile(si, args, ctx)
-	}
-	return errorx.Rawf("script file %q is not exists", name)
-}
-
-// RunScriptInfo by args and context
-func (r *Runner) RunScriptInfo(si *ScriptInfo, inArgs []string, ctx *RunCtx) error {
-	if si.IsFile() {
-		return r.runScriptFile(si, inArgs, ctx)
-	}
-	return r.runDefineScript(si, inArgs, ctx)
-}
-
-func (r *Runner) runScriptFile(si *ScriptInfo, inArgs []string, ctx *RunCtx) error {
-	if ctx.BeforeFn != nil {
-		ctx.BeforeFn(si, ctx)
-	}
-
-	// run script file
-	return cmdr.NewCmd(si.BinName, si.File).
-		WorkDirOnNE(si.Workdir).
-		WithDryRun(ctx.DryRun).
-		AppendEnv(si.Env).
-		AddArgs(inArgs).
-		PrintCmdline2().
-		FlushRun()
-}
-
-func (r *Runner) runDefineScript(si *ScriptInfo, inArgs []string, ctx *RunCtx) error {
+func (r *Runner) runScriptTask(si *ScriptInfo, inArgs []string, ctx *RunCtx) error {
+	ctx.ScriptType = TypeTask
 	if ctx.BeforeFn != nil {
 		ctx.BeforeFn(si, ctx)
 	}
@@ -488,7 +456,7 @@ func (r *Runner) runDefineScript(si *ScriptInfo, inArgs []string, ctx *RunCtx) e
 		// redirect run another script
 		if line[0] == '@' {
 			name := line[1:]
-			osi, err := r.ScriptDefineInfo(name)
+			osi, err := r.LoadScriptTaskInfo(name)
 			if err != nil {
 				return err
 			}
@@ -496,7 +464,7 @@ func (r *Runner) runDefineScript(si *ScriptInfo, inArgs []string, ctx *RunCtx) e
 				return errorx.Rawf("run %q: reference script %q not found", si.Name, name)
 			}
 
-			err = r.runDefineScript(osi, inArgs, ctx)
+			err = r.runScriptTask(osi, inArgs, ctx)
 			if err != nil {
 				return err
 			}
@@ -536,23 +504,63 @@ func (r *Runner) handleCmdline(line string, vars map[string]string, si *ScriptIn
 	return line
 }
 
-// RawDefinedScript raw info get
-func (r *Runner) RawDefinedScript(name string) (any, bool) {
+// RawScriptTask raw info get
+func (r *Runner) RawScriptTask(name string) (any, bool) {
 	info, ok := r.Scripts[name]
 	return info, ok
 }
 
-// ScriptDefineInfo get script info as ScriptInfo
-func (r *Runner) ScriptDefineInfo(name string) (*ScriptInfo, error) {
+// LoadScriptTaskInfo get script info as ScriptTask
+func (r *Runner) LoadScriptTaskInfo(name string) (*ScriptInfo, error) {
 	info, ok := r.Scripts[name]
 	if !ok {
 		return nil, nil // not found TODO ErrNotFound
 	}
-	return newDefinedScriptInfo(name, info, r.TypeShell)
+	return parseScriptTask(name, info, r.TypeShell)
 }
 
-// ScriptFileInfo info get
-func (r *Runner) ScriptFileInfo(name string) (*ScriptInfo, error) {
+/*
+----------- endregion
+-----------------------------------------------------------------------------
+----------- region T: Run script file
+*/
+
+// RunScriptFile by input name and with arguments
+func (r *Runner) RunScriptFile(name string, args []string, ctx *RunCtx) error {
+	if err := r.InitLoad(); err != nil {
+		return err
+	}
+
+	sf, err := r.LoadScriptFileInfo(name)
+	if err != nil {
+		return err
+	}
+
+	if sf != nil {
+		ctx = EnsureCtx(ctx).WithName(name)
+		return r.runScriptFile(sf, args, ctx)
+	}
+	return errorx.Rawf("script file %q is not exists", name)
+}
+
+func (r *Runner) runScriptFile(sf *ScriptFile, inArgs []string, ctx *RunCtx) error {
+	ctx.ScriptType = TypeFile
+	if ctx.BeforeFn != nil {
+		ctx.BeforeFn(sf, ctx)
+	}
+
+	// run script file
+	return cmdr.NewCmd(sf.BinName, sf.File).
+		WorkDirOnNE(sf.Workdir).
+		WithDryRun(ctx.DryRun).
+		AppendEnv(sf.Env).
+		AddArgs(inArgs).
+		PrintCmdline2().
+		FlushRun()
+}
+
+// LoadScriptFileInfo info get
+func (r *Runner) LoadScriptFileInfo(name string) (*ScriptFile, error) {
 	// with ext
 	if inExt := fsutil.FileExt(name); len(inExt) > 0 {
 		fPath, ok := r.scriptFiles[name]
@@ -560,7 +568,7 @@ func (r *Runner) ScriptFileInfo(name string) (*ScriptInfo, error) {
 			return nil, nil
 		}
 
-		return r.newFileScriptItem(name, fPath, inExt)
+		return r.newScriptFileInfo(name, fPath, inExt)
 	}
 
 	// auto check ext
@@ -570,15 +578,18 @@ func (r *Runner) ScriptFileInfo(name string) (*ScriptInfo, error) {
 			continue
 		}
 
-		return r.newFileScriptItem(name, fPath, ext)
+		return r.newScriptFileInfo(name, fPath, ext)
 	}
 
 	// not found
 	return nil, nil
 }
 
-func (r *Runner) newFileScriptItem(name, fPath, ext string) (*ScriptInfo, error) {
-	si := &ScriptInfo{
+func (r *Runner) newScriptFileInfo(name, fPath, ext string) (*ScriptFile, error) {
+	si := &ScriptFile{
+		ScriptMeta: ScriptMeta{
+			ScriptType: TypeFile,
+		},
 		Name:    name,
 		File: fPath,
 		FileExt: ext,
@@ -591,8 +602,8 @@ func (r *Runner) newFileScriptItem(name, fPath, ext string) (*ScriptInfo, error)
 	return si, nil
 }
 
-// IsDefinedScript name
-func (r *Runner) IsDefinedScript(name string) bool {
+// IsScriptTask name
+func (r *Runner) IsScriptTask(name string) bool {
 	_, ok := r.Scripts[name]
 	return ok
 }

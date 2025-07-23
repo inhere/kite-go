@@ -27,10 +27,16 @@ const (
 )
 
 type ScriptMeta struct {
+	// ScriptType name
+	ScriptType ScriptType
 	// Workdir for run script, default is current dir.
 	Workdir string
 	// Env setting for run the file/app/task
 	Env map[string]string
+}
+
+type ScriptItem interface {
+	ScriptTask | ScriptApp | ScriptFile
 }
 
 //
@@ -44,9 +50,10 @@ type ScriptApps struct {
 
 type ScriptApp struct {
 	ScriptMeta
+	// script app name, use file name
+	Name string
 	// File script app file path in Runner.ScriptApps
-	File    string
-	BinName string // script app name, use file name
+	File string
 }
 
 //
@@ -67,10 +74,15 @@ type ScriptFile struct {
 
 	// TODO read and parse file metadata.
 	parsed bool
+
+	// script name, default uses file name. eg: demo.sh
+	Name string
 	// File script file path in Runner.ScriptDirs
-	File    string
+	File string
+	// BinName script file bin name. 默认从 ext 解析 e.g.: .php => php
 	BinName string
-	FileExt string // eg: .go
+	// file ext. eg: .go
+	FileExt string
 	// ShellBang script file shell bang line.
 	// always at first line and start with: #!
 	ShellBang string
@@ -83,7 +95,7 @@ func (sf *ScriptFile) Exec(args []string, ctx *RunCtx) error {
 	}
 
 	// run script file
-	return cmdr.NewCmd(sf.BinName, sf.File).
+	return cmdr.NewCmd(sf.Name, sf.File).
 		WorkDirOnNE(sf.Workdir).
 		WithDryRun(ctx.DryRun).
 		AppendEnv(sf.Env).
@@ -133,12 +145,14 @@ type ScriptTasks struct {
 type ScriptTask struct {
 	ScriptMeta
 
-	// Name for the script
+	// Name for the script task
 	Name string
 	// Desc message
 	Desc string
 	// Type shell wrap for run the script. allow: sh, bash, zsh
 	Type string
+	// Alias names for the script task
+	Alias []string
 
 	// Platform limit. allow: windows, linux, darwin
 	Platform []string
@@ -149,12 +163,17 @@ type ScriptTask struct {
 	// Ext enable extensions: proxy, clip
 	Ext string
 	// Deps commands list
-	Deps []string
+	Deps []string `json:"deps"`
 
-	// Args script args definition.
-	Args, ArgNames []string
-	// Cmds commands list
+	// Cmds exec commands list
 	Cmds []string
+	// Args script task args definition.
+	Args, ArgNames []string
+
+	// CmdLinux command lines on different OS. will override the Cmds
+	CmdLinux   []string
+	CmdDarwin  []string
+	CmdWindows []string
 
 	// Silent mode, dont print exec command line and output.
 	Silent bool `json:"silent"`
@@ -213,7 +232,7 @@ type ScriptInfo struct {
 	FileExt string // eg: .go
 }
 
-func newDefinedScriptInfo(name string, info any, fbType string) (*ScriptInfo, error) {
+func parseScriptTask(name string, info any, fbType string) (*ScriptInfo, error) {
 	si := &ScriptInfo{Name: name}
 
 	switch typVal := info.(type) {
@@ -256,16 +275,6 @@ func (si *ScriptInfo) ParseArgs() (args []string) {
 
 	sort.Strings(ss)
 	return ss
-}
-
-// IsFile script
-func (si *ScriptInfo) IsFile() bool {
-	return si.File != ""
-}
-
-// IsDefined script
-func (si *ScriptInfo) IsDefined() bool {
-	return si.File == ""
 }
 
 // WithFallbackType on not setting.
@@ -362,6 +371,8 @@ type RunCtx struct {
 	// Name for script run
 	Name string
 	Type string // shell type
+	// ScriptType name
+	ScriptType ScriptType
 
 	// Verbose show more info on run
 	Verbose bool
@@ -376,8 +387,8 @@ type RunCtx struct {
 	// Silent mode, dont print exec command line.
 	Silent bool `json:"silent"`
 
-	// BeforeFn hook
-	BeforeFn func(si *ScriptInfo, ctx *RunCtx)
+	// BeforeFn hook. si: ScriptTask | ScriptApp | ScriptFile
+	BeforeFn func(si any, ctx *RunCtx)
 }
 
 // EnsureCtx to

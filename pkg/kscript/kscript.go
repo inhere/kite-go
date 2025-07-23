@@ -49,7 +49,7 @@ func NewRunner(fns ...func(kr *Runner)) *Runner {
 		ExtToBinMap:  ExtToBinMap,
 		scriptFiles:  map[string]string{},
 		// script app
-		ScriptApps:    []string{"?$base/script-app"},
+		ScriptAppDirs: []string{"?$base/script-app"},
 		ScriptAppExts: DefaultDefineExts,
 		// script task
 		AutoTaskFiles: DefaultTaskFiles,

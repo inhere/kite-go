@@ -129,7 +129,7 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 
 		colorp.Infof("TIP: will direct run %q as script name (by --script)\n", name)
 		if runOpts.verbose {
-			ctx.BeforeFn = func(si *kscript.ScriptInfo, ctx *kscript.RunCtx) {
+			ctx.BeforeFn = func(si any, ctx *kscript.RunCtx) {
 				// cliutil.Infof("TIP: %q is a script name, will run it with %v\n", name, args)
 				show.AList("Script Info", si)
 				show.AList("Run Context", ctx)
@@ -164,22 +164,22 @@ func showInfo(name string) (err error) {
 		return err
 	}
 
-	if runOpts.script || app.Scripts.IsDefinedScript(name) {
+	if runOpts.script || app.Scripts.IsScriptTask(name) {
 		var si *kscript.ScriptInfo
-		si, err = app.Scripts.ScriptDefineInfo(name)
+		si, err = app.Scripts.LoadScriptTaskInfo(name)
 		if err != nil {
 			return err
 		}
 		if si != nil {
-			show.AList("script info", si)
+			show.AList("script task info", si)
 			return
 		}
 
-		si, err = app.Scripts.ScriptFileInfo(name)
+		sf, err := app.Scripts.LoadScriptFileInfo(name)
 		if err != nil {
 			return err
 		}
-		if si != nil {
+		if sf != nil {
 			show.AList("script file info", si)
 			return
 		}
