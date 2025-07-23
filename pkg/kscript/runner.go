@@ -408,28 +408,28 @@ func (r *Runner) RunScriptTask(name string, args []string, ctx *RunCtx) error {
 		ctx = EnsureCtx(ctx).WithName(name)
 		return r.runScriptTask(si, args, ctx)
 	}
-	return errorx.Rawf("script %q is not exists", name)
+	return errorx.Rawf("script task %q is not exists", name)
 }
 
-func (r *Runner) runScriptTask(si *ScriptInfo, inArgs []string, ctx *RunCtx) error {
+func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) error {
 	ctx.ScriptType = TypeTask
 	if ctx.BeforeFn != nil {
-		ctx.BeforeFn(si, ctx)
+		ctx.BeforeFn(st, ctx)
 	}
 
-	ln := len(si.Cmds)
+	ln := len(st.Cmds)
 	if ln == 0 {
 		return errorx.Rawf("empty cmd config for script %q", ctx.Name)
 	}
 
-	needArgs := si.ParseArgs()
+	needArgs := st.ParseArgs()
 	if nln := len(needArgs); len(inArgs) < nln {
 		return errorx.Rawf("missing required args for run script %q(need %d)", ctx.Name, nln)
 	}
 
-	envMap := ctx.MergeEnv(si.Env)
-	shell := strutil.OrElse(ctx.Type, si.Type)
-	workdir := strutil.OrElse(ctx.Workdir, si.Workdir)
+	envMap := ctx.MergeEnv(st.Env)
+	shell := strutil.OrElse(ctx.Type, st.Type)
+	workdir := strutil.OrElse(ctx.Workdir, st.Workdir)
 
 	// build context vars
 	argStr := strings.Join(inArgs, " ")
@@ -448,7 +448,7 @@ func (r *Runner) runScriptTask(si *ScriptInfo, inArgs []string, ctx *RunCtx) err
 	}
 
 	// exec each command
-	for _, line := range si.Cmds {
+	for _, line := range st.Cmds {
 		if len(line) == 0 {
 			continue
 		}
@@ -461,7 +461,7 @@ func (r *Runner) runScriptTask(si *ScriptInfo, inArgs []string, ctx *RunCtx) err
 				return err
 			}
 			if osi == nil {
-				return errorx.Rawf("run %q: reference script %q not found", si.Name, name)
+				return errorx.Rawf("run %q: reference script %q not found", st.Name, name)
 			}
 
 			err = r.runScriptTask(osi, inArgs, ctx)
@@ -471,7 +471,7 @@ func (r *Runner) runScriptTask(si *ScriptInfo, inArgs []string, ctx *RunCtx) err
 			continue
 		}
 
-		line = r.handleCmdline(line, vars, si)
+		line = r.handleCmdline(line, vars, st)
 
 		var cmd *cmdr.Cmd
 		if shell != "" {
@@ -491,13 +491,13 @@ func (r *Runner) runScriptTask(si *ScriptInfo, inArgs []string, ctx *RunCtx) err
 var rpl = textutil.NewVarReplacer("$").WithParseEnv().WithParseDefault()
 
 // process vars and env
-func (r *Runner) handleCmdline(line string, vars map[string]string, si *ScriptInfo) string {
+func (r *Runner) handleCmdline(line string, vars map[string]string, st *ScriptTask) string {
 	line = strutil.Replaces(line, vars)
 	// TODO use rpl.Render(line, vars)
 
 	// eg: $SHELL
 	if r.ParseEnv && strutil.ContainsByte(line, '$') {
-		envs := sysutil.EnvMapWith(si.Env)
+		envs := sysutil.EnvMapWith(st.Env)
 		return textutil.RenderSMap(line, envs, "$,")
 	}
 
@@ -511,7 +511,9 @@ func (r *Runner) RawScriptTask(name string) (any, bool) {
 }
 
 // LoadScriptTaskInfo get script info as ScriptTask
-func (r *Runner) LoadScriptTaskInfo(name string) (*ScriptInfo, error) {
+func (r *Runner) LoadScriptTaskInfo(name string) (*ScriptTask, error) {
+	// TODO 先读取 Runner.tasks 缓存，如果找不到再从 Scripts 中解析读取
+
 	info, ok := r.Scripts[name]
 	if !ok {
 		return nil, nil // not found TODO ErrNotFound

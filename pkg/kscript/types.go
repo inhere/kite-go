@@ -158,14 +158,15 @@ type ScriptTask struct {
 	Platform []string
 	// Output target. default is stdout
 	Output string
-	// Vars for run script. allow exec a command line TODO
+	// Vars for run script.
+	//  - allow exec a command line TODO
 	Vars map[string]string
 	// Ext enable extensions: proxy, clip
 	Ext string
-	// Deps commands list
+	// Deps commands list. 当前任务依赖的任务名称列表
 	Deps []string `json:"deps"`
 
-	// Cmds exec commands list
+	// Cmds exec commands list.
 	Cmds []string
 	// Args script task args definition.
 	Args, ArgNames []string
@@ -182,95 +183,60 @@ type ScriptTask struct {
 	IfCond string
 }
 
-// ScriptInfo one script. or TODO ScriptTask, ScriptMeta, ScriptEntry struct
-type ScriptInfo struct {
+// ScriptInfo one script task.
+type ScriptInfo = ScriptTask
 
-	//
-	// For define script
-	//
-
-	// Type shell wrap for run the script. allow: sh, bash, zsh
-	Type string
-
-	// Workdir for run script, default is current dir.
-	Workdir string
-	// Platform limit. allow: windows, linux, darwin
-	Platform []string
-	// Output target. default is stdout
-	Output string
-	// Vars for run script. allow exec a command line TODO
-	Vars map[string]string
-	// Ext enable extensions: proxy, clip
-	Ext string
-	// Deps commands list
-	Deps []string
-
-	// Name for the script
-	Name string
-	// Desc message
-	Desc string
-	// Env setting for run
-	Env map[string]string
-	// Args script args definition.
-	Args, ArgNames []string
-	// Cmds commands list
-	Cmds []string
-
-	// Silent mode, dont print exec command line and output.
-	Silent bool `json:"silent"`
-	// IfCond check for run command. eg: sh:test -f .env
-	// or see github.com/hashicorp/go-bexpr
-	IfCond string
-
-	//
-	// For script file
-	//
-
-	// File script file path in Runner.ScriptDirs
-	File    string
-	BinName string
-	FileExt string // eg: .go
-}
-
-func parseScriptTask(name string, info any, fbType string) (*ScriptInfo, error) {
-	si := &ScriptInfo{Name: name}
+func parseScriptTask(name string, info any, fbType string) (*ScriptTask, error) {
+	st := &ScriptTask{Name: name}
+	st.ScriptType = TypeTask
 
 	switch typVal := info.(type) {
 	case string: // one command
-		si.Cmds = []string{typVal}
+		st.Cmds = []string{typVal}
+	case []string: // as commands
+		st.Cmds = typVal
 	case []any: // as commands
-		si.Cmds = arrutil.SliceToStrings(typVal)
+		st.Cmds = arrutil.SliceToStrings(typVal)
 	case map[string]any: // as structured
 		data := maputil.Data(typVal)
-		si.Type = data.Str("type")
-		si.Desc = data.Str("desc")
-		si.Workdir = data.Str("workdir")
+		st.Type = data.Str("type")
+		st.Workdir = data.StrOne("dir", "workdir")
+		st.Desc = data.StrOne("desc", "description")
 
-		err := si.loadArgsDefine(data.Get("args"))
+		err := st.loadArgsDefine(data.Get("args"))
 		if err != nil {
 			return nil, err
 		}
 
-		si.Cmds = data.Strings("cmds")
-		si.Vars = data.StringMap("vars")
-		si.Env = data.StringMap("env")
+		st.Env = data.StringMap("env")
+		st.Vars = data.StringMap("vars")
+		st.Deps = data.StringsOne("deps", "depends")
+		st.Cmds = data.StringsOne("run", "cmd", "cmds")
+
+		// TODO
+		// st.CmdLinux
 	default:
-		return nil, errorx.Rawf("invalid config of the script %q", name)
+		return nil, errorx.Rawf("invalid info of the script task %q, info: %v", name, info)
 	}
 
-	si.WithFallbackType(fbType)
-	return si, nil
+	st.WithFallbackType(fbType)
+	return st, nil
+}
+
+func (st *ScriptTask) LoadFrom(data map[string]any) error {
+	return nil
 }
 
 var argReg = regexp.MustCompile(`\$\d{1,2}`)
 
 // ParseArgs on commands
-func (si *ScriptInfo) ParseArgs() (args []string) {
-	if len(si.Cmds) == 0 {
+func (st *ScriptTask) ParseArgs() (args []string) {
+	if len(st.Cmds) == 0 {
 		return
 	}
 
-	str := strings.Join(si.Cmds, ",")
+	// 检测命令是否需要类似shell的参数 eg: echo $1
+	str := strings.Join(st.Cmds, ",")
 	ss := arrutil.Unique(argReg.FindAllString(str, -1))
 
 	sort.Strings(ss)
@@ -278,30 +244,30 @@ func (si *ScriptInfo) ParseArgs() (args []string) {
 }
 
 // WithFallbackType on not setting.
-func (si *ScriptInfo) WithFallbackType(typ string) *ScriptInfo {
-	if si.Type == "" {
-		si.Type = typ
+func (st *ScriptTask) WithFallbackType(typ string) *ScriptTask {
+	if st.Type == "" {
+		st.Type = typ
 	}
-	return si
+	return st
 }
 
 // args type: string, strings
-func (si *ScriptInfo) loadArgsDefine(args any) error {
+func (st *ScriptTask) loadArgsDefine(args any) error {
 	if args == nil {
 		return nil
 	}
 
 	switch typVal := args.(type) {
 	case string: // desc
-		si.Args = []string{typVal}
+		st.Args = []string{typVal}
 	case []string: // desc list
-		si.Args = typVal
+		st.Args = typVal
 	case []any: // desc list
-		si.Args = arrutil.SliceToStrings(typVal)
-	// case map[string]string: // name with desc TODO map cannot be ordered
-	// 	si.Args = typVal
+		st.Args = arrutil.SliceToStrings(typVal)
+	// case map[string]string: // name with desc. ERROR: map cannot be ordered
+	// 	st.Args = typVal
 	default:
-		return errorx.Rawf("invalid args config for %q", si.Name)
+		return errorx.Rawf("invalid args config for %q", st.Name)
 	}
 	return nil
 }
@@ -313,7 +279,7 @@ func (si *ScriptInfo) loadArgsDefine(args any) error {
 
 // CmdInfo struct TODO
 type CmdInfo struct {
-	si *ScriptInfo
+	si *ScriptTask
 	// Workdir for run a script
 	Workdir string
 	// Vars for run cmd. allow exec a command line TODO
