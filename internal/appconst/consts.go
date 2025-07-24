@@ -3,7 +3,7 @@ package appconst
 const (
 	// EnvInitLogLevel key. eg: export KITE_INIT_LOG=debug
 	EnvInitLogLevel = "KITE_INIT_LOG"
-	// EnvKiteVerbose level.
+	// EnvKiteVerbose level. eg: info, warn
 	EnvKiteVerbose = "KITE_VERBOSE"
 	// EnvKiteBaseDir for override the KiteDefaultBaseDir
 	EnvKiteBaseDir = "KITE_BASE_DIR"

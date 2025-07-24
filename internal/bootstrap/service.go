@@ -27,8 +27,10 @@ func addServiceBoot(ka *app.KiteApp) {
 
 		// access: $gvs.xxx
 		app.Vars = kiteext.NewVarMap(app.Cfg().StringMap("global_vars"))
-		app.Vars.Aliases["$kite"] = app.Cli().BinName()
+		// add kite bin name
+		app.Vars.Add("bin_name", app.Cli().BinName())
 
+		// aliases 内置命令别名
 		cmdbiz.Kas = app.Cfg().StringMap("aliases")
 		return app.Cfg().MapOnExists("proxy_cmd", cmdbiz.ProxyCC)
 	})
@@ -77,17 +79,17 @@ func addServiceBoot(ka *app.KiteApp) {
 	})
 
 	ka.AddBootFuncs(func(ka *app.KiteApp) error {
-		sr := kscript.NewRunner(func(sr *kscript.Runner) {
-			sr.PathResolver = apputil.ResolvePath
+		kr := kscript.NewRunner(func(kr *kscript.Runner) {
+			kr.PathResolver = apputil.ResolvePath
 		})
 
-		err := app.Cfg().MapOnExists(app.ObjScript, sr)
+		err := app.Cfg().MapOnExists(app.ObjScript, kr)
 		if err != nil {
 			return err
 		}
 
 		// app.Add(app.ObjScript, sr)
-		app.Scripts = sr
+		app.Scripts = kr
 		return nil
 	}, func(ka *app.KiteApp) error {
 		plug := &kiteext.PluginRunner{}

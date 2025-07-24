@@ -51,6 +51,7 @@ var (
 	PathMap *kiteext.PathMap
 	OpenMap maputil.Aliases
 
+	// Vars global vars.
 	Vars *kiteext.VarMap
 	HTpl *httptpl.Manager
 )

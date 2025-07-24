@@ -14,7 +14,7 @@
 kite.yml
 .kite.yml
 .kitefile
-.kite.script
+.kite.script.yaml
 
 # dirs
 /build/kite-*

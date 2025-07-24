@@ -5,7 +5,6 @@ import (
 
 	"github.com/gookit/config/v2"
 	"github.com/gookit/config/v2/yamlv3"
-	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/envutil"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/inhere/kite-go/internal/app"
@@ -45,9 +44,9 @@ func BootConfig(ka *app.KiteApp) error {
 		return err
 	}
 
-	if app.IsDebug() {
-		dump.P(cfg.Data())
-	}
+	// if app.IsDebug() {
+	// 	dump.P(cfg.Data())
+	// }
 
 	app.Add(app.ObjConf, cfg)
 	return nil

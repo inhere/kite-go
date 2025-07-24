@@ -23,12 +23,46 @@ const (
 )
 
 var (
-	KiteVerbose = sysutil.Getenv(appconst.EnvKiteVerbose, slog.WarnLevel.Name())
+	VerboseLevel slog.Level
 )
 
 // IsDebug mode
-func IsDebug() bool {
-	return slog.LevelByName(KiteVerbose) >= slog.DebugLevel
+func IsDebug() bool { return VerboseLevel >= slog.DebugLevel }
+
+// UpdateVerbose update verbose level from ENV
+func UpdateVerbose() {
+	if updateVerbose() {
+		setGlobalLogLevel()
+	}
+}
+
+func updateVerbose() bool {
+	newLevelName := sysutil.Getenv(appconst.EnvKiteVerbose, slog.WarnLevel.Name())
+	newVerbLevel := slog.LevelByName(newLevelName)
+
+	// update verbose level
+	if VerboseLevel != newVerbLevel {
+		VerboseLevel = newVerbLevel
+		return true
+	}
+	return false
+}
+
+func setGlobalLogLevel() {
+	initlog.Level = VerboseLevel.Name()
+
+	// config slog
+	slog.Std().ChannelName = "Kite"
+	slog.SetLogLevel(VerboseLevel)
+
+	// if is debug mode
+	if IsDebug() {
+		cflag.SetDebug(true)
+		// 优先使用 GCLI_VERBOSE 环境变量
+		gcliVerb := sysutil.Getenv(gcli.VerbEnvName, VerboseLevel.Name())
+		gcli.SetVerbose(gcliVerb)
+		gcli.Println("🔔🔔 <mga1>NOTICE</> 🔔🔔 ENV <green>KITE_VERBOSE >= debug</>, will display more runtime logs")
+	}
 }
 
 // Info for kite app
@@ -93,12 +127,10 @@ func (ka *KiteApp) AddLoader(bl BootLoader) *KiteApp {
 
 // Boot app start
 func (ka *KiteApp) Boot() error {
-	// if is debug mode
-	if IsDebug() {
-		initlog.Level = slog.DebugLevel.Name()
-		gcli.SetDebugMode()
-		cflag.SetDebug(true)
-	}
+	// init verbose level
+	updateVerbose()
+	// before run bootloader
+	setGlobalLogLevel()
 
 	// run pre bootloaders
 	err := ka.runBootloaders(ka.preLoaders)
@@ -106,7 +138,7 @@ func (ka *KiteApp) Boot() error {
 		return err
 	}
 
-	// call after pre-bootloaders booted
+	// hook: call after pre-bootloaders booted
 	if ka.AfterPreFn != nil {
 		if err := ka.AfterPreFn(ka); err != nil {
 			return err

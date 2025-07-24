@@ -175,6 +175,18 @@ func (c *Config) SetDotenvFile(dotenvFile string) {
 	c.dotenvFile = dotenvFile
 }
 
+// PathsMap collects
+func (c *Config) PathsMap() map[string]string {
+	return map[string]string{
+		"base":   c.BaseDir,
+		"config": c.ConfigDir,
+		"cache":  c.CacheDir,
+		"data":   c.DataDir,
+		"tmp":    c.TmpDir,
+		"res":    c.ResourceDir,
+	}
+}
+
 func joinPath(basePath string, subPaths []string) string {
 	if len(subPaths) == 0 {
 		return basePath
