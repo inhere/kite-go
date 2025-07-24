@@ -11,56 +11,77 @@ import (
 
 // VarMap struct
 type VarMap struct {
-	maputil.Aliases
 	Prefix   string
+	aliases maputil.Aliases
+	// replacer build from aliases data
 	replacer *strings.Replacer
+	// raw vars map, key not append Prefix
+	rawVars map[string]string
 }
 
 // NewVarMap instance
 func NewVarMap(smp map[string]string) *VarMap {
 	vm := &VarMap{
 		Prefix:  "$",
-		Aliases: make(maputil.Aliases),
+		aliases: make(maputil.Aliases),
 	}
 
+	vm.LoadMap(smp)
 	vm.LoadMap(map[string]string{
 		"os":   runtime.GOOS,
 		"user": sysutil.CurrentUser().Name,
 	})
-
-	vm.LoadMap(smp)
 	return vm
 }
 
 // LoadMap path
 func (m *VarMap) LoadMap(smp map[string]string) {
-	if smp != nil {
-		for k, v := range smp {
-			m.Aliases[m.Prefix+k] = v
-		}
-		m.replacer = strutil.NewReplacer(m.Aliases)
+	if len(smp) == 0 {
+		return
+	}
+
+	// update alias map
+	for k, v := range smp {
+		m.aliases[m.Prefix+k] = v
+	}
+
+	m.rawVars = maputil.MergeStringMap(smp, m.rawVars, false)
+}
+
+// Add new var value
+func (m *VarMap) Add(name, value string) {
+	m.rawVars[name] = value
+	m.aliases[m.Prefix+name] = value
+}
+
+func (m *VarMap) ensureReplacer() {
+	if m.replacer == nil {
+		m.replacer = strutil.NewReplacer(m.aliases)
 	}
 }
 
 // Replace vars in string.
 func (m *VarMap) Replace(s string) string {
 	if strings.Contains(s, m.Prefix) {
+		m.ensureReplacer()
 		return m.replacer.Replace(s)
 	}
 	return s
 }
 
-// Resolve path
+// Resolve a string value.
 func (m *VarMap) Resolve(path string) string {
+	// eg: $home/some.txt
 	if idx := strings.IndexByte(path, '/'); idx > 0 {
-		prefix, other := path[:idx], path[idx:]
-		return m.ResolveAlias(prefix) + other
+		first, other := path[:idx], path[idx:]
+		return m.aliases.ResolveAlias(first) + other
 	}
 
-	return m.ResolveAlias(path)
+	return m.aliases.ResolveAlias(path)
 }
 
-// Data map get
-func (m *VarMap) Data() map[string]string {
-	return m.Aliases
-}
+// AliasMap data get. key is prefix + alias
+func (m *VarMap) AliasMap() map[string]string { return m.aliases }
+
+// Data raw map get. key is without prefix
+func (m *VarMap) Data() map[string]string { return m.rawVars }

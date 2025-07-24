@@ -18,7 +18,7 @@ type PathMap struct {
 	Strict bool `json:"strict"`
 	// allowed prefix mark for alias, use on resolve. eg: "$,#,@"
 	Prefixes string `json:"prefixes"`
-	// FallbackFn if alias not exists, will call this func to get path.
+	// FallbackFn if alias not exists, will call this func to get a path.
 	FallbackFn func(path string) string
 }
 
@@ -35,7 +35,7 @@ func NewPathMap(opFns ...func(pm *PathMap)) *PathMap {
 	return pm
 }
 
-// Resolve path. eg: $home/some.txt => /home/USER/some.txt
+// Resolve a path. eg: $home/some.txt => /home/USER/some.txt
 func (p *PathMap) Resolve(path string) string {
 	if len(path) == 0 {
 		return path
@@ -81,6 +81,4 @@ func (p *PathMap) Resolve(path string) string {
 }
 
 // Data get all alias map data
-func (p *PathMap) Data() map[string]string {
-	return p.Aliases
-}
+func (p *PathMap) Data() map[string]string { return p.Aliases }
