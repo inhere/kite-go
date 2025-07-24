@@ -156,6 +156,7 @@ func onCmdNotFound(ctx *gcli.HookCtx) (stop bool) {
 		WithValue("args", args).
 		Infof("%s: handle kite cli command not found: %s", ctx.Name(), name)
 
+	// ctx := &kscript.RunCtx{}
 	if err := cmdbiz.RunAny(name, args, nil); err != nil {
 		colorp.Warnln("RunAny Error >", err)
 	}

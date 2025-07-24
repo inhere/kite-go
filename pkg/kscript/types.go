@@ -213,8 +213,9 @@ func parseScriptTask(name string, info any, fbType string) (*ScriptTask, error) 
 		st.Deps = data.StringsOne("deps", "depends")
 		st.Cmds = data.StringsOne("run", "cmd", "cmds")
 
-		// TODO
-		// st.CmdLinux
+		// TODO override by os platform
+		// osName := runtime.GOOS // windows, linux, darwin
+		// data.SubMap(osName) // 每个平台都可以覆盖前面的配置
 	default:
 		return nil, errorx.Rawf("invalid info of the script task %q, info: %v", name, info)
 	}
@@ -223,7 +224,7 @@ func parseScriptTask(name string, info any, fbType string) (*ScriptTask, error) 
 	return st, nil
 }
 
-func (st *ScriptTask) LoadFrom(data map[string]any) error {
+func (st *ScriptTask) LoadFromMap(data map[string]any) error {
 	return nil
 }
 
@@ -346,7 +347,7 @@ type RunCtx struct {
 	DryRun bool
 	// Workdir for run a script
 	Workdir string
-	// Vars for run cmd.
+	// Vars for run cmd. access: $ctx.var_name
 	Vars map[string]string
 	// Env setting for run
 	Env map[string]string
@@ -355,6 +356,8 @@ type RunCtx struct {
 
 	// BeforeFn hook. si: ScriptTask | ScriptApp | ScriptFile
 	BeforeFn func(si any, ctx *RunCtx)
+	// AppendVarsFn hook for run task.
+	AppendVarsFn func(data map[string]any) map[string]any
 }
 
 // EnsureCtx to

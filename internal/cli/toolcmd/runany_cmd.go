@@ -119,6 +119,16 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 		Type:    runOpts.wrapType.String(),
 	}
 
+	ctx.AppendVarsFn = func(data map[string]any) map[string]any {
+		// enhance: 添加应用里的全局变量 usage: $paths.var, $gvs.var
+		data["gvs"] = app.Vars.Data()
+		data["paths"] = app.PathMap.Data()
+		// kite 应用内置路径变量
+		data["kite"] = app.App().PathsMap()
+
+		return data
+	}
+
 	// direct run as a script
 	if runOpts.script {
 		if runOpts.search {
@@ -165,19 +175,18 @@ func showInfo(name string) (err error) {
 	}
 
 	if runOpts.script || app.Scripts.IsScriptTask(name) {
-		var si *kscript.ScriptInfo
-		si, err = app.Scripts.LoadScriptTaskInfo(name)
-		if err != nil {
-			return err
+		si, err1 := app.Scripts.LoadScriptTaskInfo(name)
+		if err1 != nil {
+			return err1
 		}
 		if si != nil {
 			show.AList("script task info", si)
 			return
 		}
 
-		sf, err := app.Scripts.LoadScriptFileInfo(name)
-		if err != nil {
-			return err
+		sf, err2 := app.Scripts.LoadScriptFileInfo(name)
+		if err2 != nil {
+			return err2
 		}
 		if sf != nil {
 			show.AList("script file info", si)

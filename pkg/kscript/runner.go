@@ -4,11 +4,13 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/gookit/config/v2"
 	"github.com/gookit/config/v2/ini"
 	"github.com/gookit/config/v2/toml"
 	"github.com/gookit/config/v2/yaml"
+	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/errorx"
@@ -37,7 +39,7 @@ type RunnerMeta struct {
 type Runner struct {
 	RunnerMeta
 
-	// PathResolver handler
+	// PathResolver handler. 用于查找脚本文件
 	PathResolver func(path string) string
 
 	// ------------------------ config for script app --------------------
@@ -81,7 +83,7 @@ type Runner struct {
 	//  - special settings key: __settings, will read and merge to Settings
 	Scripts map[string]any `json:"scripts"`
 
-	// ParseEnv var on script command expr
+	// ParseEnv var on script command expr. eg: $SHELL
 	ParseEnv bool `json:"parse_env"`
 	// TypeShell wrapper for run each script.
 	//
@@ -194,6 +196,7 @@ func (r *Runner) LoadScriptTaskInfos() (err error) {
 
 	// load custom settings
 	if setData, ok := r.Scripts[settingsKey]; ok {
+		delete(r.Scripts, settingsKey)
 		if setMap, ok1 := setData.(map[string]any); ok1 {
 			r.taskSettings.loadData(setMap)
 		}
@@ -433,18 +436,30 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 
 	// build context vars
 	argStr := strings.Join(inArgs, " ")
-	vars := map[string]string{
+	vars := map[string]any{
 		// 是一个字符串参数数组
 		"$@": argStr,
 		"$*": strutil.Quote(argStr), // 把所有参数合并成一个字符串
 		// context info
-		"$workdir": workdir,
-		"$dirname": fsutil.Name(workdir),
+		"workdir": workdir,
+		"dirname": fsutil.Name(workdir),
 	}
 
+	// 输入参数处理 $1 ... $N
 	for i, val := range inArgs {
-		key := "$" + mathutil.String(i+1)
+		// key := "$" + mathutil.String(i+1)
+		key := mathutil.String(i + 1)
 		vars[key] = val
+	}
+
+	// 追加 全局变量
+	vars = r.buildTaskTplVars(vars)
+	vars["ctx"] = ctx.Vars
+	if ctx.AppendVarsFn != nil {
+		vars = ctx.AppendVarsFn(vars)
+	}
+	if ctx.Verbose {
+		show.AList("Task Vars", vars)
 	}
 
 	// exec each command
@@ -488,20 +503,51 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 	return nil
 }
 
-var rpl = textutil.NewVarReplacer("$").WithParseEnv().WithParseDefault()
-
-// process vars and env
-func (r *Runner) handleCmdline(line string, vars map[string]string, st *ScriptTask) string {
-	line = strutil.Replaces(line, vars)
-	// TODO use rpl.Render(line, vars)
-
-	// eg: $SHELL
-	if r.ParseEnv && strutil.ContainsByte(line, '$') {
-		envs := sysutil.EnvMapWith(st.Env)
-		return textutil.RenderSMap(line, envs, "$,")
+func (r *Runner) buildTaskTplVars(data map[string]any) map[string]any {
+	tn := time.Now()
+	data["time"] = map[string]any{
+		"unix_sec":    tn.Unix(),
+		"datetime":    tn.Format("2006-01-02 15:04:05"),
+		"date_Ymd_hm": tn.Format("2006-01-02_15:04"),
+		"date_ymd_hm": tn.Format("06-01-02_15:04"),
+		"date_ymd":    tn.Format("2006-01-02"),
+		"date_hms":    tn.Format("15:04:05"),
 	}
 
-	return line
+	// vars in runner.taskSettings
+	data["vars"] = r.taskSettings.Vars
+	data["groups"] = r.taskSettings.Groups
+
+	return data
+}
+
+// 使用简单的模板渲染，支持链式语法变量替换，环境变量，默认值等 - 无法同时支持 $var ${var_name}
+// var rpl = textutil.NewVarReplacer("$").WithParseEnv().WithParseDefault()
+// 专门实现的类似 php, shell 的字符串表达式处理
+var rpl = textutil.NewStrVarRenderer()
+
+// process vars and env
+func (r *Runner) handleCmdline(line string, vars map[string]any, st *ScriptTask) string {
+	envs := sysutil.EnvMapWith(st.Env)
+
+	rpl.SetGetter(func(name string) (val string, ok bool) {
+		// eg: $SHELL
+		if r.ParseEnv {
+			if val, ok = envs[name]; ok {
+				return val, true
+			}
+		}
+		return name, false
+	})
+
+	// line = strutil.Replaces(line, vars)
+	// eg: $SHELL
+	// if r.ParseEnv && strutil.ContainsByte(line, '$') {
+	// 	envs := sysutil.EnvMapWith(st.Env)
+	// 	return textutil.RenderSMap(line, envs, "$,")
+	// }
+
+	return rpl.Render(line, vars)
 }
 
 // RawScriptTask raw info get
