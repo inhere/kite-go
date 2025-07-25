@@ -1,4 +1,7 @@
 # use yaml format
+# run by: kite xfile demo
 
 test:
   echo hello
+
+demo: echo hello

@@ -9,19 +9,21 @@ plugin:
     - plugins # relative base dir.
     - ${GOPATH}/bin
 
-# scripts in kite
+# extension scripts in kite
 script:
-  # script file dir.
+  # 独立的 script file 定义目录.
   script_dirs:
     - $base/scripts # relative base dir.
-  define_dir: $config/scripts
+  # 独立的 script app 定义文件目录.
+  script_app_dirs:
+    - $base/script-app
+  # 简单的 script task 定义文件配置
   define_files:
     - $config/module/scripts.yml
     - ?$config/module/scripts.$os.yml
-  type_shell:  # bash, sh, zsh or empty for run each command
-  parse_env: true # parse ENV var in command line.
-  scripts:
-    test1: echo hello
+  # 自动从当前目录或父级目录中寻找 script task 定义文件
+#  auto_task_files: [ 'kite.tasks', 'kite.script', 'kite.scripts' ]
+#  auto_task_exts: [ '.yml', '.yaml' ]
 
 # use env in kite
 use_env:

@@ -15,7 +15,7 @@ default_cmd: cmd1
 
 # https://github.com/hashicorp/go-bexpr for condition
 
-commands:
+actions:
   cmd1:
     desc: description for cmd1
     type: bash

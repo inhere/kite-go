@@ -10,6 +10,9 @@ import (
 //	go run ./cmd/kite
 //	go run ./cmd/kite <CMD>
 //
+// debug run:
+//	KITE_VERBOSE=debug go run ./cmd/kite <CMD>
+//
 // install:
 //
 //	go install ./cmd/kite
