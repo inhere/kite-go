@@ -427,7 +427,8 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 
 	needArgs := st.ParseArgs()
 	if nln := len(needArgs); len(inArgs) < nln {
-		return errorx.Rawf("missing required args for run script %q(need %d)", ctx.Name, nln)
+		ccolor.Println("<mga>Script task contents:</>\n ", strings.Join(st.Cmds, "\n  "))
+		return errorx.Rawf("missing required args for run task %q(need %d)", ctx.Name, nln)
 	}
 
 	envMap := ctx.MergeEnv(st.Env)
@@ -437,9 +438,10 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 	// build context vars
 	argStr := strings.Join(inArgs, " ")
 	vars := map[string]any{
-		// 是一个字符串参数数组
-		"$@": argStr,
-		"$*": strutil.Quote(argStr), // 把所有参数合并成一个字符串
+		// $@ 是一个字符串参数数组
+		"@": argStr,
+		// @* 把所有参数合并成一个字符串
+		"*": strutil.Quote(argStr),
 		// context info
 		"workdir": workdir,
 		"dirname": fsutil.Name(workdir),
@@ -460,6 +462,9 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 	}
 	if ctx.Verbose {
 		show.AList("Task Vars", vars)
+	}
+	if workdir != "" {
+		ccolor.Magentaln("Workdir:", workdir)
 	}
 
 	// exec each command

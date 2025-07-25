@@ -9,6 +9,7 @@ import (
 	"github.com/gookit/goutil/comdef"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/maputil"
+	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/sysutil/cmdr"
 )
 
@@ -111,23 +112,42 @@ func (sf *ScriptFile) Exec(args []string, ctx *RunCtx) error {
 
 // TaskSettings 可以通过 script task 文件中的 "__settings" 调整设置
 type TaskSettings struct {
+	// DefaultGroup default group name for use Groups
+	DefaultGroup string `json:"default_group"`
 	// Vars built in vars map. group name: vars
-	Vars   map[string]string `json:"vars"`
-	Groups comdef.L2StrMap   `json:"groups"`
+	// - usage: ${vars.key}
+	Vars map[string]string `json:"vars"`
+	// Grouped vars map.
+	// - group name => map[string]string grouped var map.
+	Groups comdef.L2StrMap `json:"groups"`
 }
 
 func (ts *TaskSettings) loadData(data map[string]any) {
+	// dump.P("task settings:", data)
+
 	if varsData, ok1 := data["vars"]; ok1 {
-		if varsMap, ok2 := varsData.(map[string]string); ok2 {
-			ts.Vars = maputil.MergeSMap(varsMap, ts.Vars, false)
+		if varsMap, ok2 := varsData.(map[string]any); ok2 {
+			strMap := maputil.ToStringMap(varsMap)
+			ts.Vars = maputil.MergeStrMap(strMap, ts.Vars)
 		}
 	}
 
 	if groupsData, ok1 := data["groups"]; ok1 {
-		if groupsMap, ok2 := groupsData.(map[string]map[string]string); ok2 {
-			ts.Groups = maputil.MergeL2StrMap(ts.Groups, groupsMap)
+		if groupsMap, ok2 := groupsData.(map[string]any); ok2 {
+			l2StrMap := maputil.ToL2StrMap(groupsMap)
+			ts.Groups = maputil.MergeL2StrMap(ts.Groups, l2StrMap)
 		}
 	}
+
+	if defGroupVal, ok := data["default_group"]; ok {
+		defGroup := strutil.SafeString(defGroupVal)
+		ts.DefaultGroup = defGroup
+
+		if defGroupData, ok := ts.Groups[defGroup]; ok {
+			ts.Vars = maputil.MergeStrMap(defGroupData, ts.Vars)
+		}
+	}
+
 }
 
 type ScriptTasks struct {

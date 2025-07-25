@@ -96,10 +96,6 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 		}
 	}
 
-	if runOpts.verbose {
-		colorp.Infoln("(verbose=true) Run command on workdir:", wd)
-	}
-
 	// direct run system command
 	if runOpts.system {
 		colorp.Infof("TIP: will direct run system command %q (by --system)\n", name)

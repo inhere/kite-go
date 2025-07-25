@@ -26,7 +26,7 @@ func RunAny(name string, args []string, ctx *kscript.RunCtx) error {
 
 	ctx = kscript.EnsureCtx(ctx)
 	ctx.BeforeFn = func(si any, ctx *kscript.RunCtx) {
-		initlog.L.Infof("TIP: %q is a script name, will run it with %v\n", name, args)
+		initlog.L.Infof("TIP: %q is a script %s name, will run it with %v\n", name, ctx.ScriptType, args)
 		show.AList("Script Info", si)
 		show.AList("Run Context", ctx)
 	}
