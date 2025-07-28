@@ -313,17 +313,72 @@ func (r *Runner) LoadScriptFiles() error {
 	return nil
 }
 
-// Search by name
+/* endregion
+------------------------------------------------------------------
+----------- region T: Search script
+*/
+
+// Search1ByName search one script task/file by name
+func (r *Runner) Search1ByName(name string, limit int) string {
+	ret := r.SearchByName(name, 1)
+	if len(ret) > 0 {
+		for na := range ret {
+			return na
+		}
+	}
+	return ""
+}
+
+// SearchByName search script task/file by name
+func (r *Runner) SearchByName(name string, limit int) map[string]string {
+	parts := strutil.SplitTrimmed(name, " ")
+	return r.SearchByKeywords(parts, limit)
+}
+
+// SearchByKeywords search script task/file by keywords
+func (r *Runner) SearchByKeywords(parts []string, limit int) map[string]string {
+	ret := map[string]string{}
+
+	// find in script tasks
+	for sName, sInfo := range r.Scripts {
+		if strutil.IContainsAll(sName, parts) {
+			ret[sName] = strutil.Truncate(goutil.String(sInfo), 68, "...")
+			if limit > 0 && len(ret) >= limit {
+				return ret
+			}
+		}
+	}
+
+	// search script files
+	for fName, fPath := range r.scriptFiles {
+		if strutil.IContainsAll(fName, parts) {
+			ret[fName] = fPath
+			if limit > 0 && len(ret) >= limit {
+				return ret
+			}
+		}
+	}
+
+	return ret
+}
+
+// Search by name or description
 func (r *Runner) Search(name string, args []string, limit int) map[string]string {
 	result := make(map[string]string)
 	limit = mathutil.Min(limit, 3)
 	goutil.MustOK(r.InitLoad())
 
+	parts := []string{name}
+	if strutil.ContainsByte(name, ' ') {
+		parts = strutil.SplitTrimmed(name, " ")
+	}
+	// append args to parts
 	// TODO use args for limit search
+	parts = append(parts, args...)
 
 	for sName, sInfo := range r.Scripts {
-		if strutil.IContains(sName, name) {
-			result[sName] = strutil.Truncate(goutil.String(sInfo), 48, "...")
+		if strutil.IContainsAll(sName, parts) {
+			result[sName] = strutil.Truncate(goutil.String(sInfo), 68, "...")
 			if limit > 0 && len(result) >= limit {
 				return result
 			}
@@ -332,7 +387,7 @@ func (r *Runner) Search(name string, args []string, limit int) map[string]string
 
 	// search script files
 	for fName, fPath := range r.scriptFiles {
-		if strutil.IContains(fName, name) {
+		if strutil.IContainsAll(fName, parts) {
 			result[fName] = fPath
 			if limit > 0 && len(result) >= limit {
 				return result
