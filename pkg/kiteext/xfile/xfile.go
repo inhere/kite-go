@@ -1,4 +1,11 @@
-package kscript
+package xfile
+
+var (
+	// DefaultTaskFiles 默认自动查找的task文件名称 eg "kite.task[s].yml", "kite.script[s].yml"
+	DefaultTaskFiles = []string{".kite.task", ".kite.tasks", ".kite.script", ".kite.scripts"}
+	// DefaultDefineExts 默认允许的 scriptApp, scriptTask 定义文件后缀
+	DefaultDefineExts = []string{".yml", ".yaml", ".toml", ".json"}
+)
 
 type XFileManager struct {
 	// 离工作目录最近的一个 kitefile 文件
