@@ -1,0 +1,26 @@
+# mode: top_config, setting
+#__xfile_mode: setting
+__setting:
+  vars: # built in group name. access: ${vars.xxx}
+    var01: test value
+    var02: test value2
+  groups: # grouped vars
+    dev: # group name: dev
+      var01: 'value in dev'
+    prod:
+      var01: 'value in prod'
+  env:
+    KEY: value
+  # add env path values.
+  env_path: add/new/path,add/new/path1
+  dotenv: ['.env']
+  output: 'group'
+
+build:
+  cmds:
+    - go build -ldflags="-X main.Version={{.GIT_COMMIT}}" main.go
+  vars:
+    name: value
+    GIT_COMMIT:
+      type: sh
+      cmd: git log -n 1 --format=%h
