@@ -16,7 +16,7 @@ import (
 var Kas maputil.Aliases
 
 // RunAny handle.
-// will try alias, script, plugin, system-cmd ...
+// will try alias > script(task,file) > plugin > system-cmd ...
 func RunAny(name string, args []string, ctx *kscript.RunCtx) error {
 	// maybe is kite command alias
 	if Kas.HasAlias(name) {
@@ -35,7 +35,7 @@ func RunAny(name string, args []string, ctx *kscript.RunCtx) error {
 		ctx.BeforeFn = nil
 	}
 
-	// try run as script/script-file
+	// try run as script-task/script-file
 	found, err := app.Scripts.TryRun(name, args, ctx)
 	if found {
 		return err

@@ -129,7 +129,7 @@ type RunCtx struct {
 
 	// BeforeFn hook. si: ScriptTask | ScriptApp | ScriptFile
 	BeforeFn func(si any, ctx *RunCtx)
-	// AppendVarsFn hook for run task.
+	// AppendVarsFn hook for run task. eg: gvs, paths, kite
 	AppendVarsFn func(data map[string]any) map[string]any
 }
 

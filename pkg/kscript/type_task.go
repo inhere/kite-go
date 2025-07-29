@@ -1,15 +1,20 @@
 package kscript
 
 import (
+	"fmt"
 	"regexp"
+	"runtime"
 	"sort"
 	"strings"
 
+	"github.com/expr-lang/expr"
 	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/comdef"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
+	"github.com/gookit/goutil/sysutil"
+	"github.com/gookit/slog"
 )
 
 //
@@ -35,7 +40,7 @@ type TaskSettings struct {
 	// DefaultGroup default group name for use Groups. will merge default group data to Vars
 	DefaultGroup string `json:"default_group"`
 	// Vars built in vars map. group name: vars
-	//  - usage: ${vars.key}
+	//  - usage in a task: ${vars.key}
 	Vars map[string]string `json:"vars"`
 	// Grouped vars map.
 	//  - group name => map[string]string grouped var map.
@@ -44,7 +49,6 @@ type TaskSettings struct {
 
 func (ts *TaskSettings) loadData(data map[string]any) {
 	// dump.P("task settings:", data)
-
 	if varsData, ok1 := data["vars"]; ok1 {
 		if varsMap, ok2 := varsData.(map[string]any); ok2 {
 			strMap := maputil.ToStringMap(varsMap)
@@ -120,39 +124,37 @@ type ScriptTask struct {
 	Name string
 	// Desc message
 	Desc string
-	// Type shell wrap for run the script. allow: sh, bash, zsh
+	// Type shell wrap for run the task. allow: sh, bash, zsh
 	Type string
 	// Alias names for the script task
 	Alias []string
+	// Silent mode, dont print exec command line and output.
+	Silent bool `json:"silent"`
 
-	// Platform limit. allow: windows, linux, darwin
-	Platform []string
 	// Output target. default is stdout
 	Output string
-	// Vars for run script.
-	//  - allow exec a command line TODO
+	// Vars for run script task.
+	//  - task配置中访问: $name
+	//  - allow dynamic var: "@sh: git log -1" TODO
 	Vars map[string]string
-	// Ext enable extensions: proxy, clip
-	Ext string
-	// Deps commands list. 当前任务依赖的任务名称列表
+	// Deps task name list. 当前任务依赖的任务名称列表
 	Deps []string `json:"deps"`
 
 	// Cmds exec commands list.
-	Cmds []string
-	// Cmds []*Command
+	Cmds []*TaskCmd // TODO
 	// Args for exec task commands.
 	Args []string
 
-	// CmdLinux command lines on different OS. will override the Cmds
-	CmdLinux   []string
-	CmdDarwin  []string
-	CmdWindows []string
+	// Platform limit exec. allow: windows, linux, darwin
+	Platform []string
+	// PlatformSet 当前系统平台的设置，可以覆盖设置 Type, Cmds
+	PlatformSet map[string]any
 
-	// Silent mode, dont print exec command line and output.
-	Silent bool `json:"silent"`
-	// IfCond check for run command. eg: sh:test -f .env
-	// or see github.com/hashicorp/go-bexpr
-	IfCond string
+	// Ext enable extensions: proxy, clip
+	Ext string
+	// If condition check for run command. eg: sh:test -f .env
+	// or see github.com/expr-lang/expr
+	If string
 }
 
 // ScriptInfo one script task.
@@ -162,44 +164,118 @@ func parseScriptTask(name string, info any, fbType string) (*ScriptTask, error) 
 	st := &ScriptTask{Name: name}
 	st.ScriptType = TypeTask
 
+	var err error
 	switch typVal := info.(type) {
 	case string: // one command
-		st.Cmds = []string{typVal}
+		err = st.loadCmdByString(typVal)
 	case []string: // as commands
-		st.Cmds = typVal
-	case []any: // as commands
-		st.Cmds = arrutil.SliceToStrings(typVal)
+		err = st.loadCmdsByStrings(typVal)
+	case []any: // as commands, but support adv command
+		err = st.loadCmdsByAnySlice(typVal)
 	case map[string]any: // as structured
-		data := maputil.Data(typVal)
-		st.Type = data.Str("type")
-		st.Workdir = data.StrOne("dir", "workdir")
-		st.Desc = data.StrOne("desc", "description")
-
-		err := st.loadArgsDefine(data.Get("args"))
-		if err != nil {
-			return nil, err
-		}
-
-		st.Vars = data.StringMap("vars")
-		st.Deps = data.StringsOne("deps", "depends")
-		st.Cmds = data.StringsOne("run", "cmd", "cmds")
-
-		// append set env
-		st.Env = data.StringMap("env")
-		st.EnvPaths = data.StringsOne("env_path", "env_paths")
-
-		// TODO override by os platform
-		// osName := runtime.GOOS // windows, linux, darwin
-		// data.SubMap(osName) // 每个平台都可以覆盖前面的配置
+		err = st.LoadFromMap(typVal)
 	default:
 		return nil, errorx.Rawf("invalid info of the script task %q, info: %v", name, info)
 	}
 
 	st.WithFallbackType(fbType)
-	return st, nil
+	return st, err
 }
 
-func (st *ScriptTask) LoadFromMap(data map[string]any) error {
+var (
+	// runKeys = []string{"run", "cmds", "cmd", "command", "commands"}
+	runKeys = []string{"run", "cmds", "cmd"}
+)
+
+func (st *ScriptTask) LoadFromMap(mp map[string]any) error {
+	data := maputil.Data(mp)
+	st.Type = data.Str("type")
+	st.Workdir = data.StrOne("dir", "workdir")
+	st.Desc = data.StrOne("desc", "description")
+
+	err := st.loadArgsDefine(data.Get("args"))
+	if err != nil {
+		return err
+	}
+
+	// st.Vars 支持动态变量
+	st.Vars = data.StringMap("vars")
+	st.Deps = data.StringsOne("deps", "depends")
+	// st.Cmds = data.StringsOne("run", "cmd", "cmds")
+	cmds := data.One(runKeys...)
+
+	// append set env
+	st.Env = data.StringMap("env")
+	st.EnvPaths = data.StringsOne("env_path", "env_paths")
+
+	// windows, linux, darwin 每个平台都可以覆盖前面的配置 type, cmds
+	subData := data.Sub(runtime.GOOS)
+	if len(subData) > 0 {
+		st.PlatformSet = subData
+		if typStr := subData.Str("type"); typStr != "" {
+			st.Type = typStr
+		}
+		if cmdsVal := subData.One(runKeys...); cmdsVal != nil {
+			cmds = cmdsVal
+		}
+	}
+
+	return st.loadTaskCmdsByAny(cmds)
+}
+
+func (st *ScriptTask) loadTaskCmdsByAny(val any) error {
+	switch typVal := val.(type) {
+	case string: // one command
+		return st.loadCmdByString(typVal)
+	case []string: // as commands
+		return st.loadCmdsByStrings(typVal)
+	case []any: // as commands
+		return st.loadCmdsByAnySlice(typVal)
+	default:
+		return errorx.Rawf("invalid cmd info of the task %q, info: (%T)%v", st.Name, typVal, val)
+	}
+}
+
+func (st *ScriptTask) loadCmdByString(val string) error {
+	st.Cmds = append(st.Cmds, newTaskCmd(st, val))
+	return nil
+}
+
+func (st *ScriptTask) loadCmdsByStrings(ss []string) error {
+	for _, cmd := range ss {
+		st.Cmds = append(st.Cmds, newTaskCmd(st, cmd))
+	}
+	return nil
+}
+
+func (st *ScriptTask) loadCmdsByAnySlice(anySlice []any) error {
+	// as commands
+	for _, cmd := range anySlice {
+		switch cmdVal := cmd.(type) {
+		case string:
+			st.Cmds = append(st.Cmds, newTaskCmd(st, cmdVal))
+		case map[string]any: // as TaskCmd, 可以设置workdir, run 等
+			tcData := maputil.Data(cmdVal)
+			if len(tcData) == 0 {
+				return nil
+			}
+
+			tc := &TaskCmd{
+				st:   st,
+				Type: tcData.Str("type"),
+				Vars: tcData.StringMap("vars"),
+				Env:  tcData.StringMap("env"),
+				// more setting
+				Silent:  tcData.Bool("silent"),
+				FailMsg: tcData.Str("fail_msg"),
+				Workdir: tcData.StrOne("workdir", "dir"),
+			}
+
+			tc.loadRun(tcData.StrOne(runKeys...))
+			st.Cmds = append(st.Cmds, tc)
+		}
+	}
+
 	return nil
 }
 
@@ -212,11 +288,85 @@ func (st *ScriptTask) ParseArgs() (args []string) {
 	}
 
 	// 检测命令是否需要类似shell的参数 eg: echo $1
-	str := strings.Join(st.Cmds, ",")
+	str := st.CmdsToString()
 	ss := arrutil.Unique(argReg.FindAllString(str, -1))
 
 	sort.Strings(ss)
 	return ss
+}
+
+// CmdsToString build.
+func (st *ScriptTask) CmdsToString(sep ...string) string {
+	ln := len(st.Cmds)
+	if ln == 0 {
+		return ""
+	}
+	if ln == 1 {
+		return st.Cmds[0].Run
+	}
+
+	ss := make([]string, 0, ln)
+	sepStr := arrutil.FirstOr(sep, ",")
+
+	for _, cmd := range st.Cmds {
+		ss = append(ss, cmd.Run)
+	}
+	return strings.Join(ss, sepStr)
+}
+
+func (st *ScriptTask) resolveIfExpr(vars map[string]any) (ok bool) {
+	program, err := expr.Compile(st.If, expr.Env(vars))
+	if err != nil {
+		panic(err) // TODO
+	}
+
+	output, err := expr.Run(program, vars)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(output)
+	return true
+}
+
+func (st *ScriptTask) resolveDynVars(vars map[string]string) (smp map[string]string, err error) {
+	if len(vars) == 0 {
+		return
+	}
+
+	smp = make(map[string]string, len(vars))
+
+	// 解析动态变量值
+	for k, v := range vars {
+		// eg: @sh:test -v app.go
+		if pos := strings.Index(v, ":"); pos > 1 && v[0] == '@' {
+			typ := v[:pos]
+			line := strings.TrimSpace(v[pos:])
+			slog.Debugf("task %s resolveDynVars: %s type=%s, expr=%s", st.Name, k, typ, line)
+
+			switch typ {
+			case "sh", "bash", "zsh":
+				str, err1 := sysutil.ShellExec(line, typ)
+				if err1 != nil {
+					return nil, err1
+				}
+				smp[k] = str
+			case "exec":
+				str, err1 := sysutil.ExecLine(line)
+				if err1 != nil {
+					return nil, err1
+				}
+				smp[k] = str
+			default: // as normal string.
+				smp[k] = v
+			}
+			continue
+		}
+
+		smp[k] = v
+	}
+
+	return
 }
 
 // WithFallbackType on not setting.
@@ -253,24 +403,69 @@ func (st *ScriptTask) loadArgsDefine(args any) error {
 // region T: task command
 //
 
-// Command of the task TODO
-type Command struct {
+// TaskCmd of the task TODO
+type TaskCmd struct {
 	st *ScriptTask
-	// is reference another command. eg: @task:another_task
+	// is reference another task. eg: @task:another_task
 	isRef bool
+	index int
 
 	// Workdir for run command
 	Workdir string
-	// Vars for run cmd. allow exec a command line TODO
+	// Vars for run cmd.
+	//  - task配置中访问: $name
+	//  - allow dynamic var: "@sh: git log -1" TODO
 	Vars map[string]string
-	// Env setting for run
+	// Env append ENV setting for run
 	Env map[string]string
 	// Run command line expr for run. eg: go run main.go
 	Run string
 	// Type wrap for run. Allow: sh, bash, zsh
 	Type string
-	// Msg on run fail
-	Msg string
+	// If condition expr for run, return true or false
+	If string
+	// FailMsg custom message on run fail
+	FailMsg string
 	// Silent mode, dont print exec command line.
 	Silent bool `json:"silent"`
+}
+
+func newTaskCmd(st *ScriptTask, run string) *TaskCmd {
+	tc := &TaskCmd{st: st}
+	tc.loadRun(run)
+	return tc
+}
+
+func (tc *TaskCmd) loadRun(run string) {
+	if strings.HasPrefix(run, "@task:") {
+		tc.isRef = true
+		tc.Run = run[6:]
+		return
+	}
+
+	if strings.HasPrefix(run, "@") {
+		tc.isRef = true
+		tc.Run = run[1:]
+		return
+	}
+
+	tc.Run = run
+}
+
+func (tc *TaskCmd) appendVars(vars map[string]any) error {
+	if len(tc.Vars) == 0 {
+		return nil
+	}
+
+	// parse dynamic vars
+	tcVars, err := tc.st.resolveDynVars(tc.Vars)
+	if err != nil {
+		return errorx.Rf("task command#%d: %v", tc.index, err)
+	}
+
+	// set vars
+	for k, v := range tcVars {
+		vars[k] = v
+	}
+	return nil
 }

@@ -113,14 +113,14 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 		ctx.BeforeFn(st, ctx)
 	}
 
-	ln := len(st.Cmds)
-	if ln == 0 {
-		return errorx.Rawf("empty cmd config for script %q", ctx.Name)
+	cmdLn := len(st.Cmds)
+	if cmdLn == 0 {
+		return errorx.Rawf("empty cmd config for script task %q", ctx.Name)
 	}
 
 	needArgs := st.ParseArgs()
 	if nln := len(needArgs); len(inArgs) < nln {
-		ccolor.Println("<mga>Script task contents:</>\n ", strings.Join(st.Cmds, "\n  "))
+		ccolor.Println("<mga>Script task contents:</>\n ", st.CmdsToString("\n  "))
 		return errorx.Rawf("missing required args for run task %q(need %d)", ctx.Name, nln)
 	}
 
@@ -140,27 +140,10 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 	workdir := strutil.OrElse(ctx.Workdir, st.Workdir)
 
 	// build context vars
-	argStr := strings.Join(inArgs, " ")
-	vars := map[string]any{
-		// $@ 是一个字符串参数数组
-		"@": argStr,
-		// @* 把所有参数合并成一个字符串
-		"*": strutil.Quote(argStr),
-		// context info
-		"workdir": "",
-		"dirname": "",
+	vars, err := r.buildTaskTplVars(inArgs, st, ctx)
+	if err != nil {
+		return err
 	}
-
-	// 输入参数处理 $1 ... $N
-	for i, val := range inArgs {
-		// key := "$" + mathutil.String(i+1)
-		key := mathutil.String(i + 1)
-		vars[key] = val
-	}
-
-	// 追加 全局变量
-	vars = r.buildTaskTplVars(vars)
-	vars["ctx"] = ctx.Vars
 	if ctx.AppendVarsFn != nil {
 		vars = ctx.AppendVarsFn(vars)
 	}
@@ -176,23 +159,42 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 		show.AList("Task Vars", vars)
 	}
 
-	showIndex := len(st.Cmds) > 1 && !ctx.Silent
+	// 先执行 deps 任务
+	if len(st.Deps) > 0 {
+		for _, depTask := range st.Deps {
+			ccolor.Magentaln("Run Depends Task:", depTask)
+
+			dst, err := r.LoadScriptTaskInfo(depTask)
+			if err != nil {
+				return errorx.Rf("task %s: load dep task %q info fail: %v", st.Name, depTask, err)
+			}
+			if dst == nil {
+				return errorx.Rawf("task %s: the dep task %q not found", st.Name, depTask)
+			}
+
+			if err = r.runScriptTask(dst, inArgs, ctx); err != nil {
+				return err
+			}
+		}
+	}
+
+	showIndex := cmdLn > 1 && !ctx.Silent
 
 	// exec each command
-	for idx, line := range st.Cmds {
-		if len(line) == 0 {
+	for idx, tc := range st.Cmds {
+		if len(tc.Run) == 0 {
 			continue
 		}
 
-		// redirect run another script
-		if line[0] == '@' {
-			name := line[1:]
+		// redirect runs another task
+		if tc.isRef {
+			name := tc.Run
 			osi, err := r.LoadScriptTaskInfo(name)
 			if err != nil {
 				return err
 			}
 			if osi == nil {
-				return errorx.Rawf("run %q: reference script %q not found", st.Name, name)
+				return errorx.Rawf("task %q: reference script task %q not found", st.Name, name)
 			}
 
 			err = r.runScriptTask(osi, inArgs, ctx)
@@ -202,7 +204,11 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 			continue
 		}
 
-		line = r.renderTaskVars(line, vars, ctx)
+		// 加载 command 独有的变量
+		if err := tc.appendVars(vars); err != nil {
+			return err
+		}
+		line := r.renderTaskVars(tc.Run, vars, ctx)
 
 		var cmd *cmdr.Cmd
 		if shell != "" {
@@ -212,7 +218,7 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 		}
 
 		if showIndex {
-			fmt.Printf("-------------------- Run Command #%d --------------------\n", idx+1)
+			fmt.Printf("------------------------ Run Command #%d ------------------------\n", idx+1)
 		}
 		err := cmd.WorkDirOnNE(workdir).WithDryRun(ctx.DryRun).AppendEnv(envMap).PrintCmdline2().FlushRun()
 		if err != nil {
@@ -222,7 +228,37 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 	return nil
 }
 
-func (r *Runner) buildTaskTplVars(data map[string]any) map[string]any {
+func (r *Runner) buildTaskTplVars(inArgs []string, st *ScriptTask, ctx *RunCtx) (map[string]any, error) {
+	// build context vars
+	argStr := strings.Join(inArgs, " ")
+	data := map[string]any{
+		// $@ 是一个字符串参数数组
+		"@": argStr,
+		// @* 把所有参数合并成一个字符串
+		"*": strutil.Quote(argStr),
+		// context info
+		"workdir": "",
+		"dirname": "",
+	}
+
+	stVars, err := st.resolveDynVars(st.Vars)
+	if err != nil {
+		return nil, err
+	}
+
+	// 当前task配置的和ctx输入变量，放在顶级直接访问 TODO st.Vars 需要支持动态变量
+	topVars := maputil.MergeStrMap(stVars, ctx.Vars)
+	for k, v := range topVars {
+		data[k] = v
+	}
+
+	// 输入参数处理 $1 ... $N
+	for i, val := range inArgs {
+		key := mathutil.String(i + 1)
+		data[key] = val
+	}
+
+	// 内置扩展变量
 	tn := time.Now()
 	data["time"] = map[string]any{
 		"unix_sec":    tn.Unix(),
@@ -237,7 +273,7 @@ func (r *Runner) buildTaskTplVars(data map[string]any) map[string]any {
 	data["vars"] = r.taskSettings.Vars
 	data["groups"] = r.taskSettings.Groups
 
-	return data
+	return data, nil
 }
 
 // 使用简单的模板渲染，支持链式语法变量替换，环境变量，默认值等 - 无法同时支持 $var ${var_name}

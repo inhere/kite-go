@@ -12,15 +12,46 @@ __setting:
   env:
     KEY: value
   # add env path values.
-  env_path: add/new/path,add/new/path1
-  dotenv: ['.env']
+  env_path:
+    - add/new/path
+    - add/new/path1
+  dotenv: [ '.env' ]
   output: 'group'
 
+# 使用 动态变量
 build:
   cmds:
-    - go build -ldflags="-X main.Version={{.GIT_COMMIT}}" main.go
+    - go build -ldflags="-X main.Version=$GIT_COMMIT" main.go
   vars:
     name: value
-    GIT_COMMIT:
-      type: sh
-      cmd: git log -n 1 --format=%h
+    GO_VERSION: "@exec: go version"
+    GIT_BRANCH: "@sh: git branch -a"
+    GIT_COMMIT: "@sh: git log -n 1 --format=%h"
+
+# task 可以自定义追加 env path
+update-env-path:
+  env_path:
+    - add/new/path1/in-task
+  cmd: echo $PATH
+
+# task 添加变量
+demo-task-vars:
+  vars:
+    name: value
+  cmd: echo $name
+
+# 每个子命令都可以定义 vars，workdir 等
+adv-task-cmds:
+  vars:
+    name: tom
+    key1: value1
+  cmds:
+    - run: echo $name, $key1
+      dir: $HOME
+    - run: echo hi $name, $key1
+      vars:
+        name: jack
+        key1: value2
+
+
+

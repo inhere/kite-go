@@ -15,7 +15,7 @@ import (
 	"github.com/inhere/kite-go/pkg/kscript"
 )
 
-var runOpts = struct {
+type runAnyHandle struct {
 	cmdbiz.CommonOpts
 	wrapType gflag.EnumString
 	envMap   gflag.KVString
@@ -24,7 +24,9 @@ var runOpts = struct {
 	listAll, showInfo, search, verbose bool
 
 	alias, plugin, script, system bool
-}{}
+}
+
+var runOpts = runAnyHandle{}
 
 // RunAnyCmd instance
 var RunAnyCmd = &gcli.Command{
@@ -112,7 +114,9 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 		Workdir: wd,
 		Verbose: runOpts.verbose,
 		DryRun:  runOpts.DryRun,
-		Type:    runOpts.wrapType.String(),
+		// custom ENV
+		Env:  runOpts.envMap.Data(),
+		Type: runOpts.wrapType.String(),
 	}
 
 	ctx.AppendVarsFn = func(data map[string]any) map[string]any {
@@ -202,24 +206,17 @@ func listInfos() (err error) {
 
 	// todo list plugins
 
-	if runOpts.script {
-		err = app.Scripts.InitLoad()
-		if err != nil {
-			return err
-		}
-		// dump.P(app.Scripts)
-		show.AList("loaded scripts tasks", app.Scripts.DefinedScripts())
-		show.AList("loaded script files", app.Scripts.ScriptFiles())
-		return
-	}
-
 	err = app.Scripts.InitLoad()
 	if err != nil {
 		return err
 	}
 
-	show.AList("command aliases", cmdbiz.Kas)
-	show.AList("loaded scripts", app.Scripts.DefinedScripts())
+	if !runOpts.script {
+		show.AList("command aliases", cmdbiz.Kas)
+		return
+	}
+
+	show.AList("loaded script tasks", app.Scripts.RawScriptTasks())
 	show.AList("loaded script files", app.Scripts.ScriptFiles())
 	return
 }
