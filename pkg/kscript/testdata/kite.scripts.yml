@@ -18,8 +18,35 @@ __setting:
   dotenv: [ '.env' ]
   output: 'group'
 
+echo: echo hi
+demo:
+  - bash -c 'echo $SHELL'
+  - echo $SHELL
+  - echo hello
+
+# will exec command in type shell
+demo-with-type:
+  type: bash
+  cmds:
+    - echo $SHELL # will exec `bash -c "echo $SHELL"`
+    - echo hello
+
+demo-with-env:
+  env:
+    MY_TEST_KEY: custom env value
+  cmds:
+    - echo $SHELL
+    - echo $MY_TEST_KEY
+
+demo-cmd: echo "hello, at demo-cmd"
+
+demo-ref-task:
+  cmds:
+    - task: demo-cmd
+    - echo "hello, at demo-ref-task"
+
 # 使用 动态变量
-build:
+demo-use-dynamic-var:
   cmds:
     - go build -ldflags="-X main.Version=$GIT_COMMIT" main.go
   vars:

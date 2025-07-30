@@ -189,9 +189,9 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 		// redirect runs another task
 		if tc.isRef {
 			name := tc.Run
-			osi, err := r.LoadScriptTaskInfo(name)
-			if err != nil {
-				return err
+			osi, err1 := r.LoadScriptTaskInfo(name)
+			if err1 != nil {
+				return err1
 			}
 			if osi == nil {
 				return errorx.Rawf("task %q: reference script task %q not found", st.Name, name)
@@ -208,7 +208,15 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 		if err := tc.appendVars(vars); err != nil {
 			return err
 		}
+
 		line := r.renderTaskVars(tc.Run, vars, ctx)
+		// workdir for cmd
+		cmdDir := strutil.OrElse(tc.Workdir, workdir)
+		if strutil.ContainsByte(cmdDir, '$') {
+			cmdDir = r.renderTaskVars(cmdDir, vars, ctx)
+			vars["workdir"] = cmdDir
+			vars["dirname"] = fsutil.Name(cmdDir)
+		}
 
 		var cmd *cmdr.Cmd
 		if shell != "" {
@@ -218,11 +226,11 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 		}
 
 		if showIndex {
-			fmt.Printf("------------------------ Run Command #%d ------------------------\n", idx+1)
+			fmt.Printf("--------------------------- task command #%d ---------------------------\n", idx+1)
 		}
-		err := cmd.WorkDirOnNE(workdir).WithDryRun(ctx.DryRun).AppendEnv(envMap).PrintCmdline2().FlushRun()
-		if err != nil {
-			return err
+		err2 := cmd.WorkDirOnNE(cmdDir).WithDryRun(ctx.DryRun).AppendEnv(envMap).PrintCmdline2().FlushRun()
+		if err2 != nil {
+			return err2
 		}
 	}
 	return nil
@@ -241,12 +249,13 @@ func (r *Runner) buildTaskTplVars(inArgs []string, st *ScriptTask, ctx *RunCtx) 
 		"dirname": "",
 	}
 
+	// st.Vars 需要支持动态变量
 	stVars, err := st.resolveDynVars(st.Vars)
 	if err != nil {
 		return nil, err
 	}
 
-	// 当前task配置的和ctx输入变量，放在顶级直接访问 TODO st.Vars 需要支持动态变量
+	// 当前task配置的和ctx输入变量，放在顶级直接访问
 	topVars := maputil.MergeStrMap(stVars, ctx.Vars)
 	for k, v := range topVars {
 		data[k] = v

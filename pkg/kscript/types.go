@@ -1,6 +1,8 @@
 package kscript
 
 import (
+	"time"
+
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/sysutil/cmdr"
 )
@@ -30,6 +32,8 @@ type ScriptMeta struct {
 	Env map[string]string
 	// EnvPaths custom prepend set ENV PATH.
 	EnvPaths []string
+	// Timeout for run a script, default is 0.
+	Timeout time.Duration
 }
 
 type ScriptItem interface {

@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/expr-lang/expr"
 	"github.com/gookit/goutil/arrutil"
@@ -14,6 +15,7 @@ import (
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/sysutil"
+	"github.com/gookit/goutil/timex"
 	"github.com/gookit/slog"
 )
 
@@ -74,7 +76,7 @@ func (ts *TaskSettings) loadData(data map[string]any) {
 
 	// env
 	if envData, ok := data["env"]; ok {
-		envMap := maputil.TryStringMap(envData)
+		envMap := maputil.AnyToStrMap(envData)
 		if envMap != nil {
 			ts.Env = maputil.MergeStrMap(ts.Env, envMap)
 		}
@@ -123,7 +125,10 @@ type ScriptTask struct {
 	// Name for the script task
 	Name string
 	// Desc message
-	Desc string
+	Desc  string
+	Usage string // usage message
+	Help  string // long help message
+
 	// Type shell wrap for run the task. allow: sh, bash, zsh
 	Type string
 	// Alias names for the script task
@@ -144,6 +149,8 @@ type ScriptTask struct {
 	Cmds []*TaskCmd // TODO
 	// Args for exec task commands.
 	Args []string
+	// CmdTimeout for run each command, default is 0.
+	CmdTimeout time.Duration
 
 	// Platform limit exec. allow: windows, linux, darwin
 	Platform []string
@@ -193,7 +200,21 @@ func (st *ScriptTask) LoadFromMap(mp map[string]any) error {
 	st.Workdir = data.StrOne("dir", "workdir")
 	st.Desc = data.StrOne("desc", "description")
 
-	err := st.loadArgsDefine(data.Get("args"))
+	taskTimeout := data.Str("timeout")
+	taskDur, err := timex.ToDuration(taskTimeout)
+	if err != nil {
+		return errorx.Ef("invalid timeout of the task %q, timeout=%s", st.Name, taskTimeout)
+	}
+	st.Timeout = taskDur
+
+	cmdTimeout := data.Str("cmd_timeout")
+	cmdDur, err := timex.ToDuration(cmdTimeout)
+	if err != nil {
+		return errorx.Ef("invalid cmd timeout of the task %q, cmd_timeout=%s", st.Name, cmdTimeout)
+	}
+	st.Timeout = cmdDur
+
+	err = st.loadArgsDefine(data.Get("args"))
 	if err != nil {
 		return err
 	}
@@ -242,36 +263,28 @@ func (st *ScriptTask) loadCmdByString(val string) error {
 }
 
 func (st *ScriptTask) loadCmdsByStrings(ss []string) error {
-	for _, cmd := range ss {
-		st.Cmds = append(st.Cmds, newTaskCmd(st, cmd))
+	for i, cmd := range ss {
+		st.Cmds = append(st.Cmds, newTaskCmd2(st, cmd, i))
 	}
 	return nil
 }
 
 func (st *ScriptTask) loadCmdsByAnySlice(anySlice []any) error {
 	// as commands
-	for _, cmd := range anySlice {
+	for i, cmd := range anySlice {
 		switch cmdVal := cmd.(type) {
 		case string:
-			st.Cmds = append(st.Cmds, newTaskCmd(st, cmdVal))
+			st.Cmds = append(st.Cmds, newTaskCmd2(st, cmdVal, i))
 		case map[string]any: // as TaskCmd, 可以设置workdir, run 等
-			tcData := maputil.Data(cmdVal)
-			if len(tcData) == 0 {
+			if len(cmdVal) == 0 {
 				return nil
 			}
 
-			tc := &TaskCmd{
-				st:   st,
-				Type: tcData.Str("type"),
-				Vars: tcData.StringMap("vars"),
-				Env:  tcData.StringMap("env"),
-				// more setting
-				Silent:  tcData.Bool("silent"),
-				FailMsg: tcData.Str("fail_msg"),
-				Workdir: tcData.StrOne("workdir", "dir"),
+			tc := &TaskCmd{st: st, index: i}
+			if err := tc.loadFromMap(cmdVal); err != nil {
+				return err
 			}
 
-			tc.loadRun(tcData.StrOne(runKeys...))
 			st.Cmds = append(st.Cmds, tc)
 		}
 	}
@@ -337,33 +350,34 @@ func (st *ScriptTask) resolveDynVars(vars map[string]string) (smp map[string]str
 	smp = make(map[string]string, len(vars))
 
 	// 解析动态变量值
-	for k, v := range vars {
+	for key, val := range vars {
 		// eg: @sh:test -v app.go
-		if pos := strings.Index(v, ":"); pos > 1 && v[0] == '@' {
-			typ := v[:pos]
-			line := strings.TrimSpace(v[pos:])
-			slog.Debugf("task %s resolveDynVars: %s type=%s, expr=%s", st.Name, k, typ, line)
+		if pos := strings.Index(val, ":"); pos > 1 && val[0] == '@' {
+			typ := val[1:pos]
+			line := strings.TrimSpace(val[pos+1:])
+			slog.Debugf("task %s resolveDynVars: %s type=%s, expr=%q", st.Name, key, typ, line)
 
 			switch typ {
-			case "sh", "bash", "zsh":
+			case "sh", "bash", "zsh", "cmd", "pwsh":
 				str, err1 := sysutil.ShellExec(line, typ)
 				if err1 != nil {
 					return nil, err1
 				}
-				smp[k] = str
+				smp[key] = strings.TrimSpace(str)
 			case "exec":
 				str, err1 := sysutil.ExecLine(line)
 				if err1 != nil {
 					return nil, err1
 				}
-				smp[k] = str
+				smp[key] = strings.TrimSpace(str)
 			default: // as normal string.
-				smp[k] = v
+				smp[key] = val
 			}
 			continue
 		}
 
-		smp[k] = v
+		// normal const value
+		smp[key] = val
 	}
 
 	return
@@ -420,6 +434,8 @@ type TaskCmd struct {
 	Env map[string]string
 	// Run command line expr for run. eg: go run main.go
 	Run string
+	// Task refer task name.
+	Task string
 	// Type wrap for run. Allow: sh, bash, zsh
 	Type string
 	// If condition expr for run, return true or false
@@ -428,6 +444,8 @@ type TaskCmd struct {
 	FailMsg string
 	// Silent mode, dont print exec command line.
 	Silent bool `json:"silent"`
+	// Timeout for run the command, default is 0.
+	Timeout time.Duration
 }
 
 func newTaskCmd(st *ScriptTask, run string) *TaskCmd {
@@ -436,16 +454,53 @@ func newTaskCmd(st *ScriptTask, run string) *TaskCmd {
 	return tc
 }
 
+func newTaskCmd2(st *ScriptTask, run string, index int) *TaskCmd {
+	tc := &TaskCmd{st: st, index: index}
+	tc.loadRun(run)
+	return tc
+}
+
+func (tc *TaskCmd) loadFromMap(mp map[string]any) error {
+	data := maputil.Data(mp)
+
+	tc.Type = data.Str("type")
+	tc.Task = data.Str("task")
+	tc.Vars = data.StringMap("vars")
+	tc.Env = data.StringMap("env")
+	// more setting
+	tc.Silent = data.Bool("silent")
+	tc.FailMsg = data.Str("fail_msg")
+	tc.Workdir = data.StrOne("workdir", "dir")
+
+	cmdTimeout := data.Str("timeout")
+	cmdDur, err := timex.ToDuration(cmdTimeout)
+	if err != nil {
+		return errorx.Ef("invalid timeout of the task %q command#%d, timeout=%s", tc.st.Name, tc.index, cmdTimeout)
+	}
+
+	tc.Timeout = cmdDur
+	tc.loadRun(data.StrOne(runKeys...))
+	return nil
+}
+
 func (tc *TaskCmd) loadRun(run string) {
 	if strings.HasPrefix(run, "@task:") {
 		tc.isRef = true
 		tc.Run = run[6:]
+		tc.Task = tc.Run
 		return
 	}
 
-	if strings.HasPrefix(run, "@") {
+	if tc.Task != "" {
 		tc.isRef = true
+		tc.Run = tc.Task
+		return
+	}
+
+	// first is @ for silent exec
+	if strings.HasPrefix(run, "@") {
 		tc.Run = run[1:]
+		tc.Silent = true
 		return
 	}
 
