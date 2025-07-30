@@ -1,3 +1,10 @@
+# ext for kite
+ext:
+  disable: false
+  metafile: $config/module/ext.json
+  # 除了 env PATH 外，额外搜索ext文件的目录
+  search_paths:
+    - ${GOPATH}/bin
 
 # plugins for kite
 plugin:
@@ -25,10 +32,17 @@ script:
 #  auto_task_files: [ 'kite.tasks', 'kite.script', 'kite.scripts' ]
 #  auto_task_exts: [ '.yml', '.yaml' ]
 
-# use env in kite
-use_env:
-  enable: true
-  config_file: $config/module/useenv.yml
+# see XFile struct TODO
+xfile:
+  filenames: [ 'kitefile', '.kitefile', 'kitefile.yml', 'kitefile.yaml' ]
+  # 除了在当前目录中搜索，还搜索以下目录
+  extra_find: ['.idea']
+  # 向上搜索目录最大深度
+  max_find_depth: 3
+
+# tasks config
+tasks:
+  meta_dir: $config/tasks
 
 # quick package manage
 package:

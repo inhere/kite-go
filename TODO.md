@@ -1,25 +1,44 @@
 # TODO
 
+## kite app
+
+- [ ] generate metadata file for kite
+- [ ] 将所有命令和参数生成 json 文件, 用于搜索匹配
+- [ ] 使用统一的 app shell 命令生成不同shell环境的脚本
+  - 内置支持 bash, zsh, fish, pwsh, cmd(clink) 等
+  - 内置支持常用别名设置
+  - 支持自定义脚本内容
+
+### kite ext
+
+- [ ] 支持注册外部脚本命令
+- [ ] 支持调用外部命令 eg: 调用 php 实现的命令
+
+### kite plugin
+
+- [ ] 实现类似 git plugin 的事件监听机制
 - [ ] go plugin 支持 https://github.com/hashicorp/go-plugin
 - [ ] 表达式支持
     - https://github.com/expr-lang/expr Go 的表达式语言和表达式评估
     - https://github.com/hashicorp/go-bexpr Go 中的通用布尔表达式评估
     - https://github.com/ganigeorgiev/fexpr 支持解析类似 SQL 表达式 eg: `id=123 && status='active'`
 
-## kite app
+### run anything
 
-- [ ] generate metadata file for kite
-
-## run anything
-
-- [x] scripts manage and run 
+- [x] scripts manage, search, load, parse and run 
+- [x] script-task 功能增强
+  - [x] 支持扫描工作目录和父级目录的 task 定义文件
+  - [x] 运行时支持解析 全局，定义，上下文等变量
+  - [x] task command 支持独立定义 workdir, vars 等属性
+  - [x] task, command 定义的 vars 支持动态变量 eg: "@sh: git version"
+- [ ] 功能增强，支持运行独立的 script-app 文件
 
 ## backend serve
 
 - [ ] support backend server: `kited` `kite app:server`
 - [ ] cache metadata, provide quick command search
 
-## job/task serve
+### job/task serve
 
 - [ ] start a background server, listen an port/sock
 - [ ] can delivery task by tcp connection
@@ -30,12 +49,6 @@
 - [ ] can delivery task by web page
 - [ ] http benchmark tool
 - [ ] send http request tool. like curl, ide-http-client
-
-## other tools
-
-- [x] quick jump dir
-- [ ] quick json,yml data query
-- [ ] 终端自动提示 (auto complete) https://github.com/chzyer/readline
 
 ## ai tools
 
@@ -59,8 +72,32 @@
 
 - [ ] system info
 
-## extra command
+## 拓展功能
 
-支持调用外部命令
+### other tools
 
-- [ ] 调用 php 实现的命令
+- [x] quick jump dir
+- [ ] quick json,yml data query
+- [ ] 终端自动提示 (auto complete) https://github.com/chzyer/readline
+
+### 系统软件管理
+
+name: pkg, pkgm, pkgx
+
+- [ ] 配置文件管理
+  - 可以迁移，上传配置
+  - 一键安装初始化
+- [ ] 通过各个平台特有的命令管理软件管理
+  - windows: scoop, chocolatey, winget
+  - macos: brew, homebrew
+  - linux: apt, yum, snap 等
+
+### dev 环境管理
+
+name: `dev env`
+
+- [ ] dev 配置文件管理
+- [ ] 安装各种 sdk 例如：php, go, java
+  - 配置 sdk 下载地址和安装路径
+- [ ] 配置各种环境变量
+- [ ] 切换环境，sdk版本等(需要依赖 `kite app shell` 支持)

@@ -13,7 +13,7 @@ app:
   config_dir: $base/config
   resource_dir: $base/resource
   include_config:
-    - common.yml
+    - config.yml
     - extra.yml
     - tasks.yml
     - gitx.yml
@@ -25,7 +25,7 @@ server:
   port: 9092
   pidfile: $data/kite-serve.pid
 
-# for gcli.app
+# for kite cli app
 cliapp:
   # try run syscmd or script or plugin on command not found
   smart_handle: true

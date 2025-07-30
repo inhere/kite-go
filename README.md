@@ -416,7 +416,16 @@ $ kite run {script|alias|plugin|system-cmd}
 
 ## 使用并运行脚本
 
-kite 里 `script` 分两种,一种是配置的 一条或多条命令;一种是脚本文件(如 bash 文件).
+kite 里 `script` 分两种, 一种是配置的 一条或多条命令;一种是脚本文件(如 bash 文件).
+
+**功能特点**：
+
+- script-task 功能增强
+  - 支持扫描工作目录和父级目录的 task 定义文件
+  - 运行时支持解析 全局，定义，上下文等变量
+  - task command 支持独立定义 workdir, vars 等属性
+  - task, command 定义的 vars 支持动态变量 eg: "@sh: git version"
+  - 支持通过 command 引用执行其他 task
 
 查看所有的 `scripts` 命令:
 
@@ -549,5 +558,6 @@ go build -o $GOPAHT/bin/kite ./cmd/kite
 - https://github.com/go-task/task
 - https://github.com/tj/robo
 - https://github.com/casey/just
+- https://github.com/jdx/mise
 - https://github.com/bitfield/script
 - https://github.com/zyedidia/eget Easily install prebuilt binaries from GitHub.

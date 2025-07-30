@@ -30,6 +30,7 @@ require (
 	github.com/traefik/yaegi v0.16.1
 	github.com/yosuke-furukawa/json5 v0.1.1
 	github.com/yuin/goldmark v1.7.12
+	github.com/expr-lang/expr v1.17.5
 )
 
 require (

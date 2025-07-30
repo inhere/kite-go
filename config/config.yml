@@ -1,3 +1,20 @@
+# common config file for kite
+
+#
+# global vars definitions. see kiteext.NewVarMap
+# built in: os, user, env, bin_name
+# access: ${gvs.user}, ${gvs.some}
+global_vars:
+  some: value
+
+# user custom path aliases map. see kiteext.PathMap
+# 使用：在配置和script中使用, 格式：${paths.key}
+# format: `name: realpath`
+#
+# access: $paths.home
+path_map:
+  gobin: ${GOPATH}/bin
+  wp: ${HOME}/Workspace
 
 # will set local_proxy before run matched command
 proxy_cmd:
