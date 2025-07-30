@@ -9,6 +9,7 @@ import (
 	"github.com/gookit/goutil/sysutil/cmdr"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/internal/initlog"
+	"github.com/inhere/kite-go/pkg/kiteext"
 	"github.com/inhere/kite-go/pkg/kscript"
 )
 
@@ -16,7 +17,7 @@ import (
 var Kas maputil.Aliases
 
 // RunAny handle.
-// will try alias > script(task,file) > plugin > system-cmd ...
+// will try: alias > ext > script(task,file) > plugin > system-cmd ...
 func RunAny(name string, args []string, ctx *kscript.RunCtx) error {
 	// maybe is kite command alias
 	if Kas.HasAlias(name) {
@@ -24,6 +25,13 @@ func RunAny(name string, args []string, ctx *kscript.RunCtx) error {
 		return RunKiteCmdByAlias(name, args)
 	}
 
+	// check is kite ext
+	if app.Exts.Exists(name) {
+		initlog.L.Infof("TIP: %q is a kite ext, will run it with %v\n", name, args)
+		return app.Exts.Run(name, args, &kiteext.RunCtx{})
+	}
+
+	// run kite script
 	ctx = kscript.EnsureCtx(ctx)
 	ctx.BeforeFn = func(si any, ctx *kscript.RunCtx) {
 		initlog.L.Infof("TIP: %q is a script %s name, will run it with %v\n", name, ctx.ScriptType, args)

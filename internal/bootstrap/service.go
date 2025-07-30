@@ -118,6 +118,22 @@ func addServiceBoot(ka *app.KiteApp) {
 	})
 
 	ka.AddBootFuncs(func(ka *app.KiteApp) error {
+		kem := kiteext.NewExtManager()
+		err := app.Cfg().MapOnExists("ext", kem)
+		if err != nil {
+			return err
+		}
+
+		kem.PathResolver = apputil.ResolvePath
+		if err = kem.Init(); err != nil {
+			return err
+		}
+
+		app.Exts = kem
+		return nil
+	})
+
+	ka.AddBootFuncs(func(ka *app.KiteApp) error {
 		app.QJump = quickjump.NewQuickJump()
 		app.QJump.PathResolve = apputil.ResolvePath
 

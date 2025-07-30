@@ -19,6 +19,7 @@ var ManageCmd = &gcli.Command{
 		ReadmeCmd,
 		KitePathCmd,
 		NewPathMapCmd(),
+		NewAppExtCmd(),
 		KiteAliasCmd,
 		BackendServeCmd,
 		CommandMapCmd,

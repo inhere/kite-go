@@ -40,6 +40,7 @@ var (
 
 var (
 	Lcp *lcproxy.LocalProxy
+	Exts *kiteext.ExtManager
 	// AlsRun  *kiteext.KiteAliasRun
 
 	Scripts *kscript.Runner

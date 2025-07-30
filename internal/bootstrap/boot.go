@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/sysutil"
+	"github.com/gookit/goutil/x/ccolor"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/internal/appconst"
 	"github.com/inhere/kite-go/internal/initlog"
@@ -25,8 +25,12 @@ func MustRun(ka *app.KiteApp) {
 // MustBoot boot app, if it has error will exit
 func MustBoot(ka *app.KiteApp) {
 	if err := Boot(ka); err != nil {
-		cliutil.Errorp(" ERROR ")
-		fmt.Println(err)
+		ccolor.Errorp(" ERROR ")
+		if !app.IsDebug() {
+			fmt.Println(err.Error())
+		} else {
+			fmt.Println(err)
+		}
 		os.Exit(-1)
 	}
 }
