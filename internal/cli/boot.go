@@ -60,7 +60,6 @@ func addCommands(cli *gcli.App) {
 		// extcmd.XFileCmd,
 		toolcmd.ToolsCmd,
 		toolcmd.RunAnyCmd,
-		toolcmd.NewKScriptCmd(),
 		extcmd.PlugCmd,
 		builtin.GenAutoComplete().WithHidden(),
 	)
@@ -109,7 +108,7 @@ func addListener(cli *gcli.App) {
 		return
 	})
 
-	cli.On(events.OnCmdNotFound, onCmdNotFound)
+	cli.On(events.OnAppCmdNotFound, onCmdNotFound)
 
 	cli.On(events.OnAppExit, func(ctx *gcli.HookCtx) (stop bool) {
 		if waitSec > 0 {
@@ -148,6 +147,7 @@ func onAppBindOptsAfter(cli *gcli.App) gcli.HookFunc {
 	}
 }
 
+// 内置命令没有找到，尝试 alias > ext > kScript > sys-cmd
 func onCmdNotFound(ctx *gcli.HookCtx) (stop bool) {
 	name := ctx.Str("name")
 	args := ctx.Strings("args")

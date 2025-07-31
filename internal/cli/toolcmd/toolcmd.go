@@ -44,6 +44,7 @@ var ToolsCmd = &gcli.Command{
 		mdcmd.MkDownCmd,
 		common.NewQuickOpenCmd(),
 		extcmd.TaskManageCmd,
+		extcmd.NewKScriptCmd(),
 		// jsoncmd.JSONToolCmd,
 		textcmd.NewMd5Cmd(),
 		textcmd.NewHashCmd(),

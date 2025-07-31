@@ -6,7 +6,7 @@ import "github.com/gookit/gcli/v3"
 var TaskManageCmd = &gcli.Command{
 	Name:    "task",
 	Desc:    "Task/Script run and management command",
-	Aliases: []string{"scripts", "script"},
+	// Aliases: []string{"scripts", "script"},
 	Subs: []*gcli.Command{
 		TaskList,
 		TaskInfo,

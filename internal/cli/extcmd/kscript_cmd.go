@@ -1,4 +1,4 @@
-package toolcmd
+package extcmd
 
 import (
 	"github.com/gookit/gcli/v3"
@@ -50,5 +50,5 @@ func (rr ksRunner) Config(c *gcli.Command) {
 }
 
 func (rr *ksRunner) Run(c *gcli.Command, _ []string) error {
-	return errorx.New("TODO")
+	return errorx.E("TODO")
 }

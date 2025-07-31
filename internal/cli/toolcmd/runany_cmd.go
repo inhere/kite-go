@@ -31,7 +31,7 @@ var runOpts = runAnyHandle{}
 // RunAnyCmd instance
 var RunAnyCmd = &gcli.Command{
 	Name:    "run",
-	Desc:    "Run any aliases and scripts, as well as plug-ins and system commands",
+	Desc: "Run any aliases, script task/file/apps, plugins and system commands",
 	Aliases: []string{"exec"},
 	Config: func(c *gcli.Command) {
 		runOpts.BindCommonFlags(c)
