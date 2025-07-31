@@ -10,8 +10,8 @@ import (
 	"github.com/inhere/kite-go/internal/apputil"
 )
 
-// ReadmeCmd instance
-var ReadmeCmd = &gcli.Command{
+// KiteReadmeCmd instance
+var KiteReadmeCmd = &gcli.Command{
 	Name:    "readme",
 	Aliases: []string{"doc", "docs"},
 	Desc:    "show readme docs for kite app",

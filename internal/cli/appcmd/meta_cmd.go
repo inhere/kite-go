@@ -52,7 +52,7 @@ var CommandMapCmd = &gcli.Command{
 // 	}
 // }
 //
-// func formatCommandText(c *gcli.Command) {
+// func formatCommandsText(c *gcli.Command) {
 // 	for s, command := range c.Commands() {
 //
 // 	}

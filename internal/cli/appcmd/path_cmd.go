@@ -6,7 +6,6 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/gcli/v3/show"
-	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/errorx"
 	"github.com/inhere/kite-go/internal/app"
 )
@@ -60,7 +59,7 @@ func NewPathMapCmd() *gcli.Command {
 		Aliases: []string{"path-alias", "pmap", "pmp"},
 		Desc:    "show user custom path mapping in kite(config:path_map)",
 		Config: func(c *gcli.Command) {
-			goutil.MustOK(c.FromStruct(paOpts))
+			c.MustFromStruct(paOpts)
 			c.AddArg("name", "get path of the input alias name").WithAfterFn(func(a *gflag.CliArg) error {
 				paOpts.Name = a.String()
 				return nil

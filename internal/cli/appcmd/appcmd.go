@@ -7,22 +7,22 @@ import (
 // ManageCmd manage kite self
 var ManageCmd = &gcli.Command{
 	Name:    "app",
-	Aliases: []string{"self"},
+	Aliases: []string{"self", "mgr"},
 	Desc:    "provide commands for manage kite self",
 	Subs: []*gcli.Command{
 		AppCheckCmd,
 		KiteInitCmd,
 		KiteInfoCmd,
 		KiteObjectCmd,
-		UpdateSelfCmd,
 		KiteConfCmd,
-		ReadmeCmd,
+		KiteReadmeCmd,
 		KitePathCmd,
 		NewPathMapCmd(),
 		NewAppExtCmd(),
 		KiteAliasCmd,
 		BackendServeCmd,
 		CommandMapCmd,
+		UpdateSelfCmd,
 		LogWriteCmd,
 	},
 }

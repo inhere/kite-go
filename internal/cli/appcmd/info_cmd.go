@@ -156,15 +156,12 @@ var KiteAliasCmd = &gcli.Command{
 		})
 	},
 	Func: func(c *gcli.Command, _ []string) error {
-		if kaOpts.List {
+		if kaOpts.List || kaOpts.Name == "" {
 			show.AList("Command aliases", cmdbiz.Kas)
 			return nil
 		}
 
-		if kaOpts.Name != "" {
-			fmt.Println(cmdbiz.Kas.ResolveAlias(kaOpts.Name))
-			return nil
-		}
-		return errorx.New("please input alias for get command")
+		fmt.Println(cmdbiz.Kas.ResolveAlias(kaOpts.Name))
+		return nil
 	},
 }
