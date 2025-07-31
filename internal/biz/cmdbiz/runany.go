@@ -28,7 +28,7 @@ func RunAny(name string, args []string, ctx *kscript.RunCtx) error {
 	// check is kite ext
 	if app.Exts.Exists(name) {
 		initlog.L.Infof("TIP: %q is a kite ext, will run it with %v\n", name, args)
-		return app.Exts.Run(name, args, &kiteext.RunCtx{})
+		return app.Exts.Run(name, &kiteext.RunCtx{Args: args})
 	}
 
 	// run kite script

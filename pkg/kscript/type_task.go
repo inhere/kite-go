@@ -201,20 +201,24 @@ func (st *ScriptTask) LoadFromMap(mp map[string]any) error {
 	st.Desc = data.StrOne("desc", "description")
 
 	taskTimeout := data.Str("timeout")
-	taskDur, err := timex.ToDuration(taskTimeout)
-	if err != nil {
-		return errorx.Ef("invalid timeout of the task %q, timeout=%s", st.Name, taskTimeout)
+	if taskTimeout != "" {
+		taskDur, err := timex.ToDuration(taskTimeout)
+		if err != nil {
+			return errorx.Ef("invalid timeout of the task %q, timeout=%s", st.Name, taskTimeout)
+		}
+		st.Timeout = taskDur
 	}
-	st.Timeout = taskDur
 
 	cmdTimeout := data.Str("cmd_timeout")
-	cmdDur, err := timex.ToDuration(cmdTimeout)
-	if err != nil {
-		return errorx.Ef("invalid cmd timeout of the task %q, cmd_timeout=%s", st.Name, cmdTimeout)
+	if cmdTimeout != "" {
+		cmdDur, err := timex.ToDuration(cmdTimeout)
+		if err != nil {
+			return errorx.Ef("invalid cmd timeout of the task %q, cmd_timeout=%s", st.Name, cmdTimeout)
+		}
+		st.Timeout = cmdDur
 	}
-	st.Timeout = cmdDur
 
-	err = st.loadArgsDefine(data.Get("args"))
+	err := st.loadArgsDefine(data.Get("args"))
 	if err != nil {
 		return err
 	}
@@ -417,6 +421,13 @@ func (st *ScriptTask) loadArgsDefine(args any) error {
 // region T: task command
 //
 
+type CmdResult struct {
+	val any
+	// Type for the command result, default is text.
+	//  - Allow: text, json, xml, html, csv, yaml, toml, jsonl, json5, jsonc
+	Type string
+}
+
 // TaskCmd of the task TODO
 type TaskCmd struct {
 	st *ScriptTask
@@ -424,6 +435,8 @@ type TaskCmd struct {
 	isRef bool
 	index int
 
+	// Name for the command. if not set, use the command index: "cmd{index}"
+	Name string
 	// Workdir for run command
 	Workdir string
 	// Vars for run cmd.
@@ -446,6 +459,19 @@ type TaskCmd struct {
 	Silent bool `json:"silent"`
 	// Timeout for run the command, default is 0.
 	Timeout time.Duration
+
+	// ------ 执行结果处理 ------ TODO
+
+	// Output for run the command, default is stdout.
+	//  - allow: stdout, stderr, both, discard, collect
+	//  - collect: collect command output to Result. and can use Result.Text() or Result.Bytes() to get output.
+	Output string
+	// ResultType for run the command, default is text. see CmdResult.Type
+	//
+	// Allow: text, json, xml, html, csv, yaml, toml, jsonl, json5, jsonc
+	ResultType string
+	// Result for run the command, default is nil.
+	Result CmdResult
 }
 
 func newTaskCmd(st *ScriptTask, run string) *TaskCmd {
@@ -463,6 +489,7 @@ func newTaskCmd2(st *ScriptTask, run string, index int) *TaskCmd {
 func (tc *TaskCmd) loadFromMap(mp map[string]any) error {
 	data := maputil.Data(mp)
 
+	tc.Name = data.Str("name")
 	tc.Type = data.Str("type")
 	tc.Task = data.Str("task")
 	tc.Vars = data.StringMap("vars")
@@ -473,24 +500,30 @@ func (tc *TaskCmd) loadFromMap(mp map[string]any) error {
 	tc.Workdir = data.StrOne("workdir", "dir")
 
 	cmdTimeout := data.Str("timeout")
-	cmdDur, err := timex.ToDuration(cmdTimeout)
-	if err != nil {
-		return errorx.Ef("invalid timeout of the task %q command#%d, timeout=%s", tc.st.Name, tc.index, cmdTimeout)
+	if cmdTimeout != "" {
+		cmdDur, err := timex.ToDuration(cmdTimeout)
+		if err != nil {
+			return errorx.Ef("invalid timeout of the task %q command#%d, timeout=%s", tc.st.Name, tc.index, cmdTimeout)
+		}
+		tc.Timeout = cmdDur
 	}
 
-	tc.Timeout = cmdDur
 	tc.loadRun(data.StrOne(runKeys...))
 	return nil
 }
 
 func (tc *TaskCmd) loadRun(run string) {
+	if tc.Name == "" {
+		tc.Name = fmt.Sprintf("cmd%d", tc.index)
+	}
+
+	// is referring another task
 	if strings.HasPrefix(run, "@task:") {
 		tc.isRef = true
 		tc.Run = run[6:]
 		tc.Task = tc.Run
 		return
 	}
-
 	if tc.Task != "" {
 		tc.isRef = true
 		tc.Run = tc.Task

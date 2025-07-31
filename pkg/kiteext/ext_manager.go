@@ -13,6 +13,7 @@ import (
 	"github.com/gookit/goutil/sysutil"
 	"github.com/gookit/goutil/sysutil/cmdr"
 	"github.com/gookit/goutil/timex"
+	"github.com/gookit/slog"
 )
 
 // BinPrefix kite ext 命令文件名称前缀 eg: kite-abc -> ext: abc
@@ -28,10 +29,13 @@ type MetaSchema struct {
 type KiteExt struct {
 	Name string `json:"name"`
 	Desc string `json:"desc"`
-
-	// PathMap 不同系统平台下的文件路径
+	// 别名列表
+	Aliases []string `json:"aliases"`
+	// 命令文件名称, 没有扩展名。eg: kite-abc
+	binName string
+	// OsPaths 不同系统平台下的文件路径
 	//  - key: 系统平台 windows, darwin, linux. value: 扩展文件路径
-	PathMap map[string]string `json:"path_map"`
+	OsPaths map[string]string `json:"os_paths"`
 	osPath  string
 
 	// Args 默认运行参数
@@ -42,6 +46,10 @@ type KiteExt struct {
 	Author   string `json:"author"`
 	Version  string `json:"version"`
 	Homepage string `json:"homepage"`
+
+	// BeforeSave 保存前执行 hook.
+	//  - 返回 true 继续保存，返回 false 停止保存
+	BeforeSave func(ext *KiteExt) bool `json:"-"`
 }
 
 func NewExt(name, desc string, path ...string) *KiteExt {
@@ -73,10 +81,10 @@ func (e *KiteExt) init() {
 
 	// save to pathMap
 	osName := sysutil.OsName
-	if e.PathMap == nil {
-		e.PathMap = make(map[string]string)
+	if e.OsPaths == nil {
+		e.OsPaths = make(map[string]string)
 	}
-	e.PathMap[osName] = e.osPath
+	e.OsPaths[osName] = e.osPath
 }
 
 // IsValid check path is valid
@@ -87,10 +95,44 @@ func (e *KiteExt) IsValid() bool {
 // OsPath in the current os
 func (e *KiteExt) OsPath() string {
 	if e.osPath == "" {
-		smp := maputil.StrMap(e.PathMap)
+		smp := maputil.StrMap(e.OsPaths)
 		e.osPath = smp.Default(sysutil.OsName, "NONE")
 	}
 	return e.osPath
+}
+
+// SetPath set file path in the current os
+func (e *KiteExt) SetPath(osPath string) {
+	if osPath != "" {
+		e.osPath = osPath
+	}
+}
+
+// SetBinName set bin name
+func (e *KiteExt) SetBinName(name string) {
+	if name != "" {
+		e.binName = name
+	}
+}
+
+// BinName get the bin name, without an ext name.
+func (e *KiteExt) BinName() string {
+	if e.binName == "" {
+		e.binName = BinPrefix + e.Name
+	}
+	return e.binName
+}
+
+// SetAliases set aliases for the extension.
+func (e *KiteExt) SetAliases(str string) {
+	if str == "" {
+		return
+	}
+
+	aliases := strutil.SplitTrimmed(str, ",")
+	if len(aliases) > 0 {
+		e.Aliases = aliases
+	}
 }
 
 // ExtManager kite cli 扩展管理器实现
@@ -103,13 +145,15 @@ type ExtManager struct {
 	// PathResolver handler. 用于查找 Metafile 文件
 	PathResolver func(path string) string
 
-	schema *MetaSchema
-	extMap map[string]*KiteExt
+	schema  *MetaSchema
+	extMap  map[string]*KiteExt
+	aliasMp maputil.Aliases
 }
 
 func NewExtManager() *ExtManager {
 	return &ExtManager{
-		extMap: make(map[string]*KiteExt),
+		aliasMp: make(maputil.Aliases),
+		extMap:  make(map[string]*KiteExt),
 	}
 }
 
@@ -127,13 +171,18 @@ func (m *ExtManager) Init() error {
 	m.schema = ms
 	for _, ext := range ms.Exts {
 		m.extMap[ext.Name] = ext
+		m.aliasMp.AddAliases(ext.Name, ext.Aliases)
 	}
 	return nil
 }
 
 // Ext gets ext by name
 func (m *ExtManager) Ext(name string) (ext *KiteExt, ok bool) {
+	name = m.aliasMp.ResolveAlias(name)
 	ext, ok = m.extMap[name]
+	if ok {
+		ext.OsPath() // init osPath
+	}
 	return
 }
 
@@ -233,10 +282,11 @@ func (m *ExtManager) CleanInvalid() error {
 func (m *ExtManager) save(ext *KiteExt) error {
 	// 如果 ext.osPath 为空，则搜索ext文件路径
 	if ext.osPath == "" {
-		ext.osPath = m.findExtFile(ext.Name)
+		ext.osPath = m.findExtFile(ext.BinName())
 		if ext.osPath == "" {
-			return errorx.Ef("can't find executable file for ext: %s", ext.Name)
+			return errorx.Ef("can't find executable file for ext %q", ext.Name)
 		}
+		slog.Infof("auto found ext file: %s", ext.osPath)
 	} else {
 		// check the path exists
 		if !ext.IsValid() {
@@ -246,23 +296,34 @@ func (m *ExtManager) save(ext *KiteExt) error {
 
 	ext.init()
 
+	// call before save hook
+	if ext.BeforeSave != nil && !ext.BeforeSave(ext) {
+		return nil
+	}
+	ext.BeforeSave = nil
+
 	// add to metadata
 	m.extMap[ext.Name] = ext
 	m.schema.Exts = append(m.schema.Exts, ext)
+	m.aliasMp.AddAliases(ext.Name, ext.Aliases)
 	return m.Dumpfile()
 }
 
 // ext.Path 为空时，自动搜索ext文件路径
-func (m *ExtManager) findExtFile(extName string) (extFile string) {
-	binName := BinPrefix + extName
+func (m *ExtManager) findExtFile(binName string) (extFile string) {
+	// binName := BinPrefix + extName
 
 	// 先搜索 m.SearchPaths
 	if len(m.SearchPaths) > 0 {
 		names := []string{binName, binName + ".sh"}
-		if sysutil.IsWindows() {
+		if strutil.ContainsByte(binName, '.') {
+			names = []string{binName}
+		} else if sysutil.IsWindows() {
+			// TODO use env PATHEXT
 			names = []string{binName + ".exe", binName + ".bat", binName + ".cmd", binName + ".sh"}
 		}
 
+		slog.Infof("search ext file in %v, names: %v", m.SearchPaths, names)
 		extFile = fsutil.FileInDirs(m.SearchPaths, names...)
 		if extFile != "" {
 			return extFile
@@ -270,6 +331,7 @@ func (m *ExtManager) findExtFile(extName string) (extFile string) {
 	}
 
 	// 再搜索 env PATH
+	slog.Infof("try search ext file %q in env PATH", binName)
 	extFile, _ = sysutil.FindExecutable(binName)
 	return extFile
 }
@@ -285,17 +347,20 @@ type RunCtx struct {
 	Dir string
 	// Env 设置环境变量
 	Env map[string]string
+	// Args 运行参数
+	Args []string
 }
 
 // Run 运行ext命令
-func (m *ExtManager) Run(name string, args []string, ctx *RunCtx) error {
+func (m *ExtManager) Run(name string, ctx *RunCtx) error {
+	name = m.aliasMp.ResolveAlias(name)
 	ext, ok := m.extMap[name]
 	if !ok {
 		return fmt.Errorf("kite: ext '%s' not found", name)
 	}
 
 	cArgs := ext.Args
-	cArgs = append(cArgs, args...)
+	cArgs = append(cArgs, ctx.Args...)
 	dir := strutil.OrElse(ctx.Dir, ext.Workdir)
 
 	fmt.Printf("--------------------------- Run Ext %s, Args %v ---------------------------\n", name, cArgs)
