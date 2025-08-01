@@ -14,6 +14,7 @@ import (
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/sysutil"
+	"github.com/gookit/goutil/x/ccolor"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/internal/appconst"
 	"github.com/inhere/kite-go/internal/biz/cmdbiz"
@@ -21,7 +22,6 @@ import (
 	"github.com/inhere/kite-go/internal/cli/appcmd"
 	"github.com/inhere/kite-go/internal/cli/devcmd"
 	"github.com/inhere/kite-go/internal/cli/devcmd/jsoncmd"
-	"github.com/inhere/kite-go/internal/cli/extcmd"
 	"github.com/inhere/kite-go/internal/cli/fscmd"
 	"github.com/inhere/kite-go/internal/cli/gitcmd"
 	"github.com/inhere/kite-go/internal/cli/gitcmd/ghubcmd"
@@ -60,7 +60,7 @@ func addCommands(cli *gcli.App) {
 		// extcmd.XFileCmd,
 		toolcmd.ToolsCmd,
 		toolcmd.RunAnyCmd,
-		extcmd.PlugCmd,
+		// extcmd.PlugCmd,
 		builtin.GenAutoComplete().WithHidden(),
 	)
 
@@ -108,7 +108,7 @@ func addListener(cli *gcli.App) {
 		return
 	})
 
-	cli.On(events.OnAppCmdNotFound, onCmdNotFound)
+	cli.On(events.OnAppCmdNotFound, onAppCmdNotFound)
 
 	cli.On(events.OnAppExit, func(ctx *gcli.HookCtx) (stop bool) {
 		if waitSec > 0 {
@@ -148,7 +148,7 @@ func onAppBindOptsAfter(cli *gcli.App) gcli.HookFunc {
 }
 
 // 内置命令没有找到，尝试 alias > ext > kScript > sys-cmd
-func onCmdNotFound(ctx *gcli.HookCtx) (stop bool) {
+func onAppCmdNotFound(ctx *gcli.HookCtx) (stop bool) {
 	name := ctx.Str("name")
 	args := ctx.Strings("args")
 	app.Log().
@@ -158,7 +158,7 @@ func onCmdNotFound(ctx *gcli.HookCtx) (stop bool) {
 
 	// ctx := &kscript.RunCtx{}
 	if err := cmdbiz.RunAny(name, args, nil); err != nil {
-		colorp.Warnln("RunAny Error >", err)
+		ccolor.Errorln("RunAny Error>", err)
 	}
 	stop = true
 	return
@@ -172,7 +172,7 @@ func changeWorkdir(cli *gcli.App, val string) error {
 		return errorx.Err("The workdir not exists: " + val)
 	}
 
+	ccolor.Yellowf("NOTICE: set applicaton runtime workdir to: %s\n", val)
 	goutil.MustOK(cli.ChWorkDir(val))
-	colorp.Yellowf("NOTICE: set app workdir to: %s\n", val)
 	return nil
 }

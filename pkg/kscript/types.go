@@ -130,6 +130,8 @@ type RunCtx struct {
 	Env map[string]string
 	// Silent mode, dont print exec command line.
 	Silent bool `json:"silent"`
+	// Args for run script task
+	Args []string
 
 	// BeforeFn hook. si: ScriptTask | ScriptApp | ScriptFile
 	BeforeFn func(si any, ctx *RunCtx)
@@ -148,6 +150,13 @@ func EnsureCtx(ctx *RunCtx) *RunCtx {
 // WithName to ctx
 func (c *RunCtx) WithName(name string) *RunCtx {
 	c.Name = name
+	return c
+}
+
+// WithNameArgs to ctx
+func (c *RunCtx) WithNameArgs(name string, args []string) *RunCtx {
+	c.Name = name
+	c.Args = args
 	return c
 }
 

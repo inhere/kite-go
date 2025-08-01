@@ -7,6 +7,7 @@ import (
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/gookit/goutil/sysutil/cmdr"
+	"github.com/gookit/slog"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/internal/initlog"
 	"github.com/inhere/kite-go/pkg/kiteext"
@@ -15,6 +16,27 @@ import (
 
 // Kas kite command alias map data
 var Kas maputil.Aliases
+
+// ConfigScriptCtx config script run context
+func ConfigScriptCtx(ctx *kscript.RunCtx) {
+	slog.Infof("TIP: %q is a script name, will run it with %v", ctx.Name, ctx.Args)
+	if ctx.Verbose {
+		ctx.BeforeFn = func(si any, ctx *kscript.RunCtx) {
+			show.AList("Script Info", si)
+			show.AList("Run Context", ctx)
+		}
+	}
+
+	ctx.AppendVarsFn = func(data map[string]any) map[string]any {
+		// enhance: 添加应用里的全局变量 usage: $paths.var, $gvs.var
+		data["gvs"] = app.Vars.Data()
+		data["paths"] = app.PathMap.Data()
+		// kite 应用内置路径变量
+		data["kite"] = app.App().PathsMap()
+
+		return data
+	}
+}
 
 // RunAny handle.
 // will try: alias > ext > script(task,file) > plugin > system-cmd ...
@@ -32,16 +54,8 @@ func RunAny(name string, args []string, ctx *kscript.RunCtx) error {
 	}
 
 	// run kite script
-	ctx = kscript.EnsureCtx(ctx)
-	ctx.BeforeFn = func(si any, ctx *kscript.RunCtx) {
-		initlog.L.Infof("TIP: %q is a script %s name, will run it with %v\n", name, ctx.ScriptType, args)
-		show.AList("Script Info", si)
-		show.AList("Run Context", ctx)
-	}
-
-	if !ctx.Verbose {
-		ctx.BeforeFn = nil
-	}
+	ctx = kscript.EnsureCtx(ctx).WithNameArgs(name, args)
+	ConfigScriptCtx(ctx)
 
 	// try run as script-task/script-file
 	found, err := app.Scripts.TryRun(name, args, ctx)

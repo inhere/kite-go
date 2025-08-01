@@ -66,7 +66,7 @@ func (r *Runner) TryRun(name string, args []string, ctx *RunCtx) (found bool, er
 		return found, err
 	}
 	if si != nil {
-		ccolor.Magentaln("Run script task:", name)
+		ccolor.Magentaln("Run script task:", name, "args:", args)
 		return found, r.runScriptTask(si, args, ctx)
 	}
 
@@ -77,7 +77,7 @@ func (r *Runner) TryRun(name string, args []string, ctx *RunCtx) (found bool, er
 	}
 
 	if sf != nil {
-		ccolor.Magentaln("Run script file: %s", name)
+		ccolor.Magentaln("Run script file: %s", name, "args:", args)
 		return found, r.runScriptFile(sf, args, ctx)
 	}
 	return false, nil
@@ -155,6 +155,7 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 		vars["dirname"] = fsutil.Name(workdir)
 	}
 
+	ccolor.Magentaln("CURRENT DIR:", sysutil.Workdir())
 	if ctx.Verbose {
 		show.AList("Task Vars", vars)
 	}

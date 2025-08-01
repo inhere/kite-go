@@ -9,6 +9,7 @@ import (
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/strutil"
+	"github.com/gookit/goutil/sysutil"
 	"github.com/gookit/goutil/sysutil/cmdr"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/internal/biz/cmdbiz"
@@ -22,7 +23,6 @@ type runAnyHandle struct {
 	chdir    string // auto find and chdir
 
 	listAll, showInfo, search, verbose bool
-
 	alias, plugin, script, system bool
 }
 
@@ -34,7 +34,7 @@ var RunAnyCmd = &gcli.Command{
 	Desc: "Run any aliases, script task/file/apps, plugins and system commands",
 	Aliases: []string{"exec"},
 	Config: func(c *gcli.Command) {
-		runOpts.BindCommonFlags(c)
+		runOpts.BindCommonFlags2(c)
 		runOpts.wrapType.SetEnum(kscript.AllowTypes)
 
 		c.BoolOpt2(&runOpts.listAll, "list, l", "List information for all scripts or one script")
@@ -88,8 +88,9 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 	}
 
 	wd := runOpts.Workdir
-	if runOpts.chdir != "" {
-		cd, changed := fsutil.SearchNameUpx(wd, runOpts.chdir)
+	if wd == "" && runOpts.chdir != "" {
+		// cwd := sysutil.Workdir()
+		cd, changed := fsutil.SearchNameUpx(sysutil.Workdir(), runOpts.chdir)
 		if changed {
 			wd = cd
 			colorp.Yellowf("TIP: auto find the %q and will chdir to %s\n", runOpts.chdir, cd)
@@ -119,16 +120,6 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 		Type: runOpts.wrapType.String(),
 	}
 
-	ctx.AppendVarsFn = func(data map[string]any) map[string]any {
-		// enhance: 添加应用里的全局变量 usage: $paths.var, $gvs.var
-		data["gvs"] = app.Vars.Data()
-		data["paths"] = app.PathMap.Data()
-		// kite 应用内置路径变量
-		data["kite"] = app.App().PathsMap()
-
-		return data
-	}
-
 	// direct run as a script
 	if runOpts.script {
 		if runOpts.search {
@@ -138,25 +129,19 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 		}
 
 		colorp.Infof("TIP: will direct run %q as script name (by --script)\n", name)
-		if runOpts.verbose {
-			ctx.BeforeFn = func(si any, ctx *kscript.RunCtx) {
-				// cliutil.Infof("TIP: %q is a script name, will run it with %v\n", name, args)
-				show.AList("Script Info", si)
-				show.AList("Run Context", ctx)
-			}
-		}
-
+		ctx.WithNameArgs(name, args)
+		cmdbiz.ConfigScriptCtx(ctx)
 		return app.Scripts.Run(name, args, ctx)
 	}
 
-	// TODO search ...
+	// search ...
 	if runOpts.search {
 		ret := app.Scripts.Search(name, args, 10)
 		show.AList("Search scripts:", ret)
 		return nil
 	}
 
-	// try alias, script, ...
+	// try alias, ext, script, ...
 	return cmdbiz.RunAny(name, args, ctx)
 }
 
