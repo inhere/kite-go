@@ -14,6 +14,7 @@ import (
 	"github.com/gookit/goutil/strutil/textutil"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/gookit/goutil/sysutil/cmdr"
+	"github.com/gookit/goutil/timex"
 	"github.com/gookit/goutil/x/ccolor"
 )
 
@@ -66,7 +67,7 @@ func (r *Runner) TryRun(name string, args []string, ctx *RunCtx) (found bool, er
 		return found, err
 	}
 	if si != nil {
-		ccolor.Magentaln("Run script task:", name, "args:", args)
+		ccolor.Magentaf("Run Script Task %q Args: %v\n", name, args)
 		return found, r.runScriptTask(si, args, ctx)
 	}
 
@@ -77,7 +78,7 @@ func (r *Runner) TryRun(name string, args []string, ctx *RunCtx) (found bool, er
 	}
 
 	if sf != nil {
-		ccolor.Magentaln("Run script file: %s", name, "args:", args)
+		ccolor.Magentaf("Run Script File %q Args: %v\n", name, args)
 		return found, r.runScriptFile(sf, args, ctx)
 	}
 	return false, nil
@@ -124,20 +125,26 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 		return errorx.Rawf("missing required args for run task %q(need %d)", ctx.Name, nln)
 	}
 
-	// merge env
-	envMap := ctx.MergeEnv(r.taskSettings.Env, st.Env)
+	shell := strutil.OrElse(ctx.Type, st.Type)
+	workdir := strutil.OrElse(ctx.Workdir, st.Workdir)
 
-	// merge env PATH
+	// 用于渲染 ENV, PATH 等的变量
+	baseVars := map[string]any{
+		"cur_dir": sysutil.Workdir(),
+	}
+	// vars in runner.taskSettings
+	baseVars["vars"] = r.taskSettings.Vars
+	baseVars["groups"] = r.taskSettings.Groups
+	if ctx.AppendVarsFn != nil {
+		baseVars = ctx.AppendVarsFn(baseVars)
+	}
+
+	// merge ENV and PATH
+	ctx.MergeEnv(r.taskSettings.Env, st.Env)
 	if len(r.taskSettings.EnvPaths) > 0 {
 		st.EnvPaths = append(st.EnvPaths, r.taskSettings.EnvPaths...)
 	}
-	if len(st.EnvPaths) > 0 {
-		envPaths := append(st.EnvPaths, sysutil.EnvPaths()...)
-		envMap["PATH"] = sysutil.ToEnvPATH(envPaths)
-	}
-
-	shell := strutil.OrElse(ctx.Type, st.Type)
-	workdir := strutil.OrElse(ctx.Workdir, st.Workdir)
+	envMap := ctx.ParseVarInEnv(st.EnvPaths, baseVars)
 
 	// build context vars
 	vars, err := r.buildTaskTplVars(inArgs, st, ctx)
@@ -163,22 +170,23 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 	// 先执行 deps 任务
 	if len(st.Deps) > 0 {
 		for _, depTask := range st.Deps {
-			ccolor.Magentaln("Run Depends Task:", depTask)
+			ccolor.Magentaln("Run depends task:", depTask)
 
-			dst, err := r.LoadScriptTaskInfo(depTask)
-			if err != nil {
+			dst, err1 := r.LoadScriptTaskInfo(depTask)
+			if err1 != nil {
 				return errorx.Rf("task %s: load dep task %q info fail: %v", st.Name, depTask, err)
 			}
 			if dst == nil {
 				return errorx.Rawf("task %s: the dep task %q not found", st.Name, depTask)
 			}
 
-			if err = r.runScriptTask(dst, inArgs, ctx); err != nil {
-				return err
+			if err2 := r.runScriptTask(dst, inArgs, ctx); err2 != nil {
+				return err2
 			}
 		}
 	}
 
+	startTime := timex.Now().T()
 	showIndex := cmdLn > 1 && !ctx.Silent
 
 	// exec each command
@@ -190,6 +198,7 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 		// redirect runs another task
 		if tc.isRef {
 			name := tc.Run
+			ccolor.Magentaln("Run Refer Task:", name)
 			osi, err1 := r.LoadScriptTaskInfo(name)
 			if err1 != nil {
 				return err1
@@ -198,16 +207,15 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 				return errorx.Rawf("task %q: reference script task %q not found", st.Name, name)
 			}
 
-			err = r.runScriptTask(osi, inArgs, ctx)
-			if err != nil {
-				return err
+			if err2 := r.runScriptTask(osi, inArgs, ctx); err2 != nil {
+				return err2
 			}
 			continue
 		}
 
 		// 加载 command 独有的变量
-		if err := tc.appendVars(vars); err != nil {
-			return err
+		if err1 := tc.appendVars(vars); err1 != nil {
+			return err1
 		}
 
 		line := r.renderTaskVars(tc.Run, vars, ctx)
@@ -234,6 +242,8 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 			return err2
 		}
 	}
+
+	ccolor.Infof("✅  Task %s: all task commands done. take time: %s\n", st.Name, timex.Now().Diff(startTime))
 	return nil
 }
 
@@ -293,7 +303,7 @@ var rpl = textutil.NewStrVarRenderer()
 
 // process vars and env
 func (r *Runner) renderTaskVars(line string, vars map[string]any, ctx *RunCtx) string {
-	envs := sysutil.EnvMapWith(ctx.Env)
+	envs := ctx.FullEnv()
 
 	rpl.SetGetter(func(name string) (val string, ok bool) {
 		// eg: $SHELL

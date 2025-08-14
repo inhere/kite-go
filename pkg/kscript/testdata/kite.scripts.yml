@@ -1,5 +1,3 @@
-# mode: top_config, setting
-#__xfile_mode: setting
 __setting:
   vars: # built in group name. access: ${vars.xxx}
     var01: test value

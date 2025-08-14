@@ -1,5 +1,5 @@
-# mode: top_config, setting
-__xfile_mode: setting
+# mode: actions, toplevel
+__task_config: toplevel
 __setting:
   desc: Create an new project from base project repo
   version: '1'

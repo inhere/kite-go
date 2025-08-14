@@ -27,7 +27,7 @@ import (
 // Variable dynamic variable definition. 动态变量 TODO
 type Variable struct {
 	// Type of variable, allow: sh, bash, zsh, go or empty.
-	Type  string
+	Type string
 	Expr string
 	Value string
 }
@@ -118,6 +118,11 @@ type ScriptTasks struct {
 	settings TaskSettings
 }
 
+type TaskFor struct {
+	Var   string
+	Items []string
+}
+
 // ScriptTask for one script task.
 type ScriptTask struct {
 	ScriptMeta
@@ -138,10 +143,11 @@ type ScriptTask struct {
 
 	// Output target. default is stdout
 	Output string
+	// Vars map[string]Variable // TODO
 	// Vars for run script task.
 	//  - task配置中访问: $name
 	//  - allow dynamic var: "@sh: git log -1" TODO
-	Vars map[string]string
+	Vars map[string]string `json:"vars"`
 	// Deps task name list. 当前任务依赖的任务名称列表
 	Deps []string `json:"deps"`
 
@@ -162,6 +168,9 @@ type ScriptTask struct {
 	// If condition check for run command. eg: sh:test -f .env
 	// or see github.com/expr-lang/expr
 	If string
+	// For loop for run command. eg: for i in 1 2 3; do echo $i; done
+	//  - var: 可以引用变量
+	For *TaskFor
 }
 
 // ScriptInfo one script task.
@@ -441,7 +450,7 @@ type TaskCmd struct {
 	Workdir string
 	// Vars for run cmd.
 	//  - task配置中访问: $name
-	//  - allow dynamic var: "@sh: git log -1" TODO
+	//  - allow dynamic var: "@sh: git log -1"
 	Vars map[string]string
 	// Env append ENV setting for run
 	Env map[string]string
@@ -459,6 +468,8 @@ type TaskCmd struct {
 	Silent bool `json:"silent"`
 	// Timeout for run the command, default is 0.
 	Timeout time.Duration
+	// IgnoreErr safed run command. ignore run error, continue next command.
+	IgnoreErr bool `json:"ignore_err"`
 
 	// ------ 执行结果处理 ------ TODO
 
@@ -498,6 +509,7 @@ func (tc *TaskCmd) loadFromMap(mp map[string]any) error {
 	tc.Silent = data.Bool("silent")
 	tc.FailMsg = data.Str("fail_msg")
 	tc.Workdir = data.StrOne("workdir", "dir")
+	tc.IgnoreErr = data.BoolOne("ignore_err", "safe_run")
 
 	cmdTimeout := data.Str("timeout")
 	if cmdTimeout != "" {
@@ -520,7 +532,7 @@ func (tc *TaskCmd) loadRun(run string) {
 	// is referring another task
 	if strings.HasPrefix(run, "@task:") {
 		tc.isRef = true
-		tc.Run = run[6:]
+		tc.Run = strings.TrimSpace(run[6:])
 		tc.Task = tc.Run
 		return
 	}
@@ -530,10 +542,11 @@ func (tc *TaskCmd) loadRun(run string) {
 		return
 	}
 
-	// first is @ for silent exec
+	// first is @ for safed and silent exec
 	if strings.HasPrefix(run, "@") {
 		tc.Run = run[1:]
 		tc.Silent = true
+		tc.IgnoreErr = true
 		return
 	}
 

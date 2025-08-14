@@ -1,5 +1,5 @@
-# mode: top_cfg, setting
-__xfile_mode: top_cfg
+# mode: actions, toplevel
+__task_config: actions
 name: project
 version: 1.0
 author: inhere

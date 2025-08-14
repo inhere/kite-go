@@ -18,12 +18,19 @@ import (
 
 type runAnyHandle struct {
 	cmdbiz.CommonOpts
-	wrapType gflag.EnumString
+	runType  gflag.EnumString // run type
+	wrapType gflag.EnumString // shell type
+	// input vars
+	varMap gflag.KVString
 	envMap   gflag.KVString
-	chdir    string // auto find and chdir
+	// auto find and chdir
+	chdir string
 
 	listAll, showInfo, search, verbose bool
-	alias, plugin, script, system bool
+}
+
+func (h *runAnyHandle) IsType(name string) bool {
+	return h.runType.String() == name
 }
 
 var runOpts = runAnyHandle{}
@@ -36,20 +43,18 @@ var RunAnyCmd = &gcli.Command{
 	Config: func(c *gcli.Command) {
 		runOpts.BindCommonFlags2(c)
 		runOpts.wrapType.SetEnum(kscript.AllowTypes)
+		runOpts.runType.SetEnum([]string{"alias", "script", "ext", "plugin", "system"})
 
 		c.BoolOpt2(&runOpts.listAll, "list, l", "List information for all scripts or one script")
 		c.BoolOpt2(&runOpts.showInfo, "show, info, i", "Show information for input alias/script/plugin name")
 		c.BoolOpt2(&runOpts.search, "search, s", "Display all matched scripts by the input name")
-		c.BoolOpt2(&runOpts.verbose, "verbose, v", "Display context information on execute")
-
-		c.BoolOpt2(&runOpts.plugin, "plugin", "dont check and direct run alias command on kite")
-		c.BoolOpt2(&runOpts.alias, "alias", "dont check and direct run alias command on kite")
-		c.BoolOpt2(&runOpts.script, "script", "dont check and direct run user script on kite")
-		c.BoolOpt2(&runOpts.system, "system, sys", "dont check and direct run command on system")
+		c.BoolOpt2(&runOpts.verbose, "verbose, verb", "Display context information on execute")
 
 		c.StrOpt2(&runOpts.chdir, "chdir, cd", "auto find match dir and chdir as workdir")
 		c.VarOpt2(&runOpts.envMap, "env,e", "custom set ENV value on run command, format: `KEY=VALUE`")
-		c.VarOpt(&runOpts.wrapType, "type", "", "wrap shell type for run input script, allow: "+runOpts.wrapType.EnumString())
+		c.VarOpt2(&runOpts.varMap, "vars,var", "custom set var value on run command, format: `name=value`")
+		c.VarOpt(&runOpts.runType, "type", "t", "direct set type for run input, allow: "+runOpts.runType.EnumString())
+		c.VarOpt(&runOpts.wrapType, "shell", "", "wrap shell type for run input script, allow: "+runOpts.wrapType.EnumString())
 
 		c.AddArg("command", "The command for execute, can be with custom arguments")
 	},
@@ -59,9 +64,13 @@ var RunAnyCmd = &gcli.Command{
 
 $ kite run ls -al
 
+## Run script task
+
+$ kite run --var key0=value0 --var key1=value1 task_name [args ... for task]
+
 ## Custom scripts
 
-> default in the scripts.yml or dir: $base/scripts
+> default in the $config/scripts.yml or dir: $base/scripts
 
 Can use '$@' '$*' at script line. will auto replace to input arguments
 examples:
@@ -100,14 +109,14 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 	}
 
 	// direct run system command
-	if runOpts.system {
-		colorp.Infof("TIP: will direct run system command %q (by --system)\n", name)
+	if runOpts.IsType("system") {
+		colorp.Infof("TIP: will direct run system command %q (by --type=system)\n", name)
 		return cmdr.NewCmd(name, args...).WorkDirOnNE(wd).FlushRun()
 	}
 
 	// direct run as cmd-alias
-	if runOpts.alias {
-		colorp.Infof("TIP: will direct run app command alias %q (by --alias)\n", name)
+	if runOpts.IsType("alias") {
+		colorp.Infof("TIP: will direct run app command alias %q (by --type=alias)\n", name)
 		return cmdbiz.RunKiteCmdByAlias(name, args)
 	}
 
@@ -121,14 +130,14 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 	}
 
 	// direct run as a script
-	if runOpts.script {
+	if runOpts.IsType("script") {
 		if runOpts.search {
 			ret := app.Scripts.Search(name, args, 10)
 			show.AList("Results of search:", ret)
 			return nil
 		}
 
-		colorp.Infof("TIP: will direct run %q as script name (by --script)\n", name)
+		colorp.Infof("TIP: will direct run %q as script name (by --type=script)\n", name)
 		ctx.WithNameArgs(name, args)
 		cmdbiz.ConfigScriptCtx(ctx)
 		return app.Scripts.Run(name, args, ctx)
@@ -146,7 +155,7 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 }
 
 func showInfo(name string) (err error) {
-	if runOpts.alias {
+	if runOpts.IsType("alias") {
 		if cmdbiz.Kas.HasAlias(name) {
 			cliutil.Infoln("Alias  :", name)
 			cliutil.Infoln("Command:", cmdbiz.Kas.ResolveAlias(name))
@@ -159,7 +168,7 @@ func showInfo(name string) (err error) {
 		return err
 	}
 
-	if runOpts.script || app.Scripts.IsScriptTask(name) {
+	if runOpts.IsType("script") || app.Scripts.IsScriptTask(name) {
 		si, err1 := app.Scripts.LoadScriptTaskInfo(name)
 		if err1 != nil {
 			return err1
@@ -184,7 +193,7 @@ func showInfo(name string) (err error) {
 }
 
 func listInfos() (err error) {
-	if runOpts.alias {
+	if runOpts.IsType("alias") {
 		show.AList("command aliases", cmdbiz.Kas)
 		return
 	}
@@ -196,7 +205,7 @@ func listInfos() (err error) {
 		return err
 	}
 
-	if !runOpts.script {
+	if !runOpts.IsType("script") {
 		show.AList("command aliases", cmdbiz.Kas)
 		return
 	}
