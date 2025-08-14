@@ -120,7 +120,7 @@ func updateHandleFunc(c *gcli.Command, _ []string) (err error) {
 	rr.GitCmd("pull", "-np")
 
 	if !rp.HasSourceRemote() {
-		colorp.Warnf(
+		colorp.Infof(
 			"TIP: the source remote %q is not added, please add by `git remote add %s URL`\n",
 			srcRemote, srcRemote,
 		)

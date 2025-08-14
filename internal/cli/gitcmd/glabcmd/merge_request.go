@@ -109,8 +109,8 @@ func mergeRequestHandle(c *gcli.Command, _ []string) (err error) {
 
 		srcPid = gitlab.BuildProjectID(group, name)
 	} else {
-		if err := glp.CheckRemote(); err != nil {
-			return err
+		if err1 := glp.CheckRemote(); err1 != nil {
+			return err1
 		}
 
 		if mrOpts.target == "@s" {

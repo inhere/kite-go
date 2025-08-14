@@ -79,7 +79,10 @@ func NewCheckoutCmd() *gcli.Command {
 					rr.GitCmd("pull", srcRemote, branchName)
 				}
 
-				rr.GitCmd("pull", "-np", srcRemote, defBranch)
+				// update from src remote master
+				if rp.HasRemote(srcRemote) {
+					rr.GitCmd("pull", "-np", srcRemote, defBranch)
+				}
 				return rr.Run()
 			}
 
