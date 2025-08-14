@@ -430,7 +430,7 @@ kite 里 `script` 分两种, 一种是配置的 一条或多条命令;一种是�
 查看所有的 `scripts` 命令:
 
 ```shell
-$ kite run --script -l
+$ kite run -t=script -l
 # 或者(配置了内置别名 script: run --script)
 $ kite script -l
 ```

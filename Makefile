@@ -35,6 +35,7 @@ VERSION ?= $(shell echo "$$(git for-each-ref refs/tags/ --count=1 --sort=-versio
 # Build flags for setting build-specific configuration at build time - defaults to empty
 #BUILD_TIME_CONFIG_FLAGS ?= ""
 
+# -trimpath 去除源码路径信息
 # Full build flags used when building binaries. Not used for test compilation/execution.
 BUILDFLAGS := -ldflags \
   " -s -w -X $(ROOT_PACKAGE).Version=$(VERSION)\
@@ -120,8 +121,9 @@ linux-arm: ## Build for Linux ARM64
 	chmod +x build/$(NAME)-linux-arm
 
 win: ## Build for Windows
-	GOOS=windows GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-windows-amd64.exe $(MAIN_SRC_FILE)
-	upx -6 --no-progress build/$(NAME)-windows-amd64.exe
+	GOOS=windows GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -x -o build/$(NAME)-windows-amd64.exe $(MAIN_SRC_FILE)
+	ls -alh build/$(NAME)*
+	upx -6 -f --no-progress -o build/$(NAME)-windows-amd64-upx.exe build/$(NAME)-windows-amd64.exe
 	ls -alh build/$(NAME)*
 
 win-arm: ## Build for Windows arm64

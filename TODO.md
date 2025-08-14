@@ -11,8 +11,8 @@
 
 ### kite ext
 
-- [ ] 支持注册外部脚本命令
-- [ ] 支持调用外部命令 eg: 调用 php 实现的命令
+- [x] 支持注册、管理外部脚本命令
+- [x] 支持调用外部命令 eg: 调用 php 实现的命令
 
 ### kite plugin
 
@@ -31,6 +31,7 @@
   - [x] 运行时支持解析 全局，定义，上下文等变量
   - [x] task command 支持独立定义 workdir, vars 等属性
   - [x] task, command 定义的 vars 支持动态变量 eg: "@sh: git version"
+  - [ ] task, command 支持 `If/Cond` 条件表达式
 - [ ] 功能增强，支持运行独立的 script-app 文件
 
 ## backend serve

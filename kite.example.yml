@@ -53,7 +53,8 @@ quick_open:
 aliases:
   ac: git ac
   acp: git acp
-  script: tool run --script
+  ext: app ext
+  script: run --type=script
   updateself: self update
   update-self: self update
   self-update: self update

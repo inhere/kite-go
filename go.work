@@ -1,0 +1,20 @@
+go 1.24
+
+toolchain go1.24.6
+
+use (
+	../color
+	../config
+	../easytpl
+	../event
+	../gcli
+	../gitw
+	../goutil
+	../greq
+	../ini
+	../kite-go
+	../properties
+	../rux
+	../slog
+	../validate
+)
