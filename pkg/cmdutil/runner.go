@@ -36,7 +36,7 @@ func (r *Runner) Run() error {
 
 	r.BeforeRun = func(cr *cmdr.Runner, t *cmdr.Task) bool {
 		if r.Confirm {
-			if !interact.Unconfirmed("continue run?", true) {
+			if interact.Unconfirmed("continue run?", true) {
 				return false
 			}
 		}

@@ -135,7 +135,7 @@ function Kite-Jump {
 
    # 执行命令并将输出存储在变量中
    $joinedPath = $Path -join " "
-   $output = Invoke-Expression "kite.exe tool jump get '$joinedPath'"
+   $output = Invoke-Expression "kite.exe tool jump get $joinedPath"
 
    # 检查输出是否为空或无效
    if (-not $output) {

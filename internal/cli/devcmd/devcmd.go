@@ -14,7 +14,7 @@ import (
 var DevToolsCmd = &gcli.Command{
 	Name:    "dev",
 	Aliases: []string{"dt", "devtool"},
-	Desc:    "provide some useful dev tools commands",
+	Desc: "provide some useful develop tools commands",
 	Subs: []*gcli.Command{
 		HotReloadServe,
 		IDEAToolCmd,
@@ -25,5 +25,6 @@ var DevToolsCmd = &gcli.Command{
 		phpcmd.PhpToolsCmd,
 		sqlcmd.SQLToolCmd,
 		jsoncmd.YamlToolCmd,
+		NewEnvManageCmd(),
 	},
 }

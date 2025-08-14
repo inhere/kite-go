@@ -30,7 +30,7 @@ type KiteExt struct {
 	Name string `json:"name"`
 	Desc string `json:"desc"`
 	// 别名列表
-	Aliases []string `json:"aliases"`
+	Aliases []string `json:"aliases,omitempty"`
 	// 命令文件名称, 没有扩展名。eg: kite-abc
 	binName string
 	// OsPaths 不同系统平台下的文件路径
@@ -39,13 +39,13 @@ type KiteExt struct {
 	osPath  string
 
 	// Args 默认运行参数
-	Args []string `json:"args"`
+	Args []string `json:"args,omitempty"`
 	// 指定默认运行目录
-	Workdir  string `json:"workdir"`
-	Disable  bool   `json:"disable"`
-	Author   string `json:"author"`
-	Version  string `json:"version"`
-	Homepage string `json:"homepage"`
+	Workdir  string `json:"workdir,omitempty"`
+	Disable  bool   `json:"disable,omitempty"`
+	Author   string `json:"author,omitempty"`
+	Version  string `json:"version,omitempty"`
+	Homepage string `json:"homepage,omitempty"`
 
 	// BeforeSave 保存前执行 hook.
 	//  - 返回 true 继续保存，返回 false 停止保存

@@ -1,6 +1,15 @@
 package aicmd
 
-import "github.com/gookit/gcli/v3"
+import (
+	"context"
+	"fmt"
+
+	"github.com/gookit/gcli/v3"
+	"github.com/gookit/goutil/envutil"
+	"github.com/gookit/goutil/strutil"
+	"github.com/inhere/kite-go/internal/apputil"
+	"github.com/sashabaranov/go-openai"
+)
 
 // NewQuestionCmd create.
 func NewQuestionCmd() *gcli.Command {
@@ -16,9 +25,38 @@ func NewQuestionCmd() *gcli.Command {
 		Config: func(c *gcli.Command) {
 			askOpts.BindFlags(c)
 			c.BoolOpt2(&askOpts.interactive, "interactive,i", "into interactive mode")
+
+			c.AddArg("question", "The question to ask", true)
 		},
 		Func: func(c *gcli.Command, args []string) error {
-			return nil
+			client := apputil.NewOpenaiClient()
+			modelName := envutil.GetOne([]string{"QUESTION_MODEL", "DEFAULT_LLM_MODEL"}, "gpt-3.5-turbo")
+			messages := []openai.ChatCompletionMessage{
+				// system message
+				{
+					Role:    openai.ChatMessageRoleSystem,
+					Content: strutil.OrElse(askOpts.SystemMsg, "You are a helpful assistant."),
+				},
+				// user message
+				{
+					Role:    openai.ChatMessageRoleUser,
+					Content: c.Arg("question").String(),
+				},
+			}
+
+			resp, err := client.CreateChatCompletion(
+				context.Background(),
+				openai.ChatCompletionRequest{
+					// Model: openai.GPT3Dot5Turbo,
+					Model:    modelName,
+					Messages: messages,
+				},
+			)
+
+			if err == nil {
+				fmt.Println("ANSWER:\n", resp.Choices[0].Message.Content)
+			}
+			return err
 		},
 	}
 }
