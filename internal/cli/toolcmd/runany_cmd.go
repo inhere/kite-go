@@ -156,9 +156,9 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 
 func showInfo(name string) (err error) {
 	if runOpts.IsType("alias") {
-		if cmdbiz.Kas.HasAlias(name) {
+		if app.Kas.HasAlias(name) {
 			cliutil.Infoln("Alias  :", name)
-			cliutil.Infoln("Command:", cmdbiz.Kas.ResolveAlias(name))
+			cliutil.Infoln("Command:", app.Kas.ResolveAlias(name))
 			return
 		}
 		return errorx.Rawf("app command alias %q is not exists", name)
@@ -194,7 +194,7 @@ func showInfo(name string) (err error) {
 
 func listInfos() (err error) {
 	if runOpts.IsType("alias") {
-		show.AList("command aliases", cmdbiz.Kas)
+		show.AList("command aliases", app.Kas)
 		return
 	}
 
@@ -206,7 +206,7 @@ func listInfos() (err error) {
 	}
 
 	if !runOpts.IsType("script") {
-		show.AList("command aliases", cmdbiz.Kas)
+		show.AList("command aliases", app.Kas)
 		return
 	}
 

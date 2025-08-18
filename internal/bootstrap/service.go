@@ -28,10 +28,10 @@ func addServiceBoot(ka *app.KiteApp) {
 		// access: $gvs.xxx
 		app.Vars = kiteext.NewVarMap(app.Cfg().StringMap("global_vars"))
 		// add kite bin name
-		app.Vars.Add("bin_name", app.Cli().BinName())
+		app.Vars.Add("bin_name", app.Cli.BinName())
 
 		// aliases 内置命令别名
-		cmdbiz.Kas = app.Cfg().StringMap("aliases")
+		app.Kas = app.Cfg().StringMap("aliases")
 		return app.Cfg().MapOnExists("proxy_cmd", cmdbiz.ProxyCC)
 	})
 

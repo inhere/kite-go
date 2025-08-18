@@ -4,7 +4,6 @@ import (
 	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/cliutil/cmdline"
 	"github.com/gookit/goutil/errorx"
-	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/gookit/goutil/sysutil/cmdr"
 	"github.com/gookit/slog"
@@ -13,9 +12,6 @@ import (
 	"github.com/inhere/kite-go/pkg/kiteext"
 	"github.com/inhere/kite-go/pkg/kscript"
 )
-
-// Kas kite command alias map data
-var Kas maputil.Aliases
 
 // ConfigScriptCtx config script run context
 func ConfigScriptCtx(ctx *kscript.RunCtx) {
@@ -42,7 +38,7 @@ func ConfigScriptCtx(ctx *kscript.RunCtx) {
 // will try: alias > ext > script(task,file) > plugin > system-cmd ...
 func RunAny(name string, args []string, ctx *kscript.RunCtx) error {
 	// maybe is kite command alias
-	if Kas.HasAlias(name) {
+	if app.Kas.HasAlias(name) {
 		initlog.L.Infof("TIP: %q is an cli command alias, will run it with %v\n", name, args)
 		return RunKiteCmdByAlias(name, args)
 	}
@@ -75,11 +71,11 @@ func RunAny(name string, args []string, ctx *kscript.RunCtx) error {
 
 // RunKiteCmdByAlias handle
 func RunKiteCmdByAlias(name string, inArgs []string) error {
-	if !Kas.HasAlias(name) {
+	if !app.Kas.HasAlias(name) {
 		return errorx.Newf("kite alias command %q is not found", name)
 	}
 
-	str := Kas.ResolveAlias(name)
+	str := app.Kas.ResolveAlias(name)
 	clp := cmdline.NewParser(str)
 
 	cmd, args := clp.BinAndArgs()
@@ -87,8 +83,8 @@ func RunKiteCmdByAlias(name string, inArgs []string) error {
 		args = append(args, inArgs...)
 	}
 
-	if !app.Cli().HasCommand(cmd) {
+	if !app.Cli.HasCommand(cmd) {
 		return errorx.Rawf("cli command %q not exist, but config in 'aliases.%s'", cmd, name)
 	}
-	return app.Cli().RunCmd(cmd, args)
+	return app.Cli.RunCmd(cmd, args)
 }

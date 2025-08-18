@@ -12,7 +12,6 @@ import (
 	"github.com/gookit/goutil/sysutil"
 	"github.com/inhere/kite-go"
 	"github.com/inhere/kite-go/internal/app"
-	"github.com/inhere/kite-go/internal/biz/cmdbiz"
 )
 
 // KiteInfoCmd instance
@@ -157,11 +156,11 @@ var KiteAliasCmd = &gcli.Command{
 	},
 	Func: func(c *gcli.Command, _ []string) error {
 		if kaOpts.List || kaOpts.Name == "" {
-			show.AList("Command aliases", cmdbiz.Kas)
+			show.AList("Command Aliases", app.Kas)
 			return nil
 		}
 
-		fmt.Println(cmdbiz.Kas.ResolveAlias(kaOpts.Name))
+		fmt.Println(app.Kas.ResolveAlias(kaOpts.Name))
 		return nil
 	},
 }

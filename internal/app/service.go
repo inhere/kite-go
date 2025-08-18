@@ -17,7 +17,6 @@ import (
 )
 
 const (
-	ObjCli = "cli"
 	ObjRux = "rux"
 
 	ObjConf = "config"
@@ -48,12 +47,13 @@ var (
 
 	Scripts *kscript.Runner
 	Plugins *kiteext.PluginRunner
-
 	QJump *quickjump.QuickJump
 
 	// PathMap data
 	PathMap *kiteext.PathMap
 	OpenMap maputil.Aliases
+	// Kas kite command alias map data
+	Kas maputil.Aliases
 
 	// Vars global vars.
 	Vars *kiteext.VarMap
