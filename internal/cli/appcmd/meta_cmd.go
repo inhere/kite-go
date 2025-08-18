@@ -38,7 +38,7 @@ var CommandMapCmd = &gcli.Command{
 
 //
 // func formatCommandsJSON() {
-// 	for name, cmd := range app.Cli().Commands() {
+// 	for name, cmd := range app.Cli.Commands() {
 //
 // 		for s, command := range cmd.Commands() {
 //
@@ -47,7 +47,7 @@ var CommandMapCmd = &gcli.Command{
 // }
 //
 // func formatCommandsText() {
-// 	for name, cmd := range app.Cli().Commands() {
+// 	for name, cmd := range app.Cli.Commands() {
 //
 // 	}
 // }

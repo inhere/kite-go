@@ -12,9 +12,9 @@ import (
 func TestCmd_app_pathMap(t *testing.T) {
 	gcli.SetVerbose(gcli.VerbWarn)
 
-	st := app.Cli().RunLine("app pmp @pwd")
+	st := app.Cli.RunLine("app pmp @pwd")
 	assert.Eq(t, st, 0)
 
-	st = app.Cli().RunLine("app pmp @home")
+	st = app.Cli.RunLine("app pmp @home")
 	assert.Eq(t, st, 0)
 }

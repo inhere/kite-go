@@ -20,7 +20,7 @@ func BootCli(_ *app.KiteApp) error {
 		"buildDate": kite.BuildDate,
 		"goVersion": kite.GoVersion,
 	}, "{{,}}")
-	app.Add(app.ObjCli, cliApp)
+	app.Cli = cliApp
 
 	// load commands
 	cli.Boot(cliApp)

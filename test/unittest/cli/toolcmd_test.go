@@ -12,6 +12,6 @@ import (
 func TestCmd_tool_brun(t *testing.T) {
 	gcli.SetVerbose(gcli.VerbWarn)
 
-	st := app.Cli().RunLine("tool brun -c 'echo {item}' --for testing,qa,pre")
+	st := app.Cli.RunLine("tool brun -c 'echo {item}' --for testing,qa,pre")
 	assert.Eq(t, st, 0)
 }

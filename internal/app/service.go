@@ -36,6 +36,9 @@ var (
 	L *slog.Logger
 	// SL server logger
 	SL *slog.Logger
+
+	// Cli app
+	Cli *gcli.App
 )
 
 var (
@@ -65,11 +68,6 @@ func Cfg() *config.Config {
 // Rux get the web app
 func Rux() *rux.Router {
 	return Get[*rux.Router](ObjRux)
-}
-
-// Cli get the cli app
-func Cli() *gcli.App {
-	return Get[*gcli.App](ObjCli)
 }
 
 // Log get

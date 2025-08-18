@@ -19,7 +19,7 @@ func TestCmd_fs_render(t *testing.T) {
 	fsutil.MustSave(txtFile, tplText)
 
 	// use simple engine
-	st := app.Cli().RunLine("fs render -v name=Tom -v age=18 -w " + txtFile)
+	st := app.Cli.RunLine("fs render -v name=Tom -v age=18 -w " + txtFile)
 	assert.Eq(t, st, 0)
 
 	s := fsutil.ReadString(txtFile)
@@ -30,7 +30,7 @@ func TestCmd_fs_render(t *testing.T) {
 	tplText = "hi, my name is {{ name | upper }}, age is {{age}}"
 	fsutil.MustSave(txtFile, tplText)
 
-	st = app.Cli().RunLine("fs render --eng lite -v name=Tom -v age=18 -w " + txtFile)
+	st = app.Cli.RunLine("fs render --eng lite -v name=Tom -v age=18 -w " + txtFile)
 	assert.Eq(t, st, 0)
 
 	s = fsutil.ReadString(txtFile)
@@ -49,7 +49,7 @@ func TestCmd_fs_render2(t *testing.T) {
 		"-v", "type=java",
 		"-v", "name=order-sync",
 	}
-	st := app.Cli().Run(args)
+	st := app.Cli.Run(args)
 	assert.Eq(t, st, 0)
 }
 
@@ -59,6 +59,6 @@ func TestCmd_fs_replace(t *testing.T) {
 	_, err := fsutil.PutContents(txtFile, "hello world")
 	assert.NoError(t, err)
 
-	st := app.Cli().RunLine("fs replace -f hello -t hi " + txtFile)
+	st := app.Cli.RunLine("fs replace -f hello -t hi " + txtFile)
 	assert.Eq(t, st, 0)
 }

@@ -37,16 +37,16 @@ func TestMain(m *testing.M) {
 }
 
 func TestApp_run(t *testing.T) {
-	st := app.Cli().RunLine("-h")
+	st := app.Cli.RunLine("-h")
 	assert.Eq(t, st, 0)
 }
 
 func TestApp_chdir(t *testing.T) {
-	st := app.Cli().RunLine("--auto-dir .git app info")
+	st := app.Cli.RunLine("--auto-dir .git app info")
 	assert.Eq(t, st, 0)
 }
 
 func TestApp_chdir_gitcmd(t *testing.T) {
-	st := app.Cli().RunLine("git --auto-root status")
+	st := app.Cli.RunLine("git --auto-root status")
 	assert.Eq(t, st, 0)
 }

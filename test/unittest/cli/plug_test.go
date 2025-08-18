@@ -12,6 +12,6 @@ import (
 func TestCmd_plug_run01(t *testing.T) {
 	gcli.SetVerbose(gcli.VerbWarn)
 
-	st := app.Cli().RunLine("plug @base/plugins/test-plug.go --name inhere --age 18")
+	st := app.Cli.RunLine("plug @base/plugins/test-plug.go --name inhere --age 18")
 	assert.Eq(t, st, 0)
 }

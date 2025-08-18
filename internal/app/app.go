@@ -195,7 +195,7 @@ func App() *KiteApp {
 
 // Run app
 func Run() {
-	code := Cli().Run(nil)
+	code := Cli.Run(nil)
 
 	// fire shutdown hooks
 	initlog.L.Debug("app.Run - fire shutdown hooks")
