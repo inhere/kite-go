@@ -2,9 +2,11 @@ package kscript
 
 import (
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/gookit/goutil/maputil"
+	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/strutil/textutil"
 	"github.com/gookit/goutil/sysutil"
@@ -194,6 +196,22 @@ func (c *RunCtx) FullEnv() map[string]string {
 	return c.fullEnv
 }
 
+// AppendArgsToVars set args to vars. like shell $1 .. $N
+func (c *RunCtx) AppendArgsToVars(vars map[string]any) {
+	argStr := strings.Join(c.Args, " ")
+	// $@ 是一个字符串参数数组
+	vars["@"] = argStr
+	// $* 把所有参数合并成一个字符串
+	vars["*"] = strutil.Quote(argStr)
+
+	// 输入参数处理 $1 ... $N
+	for i, val := range c.Args {
+		key := mathutil.String(i + 1)
+		vars[key] = val
+	}
+
+}
+
 // 专门实现的类似 php, shell 的字符串表达式处理
 var svRender = textutil.NewStrVarRenderer()
 
@@ -208,6 +226,7 @@ func (c *RunCtx) ParseVarInEnv(envPaths []string, vars map[string]any) map[strin
 				envMap[k] = svRender.Render(v, vars)
 			}
 		}
+		c.Env = envMap // update env
 	}
 
 	// merge env PATH

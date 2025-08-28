@@ -152,7 +152,7 @@ type ScriptTask struct {
 	Deps []string `json:"deps"`
 
 	// Cmds exec commands list.
-	Cmds []*TaskCmd // TODO
+	Cmds []*TaskCmd
 	// Args for exec task commands.
 	Args []string
 	// CmdTimeout for run each command, default is 0.
@@ -208,6 +208,8 @@ func (st *ScriptTask) LoadFromMap(mp map[string]any) error {
 	st.Type = data.Str("type")
 	st.Workdir = data.StrOne("dir", "workdir")
 	st.Desc = data.StrOne("desc", "description")
+	// task alias
+	st.Alias = data.StringsOne("alias", "aliases")
 
 	taskTimeout := data.Str("timeout")
 	if taskTimeout != "" {
@@ -525,6 +527,11 @@ func (tc *TaskCmd) loadFromMap(mp map[string]any) error {
 }
 
 func (tc *TaskCmd) loadRun(run string) {
+	run = strings.TrimSpace(run)
+	if run == "" {
+		return // TODO return errorx.Ef("invalid run of the task %q command#%d, run=%s", tc.st.Name, tc.index, run)
+	}
+
 	if tc.Name == "" {
 		tc.Name = fmt.Sprintf("cmd%d", tc.index)
 	}
@@ -542,15 +549,23 @@ func (tc *TaskCmd) loadRun(run string) {
 		return
 	}
 
-	// first is @ for safed and silent exec
-	if strings.HasPrefix(run, "@") {
-		tc.Run = run[1:]
-		tc.Silent = true
-		tc.IgnoreErr = true
-		return
+	tc.Run = run
+	if run[0] == '@' {
+		// allow: '@sh: echo hello'
+		if pos := strings.Index(run, ":"); pos > 1 {
+			typ := run[1:pos]
+			if arrutil.StringsContains(AllowTypes, typ) {
+				tc.Type = typ
+				tc.Run = strings.TrimSpace(run[pos+1:])
+			}
+		} else {
+			// first is @ for safed and silent exec
+			tc.Run = run[1:]
+			tc.Silent = true
+			tc.IgnoreErr = true
+		}
 	}
 
-	tc.Run = run
 }
 
 func (tc *TaskCmd) appendVars(vars map[string]any) error {

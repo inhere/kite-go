@@ -124,8 +124,9 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 		Workdir: wd,
 		Verbose: runOpts.verbose,
 		DryRun:  runOpts.DryRun,
-		// custom ENV
+		// custom ENV, vars
 		Env:  runOpts.envMap.Data(),
+		Vars: runOpts.varMap.Data(),
 		Type: runOpts.wrapType.String(),
 	}
 

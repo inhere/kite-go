@@ -253,6 +253,8 @@ func (r *Runner) LoadScriptTaskInfo(name string) (*ScriptTask, error) {
 		return nil, nil // not found TODO ErrNotFound
 	}
 
+	// TODO 支持别名查找
+
 	return parseScriptTask(name, info, r.TypeShell)
 }
 

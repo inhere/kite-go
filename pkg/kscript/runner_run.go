@@ -2,14 +2,12 @@ package kscript
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/maputil"
-	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/strutil/textutil"
 	"github.com/gookit/goutil/sysutil"
@@ -35,7 +33,7 @@ func (r *Runner) Run(name string, args []string, ctx *RunCtx) error {
 
 // TryRun script task or script-file by name and with args
 func (r *Runner) TryRun(name string, args []string, ctx *RunCtx) (found bool, err error) {
-	if err := r.InitLoad(); err != nil {
+	if err = r.InitLoad(); err != nil {
 		return false, err
 	}
 
@@ -60,6 +58,7 @@ func (r *Runner) TryRun(name string, args []string, ctx *RunCtx) (found bool, er
 
 	found = true
 	ctx = EnsureCtx(ctx).WithName(name)
+	ctx.Args = args
 
 	// ------ try check is task and run it ------
 	si, err := r.LoadScriptTaskInfo(name)
@@ -120,7 +119,7 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 	}
 
 	needArgs := st.ParseArgs()
-	if nln := len(needArgs); len(inArgs) < nln {
+	if nln := len(needArgs); len(ctx.Args) < nln {
 		ccolor.Println("<mga>Script task contents:</>\n ", st.CmdsToString("\n  "))
 		return errorx.Rawf("missing required args for run task %q(need %d)", ctx.Name, nln)
 	}
@@ -128,40 +127,30 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 	shell := strutil.OrElse(ctx.Type, st.Type)
 	workdir := strutil.OrElse(ctx.Workdir, st.Workdir)
 
-	// 用于渲染 ENV, PATH 等的变量
-	baseVars := map[string]any{
-		"cur_dir": sysutil.Workdir(),
+	// build context vars 用于渲染 ENV, PATH, task-run 等的变量
+	vars, err := r.buildTaskRenderVars(st, ctx)
+	if err != nil {
+		return err
 	}
-	// vars in runner.taskSettings
-	baseVars["vars"] = r.taskSettings.Vars
-	baseVars["groups"] = r.taskSettings.Groups
-	if ctx.AppendVarsFn != nil {
-		baseVars = ctx.AppendVarsFn(baseVars)
-	}
+	vars["cur_dir"] = sysutil.Workdir()
 
 	// merge ENV and PATH
 	ctx.MergeEnv(r.taskSettings.Env, st.Env)
 	if len(r.taskSettings.EnvPaths) > 0 {
 		st.EnvPaths = append(st.EnvPaths, r.taskSettings.EnvPaths...)
 	}
-	envMap := ctx.ParseVarInEnv(st.EnvPaths, baseVars)
 
-	// build context vars
-	vars, err := r.buildTaskTplVars(inArgs, st, ctx)
-	if err != nil {
-		return err
-	}
-	if ctx.AppendVarsFn != nil {
-		vars = ctx.AppendVarsFn(vars)
-	}
+	// parse vars in ENV
+	envMap := ctx.ParseVarInEnv(st.EnvPaths, vars)
 
-	// workdir
+	// parse workdir
 	if strutil.ContainsByte(workdir, '$') {
 		workdir = r.renderTaskVars(workdir, vars, ctx)
 		vars["workdir"] = workdir
 		vars["dirname"] = fsutil.Name(workdir)
 	}
 
+	ctx.AppendArgsToVars(vars)
 	ccolor.Magentaln("CURRENT DIR:", sysutil.Workdir())
 	if ctx.Verbose {
 		show.AList("Task Vars", vars)
@@ -170,7 +159,7 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 	// 先执行 deps 任务
 	if len(st.Deps) > 0 {
 		for _, depTask := range st.Deps {
-			ccolor.Magentaln("Run depends task:", depTask)
+			ccolor.Magentaln("Run Depends Task:", depTask)
 
 			dst, err1 := r.LoadScriptTaskInfo(depTask)
 			if err1 != nil {
@@ -247,15 +236,9 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 	return nil
 }
 
-func (r *Runner) buildTaskTplVars(inArgs []string, st *ScriptTask, ctx *RunCtx) (map[string]any, error) {
+func (r *Runner) buildTaskRenderVars(st *ScriptTask, ctx *RunCtx) (map[string]any, error) {
 	// build context vars
-	argStr := strings.Join(inArgs, " ")
 	data := map[string]any{
-		// $@ 是一个字符串参数数组
-		"@": argStr,
-		// @* 把所有参数合并成一个字符串
-		"*": strutil.Quote(argStr),
-		// context info
 		"workdir": "",
 		"dirname": "",
 	}
@@ -270,12 +253,6 @@ func (r *Runner) buildTaskTplVars(inArgs []string, st *ScriptTask, ctx *RunCtx) 
 	topVars := maputil.MergeStrMap(stVars, ctx.Vars)
 	for k, v := range topVars {
 		data[k] = v
-	}
-
-	// 输入参数处理 $1 ... $N
-	for i, val := range inArgs {
-		key := mathutil.String(i + 1)
-		data[key] = val
 	}
 
 	// 内置扩展变量
@@ -293,6 +270,9 @@ func (r *Runner) buildTaskTplVars(inArgs []string, st *ScriptTask, ctx *RunCtx) 
 	data["vars"] = r.taskSettings.Vars
 	data["groups"] = r.taskSettings.Groups
 
+	if ctx.AppendVarsFn != nil {
+		data = ctx.AppendVarsFn(data)
+	}
 	return data, nil
 }
 
