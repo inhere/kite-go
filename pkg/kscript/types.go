@@ -2,9 +2,9 @@ package kscript
 
 import (
 	"path/filepath"
-	"strings"
 	"time"
 
+	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/goutil/strutil"
@@ -198,7 +198,8 @@ func (c *RunCtx) FullEnv() map[string]string {
 
 // AppendArgsToVars set args to vars. like shell $1 .. $N
 func (c *RunCtx) AppendArgsToVars(vars map[string]any) {
-	argStr := strings.Join(c.Args, " ")
+	// fix: 不能直接 join, 有空格的值会被task cmd 解析为多个
+	argStr := cliutil.BuildLine("", c.Args)
 	// $@ 是一个字符串参数数组
 	vars["@"] = argStr
 	// $* 把所有参数合并成一个字符串

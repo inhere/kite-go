@@ -150,6 +150,7 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 		vars["dirname"] = fsutil.Name(workdir)
 	}
 
+	// append args to vars
 	ctx.AppendArgsToVars(vars)
 	ccolor.Magentaln("CURRENT DIR:", sysutil.Workdir())
 	if ctx.Verbose {
@@ -232,7 +233,7 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 		}
 	}
 
-	ccolor.Infof("✅  Task %s: all task commands done. take time: %s\n", st.Name, timex.Now().Diff(startTime))
+	ccolor.Infof(" ✅  Task %s: all task commands done. Take time: %s\n", st.Name, timex.Now().Diff(startTime))
 	return nil
 }
 
@@ -250,10 +251,11 @@ func (r *Runner) buildTaskRenderVars(st *ScriptTask, ctx *RunCtx) (map[string]an
 	}
 
 	// 当前task配置的和ctx输入变量，放在顶级直接访问
-	topVars := maputil.MergeStrMap(stVars, ctx.Vars)
+	topVars := maputil.MergeStrMap(ctx.Vars, stVars)
 	for k, v := range topVars {
 		data[k] = v
 	}
+	// dump.P(ctx, topVars)
 
 	// 内置扩展变量
 	tn := time.Now()
