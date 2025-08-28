@@ -189,6 +189,13 @@ func (m *ExtManager) Ext(name string) (ext *KiteExt, ok bool) {
 // Exts gets ext list.
 func (m *ExtManager) Exts() []*KiteExt { return m.schema.Exts }
 
+// Each every ext information
+func (m *ExtManager) Each(fn func(ext *KiteExt)) {
+	for _, ext := range m.extMap {
+		fn(ext)
+	}
+}
+
 // Exists checks ext exists.
 func (m *ExtManager) Exists(name string) bool {
 	_, ok := m.extMap[name]

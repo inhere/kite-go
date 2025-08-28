@@ -13,6 +13,7 @@ import (
 	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
+	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/gookit/goutil/x/ccolor"
 	"github.com/inhere/kite-go/internal/app"
@@ -30,6 +31,7 @@ import (
 	"github.com/inhere/kite-go/internal/cli/syscmd"
 	"github.com/inhere/kite-go/internal/cli/textcmd"
 	"github.com/inhere/kite-go/internal/cli/toolcmd"
+	"github.com/inhere/kite-go/pkg/kiteext"
 	"github.com/inhere/kite-go/pkg/pacutil"
 )
 
@@ -88,6 +90,17 @@ func addListener(cli *gcli.App) {
 		app.Log().WithValue("workdir", cli.WorkDir()).Info("kite cli app init completed. osArgs:", os.Args[1:])
 		if err := changeWorkdir(cli, defWorkdir); err != nil {
 			colorp.Redln(err.Error())
+		}
+
+		var sb strutil.Builder
+		sb.WriteString("Extensions:\n")
+		app.Exts.Each(func(ext *kiteext.KiteExt) {
+			sb.Writef("  %16s  %s\n", ext.Name, ext.Desc)
+		})
+
+		cli.HelpConfig = gcli.HelpConfig{
+			AfterCmdText: sb.String(),
+			FooterText:   "Aliases:\n  " + strutil.JoinList(", ", app.Kas.AliasesNames()),
 		}
 		return
 	})
