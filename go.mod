@@ -10,13 +10,13 @@ require (
 	github.com/charmbracelet/glamour v0.10.0
 	github.com/expr-lang/expr v1.17.6
 	github.com/fsnotify/fsnotify v1.9.0
-	github.com/getkin/kin-openapi v0.132.0
-	github.com/go-openapi/spec v0.20.14
-	github.com/go-openapi/swag v0.23.0
+	github.com/getkin/kin-openapi v0.133.0
+	github.com/go-openapi/spec v0.21.0
+	github.com/go-openapi/swag v0.23.1
 	github.com/goccy/go-yaml v1.18.0
 	github.com/gofrs/uuid/v5 v5.3.2
-	github.com/gomarkdown/markdown v0.0.0-20231222211730-1d6d20845b47
-	github.com/gookit/color v1.5.4
+	github.com/gomarkdown/markdown v0.0.0-20250810172220-2e2c11897d1a
+	github.com/gookit/color v1.6.0
 	github.com/gookit/config/v2 v2.2.5
 	github.com/gookit/easytpl v1.1.0
 	github.com/gookit/event v1.1.2
@@ -24,7 +24,7 @@ require (
 	github.com/gookit/gitw v0.3.5
 	github.com/gookit/goutil v0.7.1
 	github.com/gookit/greq v0.4.0
-	github.com/gookit/i18n v1.2.1
+	github.com/gookit/i18n v1.2.2
 	github.com/gookit/ini/v2 v2.3.1
 	github.com/gookit/rux v1.4.0
 	github.com/gookit/slog v0.5.8

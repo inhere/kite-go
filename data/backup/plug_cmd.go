@@ -1,4 +1,4 @@
-package extcmd
+package backup
 
 import (
 	"github.com/gookit/gcli/v3"

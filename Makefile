@@ -121,8 +121,8 @@ linux-arm: ## Build for Linux ARM64
 	chmod +x build/$(NAME)-linux-arm
 
 win: ## Build for Windows
-	GOOS=windows GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -x -o build/$(NAME)-windows-amd64.exe $(MAIN_SRC_FILE)
-	ls -alh build/$(NAME)*
+	GOOS=windows GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-windows-amd64.exe $(MAIN_SRC_FILE)
+	#ls -alh build/$(NAME)*
 	upx -6 -f --no-progress -o build/$(NAME)-windows-amd64-upx.exe build/$(NAME)-windows-amd64.exe
 	ls -alh build/$(NAME)*
 
