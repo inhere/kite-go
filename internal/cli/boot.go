@@ -91,22 +91,27 @@ func addListener(cli *gcli.App) {
 		if err := changeWorkdir(cli, defWorkdir); err != nil {
 			colorp.Redln(err.Error())
 		}
-
-		var sb strutil.Builder
-		sb.WriteString("Extensions:\n")
-		app.Exts.Each(func(ext *kiteext.KiteExt) {
-			sb.Writef("  %16s  %s\n", ext.Name, ext.Desc)
-		})
-
-		cli.HelpConfig = gcli.HelpConfig{
-			AfterCmdText: sb.String(),
-			FooterText:   "Aliases:\n  " + strutil.JoinList(", ", app.Kas.AliasesNames()),
-		}
 		return
 	})
 
 	// bind new app options
 	cli.On(events.OnAppBindOptsAfter, onAppBindOptsAfter(cli))
+
+	cli.On(events.OnAppHelpBefore, func(ctx *gcli.HookCtx) (stop bool) {
+		var sb strutil.Builder
+		sb.WriteString("\n\n<mga>Extensions:</>\n")
+		app.Exts.Each(func(ext *kiteext.KiteExt) {
+			sb.Writef("  %-16s  %s\n", ext.Name, ext.Desc)
+		})
+		sb.WriteString("\n<mga>Command Aliases:</>\n  ")
+		sb.WriteString(strutil.JoinList(", ", app.Kas.AliasesNames()))
+
+		cli.HelpConfig = gcli.HelpConfig{
+			// AfterCmdText: sb.String(),
+			FooterText: sb.String(),
+		}
+		return
+	})
 
 	cli.On(events.OnCmdRunBefore, func(ctx *gcli.HookCtx) (stop bool) {
 		app.Log().

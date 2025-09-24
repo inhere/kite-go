@@ -7,7 +7,7 @@ import (
 )
 
 // DebugTpl for logger
-const DebugTpl = "Kite [{{level}}] {{caller}} {{message}} {{data}}\n"
+const DebugTpl = "Kite-Init [{{level}}] {{caller}} {{message}} {{data}}\n"
 
 // L logger for init app
 var L *slog.SugaredLogger
@@ -36,6 +36,6 @@ func SetLevel(lv slog.Level) {
 	if lv >= slog.DebugLevel {
 		f.SetTemplate(DebugTpl)
 	} else {
-		f.SetTemplate("Kite [{{level}}] {{message}} {{data}}\n")
+		f.SetTemplate("Kite-Init [{{level}}] {{message}} {{data}}\n")
 	}
 }
