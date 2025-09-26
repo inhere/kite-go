@@ -1,0 +1,19 @@
+
+add_envs: []
+add_paths: []
+remove_envs: []
+sdk_dir: /opt/devsdk
+sdks:
+  - name: go
+    install_url: https://golang.org/dl/go{version}.{os}-{arch}.tar.gz
+    install_dir: /opt/devsdk/go{version}
+  - name: node
+    install_url: https://nodejs.org/dist/v{version}/{os}-{arch}.tar.xz
+    install_dir: /opt/devsdk/node{version}
+  - name: java
+    install_url: https://download.oracle.com/otn_software/java/jdk/{version}/jdk-{version}_linux-{arch}.tar.gz
+    install_dir: /opt/devsdk/java{version}
+    active_env: # 激活时额外设置ENV
+      JAVA_HOME: /opt/devsdk/java{version}
+  - name: flutter # 不配制下载地址，手动下载到指定目录下即可
+    install_dir: /opt/devsdk/flutter{version}
