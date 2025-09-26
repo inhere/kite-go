@@ -51,6 +51,16 @@ package:
   timeout: 10m
   metadir: $config/pkgm
 
+# shell env 配置 see NewEnvManageCmd
+shell_env:
+  add_paths: [] # 添加PATH
+  add_envs: [] # 添加环境变量
+  # 配置SDK目录，安装URL等
+  config_file: $config/module/shell_env.yml
+  active_file: $data/shell_env/active.json # 当前环境的设置信息
+  # 自定eval脚本目录 bash, pwsh 等使用
+  custom_dir: $data/shell_env
+
 jenkins:
   host_url: xyz
   api_token:
