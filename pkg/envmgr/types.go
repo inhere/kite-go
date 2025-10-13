@@ -4,6 +4,20 @@ import (
 	"time"
 )
 
+// ManagerConfig shell env manager configuration
+type ManagerConfig struct {
+	// AddPaths 添加到 PATH 的路径列表
+	AddPaths []string `yaml:"add_paths" json:"add_paths"`
+	// AddEnvs 添加的环境变量列表
+	AddEnvs []string `yaml:"add_envs" json:"add_envs"`
+	// ConfigFile 配置SDK目录，安装URL等配置YAML文件路径
+	ConfigFile string `yaml:"config_file" json:"config_file"`
+	// ActiveFile 当前环境的设置信息JSON文件路径
+	ActiveFile string `yaml:"active_file" json:"active_file"`
+	// CustomDir 自定义eval脚本目录（bash, pwsh等使用）
+	CustomDir string `yaml:"custom_dir" json:"custom_dir"`
+}
+
 // SDKConfig SDK配置定义
 type SDKConfig struct {
 	Name       string            `yaml:"name" json:"name"`                             // SDK名称标识符
@@ -113,7 +127,10 @@ type SDKManager interface {
 	// IsInstalled 检查SDK是否已安装
 	IsInstalled(sdk, version string) bool
 
-	// ListVersions 列出SDK的可用版本
+	// ListVersionDirs 列出本地的可用SDK版本 {version: dir_path}
+	ListVersionDirs(sdk string) (map[string]string, error)
+
+	// ListVersions 列出本地的可用SDK版本
 	ListVersions(sdk string) ([]string, error)
 
 	// ValidateSDK 验证SDK安装

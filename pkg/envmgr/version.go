@@ -10,24 +10,28 @@ var (
 	ErrEmptyVersionSpec   = errors.New("empty version specification")
 )
 
-// ParseVersionSpec 解析版本规格 "sdk:version"
+// ParseVersionSpec 解析版本规格 "sdk" or "sdk:version" or "sdk@version"
 func ParseVersionSpec(spec string) (*VersionSpec, error) {
 	if spec == "" {
 		return nil, ErrEmptyVersionSpec
 	}
-	
-	parts := strings.SplitN(spec, ":", 2)
-	if len(parts) != 2 {
-		return nil, ErrInvalidVersionSpec
+
+	sep := ":"
+	if strings.Contains(spec, "@") {
+		sep = "@"
 	}
-	
+
+	parts := strings.SplitN(spec, sep, 2)
+	if len(parts) != 2 {
+		parts = append(parts, "latest")
+	}
+
 	sdk := strings.TrimSpace(parts[0])
 	version := strings.TrimSpace(parts[1])
-	
 	if sdk == "" || version == "" {
 		return nil, ErrInvalidVersionSpec
 	}
-	
+
 	return &VersionSpec{
 		SDK:     sdk,
 		Version: version,
@@ -39,7 +43,7 @@ func ParseMultipleVersionSpecs(specs []string) ([]*VersionSpec, error) {
 	if len(specs) == 0 {
 		return nil, nil
 	}
-	
+
 	var result []*VersionSpec
 	for _, spec := range specs {
 		parsed, err := ParseVersionSpec(spec)
@@ -48,7 +52,7 @@ func ParseMultipleVersionSpecs(specs []string) ([]*VersionSpec, error) {
 		}
 		result = append(result, parsed)
 	}
-	
+
 	return result, nil
 }
 
@@ -62,17 +66,17 @@ func IsValidSDKName(name string) bool {
 	if name == "" {
 		return false
 	}
-	
+
 	// SDK名称只能包含字母、数字、下划线和连字符
 	for _, r := range name {
-		if !((r >= 'a' && r <= 'z') || 
-			 (r >= 'A' && r <= 'Z') || 
-			 (r >= '0' && r <= '9') || 
+		if !((r >= 'a' && r <= 'z') ||
+			(r >= 'A' && r <= 'Z') ||
+			(r >= '0' && r <= '9') ||
 			 r == '_' || r == '-') {
 			return false
 		}
 	}
-	
+
 	return true
 }
 
@@ -81,13 +85,13 @@ func IsValidVersion(version string) bool {
 	if version == "" {
 		return false
 	}
-	
+
 	// 支持的版本格式：
 	// 1. 语义版本: 1.2.3, 1.2.3-alpha, 1.2.3+build
 	// 2. 主版本: 18, 16
 	// 3. 别名: lts, latest, stable
 	// 4. 自动检测: auto
-	
+
 	// 简单验证：不能包含空格和特殊字符
 	invalidChars := []string{" ", "\t", "\n", "\r"}
 	for _, char := range invalidChars {
@@ -95,14 +99,14 @@ func IsValidVersion(version string) bool {
 			return false
 		}
 	}
-	
+
 	return true
 }
 
 // NormalizeVersion 标准化版本号
 func NormalizeVersion(version string) string {
 	version = strings.TrimSpace(version)
-	
+
 	// 处理别名
 	switch strings.ToLower(version) {
 	case "lts":

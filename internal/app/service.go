@@ -6,6 +6,7 @@ import (
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/rux"
 	"github.com/gookit/slog"
+	"github.com/inhere/kite-go/pkg/envmgr"
 	"github.com/inhere/kite-go/pkg/gitx"
 	"github.com/inhere/kite-go/pkg/gitx/github"
 	"github.com/inhere/kite-go/pkg/gitx/gitlab"
@@ -43,7 +44,7 @@ var (
 var (
 	Lcp *lcproxy.LocalProxy
 	Exts *kiteext.ExtManager
-	// AlsRun  *kiteext.KiteAliasRun
+	EnvMgr *envmgr.DefaultEnvManager
 
 	Scripts *kscript.Runner
 	Plugins *kiteext.PluginRunner

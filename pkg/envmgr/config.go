@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/goccy/go-yaml"
 	"github.com/gookit/goutil/fsutil"
-	"gopkg.in/yaml.v3"
 )
 
 // DefaultConfigManager 默认配置管理器实现

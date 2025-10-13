@@ -2,6 +2,8 @@ package envcmd
 
 import "github.com/gookit/gcli/v3"
 
+// NewEnvManageCmd 创建环境管理命令
+// 参考 mise 等工具
 func NewEnvManageCmd() *gcli.Command {
 	return &gcli.Command{
 		Name:    "env",
@@ -37,9 +39,9 @@ Version formats:
 			NewEnvAddCmd(),
 			NewEnvRemoveCmd(),
 			NewEnvUseCmd(),
+			NewEnvUnuseCmd(),
 			NewEnvShellCmd(),
 			NewEnvConfigCmd(),
-			NewKtenvCmd(), // ktenv命令处理器
 		},
 	}
 }
@@ -52,9 +54,7 @@ func NewEnvListCmd() *gcli.Command {
 		Config: func(c *gcli.Command) {
 			c.StrOpt(&envListOpts.sdkType, "type", "t", "filter by SDK type")
 		},
-		Func: func(c *gcli.Command, args []string) error {
-			return handleEnvList(c, args)
-		},
+		Func: handleEnvList,
 	}
 }
 
@@ -74,35 +74,5 @@ func NewEnvShellCmd() *gcli.Command {
 		Desc:    "create environment shell injection scripts",
 		Aliases: []string{"sh"},
 		Func:    handleEnvShell,
-	}
-}
-
-func NewEnvAddCmd() *gcli.Command {
-	return &gcli.Command{
-		Name:    "add",
-		Desc:    "add/install new environment SDK",
-		Aliases: []string{"ins", "install"},
-		Func:    handleEnvAdd,
-	}
-}
-
-func NewEnvRemoveCmd() *gcli.Command {
-	return &gcli.Command{
-		Name:    "remove",
-		Desc:    "remove installed environment SDK",
-		Aliases: []string{"del", "rm", "delete"},
-		Func:    handleEnvRemove,
-	}
-}
-
-func NewEnvUseCmd() *gcli.Command {
-	return &gcli.Command{
-		Name:    "use",
-		Desc:    "use environment",
-		Aliases: []string{"switch"},
-		Config: func(c *gcli.Command) {
-			c.BoolOpt(&envUseOpts.save, "save", "s", false, "save configuration to project file")
-		},
-		Func: handleEnvUse,
 	}
 }

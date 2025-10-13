@@ -13,6 +13,8 @@ import (
 	"time"
 
 	"github.com/gookit/goutil/fsutil"
+	"github.com/gookit/goutil/strutil"
+	"github.com/gookit/goutil/x/ccolor"
 )
 
 // DefaultSDKManager 默认SDK管理器实现
@@ -116,6 +118,38 @@ func (sm *DefaultSDKManager) IsInstalled(sdk, version string) bool {
 	return fsutil.IsDir(installPath)
 }
 
+// ListVersionDirs 列出SDK的可用版本目录（已安装的版本）
+func (sm *DefaultSDKManager) ListVersionDirs(sdk string) (map[string]string, error) {
+	config, err := sm.configManager.GetSDKConfig(sdk)
+	if err != nil {
+		return nil, err
+	}
+
+	// 获取SDK基础目录
+	baseDir := filepath.Dir(sm.buildInstallPath(config.InstallDir, ""))
+	if !fsutil.IsDir(baseDir) {
+		return nil, nil
+	}
+	ccolor.Infof("list installed SDK from %s\n", baseDir)
+
+	entries, err := os.ReadDir(baseDir)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list SDK directory: %w", err)
+	}
+
+	var sdkDirMap = make(map[string]string)
+	for _, entry := range entries {
+		if entry.IsDir() {
+			// 从目录名中提取版本号
+			dirName := entry.Name()
+			if verStr := strutil.NumVersion(dirName); verStr != "" {
+				sdkDirMap[verStr] = baseDir + "/" + entry.Name()
+			}
+		}
+	}
+	return sdkDirMap, nil
+}
+
 // ListVersions 列出SDK的可用版本（已安装的版本）
 func (sm *DefaultSDKManager) ListVersions(sdk string) ([]string, error) {
 	config, err := sm.configManager.GetSDKConfig(sdk)
@@ -125,10 +159,10 @@ func (sm *DefaultSDKManager) ListVersions(sdk string) ([]string, error) {
 
 	// 获取SDK基础目录
 	baseDir := filepath.Dir(sm.buildInstallPath(config.InstallDir, ""))
-
 	if !fsutil.IsDir(baseDir) {
 		return []string{}, nil
 	}
+	ccolor.Infof("list installed SDK from %s\n", baseDir)
 
 	entries, err := os.ReadDir(baseDir)
 	if err != nil {
@@ -140,11 +174,8 @@ func (sm *DefaultSDKManager) ListVersions(sdk string) ([]string, error) {
 		if entry.IsDir() {
 			// 从目录名中提取版本号
 			dirName := entry.Name()
-			if strings.HasPrefix(dirName, sdk) {
-				version := strings.TrimPrefix(dirName, sdk)
-				if version != "" {
-					versions = append(versions, version)
-				}
+			if verStr := strutil.NumVersion(dirName); verStr != "" {
+				versions = append(versions, verStr)
 			}
 		}
 	}
@@ -164,7 +195,7 @@ func (sm *DefaultSDKManager) GetSDKBinPath(sdk, version string) string {
 	case "go":
 		return filepath.Join(sdkPath, "bin")
 	case "node":
-		return filepath.Join(sdkPath, "bin")
+		return sdkPath
 	case "java":
 		return filepath.Join(sdkPath, "bin")
 	case "flutter":
@@ -209,10 +240,8 @@ func (sm *DefaultSDKManager) buildDownloadURL(urlTemplate, version string) strin
 // buildInstallPath 构建安装路径
 func (sm *DefaultSDKManager) buildInstallPath(pathTemplate, version string) string {
 	path := pathTemplate
-
 	// 替换版本号
 	path = strings.ReplaceAll(path, "{version}", version)
-
 	return path
 }
 

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+
+	"github.com/gookit/goutil/x/ccolor"
 )
 
 // DefaultEnvManager 默认环境管理器实现
@@ -16,12 +18,19 @@ type DefaultEnvManager struct {
 	kiteCommand   string
 }
 
+var std = &DefaultEnvManager{}
+
+// Std 获取标准环境管理器实例
+func Std() *DefaultEnvManager {
+	return std
+}
+
 // NewEnvManager 创建环境管理器
 func NewEnvManager(baseDir, kiteCommand string) *DefaultEnvManager {
 	// 配置文件路径
 	configFile := filepath.Join(baseDir, "config", "module", "shell_env.yml")
 	stateFile := filepath.Join(baseDir, "data", "shell_env", "active.json")
-	fmt.Println("configFile: %s, stateFile: %s", configFile, stateFile)
+	fmt.Printf("NewEnvManager configFile: %s, stateFile: %s\n", configFile, stateFile)
 
 	// 创建管理器实例
 	configManager := NewConfigManager(configFile, baseDir)
@@ -56,23 +65,46 @@ func (em *DefaultEnvManager) UseSDK(sdk, version string, save bool) error {
 		return fmt.Errorf("unsupported SDK: %s", sdk)
 	}
 
+	verDirMap, err := em.sdkManager.ListVersionDirs(sdk)
+	if err != nil {
+		return fmt.Errorf("failed to list SDK versions: %w", err)
+	}
+
+	var fullVer, toolDir string
+	toolDir = verDirMap[version]
+	if toolDir == "" {
+		// 前缀匹配
+		for localVer, dirPath := range verDirMap {
+			// eg: 20 -> 20.2.12
+			if strings.HasPrefix(localVer, version+".") {
+				fullVer = localVer
+				toolDir = dirPath
+				break
+			}
+		}
+	} else {
+		fullVer = version
+	}
 	// 检查SDK是否已安装
-	if !em.sdkManager.IsInstalled(sdk, version) {
+	if toolDir == "" {
+		// TODO 自动查找安装
 		return fmt.Errorf("SDK %s:%s is not installed, use 'ktenv add %s:%s' to install it first", sdk, version, sdk, version)
 	}
 
+	ccolor.Infof("Activating SDK %s:%s(at: %s)\n", sdk, fullVer, toolDir)
+
 	// 验证SDK安装
-	if err := em.sdkManager.ValidateSDK(sdk, version); err != nil {
+	if err := em.sdkManager.ValidateSDK(sdk, fullVer); err != nil {
 		return fmt.Errorf("SDK %s:%s validation failed: %w", sdk, version, err)
 	}
 
 	// 更新活跃状态
-	if err := em.stateManager.UpdateSDKState(sdk, version, true); err != nil {
+	if err := em.stateManager.UpdateSDKState(sdk, fullVer, true); err != nil {
 		return fmt.Errorf("failed to update SDK state: %w", err)
 	}
 
 	// 获取SDK路径并添加到PATH
-	binPath := em.sdkManager.GetSDKBinPath(sdk, version)
+	binPath := em.sdkManager.GetSDKBinPath(sdk, fullVer)
 	if binPath != "" {
 		if err := em.stateManager.AddPath(binPath); err != nil {
 			return fmt.Errorf("failed to add SDK bin path: %w", err)
@@ -80,7 +112,7 @@ func (em *DefaultEnvManager) UseSDK(sdk, version string, save bool) error {
 	}
 
 	// 设置SDK特定的环境变量
-	envVars, err := em.sdkManager.GetSDKEnvVars(sdk, version)
+	envVars, err := em.sdkManager.GetSDKEnvVars(sdk, fullVer)
 	if err != nil {
 		return fmt.Errorf("failed to get SDK env vars: %w", err)
 	}
@@ -200,32 +232,26 @@ func (em *DefaultEnvManager) ListSDKs(sdkType string) ([]SDKInfo, error) {
 		}
 
 		// 获取已安装的版本
-		versions, err := em.sdkManager.ListVersions(sdk)
+		verDirMap, err := em.sdkManager.ListVersionDirs(sdk)
 		if err != nil {
 			continue // 忽略错误，继续处理其他SDK
 		}
 
-		for _, version := range versions {
+		for version, dirPath := range verDirMap {
 			isActive := currentSDKs[sdk] == version
 			sdkInfo := SDKInfo{
 				Name:      sdk,
 				Version:   version,
 				IsActive:  isActive,
-				Path:      em.sdkManager.GetSDKPath(sdk, version),
-				Installed: em.sdkManager.IsInstalled(sdk, version),
+				Path:      dirPath,
+				Installed: true,
 			}
 			result = append(result, sdkInfo)
 		}
 
 		// 如果没有安装的版本，也显示SDK信息
-		if len(versions) == 0 {
-			sdkInfo := SDKInfo{
-				Name:      sdk,
-				Version:   "",
-				IsActive:  false,
-				Path:      "",
-				Installed: false,
-			}
+		if len(verDirMap) == 0 {
+			sdkInfo := SDKInfo{Name: sdk}
 			result = append(result, sdkInfo)
 		}
 	}
@@ -262,22 +288,6 @@ func (em *DefaultEnvManager) GenerateShellScript(shellType ShellType) (string, e
 	}
 
 	return script, nil
-}
-
-// ProcessKtenvCommand 处理ktenv命令
-func (em *DefaultEnvManager) ProcessKtenvCommand(cmd string, args []string) (string, error) {
-	switch cmd {
-	case "use":
-		return em.processUseCommand(args)
-	case "unuse":
-		return em.processUnuseCommand(args)
-	case "add":
-		return em.processAddCommand(args)
-	case "list":
-		return em.processListCommand(args)
-	default:
-		return "", fmt.Errorf("unknown ktenv command: %s", cmd)
-	}
 }
 
 // processUseCommand 处理use命令
@@ -369,13 +379,8 @@ func (em *DefaultEnvManager) processAddCommand(args []string) (string, error) {
 	return fmt.Sprintf("Successfully installed %d SDKs", len(versionSpecs)), nil
 }
 
-// processListCommand 处理list命令
-func (em *DefaultEnvManager) processListCommand(args []string) (string, error) {
-	var sdkType string
-	if len(args) > 0 {
-		sdkType = args[0]
-	}
-
+// ShowInstalledSDKs 处理list命令
+func (em *DefaultEnvManager) ShowInstalledSDKs(sdkType string) (string, error) {
 	sdks, err := em.ListSDKs(sdkType)
 	if err != nil {
 		return "", fmt.Errorf("failed to list SDKs: %w", err)
@@ -385,19 +390,25 @@ func (em *DefaultEnvManager) processListCommand(args []string) (string, error) {
 		return "No SDKs found", nil
 	}
 
+	var currentType string
 	var result strings.Builder
 	result.WriteString("Installed SDKs:\n")
 
 	for _, sdk := range sdks {
+		if sdk.Name != currentType {
+			currentType = sdk.Name
+			result.WriteString(fmt.Sprintf("  %s SDK:\n", currentType))
+		}
+
 		status := "inactive"
 		if sdk.IsActive {
 			status = "active"
 		}
 
 		if sdk.Installed {
-			result.WriteString(fmt.Sprintf("  %s:%s (%s) - %s\n", sdk.Name, sdk.Version, status, sdk.Path))
+			result.WriteString(fmt.Sprintf("    %s:%s (%s) - %s\n", sdk.Name, sdk.Version, status, sdk.Path))
 		} else {
-			result.WriteString(fmt.Sprintf("  %s (not installed)\n", sdk.Name))
+			result.WriteString(fmt.Sprintf("    %s (not installed)\n", sdk.Name))
 		}
 	}
 
