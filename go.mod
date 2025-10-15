@@ -1,6 +1,6 @@
 module github.com/inhere/kite-go
 
-go 1.24
+go 1.24.0
 
 toolchain go1.24.6
 
@@ -8,11 +8,12 @@ require (
 	github.com/CloudyKit/jet/v6 v6.3.1
 	github.com/alecthomas/chroma v0.10.0
 	github.com/charmbracelet/glamour v0.10.0
+	github.com/d5/tengo/v2 v2.17.0
 	github.com/expr-lang/expr v1.17.6
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/getkin/kin-openapi v0.133.0
-	github.com/go-openapi/spec v0.21.0
-	github.com/go-openapi/swag v0.23.1
+	github.com/go-openapi/spec v0.22.0
+	github.com/go-openapi/swag v0.25.1
 	github.com/goccy/go-yaml v1.18.0
 	github.com/gofrs/uuid/v5 v5.3.2
 	github.com/gomarkdown/markdown v0.0.0-20250810172220-2e2c11897d1a
@@ -21,16 +22,15 @@ require (
 	github.com/gookit/easytpl v1.1.0
 	github.com/gookit/event v1.1.2
 	github.com/gookit/gcli/v3 v3.2.3
-	github.com/gookit/gitw v0.3.5
+	github.com/gookit/gitw v0.3.6
 	github.com/gookit/goutil v0.7.1
-	github.com/gookit/greq v0.4.0
+	github.com/gookit/greq v0.4.1
 	github.com/gookit/i18n v1.2.2
-	github.com/gookit/ini/v2 v2.3.1
-	github.com/gookit/rux v1.4.0
-	github.com/gookit/slog v0.5.8
-	github.com/sashabaranov/go-openai v1.41.1
+	github.com/gookit/ini/v2 v2.3.2
+	github.com/gookit/rux v1.4.1
+	github.com/gookit/slog v0.6.0
+	github.com/sashabaranov/go-openai v1.41.2
 	github.com/titanous/json5 v1.0.0
-	github.com/traefik/yaegi v0.16.1
 	github.com/yosuke-furukawa/json5 v0.1.1
 	github.com/yuin/goldmark v1.7.13
 )
@@ -45,11 +45,11 @@ require (
 	github.com/chzyer/readline v1.5.1 // indirect
 	github.com/dlclark/regexp2 v1.11.0 // indirect
 	github.com/fatih/color v1.16.0 // indirect
-	github.com/go-openapi/jsonpointer v0.21.0 // indirect
-	github.com/go-openapi/jsonreference v0.20.4 // indirect
-	github.com/gookit/filter v1.2.1 // indirect
-	github.com/gookit/gsr v0.1.0 // indirect
-	github.com/gookit/validate v1.5.2 // indirect
+	github.com/go-openapi/jsonpointer v0.22.1 // indirect
+	github.com/go-openapi/jsonreference v0.21.2 // indirect
+	github.com/gookit/filter v1.2.3 // indirect
+	github.com/gookit/gsr v0.1.1 // indirect
+	github.com/gookit/validate v1.5.5 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
 	github.com/invopop/yaml v0.2.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
@@ -70,7 +70,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	github.com/yuin/goldmark-emoji v1.0.5 // indirect
-	golang.org/x/crypto v0.31.0 // indirect
+	golang.org/x/crypto v0.33.0 // indirect
 	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/sync v0.13.0 // indirect
 	golang.org/x/sys v0.32.0 // indirect
@@ -79,3 +79,5 @@ require (
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/gookit/gcli/v3 => ../gcli
