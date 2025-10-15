@@ -5,15 +5,17 @@ import (
 	"github.com/inhere/kite-go/internal/bootstrap"
 )
 
-// dev run:
+// Dev run:
 //
 //	go run ./cmd/kite
 //	go run ./cmd/kite <CMD>
 //
-// debug run:
+// Debug run:
 //	KITE_VERBOSE=debug go run ./cmd/kite <CMD>
+//  // Windows PowerShell
+//	$env:KITE_VERBOSE="debug" go run ./cmd/kite <CMD>
 //
-// install:
+// Install:
 //
 //	go install ./cmd/kite
 func main() {

@@ -49,7 +49,7 @@ Version formats:
 func NewEnvListCmd() *gcli.Command {
 	return &gcli.Command{
 		Name:    "list",
-		Desc:    "list local environment SDK",
+		Desc: "list local environment SDK tools",
 		Aliases: []string{"ls", "l"},
 		Config: func(c *gcli.Command) {
 			c.StrOpt(&envListOpts.sdkType, "type", "t", "filter by SDK type")
@@ -65,14 +65,14 @@ var envListOpts = struct {
 // NewEnvShellCmd 创建环境shell注入命令
 // 将会创建环境shell注入脚本代码，并输出到标准输出。
 //
-// 内部会生成一个 ktenv shell 函数，用户通过 ktenv 函数实现切换shell环境信息。
+// 内部会生成一个 kenv shell 函数，用户通过 ktenv 函数实现切换shell环境信息。
 //
 // Usage: kite dev env shell [pwsh|bash|cmd|zsh]
 func NewEnvShellCmd() *gcli.Command {
 	return &gcli.Command{
 		Name:    "shell",
 		Desc:    "create environment shell injection scripts",
-		Aliases: []string{"sh"},
+		Aliases: []string{"inject", "activity"},
 		Func:    handleEnvShell,
 	}
 }
