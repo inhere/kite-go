@@ -81,7 +81,15 @@
 - [ ] quick json,yml data query
 - [ ] 终端自动提示 (auto complete) https://github.com/chzyer/readline
 
-### 系统软件管理
+### 扩展插件实现
+
+- https://github.com/d5/tengo Go 的快速脚本语言
+- https://github.com/dop251/goja 纯 Go 中的 ECMAScript/JavaScript 引擎
+- https://github.com/traefik/yaegi go 语言解释器
+- https://github.com/tetratelabs/wazero 纯 Go 的 Wasm 运行时，< 500 KB 增量体积
+  - 需要工具先将代码文件转换为 wasm 文件(eg: tinygo, bun)
+
+### 环境工具管理
 
 name: pkg, pkgm, pkgx
 

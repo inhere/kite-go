@@ -28,9 +28,8 @@ require (
 	github.com/gookit/ini/v2 v2.3.1
 	github.com/gookit/rux v1.4.0
 	github.com/gookit/slog v0.5.8
-	github.com/sashabaranov/go-openai v1.41.1
+	github.com/sashabaranov/go-openai v1.41.2
 	github.com/titanous/json5 v1.0.0
-	github.com/traefik/yaegi v0.16.1
 	github.com/d5/tengo/v2 v2.17.0
 	github.com/yosuke-furukawa/json5 v0.1.1
 	github.com/yuin/goldmark v1.7.13

@@ -558,6 +558,7 @@ go build -o $GOPAHT/bin/kite ./cmd/kite
 - https://github.com/go-task/task
 - https://github.com/tj/robo
 - https://github.com/casey/just
-- https://github.com/jdx/mise
+- https://github.com/jdx/mise dev tools, env vars, task runner
 - https://github.com/bitfield/script
 - https://github.com/zyedidia/eget Easily install prebuilt binaries from GitHub.
+- https://github.com/moonrepo/proto 可插拔的多语言版本管理器。
