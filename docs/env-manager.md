@@ -2,6 +2,11 @@
 
 Kite CLI 应用的环境管理工具，用于管理本地开发环境中的 SDK 版本切换。
 
+类似工具：
+
+- asdf
+- https://github.com/jdx/mise
+
 ## 功能特性
 
 - 支持多种开发环境：Go、Node.js、Java、Flutter
@@ -11,6 +16,13 @@ Kite CLI 应用的环境管理工具，用于管理本地开发环境中的 SDK 
 - Shell 脚本自动生成
 
 ## 快速开始
+
+```bash
+echo 'eval "$(kite dev env shell bash)"' >> ~/.bashrc
+echo 'eval "$(kite dev env shell zsh)"' >> ~/.zshrc
+echo 'kite dev env shell fish | source' >> ~/.config/fish/config.fish
+echo 'kite dev env shell pwsh | Out-String | Invoke-Expression' >> ~/.config/powershell/Microsoft.PowerShell_profile.ps1
+```
 
 ### 1. 启用 Shell 集成
 
@@ -232,6 +244,13 @@ pkg/envmgr/
 2. 在脚本生成器中实现对应逻辑
 3. 添加测试用例
 
-## 许可证
+## 相关项目
 
-本项目采用 MIT 许可证。详见 LICENSE 文件。
+- https://github.com/direnv/direnv - a tool for managing your dir environment
+* [autoenv](https://github.com/hyperupcall/autoenv) - older, popular, and lightweight.
+* [zsh-autoenv](https://github.com/Tarrasch/zsh-autoenv) - a feature-rich mixture of autoenv and [smartcd](https://github.com/cxreg/smartcd): enter/leave events, nesting, stashing (Zsh-only).
+* [asdf](https://github.com/asdf-vm/asdf) - a pure bash solution that has a plugin system. The [asdf-direnv](https://github.com/asdf-community/asdf-direnv) plugin allows using asdf managed tools with direnv.
+* [ondir](https://github.com/alecthomas/ondir) - OnDir is a small program to automate tasks specific to certain directories
+* [shadowenv](https://shopify.github.io/shadowenv/) - uses an s-expression format to define environment changes that should be executed
+* [quickenv](https://github.com/untitaker/quickenv) - an alternative loader for `.envrc` files that does not hook into your shell and favors speed over convenience.
+* [mise](https://github.com/jdx/mise) - direnv, make and asdf all in one tool.
