@@ -14,7 +14,10 @@
 - **Architecture**: CLI-first interface with text in/out protocol
 
 ## Project Structure
+
 - `/cmd/kite`: Main CLI application
+
+项目结构和功能开发参考文档 [docs/agents.README.md](docs/agents.README.md)
 
 ## Constitution Compliance
 - All features must serve developer productivity and workflow enhancement

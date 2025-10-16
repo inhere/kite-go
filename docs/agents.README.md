@@ -106,15 +106,15 @@ kite-go/
 项目使用 Go Modules 管理依赖，核心依赖包括：
 
 #### CLI 框架
+
 ```go
 github.com/gookit/gcli/v3 v3.2.3        // CLI 应用框架
 ```
 
 #### 配置管理
+
 ```go
-github.com/gookit/config/v2 v2.2.5      // 配置文件管理
-github.com/gookit/ini/v2 v2.3.1         // INI 配置支持
-github.com/goccy/go-yaml v1.18.0        // YAML 支持
+github.com/gookit/config/v2 v2.2.5      // 配置文件管理，支持 JSON、YAML、TOML、INI
 ```
 
 #### 文本处理
@@ -143,11 +143,13 @@ github.com/expr-lang/expr v1.17.6       // 表达式求值
 ```
 
 #### AI 集成
+
 ```go
 github.com/sashabaranov/go-openai v1.41.1 // OpenAI API 客户端
 ```
 
 #### 工具库
+
 ```go
 github.com/gookit/goutil v0.7.1         // 通用工具库
 github.com/gookit/color v1.6.0          // 颜色输出
