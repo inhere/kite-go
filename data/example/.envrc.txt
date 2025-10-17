@@ -1,0 +1,19 @@
+# Export simple environment variables
+export API_KEY="your_api_key_here"
+export DATABASE_URL="postgres://user:password@localhost:5432/my_database"
+export NODE_ENV="development"
+
+# Add a local 'bin' directory to the PATH
+PATH_add bin
+
+# Load variables from a .env file (if present)
+# This is useful for compatibility with tools that expect a .env file
+# and can be combined with the benefits of .envrc's scriptability.
+# dotenv
+
+# Use a specific version of a language or tool (e.g., using nvm for Node.js)
+# This requires a custom function defined in ~/.config/direnv/direnvrc
+# use_nvm v18.17.0
+
+# Execute other commands or scripts
+# echo "Entering project directory: $(basename $PWD)"

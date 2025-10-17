@@ -36,7 +36,7 @@ func ToolsInstallCmd() *gcli.Command {
 		Name:    "install",
 		Help:     "install <name:version>...",
 		Desc:   "Install a tool with specific version",
-		Aliases: []string{"i", "in"},
+		Aliases: []string{"i", "in", "add"},
 		Config: func(c *gcli.Command) {
 			c.AddArg("tools", "Name of the tool to install, allow multi.", true, true)
 		},
@@ -82,7 +82,7 @@ func ToolsUninstallCmd() *gcli.Command {
 		Name:    "uninstall",
 		Help:     "uninstall <name:version>",
 		Desc:   "Uninstall a tool with specific version",
-		Aliases: []string{"un"},
+		Aliases: []string{"un", "rm", "remove"},
 		Config: func(c *gcli.Command) {
 			// Add option to keep configuration files
 			c.BoolOpt(&keepConfig, "keep-config", "kc", false, "Keep configuration files after uninstall")

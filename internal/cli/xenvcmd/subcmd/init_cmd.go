@@ -23,8 +23,8 @@ var shellCmdOpts = struct {
 
 // ShellCmd the xenv shell command
 var ShellCmd = &gcli.Command{
-	Name:    "shell",
-	Desc:   "Generate shell integration script",
+	Name: "shell",
+	Desc: "Generate shell integration script",
 	Func: func(c *gcli.Command, args []string) error {
 		shellType := shellCmdOpts.Type.String()
 		if shellType == "" {
@@ -53,8 +53,8 @@ var ShellCmd = &gcli.Command{
 
 // InitCmd the xenv init command
 var InitCmd = &gcli.Command{
-	Name:    "init",
-	Desc:   "Initialize xenv configuration and environment",
+	Name: "init",
+	Desc: "Initialize xenv configuration and environment",
 	Func: func(c *gcli.Command, args []string) error {
 		// Initialize configuration
 		cfgMgr := config.NewConfigManager()

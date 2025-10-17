@@ -14,6 +14,7 @@ import (
 var ConfigCmd = &gcli.Command{
 	Name:    "config",
 	Desc:    "Manage xenv configuration",
+	Aliases: []string{"cfg"},
 	Subs: []*gcli.Command{
 		ConfigSetCmd(),
 		ConfigGetCmd(),

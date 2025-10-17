@@ -11,8 +11,8 @@ import (
 
 // EnvCmd the xenv env command
 var EnvCmd = &gcli.Command{
-	Name:    "env",
-	Desc:   "Manage environment variables",
+	Name: "env",
+	Desc: "Manage environment variables",
 	Subs: []*gcli.Command{
 		EnvSetCmd(),
 		EnvUnsetCmd(),
@@ -56,9 +56,9 @@ var EnvCmd = &gcli.Command{
 // EnvSetCmd command for setting environment variables
 func EnvSetCmd() *gcli.Command {
 	return &gcli.Command{
-		Name:    "set",
-		Help:     "set [-g] <name> <value>",
-		Desc:   "Set an environment variable",
+		Name: "set",
+		Help: "set [-g] <name> <value>",
+		Desc: "Set an environment variable",
 		Config: func(c *gcli.Command) {
 			c.BoolOpt(&GlobalFlag, "global", "g", false, "Operate for global config")
 
@@ -107,9 +107,9 @@ func EnvSetCmd() *gcli.Command {
 // EnvUnsetCmd command for unsetting environment variables
 func EnvUnsetCmd() *gcli.Command {
 	return &gcli.Command{
-		Name:    "unset",
-		Help:     "unset [-g] <name...>",
-		Desc:   "Unset environment variables",
+		Name: "unset",
+		Help: "unset [-g] <name...>",
+		Desc: "Unset environment variables",
 		Config: func(c *gcli.Command) {
 			c.BoolOpt(&GlobalFlag, "global", "g", false, "Operate for global config")
 			c.AddArg("name", "environment key name", true)
@@ -157,7 +157,7 @@ func EnvUnsetCmd() *gcli.Command {
 func EnvListCmd() *gcli.Command {
 	return &gcli.Command{
 		Name:    "list",
-		Desc:   "List environment variables",
+		Desc: "List environment variables",
 		Aliases: []string{"ls"},
 		Func: func(c *gcli.Command, args []string) error {
 			// This is the same as the main command's Run function
@@ -198,8 +198,8 @@ func EnvListCmd() *gcli.Command {
 
 // PathCmd the xenv path command
 var PathCmd = &gcli.Command{
-	Name:    "path",
-	Desc:   "Manage PATH environment variable",
+	Name: "path",
+	Desc: "Manage PATH environment variable",
 	Subs: []*gcli.Command{
 		PathAddCmd(),
 		PathRemoveCmd(),
@@ -244,9 +244,9 @@ var PathCmd = &gcli.Command{
 // PathAddCmd command for adding a path to PATH
 func PathAddCmd() *gcli.Command {
 	return &gcli.Command{
-		Name:    "add",
-		Help:     "add [-g] <path>",
-		Desc:   "Add a path to PATH environment variable",
+		Name: "add",
+		Help: "add [-g] <path>",
+		Desc: "Add a path to PATH environment variable",
 		Config: func(c *gcli.Command) {
 			c.BoolOpt(&GlobalFlag, "global", "g", false, "Global operation, not the current session")
 			c.AddArg("path", "PATH environment value", true)
@@ -293,9 +293,9 @@ func PathAddCmd() *gcli.Command {
 func PathRemoveCmd() *gcli.Command {
 	return &gcli.Command{
 		Name:    "rm",
-		Help:     "rm [-g] <path>",
-		Desc:   "Remove a path from PATH environment variable",
-		Aliases: []string{"remove"},
+		Help:    "rm [-g] <path>",
+		Desc:    "Remove a path from PATH environment variable",
+		Aliases: []string{"remove", "delete"},
 		Config: func(c *gcli.Command) {
 			c.BoolOpt(&GlobalFlag, "global", "g", false, "Global operation, not the current session")
 			c.AddArg("path", "PATH environment value", true)
@@ -327,7 +327,7 @@ func PathRemoveCmd() *gcli.Command {
 			if GlobalFlag {
 				if err := cfgMgr.SaveConfig(configPath); err != nil {
 					return fmt.Errorf("failed to save configuration: %w", err)
-			}
+				}
 				fmt.Printf("Removed %s from PATH globally\n", path)
 			} else {
 				fmt.Printf("Removed %s from PATH for current session\n", path)
@@ -342,7 +342,7 @@ func PathRemoveCmd() *gcli.Command {
 func PathListCmd() *gcli.Command {
 	return &gcli.Command{
 		Name:    "list",
-		Desc:   "List PATH entries",
+		Desc: "List PATH entries",
 		Aliases: []string{"ls"},
 		Func: func(c *gcli.Command, args []string) error {
 			// This is the same as the main command's Run function
@@ -385,7 +385,7 @@ func PathListCmd() *gcli.Command {
 func PathSearchCmd() *gcli.Command {
 	return &gcli.Command{
 		Name:    "search",
-		Desc:   "Search for a path in PATH",
+		Desc: "Search for a path in PATH",
 		Aliases: []string{"s"},
 		Config: func(c *gcli.Command) {
 			c.AddArg("value", "value for search in PATH", true)
