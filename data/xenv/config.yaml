@@ -1,0 +1,32 @@
+bin_dir: "~/.local/bin"
+install_dir: "~/.xenv/tools"
+shell_hooks_dir: "~/.config/xenv/hooks/"
+global_env: {}
+global_paths: []
+# 从远程下载的工具包默认格式
+download_ext:
+  windows: zip
+  linux: tar.gz
+  macos: tar.gz
+tools:
+  - name: go
+    alias: [golang]
+    install_url: "https://golang.org/dl/go{version}.{os}-{arch}.{download_ext}" # 可选，不配置则使用本地已下载的工具链
+    install_dir: D:/work/env/devsdk/gosdk/go{version} # 可选，默认使用顶级 `install_dir` 配置项
+    active_env: # 可选，激活时额外设置ENV
+      GO111MODULE: auto
+    bin_dir: bin # bin目录名称，不设置就是 install_dir 目录
+    post_install: [] # 安装完成后执行的shell hook脚本
+    version_dir: # 自定义版本安装目录,不在统一目录下的版本
+      "latest": "C:\Users\inhere\scoop\apps\go\current"
+  - name: node
+    # see https://registry.npmmirror.com/binary.html 查看二进制文件列表 node,python,bun,deno
+    install_url: https://cdn.npmmirror.com/binaries/node/v{version}/node-v{version}-{os}-{arch}.{download_ext}
+    install_dir: D:/work/env/devsdk/nodejs/node-v{version}-win-x64
+    download_ext:
+      windows: zip
+  - name: flutter # 不配制下载地址，手动下载到指定目录下即可
+    install_dir: D:/work/env/devsdk/flutter/flutter-{version}
+
+simple_tools:
+  - name: git

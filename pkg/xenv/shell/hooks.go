@@ -7,20 +7,22 @@ func GenerateBashHook() string {
 
 # Function to set up xenv in the current shell
 setup_xenv() {
+    # Mark hook enabled
+    export XENV_HOOK_ENABLE=true
     # Set up the xenv shims directory in PATH
     local xenv_shims_dir="${XENV_ROOT:-$HOME/.xenv}/shims"
-    
+
     # Add shims directory to PATH if it's not already there
     case ":$PATH:" in
         *":$xenv_shims_dir:"*) ;;
         *) export PATH="$xenv_shims_dir:$PATH" ;;
     esac
-    
+
     # Define the xenv function to activate tools
     xenv() {
         local command="$1"
         shift
-        
+
         case "$command" in
             use)
                 # Implementation for switching tool versions
@@ -40,7 +42,7 @@ setup_xenv() {
                 ;;
         esac
     }
-    
+
     # Auto-initialize xenv if needed
     if [ -f "$HOME/.xenvrc" ] && [ -z "$XENV_AUTO_INITIALIZED" ]; then
         source "$HOME/.xenvrc"
@@ -60,20 +62,22 @@ func GenerateZshHook() string {
 
 # Function to set up xenv in the current shell
 setup_xenv() {
+    # Mark hook enabled
+    export XENV_HOOK_ENABLE=true
     # Set up the xenv shims directory in PATH
     local xenv_shims_dir="${XENV_ROOT:-$HOME/.xenv}/shims"
-    
+
     # Add shims directory to PATH if it's not already there
     case ":$PATH:" in
         *":$xenv_shims_dir:"*) ;;
         *) export PATH="$xenv_shims_dir:$PATH" ;;
     esac
-    
+
     # Define the xenv function to activate tools
     xenv() {
         local command="$1"
         shift
-        
+
         case "$command" in
             use)
                 # Implementation for switching tool versions
@@ -93,7 +97,7 @@ setup_xenv() {
                 ;;
         esac
     }
-    
+
     # Auto-initialize xenv if needed
     if [ -f "$HOME/.xenvrc" ] && [ -z "$XENV_AUTO_INITIALIZED" ]; then
         source "$HOME/.xenvrc"
@@ -113,24 +117,26 @@ func GeneratePwshHook() string {
 
 # Function to set up xenv in the current shell
 function Setup-Xenv {
+    # Mark hook enabled
+    $env:XENV_HOOK_ENABLE = "true"
     # Set up the xenv shims directory in PATH
     $xenvShimsDir = if ($env:XENV_ROOT) { "$env:XENV_ROOT\shims" } else { "$HOME\.xenv\shims" }
-    
+
     # Add shims directory to PATH if it's not already there
     if ($env:PATH -notlike "*$xenvShimsDir*") {
         $env:PATH = "$xenvShimsDir;$env:PATH"
     }
-    
+
     # Define the xenv function to activate tools
     function global:xenv {
         param(
             [Parameter(Position=0)]
             [string]$Command,
-            
+
             [Parameter(ValueFromRemainingArguments)]
             [string[]]$Arguments
         )
-        
+
         switch ($Command) {
             "use" {
                 # Implementation for switching tool versions
@@ -150,9 +156,9 @@ function Setup-Xenv {
             }
         }
     }
-    
+
     # Auto-initialize xenv if needed
-    $xenvrcPath = "$HOME\.xenvrc"
+    $xenvrcPath = "$HOME\.xenvrc.ps1"
     if (Test-Path $xenvrcPath -PathType Leaf -and (-not $env:XENV_AUTO_INITIALIZED)) {
         . $xenvrcPath
         $env:XENV_AUTO_INITIALIZED = "1"
