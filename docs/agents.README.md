@@ -225,8 +225,9 @@ import (
 var ExampleCmd = &gcli.Command{
     Name: "example",
     Desc: "示例命令描述",
+    Subs: []*gcli.Command{}, // 如果有子命令
     Config: func(c *gcli.Command) {
-        // 配置选项和参数
+        // 配置选项和参数 param3=ture - 表明是必须的参数
         c.AddArg("name", "名称参数", true)
         c.BoolOpt2(&opts.verbose, "verbose,v", "详细输出")
     },

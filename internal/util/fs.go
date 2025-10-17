@@ -1,0 +1,85 @@
+package util
+
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+)
+
+// FileExists checks if a file exists and is not a directory
+func FileExists(path string) (bool, error) {
+	info, err := os.Stat(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
+		}
+		return false, err
+	}
+	return !info.IsDir(), nil
+}
+
+// DirExists checks if a directory exists
+func DirExists(path string) (bool, error) {
+	info, err := os.Stat(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
+		}
+		return false, err
+	}
+	return info.IsDir(), nil
+}
+
+// EnsureDir creates a directory if it doesn't exist
+func EnsureDir(path string) error {
+	exists, err := DirExists(path)
+	if err != nil {
+		return err
+	}
+	
+	if !exists {
+		return os.MkdirAll(path, 0755)
+	}
+	
+	return nil
+}
+
+// CopyFile copies a file from src to dst
+func CopyFile(src, dst string) error {
+	input, err := os.ReadFile(src)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(dst, input, 0644)
+}
+
+// CreateSymlink creates a symbolic link
+func CreateSymlink(target, linkPath string) error {
+	// Check if the link already exists
+	exists, err := FileExists(linkPath)
+	if err != nil {
+		return err
+	}
+	
+	if exists {
+		// Remove existing link/file
+		if err := os.Remove(linkPath); err != nil {
+			return fmt.Errorf("failed to remove existing file: %w", err)
+		}
+	}
+	
+	return os.Symlink(target, linkPath)
+}
+
+// FindExecutable looks for an executable file in the given directories
+func FindExecutable(name string, paths []string) (string, error) {
+	for _, path := range paths {
+		fullPath := filepath.Join(path, name)
+		if exists, err := FileExists(fullPath); err == nil && exists {
+			return fullPath, nil
+		}
+	}
+	
+	return "", fmt.Errorf("executable %s not found in provided paths", name)
+}

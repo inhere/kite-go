@@ -31,6 +31,7 @@ import (
 	"github.com/inhere/kite-go/internal/cli/syscmd"
 	"github.com/inhere/kite-go/internal/cli/textcmd"
 	"github.com/inhere/kite-go/internal/cli/toolcmd"
+	"github.com/inhere/kite-go/internal/cli/xenvcmd"
 	"github.com/inhere/kite-go/pkg/kiteext"
 	"github.com/inhere/kite-go/pkg/pacutil"
 )
@@ -63,6 +64,7 @@ func addCommands(cli *gcli.App) {
 		toolcmd.ToolsCmd,
 		toolcmd.RunAnyCmd,
 		// extcmd.PlugCmd,
+		xenvcmd.XEnvCmd,  // Added xenv command
 		builtin.GenAutoComplete().WithHidden(),
 	)
 
