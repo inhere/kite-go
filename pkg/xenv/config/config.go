@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 
 	"github.com/gookit/config/v2"
+	"github.com/gookit/config/v2/toml"
+	"github.com/gookit/config/v2/yaml"
 	"github.com/inhere/kite-go/pkg/xenv/models"
 )
 
@@ -32,7 +34,7 @@ func NewConfigManager() *ConfigManager {
 			InstallDir:      DefaultInstallDir,
 			ShellHooksDir: DefaultShellHooksDir,
 			Tools:           []models.ToolChain{},
-			GlobalEnv:       make(map[string]models.EnvironmentVariable),
+			GlobalEnv: make(map[string]models.EnvVariable),
 			GlobalPaths:     []models.PathEntry{},
 		},
 	}
@@ -40,29 +42,18 @@ func NewConfigManager() *ConfigManager {
 
 // LoadConfig loads configuration from the specified file
 func (cm *ConfigManager) LoadConfig(configPath string) error {
+	cfg := config.New("xenv", config.WithTagName("json"))
+	cfg.AddDriver(yaml.Driver)
+	cfg.AddDriver(toml.Driver)
+
 	// Load the configuration file
-	err := config.LoadFiles(configPath)
+	err := cfg.LoadFiles(configPath)
 	if err != nil {
 		return err
 	}
 
-	// Get the loaded config data
-	loadedConfig := config.Data()
-
-	// Map loaded config to our Configuration model
-	if binDir, ok := loadedConfig["bin_dir"].(string); ok {
-		cm.Config.BinDir = binDir
-	}
-	if installDir, ok := loadedConfig["install_dir"].(string); ok {
-		cm.Config.InstallDir = installDir
-	}
-	if shellHooksDir, ok := loadedConfig["shell_hooks_dir"].(string); ok {
-		cm.Config.ShellHooksDir = shellHooksDir
-	}
-
-	// TODO: Load other configuration values like tools, global environment, etc.
-
-	return nil
+	// Load other configuration values like tools, global environment, etc.
+	return cfg.Decode(&cm.Config)
 }
 
 // SaveConfig saves the configuration to the specified file

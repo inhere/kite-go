@@ -22,8 +22,12 @@ var ConfigCmd = &gcli.Command{
 		// Initialize configuration
 		cfgMgr := config.NewConfigManager()
 		configPath := config.GetDefaultConfigPath()
+		c.Infoln("Loading config file: %s", configPath)
 		// Try to load existing config, ignore errors (will use defaults)
-		_ = cfgMgr.LoadConfig(configPath)
+		err := cfgMgr.LoadConfig(configPath)
+		if err != nil {
+			return fmt.Errorf("failed to load configuration: %w", err)
+		}
 
 		// Display current configuration
 		fmt.Println("Current xenv configuration:")

@@ -26,9 +26,9 @@ func (m *Manager) SetEnv(name, value string, global bool) error {
 	if global {
 		// Add to global configuration
 		if m.config.GlobalEnv == nil {
-			m.config.GlobalEnv = make(map[string]models.EnvironmentVariable)
+			m.config.GlobalEnv = make(map[string]models.EnvVariable)
 		}
-		m.config.GlobalEnv[name] = models.EnvironmentVariable{
+		m.config.GlobalEnv[name] = models.EnvVariable{
 			Name:     name,
 			Value:    value,
 			Scope:    "global",
@@ -40,7 +40,7 @@ func (m *Manager) SetEnv(name, value string, global bool) error {
 		if err := os.Setenv(name, value); err != nil {
 			return fmt.Errorf("failed to set environment variable: %w", err)
 		}
-		
+
 		// Add to activity state to track session variables
 		if m.activityState.ActiveEnv == nil {
 			m.activityState.ActiveEnv = make(map[string]string)
@@ -61,7 +61,7 @@ func (m *Manager) UnsetEnv(name string, global bool) error {
 		if err := os.Unsetenv(name); err != nil {
 			return fmt.Errorf("failed to unset environment variable: %w", err)
 		}
-		
+
 		// Remove from activity state
 		delete(m.activityState.ActiveEnv, name)
 	}
@@ -70,7 +70,7 @@ func (m *Manager) UnsetEnv(name string, global bool) error {
 }
 
 // ListEnv lists environment variables
-func (m *Manager) ListEnv() map[string]models.EnvironmentVariable {
+func (m *Manager) ListEnv() map[string]models.EnvVariable {
 	// Return the global environment variables
 	return m.config.GlobalEnv
 }

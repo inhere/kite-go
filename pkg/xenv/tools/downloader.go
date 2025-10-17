@@ -32,6 +32,28 @@ func (d *Downloader) DownloadFile(url, destPath string) error {
 	}
 	defer destFile.Close()
 
+	return d.doDownload(url, destFile)
+}
+
+// DownloadToTemp downloads a file to a temporary location
+func (d *Downloader) DownloadToTemp(url, prefix string) (string, error) {
+	// Create temporary file
+	tmpFile, err := os.CreateTemp("", prefix)
+	if err != nil {
+		return "", fmt.Errorf("failed to create temp file: %w", err)
+	}
+	tmpPath := tmpFile.Name()
+	defer tmpFile.Close() // Close but keep the file
+
+	err = d.doDownload(url, tmpFile)
+	if err != nil {
+		_ = os.Remove(tmpPath) // Clean up on error
+	}
+	return tmpPath, err
+}
+
+// doDownload downloads a file from the given URL to the specified destination
+func (d *Downloader) doDownload(url string, destFile *os.File) error {
 	// Download the file
 	resp, err := http.Get(url)
 	if err != nil {
@@ -51,38 +73,4 @@ func (d *Downloader) DownloadFile(url, destPath string) error {
 	}
 
 	return nil
-}
-
-// DownloadToTemp downloads a file to a temporary location
-func (d *Downloader) DownloadToTemp(url, prefix string) (string, error) {
-	// Create temporary file
-	tmpFile, err := os.CreateTemp("", prefix)
-	if err != nil {
-		return "", fmt.Errorf("failed to create temp file: %w", err)
-	}
-	tmpPath := tmpFile.Name()
-	defer tmpFile.Close() // Close but keep the file
-
-	// Download the file
-	resp, err := http.Get(url)
-	if err != nil {
-		os.Remove(tmpPath) // Clean up on error
-		return "", fmt.Errorf("failed to download file: %w", err)
-	}
-	defer resp.Body.Close()
-
-	// Check response status
-	if resp.StatusCode != http.StatusOK {
-		os.Remove(tmpPath) // Clean up on error
-		return "", fmt.Errorf("download failed with status: %d", resp.StatusCode)
-	}
-
-	// Copy response body to temp file
-	_, err = io.Copy(tmpFile, resp.Body)
-	if err != nil {
-		os.Remove(tmpPath) // Clean up on error
-		return "", fmt.Errorf("failed to save downloaded file: %w", err)
-	}
-
-	return tmpPath, nil
 }

@@ -47,8 +47,13 @@ func (ts *ToolService) InstallTool(name, version string) error {
 	}
 
 	// In a real implementation, we would download and install the tool here
-	// For now, we'll just add it to the configuration
-	ts.config.Tools = append(ts.config.Tools, toolChain)
+	downloader := NewDownloader()
+	err := downloader.DownloadFile(toolChain.InstallURL, ts.config.DownloadDir)
+	if err != nil {
+		return err
+	}
+
+	// TODO save tool to local.json
 
 	return nil
 }
@@ -56,7 +61,7 @@ func (ts *ToolService) InstallTool(name, version string) error {
 // UninstallTool uninstalls a tool with the specified version
 func (ts *ToolService) UninstallTool(name, version string) error {
 	id := fmt.Sprintf("%s:%s", name, version)
-	
+
 	// Find the tool in the configuration
 	foundIndex := -1
 	for i, tool := range ts.config.Tools {
@@ -65,21 +70,17 @@ func (ts *ToolService) UninstallTool(name, version string) error {
 			break
 		}
 	}
-	
+
 	if foundIndex == -1 {
 		return fmt.Errorf("tool %s is not installed", id)
 	}
-	
-	// Remove the tool from configuration
-	ts.config.Tools = append(ts.config.Tools[:foundIndex], ts.config.Tools[foundIndex+1:]...)
-	
-	// In a real implementation, we would remove the installed files here
-	// For now, we just remove it from configuration
+
+	// TODO Remove the tool from local.json
 
 	return nil
 }
 
-// ListTools returns all installed tools
+// ListTools returns all managed tools
 func (ts *ToolService) ListTools() []models.ToolChain {
 	return ts.config.Tools
 }
