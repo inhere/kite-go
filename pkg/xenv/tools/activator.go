@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/inhere/kite-go/internal/util"
 	"github.com/inhere/kite-go/pkg/xenv/models"
 )
 
@@ -44,7 +43,7 @@ func (a *Activator) ActivateTool(name, version string, global bool) error {
 	if a.activityState.ActiveTools == nil {
 		a.activityState.ActiveTools = make(map[string]string)
 	}
-	
+
 	a.activityState.ActiveTools[name] = version
 
 	// If global flag is set, we might want to persist this in configuration
@@ -68,12 +67,8 @@ func (a *Activator) saveGlobalState() error {
 	}
 
 	configDir := filepath.Join(homeDir, ".config", "xenv")
-	if err := util.EnsureDir(configDir); err != nil {
-		return fmt.Errorf("failed to create config directory: %w", err)
-	}
 
 	// In a real implementation, we would write the actual activity state to the file
 	// For now, this is a placeholder
-
-	return nil
+	return a.activityState.Save(configDir)
 }

@@ -26,7 +26,7 @@ func LoadActivityState() (*ActivityState, error) {
 	}
 
 	statePath := filepath.Join(homeDir, ".config", "xenv", "activity.json")
-	
+
 	// Check if file exists
 	if _, err := os.Stat(statePath); os.IsNotExist(err) {
 		// Return default state if file doesn't exist
@@ -39,49 +39,43 @@ func LoadActivityState() (*ActivityState, error) {
 			UpdatedAt:   time.Now(),
 		}, nil
 	}
-	
+
 	// Read the file
 	data, err := os.ReadFile(statePath)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Unmarshal the JSON
 	var state ActivityState
 	if err := json.Unmarshal(data, &state); err != nil {
 		return nil, err
 	}
-	
+
 	return &state, nil
 }
 
 // Save saves the activity state to file
-func (as *ActivityState) Save() error {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return err
-	}
-
-	configDir := filepath.Join(homeDir, ".config", "xenv")
+func (as *ActivityState) Save(configDir string) error {
 	if err := os.MkdirAll(configDir, 0755); err != nil {
 		return err
 	}
 
 	statePath := filepath.Join(configDir, "activity.json")
-	
+
 	// Update timestamps
 	as.UpdatedAt = time.Now()
 	if as.CreatedAt.IsZero() {
 		as.CreatedAt = as.UpdatedAt
 	}
 	as.LastUpdated = as.UpdatedAt
-	
+
 	// Marshal to JSON
 	data, err := json.MarshalIndent(as, "", "  ")
 	if err != nil {
 		return err
 	}
-	
+
 	// Write to file
 	return os.WriteFile(statePath, data, 0644)
 }

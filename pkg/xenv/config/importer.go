@@ -25,7 +25,7 @@ func NewImporter(configManager *ConfigManager) *Importer {
 func (i *Importer) Import(importPath string) error {
 	// Check file extension to determine format
 	ext := filepath.Ext(importPath)
-	
+
 	switch ext {
 	case ".zip":
 		return i.importFromZip(importPath)
@@ -66,7 +66,7 @@ func (i *Importer) importFromZip(importPath string) error {
 			var importedConfig struct {
 				BinDir          string                                   `json:"bin_dir"`
 				InstallDir      string                                   `json:"install_dir"`
-				ShellScriptsDir string                                   `json:"shell_scripts_dir"`
+				ShellHooksDir string `json:"shell_hooks_dir"`
 				Tools           []interface{}                           `json:"tools"` // Will be handled separately
 				GlobalEnv       map[string]map[string]interface{}       `json:"global_env"`
 				GlobalPaths     []interface{}                           `json:"global_paths"`
@@ -79,7 +79,7 @@ func (i *Importer) importFromZip(importPath string) error {
 			// Update the current configuration with imported values
 			i.configManager.Config.BinDir = importedConfig.BinDir
 			i.configManager.Config.InstallDir = importedConfig.InstallDir
-			i.configManager.Config.ShellScriptsDir = importedConfig.ShellScriptsDir
+			i.configManager.Config.ShellHooksDir = importedConfig.ShellHooksDir
 
 			// For now, we'll store the raw JSON data and handle the conversion later
 			// In a real implementation, we would convert the interface{} values to proper structs
@@ -103,7 +103,7 @@ func (i *Importer) importFromJSON(importPath string) error {
 	var importedConfig struct {
 		BinDir          string                                   `json:"bin_dir"`
 		InstallDir      string                                   `json:"install_dir"`
-		ShellScriptsDir string                                   `json:"shell_scripts_dir"`
+		ShellHooksDir string `json:"shell_hooks_dir"`
 		Tools           []interface{}                           `json:"tools"` // Will be handled separately
 		GlobalEnv       map[string]map[string]interface{}       `json:"global_env"`
 		GlobalPaths     []interface{}                           `json:"global_paths"`
@@ -116,7 +116,7 @@ func (i *Importer) importFromJSON(importPath string) error {
 	// Update the current configuration with imported values
 	i.configManager.Config.BinDir = importedConfig.BinDir
 	i.configManager.Config.InstallDir = importedConfig.InstallDir
-	i.configManager.Config.ShellScriptsDir = importedConfig.ShellScriptsDir
+	i.configManager.Config.ShellHooksDir = importedConfig.ShellHooksDir
 
 	// For now, we'll store the raw JSON data and handle the conversion later
 	// In a real implementation, we would convert the interface{} values to proper structs

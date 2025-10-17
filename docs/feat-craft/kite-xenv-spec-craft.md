@@ -7,7 +7,7 @@
 ## 配置说明
 
 - user 配置文件保存在 `~/.config/xenv/config.yaml`
-- `shell_scripts` 配置项，用于在 `xenv shell` 注入hooks中执行自定义脚本文件，默认为 `~/.config/xenv/hooks/`
+- `shell_hooks_dir` 配置项，用于在 `xenv shell` 注入hooks中执行自定义脚本文件，默认为 `~/.config/xenv/hooks/`
 - `bin_dir` 配置项，用于指定工具安装后创建的软链接/shims目录，默认为 `~/.local/bin`
 
 ## 基础功能
@@ -33,7 +33,7 @@
   - 将会在 shell 中注入方法 `xenv` 用于让 `xenv env`, `xenv use`, `xenv path` 等命令立即生效
   - 内置shell方法： `use_tool`, `path_add` 方便使用
 - 需要在 .bashrc / .zshrc / pwsh profile 中配置hook eg: `eval "$(kite xenv shell --type bash)"`
-- hooks 同时会执行 `shell_scripts` 配置的 `~/.config/xenv/hooks/*.{sh|ps1}` 脚本文件
+- hooks 同时会执行 `shell_hooks` 配置的 `~/.config/xenv/hooks/*.{sh|ps1}` 脚本文件
 - 内置支持目录下 `.xenv.toml` 文件: 可以配置 tools, env和path路径
 - 兼容支持：如果当前目录下存在 `.envrc` 文件，也会自动执行 `.envrc` 文件(仅支持bash,zsh)
 - 兼容支持：如果当前目录下存在 `.envrc.ps1` 文件，也会自动执行 `.envrc.ps1` 文件(仅支持pwsh)
@@ -54,7 +54,7 @@
 
 通过 `kite xenv tools` 命令进行本机开发工具管理。支持多版本开发工具管理下载，也支持独立小工具下载生意。
 
-- 配置文件 `~/.config/xenv/tools_config.yaml` 项，用于配置手动安装的工具链目录和可以通过 http 进行自动安装的工具链。
+- `~/.config/xenv/config.yaml` 配置 tools 项，用于配置手动安装的工具链目录和可以通过 http 进行自动安装的工具链。
 - `install_dir` string 配置项，用于指定工具链默认安装目录，默认为 `~/.xenv/tools`
 - `tools` list 配置项，用于配置手动安装的工具链目录和可以通过 http 进行自动安装的工具链。
   - 在这里配置了的工具，才会被纳入管理。

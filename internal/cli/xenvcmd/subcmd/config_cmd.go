@@ -29,7 +29,7 @@ var ConfigCmd = &gcli.Command{
 		fmt.Println("Current xenv configuration:")
 		fmt.Printf("  BinDir: %s\n", cfgMgr.Config.BinDir)
 		fmt.Printf("  InstallDir: %s\n", cfgMgr.Config.InstallDir)
-		fmt.Printf("  ShellScriptsDir: %s\n", cfgMgr.Config.ShellScriptsDir)
+		fmt.Printf("  ShellHooksDir: %s\n", cfgMgr.Config.ShellHooksDir)
 		fmt.Printf("  Number of managed tools: %d\n", len(cfgMgr.Config.Tools))
 
 		return nil
@@ -57,8 +57,8 @@ func ConfigSetCmd() *gcli.Command {
 				cfgMgr.Config.BinDir = value
 			case "install_dir":
 				cfgMgr.Config.InstallDir = value
-			case "shell_scripts_dir":
-				cfgMgr.Config.ShellScriptsDir = value
+			case "shell_hooks_dir":
+				cfgMgr.Config.ShellHooksDir = value
 			default:
 				return fmt.Errorf("unknown configuration option: %s", name)
 			}
@@ -99,8 +99,8 @@ func ConfigGetCmd() *gcli.Command {
 				value = cfgMgr.Config.BinDir
 			case "install_dir":
 				value = cfgMgr.Config.InstallDir
-			case "shell_scripts_dir":
-				value = cfgMgr.Config.ShellScriptsDir
+			case "shell_hooks_dir":
+				value = cfgMgr.Config.ShellHooksDir
 			default:
 				return fmt.Errorf("unknown configuration option: %s", name)
 			}

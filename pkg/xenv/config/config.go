@@ -15,8 +15,8 @@ const (
 	DefaultBinDir = "~/.local/bin"
 	// DefaultInstallDir is the default directory for tool installation
 	DefaultInstallDir = "~/.xenv/tools"
-	// DefaultShellScriptsDir is the default directory for shell scripts
-	DefaultShellScriptsDir = "~/.config/xenv/hooks/"
+	// DefaultShellHooksDir is the default directory for shell scripts
+	DefaultShellHooksDir = "~/.config/xenv/hooks/"
 )
 
 // ConfigManager handles loading and saving configuration
@@ -30,7 +30,7 @@ func NewConfigManager() *ConfigManager {
 		Config: &models.Configuration{
 			BinDir:          DefaultBinDir,
 			InstallDir:      DefaultInstallDir,
-			ShellScriptsDir: DefaultShellScriptsDir,
+			ShellHooksDir: DefaultShellHooksDir,
 			Tools:           []models.ToolChain{},
 			GlobalEnv:       make(map[string]models.EnvironmentVariable),
 			GlobalPaths:     []models.PathEntry{},
@@ -56,8 +56,8 @@ func (cm *ConfigManager) LoadConfig(configPath string) error {
 	if installDir, ok := loadedConfig["install_dir"].(string); ok {
 		cm.Config.InstallDir = installDir
 	}
-	if shellScriptsDir, ok := loadedConfig["shell_scripts_dir"].(string); ok {
-		cm.Config.ShellScriptsDir = shellScriptsDir
+	if shellHooksDir, ok := loadedConfig["shell_hooks_dir"].(string); ok {
+		cm.Config.ShellHooksDir = shellHooksDir
 	}
 
 	// TODO: Load other configuration values like tools, global environment, etc.
