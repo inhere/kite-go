@@ -1,4 +1,4 @@
-# Qwen Code Context for Kite Project
+﻿# Qwen Code Context for Kite Project
 
 ## Project Information
 - **Project Name**: Kite
