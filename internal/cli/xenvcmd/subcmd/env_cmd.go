@@ -292,10 +292,10 @@ func PathAddCmd() *gcli.Command {
 // PathRemoveCmd command for removing a path from PATH
 func PathRemoveCmd() *gcli.Command {
 	return &gcli.Command{
-		Name:    "rm",
-		Help:    "rm [-g] <path>",
+		Name:    "remove",
+		Help:    "remove [-g] <path>",
 		Desc:    "Remove a path from PATH environment variable",
-		Aliases: []string{"remove", "delete"},
+		Aliases: []string{"rm", "delete"},
 		Config: func(c *gcli.Command) {
 			c.BoolOpt(&GlobalFlag, "global", "g", false, "Global operation, not the current session")
 			c.AddArg("path", "PATH environment value", true)

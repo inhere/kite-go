@@ -5,7 +5,6 @@ import (
 	"github.com/inhere/kite-go/internal/cli/devcmd/gencmd"
 	"github.com/inhere/kite-go/internal/cli/devcmd/gocmd"
 	"github.com/inhere/kite-go/internal/cli/devcmd/javacmd"
-	"github.com/inhere/kite-go/internal/cli/devcmd/envcmd"
 	"github.com/inhere/kite-go/internal/cli/devcmd/phpcmd"
 	"github.com/inhere/kite-go/internal/cli/devcmd/sqlcmd"
 	jsoncmd "github.com/inhere/kite-go/internal/cli/devcmd/yamlcmd"
@@ -26,6 +25,5 @@ var DevToolsCmd = &gcli.Command{
 		phpcmd.PhpToolsCmd,
 		sqlcmd.SQLToolCmd,
 		jsoncmd.YamlToolCmd,
-		envcmd.NewEnvManageCmd(),
 	},
 }

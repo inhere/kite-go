@@ -8,13 +8,11 @@ import (
 	"github.com/inhere/kite-go/pkg/xenv/tools"
 )
 
-
-
 // ToolsCmd the xenv tools command
 var ToolsCmd = &gcli.Command{
 	Name:    "tools",
+	Desc: "Manage local development tools (install, list, etc.)",
 	Aliases: []string{"t", "tool"},
-	Desc:   "Manage local development tools (install, list, etc.)",
 	Subs: []*gcli.Command{
 		ToolsInstallCmd(),
 		ToolsUninstallCmd(),
@@ -34,8 +32,8 @@ var ToolsCmd = &gcli.Command{
 func ToolsInstallCmd() *gcli.Command {
 	return &gcli.Command{
 		Name:    "install",
-		Help:     "install <name:version>...",
-		Desc:   "Install a tool with specific version",
+		Help: "install <name:version>...",
+		Desc: "Install a tool with specific version",
 		Aliases: []string{"i", "in", "add"},
 		Config: func(c *gcli.Command) {
 			c.AddArg("tools", "Name of the tool to install, allow multi.", true, true)
@@ -80,8 +78,8 @@ func ToolsUninstallCmd() *gcli.Command {
 
 	return &gcli.Command{
 		Name:    "uninstall",
-		Help:     "uninstall <name:version>",
-		Desc:   "Uninstall a tool with specific version",
+		Help: "uninstall <name:version>",
+		Desc: "Uninstall a tool with specific version",
 		Aliases: []string{"un", "rm", "remove"},
 		Config: func(c *gcli.Command) {
 			// Add option to keep configuration files
@@ -124,8 +122,8 @@ func ToolsUninstallCmd() *gcli.Command {
 func ToolsUpdateCmd() *gcli.Command {
 	return &gcli.Command{
 		Name:    "update",
-		Help:     "update <name>...",
-		Desc:   "Update a tool to latest or specified version",
+		Help: "update <name>...",
+		Desc: "Update a tool to latest or specified version",
 		Aliases: []string{"up"},
 		Config: func(c *gcli.Command) {
 			c.AddArg("tools", "Name of the tool to update, allow multi.", true, true)
@@ -166,9 +164,9 @@ func ToolsUpdateCmd() *gcli.Command {
 // ToolsShowCmd command for showing tool info
 func ToolsShowCmd() *gcli.Command {
 	return &gcli.Command{
-		Name:    "show",
-		Help:     "show <name>",
-		Desc:   "Show information about a specific tool",
+		Name: "show",
+		Help: "show <name>",
+		Desc: "Show information about a specific tool",
 		Config: func(c *gcli.Command) {
 			c.AddArg("name", "Name of the tool to show", true)
 		},
@@ -209,7 +207,7 @@ func ToolsShowCmd() *gcli.Command {
 func ToolsListCmd() *gcli.Command {
 	return &gcli.Command{
 		Name:    "list",
-		Desc:   "List all installed tools",
+		Desc: "List all installed tools",
 		Aliases: []string{"ls"},
 		Func: func(c *gcli.Command, args []string) error {
 			// Initialize configuration

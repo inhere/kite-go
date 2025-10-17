@@ -1,33 +1,24 @@
 package main
 
 import (
-	"github.com/gookit/gcli/v3"
-	"github.com/inhere/kite-go/internal/cli/devcmd/envcmd"
+	"github.com/inhere/kite-go/internal/cli/xenvcmd"
 )
 
-// main ktenv 程序入口
+// main xenv 程序入口
 //
 // Dev run:
 //
-//	go run ./cmd/ktenv
-//	go run ./cmd/ktenv <CMD>
+//	go run ./cmd/xenv
+//	go run ./cmd/xenv <CMD>
 //
 // Debug run:
-//	KITE_VERBOSE=debug go run ./cmd/ktenv <CMD>
+//	KITE_VERBOSE=debug go run ./cmd/xenv <CMD>
 //  // Windows PowerShell
-//	$env:KITE_VERBOSE="debug" go run ./cmd/ktenv <CMD>
+//	$env:KITE_VERBOSE="debug" go run ./cmd/xenv <CMD>
 //
 func main() {
-	em := NewEnvManageCmd()
-	em.MustRun(nil)
-}
-
-func NewEnvManageCmd() *gcli.Command {
-	return &gcli.Command{
-		Name: "kenv",
-		// Aliases: []string{"envs", "useenv"},
-		Desc: "manage local development environment SDK",
-		Help: `
+	xe := xenvcmd.XEnvCmd
+	xe.Help = `
 Commands Usage:
   use <sdk:version>...     Activate SDK versions
     -s, --save             Save configuration to project file
@@ -36,12 +27,12 @@ Commands Usage:
   list [sdk]               List installed SDKs
 
 Examples:
-  ktenv use node:18 go:1.21
-  ktenv use -s node:lts
-  ktenv unuse node
-  ktenv add go:1.22
-  ktenv list
-  ktenv list go
+  xenv use node:18 go:1.21
+  xenv use -s node:lts
+  xenv unuse node
+  xenv add go:1.22
+  xenv list
+  xenv list go
 
 Supported SDKs:
   go, node, java, flutter
@@ -51,14 +42,6 @@ Version formats:
   <sdk>:<major>           Latest patch version (node:18)
   <sdk>:lts               Long-term support version
   <sdk>:latest            Latest stable version
-`,
-		Subs: []*gcli.Command{
-			envcmd.NewEnvListCmd(),
-			envcmd.NewEnvAddCmd(),
-			envcmd.NewEnvRemoveCmd(),
-			envcmd.NewEnvUseCmd(),
-			envcmd.NewEnvShellCmd(),
-			envcmd.NewEnvConfigCmd(),
-		},
-	}
+`
+	xe.MustRun(nil)
 }
