@@ -41,21 +41,18 @@ func EnvSetCmd() *gcli.Command {
 			value := args[1]
 
 			// Create env manager
-			envMgr, err := xenv.EnvManager()
+			envMgr, err := xenv.EnvService()
 			if err != nil {
 				return err
 			}
 
 			// Set the environment variable
-			if err := envMgr.SetEnv(name, value); err != nil {
+			if err := envMgr.SetEnv(name, value, GlobalFlag); err != nil {
 				return fmt.Errorf("failed to set environment variable: %w", err)
 			}
 
 			// Save configuration if global
 			if GlobalFlag {
-				if err := envMgr.SaveGlobalState(); err != nil {
-					return fmt.Errorf("failed to save configuration: %w", err)
-				}
 				fmt.Printf("Set %s=%s globally\n", name, value)
 			} else {
 				fmt.Printf("Set %s=%s for current session\n", name, value)
@@ -79,22 +76,19 @@ func EnvUnsetCmd() *gcli.Command {
 		Func: func(c *gcli.Command, args []string) error {
 
 			// Create env manager
-			envMgr, err := xenv.EnvManager()
+			envMgr, err := xenv.EnvService()
 			if err != nil {
 				return err
 			}
 
 			for _, name := range args {
 				// Unset the environment variable
-				if err := envMgr.UnsetEnv(name); err != nil {
+				if err := envMgr.UnsetEnv(name, GlobalFlag); err != nil {
 					return fmt.Errorf("failed to unset environment variable %s: %w", name, err)
 				}
 
 				// Save configuration if global
 				if GlobalFlag {
-					if err := envMgr.SaveGlobalState(); err != nil {
-						return fmt.Errorf("failed to save configuration: %w", err)
-					}
 					fmt.Printf("Unset %s globally\n", name)
 				} else {
 					fmt.Printf("Unset %s for current session\n", name)
@@ -120,7 +114,7 @@ func EnvListCmd() *gcli.Command {
 
 func listEnvs() error {
 	// Create env manager
-	envMgr, err := xenv.EnvManager()
+	envMgr, err := xenv.EnvService()
 	if err != nil {
 		return err
 	}
@@ -163,21 +157,18 @@ func PathAddCmd() *gcli.Command {
 			path := c.Arg("path").String()
 
 			// Create env manager
-			envMgr, err := xenv.EnvManager()
+			envMgr, err := xenv.EnvService()
 			if err != nil {
 				return err
 			}
 
 			// Add the path
-			if err := envMgr.AddPath(path); err != nil {
+			if err := envMgr.AddPath(path, GlobalFlag); err != nil {
 				return fmt.Errorf("failed to add path: %w", err)
 			}
 
 			// Save configuration if global
 			if GlobalFlag {
-				if err := envMgr.SaveGlobalState(); err != nil {
-					return fmt.Errorf("failed to save configuration: %w", err)
-				}
 				fmt.Printf("Added %s to PATH globally\n", path)
 			} else {
 				fmt.Printf("Added %s to PATH for current session\n", path)
@@ -203,21 +194,18 @@ func PathRemoveCmd() *gcli.Command {
 			path := c.Arg("path").String()
 
 			// Create env manager
-			envMgr, err := xenv.EnvManager()
+			envMgr, err := xenv.EnvService()
 			if err != nil {
 				return err
 			}
 
 			// Remove the path
-			if err := envMgr.RemovePath(path); err != nil {
+			if err := envMgr.RemovePath(path, GlobalFlag); err != nil {
 				return fmt.Errorf("failed to remove path: %w", err)
 			}
 
 			// Save configuration if global
 			if GlobalFlag {
-				if err := envMgr.SaveGlobalState(); err != nil {
-					return fmt.Errorf("failed to save configuration: %w", err)
-				}
 				fmt.Printf("Removed %s from PATH globally\n", path)
 			} else {
 				fmt.Printf("Removed %s from PATH for current session\n", path)
@@ -242,7 +230,7 @@ func PathListCmd() *gcli.Command {
 
 func listEnvPaths() error {
 	// Create env manager
-	envMgr, err := xenv.EnvManager()
+	envMgr, err := xenv.EnvService()
 	if err != nil {
 		return err
 	}
@@ -270,7 +258,7 @@ func PathSearchCmd() *gcli.Command {
 			searchTerm := c.Arg("value").String()
 
 			// Create env manager
-			envMgr, err := xenv.EnvManager()
+			envMgr, err := xenv.EnvService()
 			if err != nil {
 				return err
 			}

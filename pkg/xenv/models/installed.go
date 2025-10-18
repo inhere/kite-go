@@ -21,6 +21,7 @@ type InstalledTool struct {
 	BinDir     string    `json:"bin_dir"`
 	BinPaths   []string  `json:"bin_paths"`
 	Source string `json:"source"`
+	Simple bool   `json:"simple"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
 }

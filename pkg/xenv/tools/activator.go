@@ -3,87 +3,48 @@ package tools
 import (
 	"fmt"
 
+	"github.com/inhere/kite-go/pkg/xenv/manager"
 	"github.com/inhere/kite-go/pkg/xenv/models"
 )
 
 // Activator handles tool chain activation
 type Activator struct {
 	config       *models.Configuration
-	globalState *models.ActivityState
+	state *manager.StateManager
 }
 
 // NewActivator creates a new Activator
-func NewActivator(config *models.Configuration, globalState *models.ActivityState) *Activator {
+func NewActivator(config *models.Configuration, state *manager.StateManager) *Activator {
 	return &Activator{
 		config:        config,
-		globalState: globalState,
+		state: state,
 	}
 }
 
 // ActivateTool activates a specific tool version
 func (a *Activator) ActivateTool(name, version string, global bool) error {
-	id := fmt.Sprintf("%s:%s", name, version)
-
-	// Check if the tool is installed
-	toolFound := false
-	for _, tool := range a.config.Tools {
-		if tool.ID == id {
-			toolFound = true
-			break
-		}
-	}
-
-	if !toolFound {
-		return fmt.Errorf("tool %s is not installed", id)
+	// Check if the tool is definition
+	if !a.config.IsToolDefined(name) {
+		return fmt.Errorf("tool %s:%s config is not definition", name, version)
 	}
 
 	// Update the activity state
-	if a.globalState.ActiveTools == nil {
-		a.globalState.ActiveTools = make(map[string]string)
-	}
-
-	a.globalState.ActiveTools[name] = version
-
-	// If global flag is set, we might want to persist this in configuration
-	if global {
-		// For global activation, save the state
-		// In a real implementation, this would involve writing to a global state file
-		if err := a.saveGlobalState(); err != nil {
-			return fmt.Errorf("failed to save global state: %w", err)
-		}
-	}
-
-	return nil
+	return a.state.ActivateTool(name, version, global)
 }
 
 // DeactivateTool deactivates a specific tool version
 func (a *Activator) DeactivateTool(name, version string, global bool) error {
-	id := fmt.Sprintf("%s:%s", name, version)
-
-	// Check if the tool is currently active
-	currentVersion, exists := a.globalState.ActiveTools[name]
-	if !exists || currentVersion != version {
-		return fmt.Errorf("tool %s is not currently active", id)
+	// Check if the tool is definition
+	if !a.config.IsToolDefined(name) {
+		return fmt.Errorf("tool %s:%s config is not definition", name, version)
 	}
 
-	// Remove from active tools
-	delete(a.globalState.ActiveTools, name)
-
-	// If global flag is set, we might want to persist this in configuration
-	if global {
-		// For global deactivation, save the state
-		// In a real implementation, this would involve writing to a global state file
-		if err := a.saveGlobalState(); err != nil {
-			return fmt.Errorf("failed to save global state: %w", err)
-		}
-	}
-
-	return nil
+	return a.state.DeactivateTool(name, version, global)
 }
 
 // saveGlobalState saves the global activation state to a file
 func (a *Activator) saveGlobalState() error {
 	// In a real implementation, we would write the actual activity state to the file
 	// For now, this is a placeholder
-	return a.globalState.Save(a.config.ConfigDir())
+	return a.state.SaveGlobalState()
 }

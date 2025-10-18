@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/gookit/goutil/strutil"
 	"github.com/inhere/kite-go/internal/util"
 	"github.com/inhere/kite-go/pkg/xenv/models"
 )
@@ -32,6 +33,7 @@ func (i *Installer) EnsureBinDir() error {
 }
 
 // Install downloads and installs a tool
+// 安装下载方式：http, git OR asdf, scoop, vfox, mise 等
 func (i *Installer) Install(toolChain *models.ToolChain, version string) error {
 	// Ensure bin directory exists
 	if err := i.EnsureBinDir(); err != nil {
@@ -53,7 +55,8 @@ func (i *Installer) Install(toolChain *models.ToolChain, version string) error {
 // downloadAndExtract downloads and extracts a tool based on its InstallURL
 func (i *Installer) downloadAndExtract(toolChain *models.ToolChain, version string) (err error) {
 	// Format the URL with version, os, and arch variables
-	url := i.formatURL(toolChain, version)
+	url := i.formatURL(toolChain.InstallURL, version)
+	downExt := i.config.DownloadExt[runtime.GOOS]
 
 	var tmpFile *os.File
 	tmpDir := i.config.DownloadDir
@@ -66,7 +69,7 @@ func (i *Installer) downloadAndExtract(toolChain *models.ToolChain, version stri
 		defer os.Remove(tmpFile.Name()) // Clean up
 	} else {
 		// Use the provided directory
-		tmpFile, err = os.Open(tmpDir + "/" + toolChain.Name + "_" + version + ".zip")
+		tmpFile, err = os.Open(tmpDir + "/" + toolChain.Name + "_" + version + "." + downExt)
 		if err != nil {
 			return fmt.Errorf("failed to open temp directory: %w", err)
 		}
@@ -91,33 +94,22 @@ func (i *Installer) downloadAndExtract(toolChain *models.ToolChain, version stri
 		return fmt.Errorf("failed to save downloaded file: %w", err)
 	}
 
+	installDir := i.formatURL(toolChain.InstallDir, version)
 	// Extract the file based on extension
-	return i.extractFile(tmpFile.Name(), toolChain.InstallDir)
+	return i.extractFile(tmpFile.Name(), installDir)
 }
 
 // formatURL formats the installation URL with the appropriate variables
-func (i *Installer) formatURL(toolChain *models.ToolChain, version string) string {
-	result := toolChain.InstallURL
-	result = replaceAll(result, "{version}", version)
-	result = replaceAll(result, "{os}", runtime.GOOS)
-	result = replaceAll(result, "{arch}", runtime.GOARCH)
-	downExt := i.config.OSDownloadExt[runtime.GOOS]
-
-	// Simple Windows check for file extension
-	if runtime.GOOS == "windows" {
-		result = replaceAll(result, "{isWindows ? zip : tar.gz}", "zip")
-		result = replaceAll(result, "{isWindows ? .exe : }", ".exe")
-	} else {
-		result = replaceAll(result, "{isWindows ? zip : tar.gz}", "tar.gz")
-		result = replaceAll(result, "{isWindows ? .exe : }", "")
+func (i *Installer) formatURL(urlOrPath, version string) string {
+	downExt := i.config.DownloadExt[runtime.GOOS]
+	varMap := map[string]string{
+		"{os}":           runtime.GOOS,
+		"{arch}":         runtime.GOARCH,
+		"{version}":      version,
+		"{download_ext}": downExt,
 	}
 
-	return result
-}
-
-// replaceAll replaces all occurrences of old with new in s
-func replaceAll(s, old, new string) string {
-	return filepath.ToSlash(filepath.Clean(strings.Replace(s, old, new, -1)))
+	return strutil.Replaces(urlOrPath, varMap)
 }
 
 // extractFile extracts an archive file to the destination directory

@@ -20,11 +20,11 @@ type Configuration struct {
 	// 从远程下载不同OS平台的工具包的后缀格式
 	// eg:
 	//
-	// 	os_download_ext:
+	// 	download_ext:
 	// 	  windows: zip
 	// 	  linux: tar.gz
 	// 	  darwin: tar.gz
-	OSDownloadExt map[string]string `json:"os_download_ext"`
+	DownloadExt map[string]string `json:"download_ext"`
 	DownloadDir   string            `json:"download_dir"` // 临时下载目录
 	Tools         []ToolChain       `json:"tools"`        // 可管理的工具链列表
 	SimpleTools   []SimpleTool      `json:"simple_tools"` // 配置的简单工具列表
@@ -33,6 +33,19 @@ type Configuration struct {
 	// internal fields
 	configFile string
 	configDir  string
+}
+
+// IsToolDefined returns true if the tool configuration is defined
+func (c *Configuration) IsToolDefined(name string) bool {
+	// Check if the tool is installed
+	toolFound := false
+	for _, tool := range c.Tools {
+		if tool.Name == name {
+			toolFound = true
+			break
+		}
+	}
+	return toolFound
 }
 
 func (c *Configuration) ConfigFile() string {

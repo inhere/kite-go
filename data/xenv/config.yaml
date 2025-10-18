@@ -19,7 +19,7 @@ tools:
       GO111MODULE: auto
     bin_dir: bin # bin目录名称，不设置就是 install_dir 目录
     post_install: [] # 安装完成后执行的shell hook脚本
-    version_dir: # 自定义版本安装目录,不在统一目录下的版本
+    local_versions: # 自定义版本安装目录,不在统一目录下的版本
       "latest": "C:\Users\inhere\scoop\apps\go\current"
   - name: node
     # see https://registry.npmmirror.com/binary.html 查看二进制文件列表 node,python,bun,deno

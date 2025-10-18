@@ -27,8 +27,6 @@ const (
 type Manager struct {
 	cfgInit bool
 	Config *models.Configuration
-	// global state data
-	State *models.ActivityState
 }
 
 // Mgr is the global ConfigManager instance
@@ -53,7 +51,7 @@ func NewConfigManager() *Manager {
 			Tools:       []models.ToolChain{},
 			SimpleTools: []models.SimpleTool{},
 			DownloadDir: DefaultInstallDir + "/cache",
-			OSDownloadExt: map[string]string{
+			DownloadExt: map[string]string{
 				"windows": "zip",
 				"linux":   "tar.gz",
 				"darwin":  "tar.gz",
@@ -64,19 +62,11 @@ func NewConfigManager() *Manager {
 
 // Init initializes load the configuration data
 func (cm *Manager) Init() error {
-	err := cm.LoadConfig(GetDefaultConfigPath())
-	if err != nil {
-		return err
+	if cm.cfgInit {
+		return nil
 	}
-
-	// Load global activity state
-	globalState, err := models.LoadGlobalState()
-	if err != nil {
-		return fmt.Errorf("failed to load activity state: %w", err)
-	}
-
-	cm.State = globalState
-	return nil
+	cm.cfgInit = true
+	return cm.LoadConfig(GetDefaultConfigPath())
 }
 
 // LoadConfig loads configuration from the specified file
@@ -93,7 +83,6 @@ func (cm *Manager) LoadConfig(configPath string) error {
 
 	// Load other configuration values like tools, global environment, etc.
 	err = cfg.Decode(&cm.Config)
-	cm.cfgInit = true
 	cm.Config.SetConfigFile(configPath)
 	cm.Config.SetConfigDir(GetDefaultConfigDir())
 	return err

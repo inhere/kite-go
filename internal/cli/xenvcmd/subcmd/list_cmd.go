@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/gookit/gcli/v3"
+	"github.com/inhere/kite-go/pkg/xenv"
 	"github.com/inhere/kite-go/pkg/xenv/config"
-	"github.com/inhere/kite-go/pkg/xenv/models"
 	"github.com/inhere/kite-go/pkg/xenv/tools"
 )
 
@@ -23,8 +23,7 @@ var ListCmd = &gcli.Command{
 	},
 	Func: func(c *gcli.Command, args []string) error {
 		// Default to listing tools if no subcommand is specified
-		cmd := ListToolsCmd()
-		return cmd.Func(c, args)
+		return listTools()
 	},
 }
 
@@ -35,22 +34,25 @@ func ListToolsCmd() *gcli.Command {
 		Desc:    "List installed tools",
 		Aliases: []string{"t"},
 		Func: func(c *gcli.Command, args []string) error {
-			// Initialize configuration
-			cfgMgr := config.NewConfigManager()
-			configPath := config.GetDefaultConfigPath()
-			// Try to load existing config, ignore errors (will use defaults)
-			_ = cfgMgr.LoadConfig(configPath)
-
-			// Create tool service
-			toolSvc := tools.NewToolService(cfgMgr.Config)
-			list := tools.NewList(toolSvc)
-
-			// List all tools
-			list.ListAll(false)
-
-			return nil
+			return listTools()
 		},
 	}
+}
+
+func listTools() error {
+	// Initialize configuration
+	if err := config.Mgr.Init(); err != nil {
+		return fmt.Errorf("failed to initialize configuration: %w", err)
+	}
+
+	// Create tool service
+	toolSvc := tools.NewToolService(config.Config())
+	list := tools.NewList(toolSvc)
+
+	// List all tools
+	list.ListAll(false)
+
+	return nil
 }
 
 // ListEnvCmd lists environment variables
@@ -82,23 +84,23 @@ func ListActivityCmd() *gcli.Command {
 		Desc:   "List active tools and settings",
 		Func: func(c *gcli.Command, args []string) error {
 			// Load activity state
-			activityState, err := models.LoadGlobalState()
-			if err != nil {
+			if err := xenv.State().Init(); err != nil {
 				return fmt.Errorf("failed to load activity state: %w", err)
 			}
 
-			fmt.Println("Active SdkTools:")
-			for name, version := range activityState.ActiveTools {
+			globalState := xenv.State().Global()
+			fmt.Println("Active SDK Tools:")
+			for name, version := range globalState.ActiveTools {
 				fmt.Printf("  %s:%s\n", name, version)
 			}
 
 			fmt.Println("\nActive Environment Variables:")
-			for name, value := range activityState.ActiveEnv {
+			for name, value := range globalState.ActiveEnv {
 				fmt.Printf("  %s=%s\n", name, value)
 			}
 
 			fmt.Println("\nActive PATH Entries:")
-			for i, path := range activityState.ActivePaths {
+			for i, path := range globalState.ActivePaths {
 				fmt.Printf("  %d. %s\n", i+1, path)
 			}
 
