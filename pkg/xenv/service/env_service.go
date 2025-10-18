@@ -1,4 +1,4 @@
-package env
+package service
 
 import (
 	"fmt"
@@ -6,56 +6,49 @@ import (
 	"strings"
 
 	"github.com/inhere/kite-go/internal/util"
+	"github.com/inhere/kite-go/pkg/xenv/manager"
 	"github.com/inhere/kite-go/pkg/xenv/models"
 )
 
-// Manager handles environment variable and PATH management
-type Manager struct {
+// EnvService handles environment variable and PATH management
+type EnvService struct {
 	config       *models.Configuration
-	globalState  *models.ActivityState
-	sessionState *models.ActivityState
+	state *manager.StateManager
 }
 
-// NewManager creates a new Manager
-func NewManager(config *models.Configuration, globalState *models.ActivityState) *Manager {
-	return &Manager{
+// NewEnvService creates a new EnvService
+func NewEnvService(config *models.Configuration, state *manager.StateManager) *EnvService {
+	return &EnvService{
 		config:       config,
-		globalState:  globalState,
-		sessionState: &models.ActivityState{},
+		state:  state,
 	}
 }
 
 // SetEnv sets an environment variable
-func (m *Manager) SetEnv(name, value string) error {
+func (m *EnvService) SetEnv(name, value string, global bool) error {
 	// Add to session (would be handled differently in practice)
 	// For now, we'll just validate the variable can be set
 	if err := os.Setenv(name, value); err != nil {
 		return fmt.Errorf("failed to set environment variable: %w", err)
 	}
 
-	// Add to activity state to track session variables
-	if m.globalState.ActiveEnv == nil {
-		m.globalState.ActiveEnv = make(map[string]string)
-	}
-	m.globalState.ActiveEnv[name] = value
-
-	return nil
+	// Add to activity state data
+	return m.state.SetEnv(name, value, global)
 }
 
 // UnsetEnv unsets an environment variable
-func (m *Manager) UnsetEnv(name string) error {
+func (m *EnvService) UnsetEnv(name string, global bool) error {
 	// Remove from session
 	if err := os.Unsetenv(name); err != nil {
 		return fmt.Errorf("failed to unset environment variable: %w", err)
 	}
 
 	// Remove from activity state
-	delete(m.globalState.ActiveEnv, name)
-	return nil
+	return m.state.UnsetEnv(name, global)
 }
 
 // ListEnv lists environment variables
-func (m *Manager) ListEnv() map[string]string {
+func (m *EnvService) ListEnv() map[string]string {
 	// Return the global environment variables
 	return m.config.GlobalEnv
 }
@@ -65,7 +58,7 @@ func (m *Manager) ListEnv() map[string]string {
 //
 
 // AddPath adds a path to the PATH environment variable
-func (m *Manager) AddPath(path string) error {
+func (m *EnvService) AddPath(path string, global bool) error {
 	// Normalize the path
 	normalizedPath := util.NormalizePath(path)
 
@@ -94,13 +87,12 @@ func (m *Manager) AddPath(path string) error {
 		return fmt.Errorf("failed to set PATH environment variable: %w", err)
 	}
 
-	// Add to activity state to track session paths
-	m.globalState.ActivePaths = append(m.globalState.ActivePaths, normalizedPath)
-	return nil
+	// Add to activity state
+	return m.state.AddPath(normalizedPath, global)
 }
 
 // RemovePath removes a path from the PATH environment variable
-func (m *Manager) RemovePath(path string) error {
+func (m *EnvService) RemovePath(path string, global bool) error {
 	// Normalize the path
 	normalizedPath := util.NormalizePath(path)
 
@@ -130,21 +122,13 @@ func (m *Manager) RemovePath(path string) error {
 	}
 
 	// Remove from activity state
-	newActivePaths := []string{}
-	for _, p := range m.globalState.ActivePaths {
-		if p != normalizedPath {
-			newActivePaths = append(newActivePaths, p)
-		}
-	}
-	m.globalState.ActivePaths = newActivePaths
-
-	return nil
+	return m.state.RemovePath(normalizedPath,  global)
 }
 
 // ListPaths lists PATH entries
-func (m *Manager) ListPaths() []models.PathEntry {
+func (m *EnvService) ListPaths() []models.PathEntry {
 	var paths []models.PathEntry
-	for _, entry := range m.globalState.ActivePaths {
+	for _, entry := range m.state.Global().ActivePaths {
 		paths = append(paths, models.PathEntry{
 			Path:     entry,
 			Priority: 0,
@@ -153,7 +137,7 @@ func (m *Manager) ListPaths() []models.PathEntry {
 		})
 	}
 
-	for _, entry := range m.sessionState.ActivePaths {
+	for _, entry := range m.state.Session().ActivePaths {
 		paths = append(paths, models.PathEntry{
 			Path:     entry,
 			Priority: 0,
@@ -165,12 +149,12 @@ func (m *Manager) ListPaths() []models.PathEntry {
 }
 
 // SearchPath searches for a path in PATH
-func (m *Manager) SearchPath(path string) []string {
+func (m *EnvService) SearchPath(path string) []string {
 	normalizedPath := util.NormalizePath(path)
 	var matches []string
 
 	// Search in active paths
-	for _, p := range m.globalState.ActivePaths {
+	for _, p := range m.state.Global().ActivePaths {
 		if strings.Contains(p, normalizedPath) {
 			matches = append(matches, p)
 		}
@@ -189,6 +173,6 @@ func (m *Manager) SearchPath(path string) []string {
 }
 
 // SaveGlobalState saves the global state to file
-func (m *Manager) SaveGlobalState() error {
-	return m.globalState.Save(m.config.ConfigDir())
+func (m *EnvService) SaveGlobalState() error {
+	return m.state.SaveGlobalState()
 }
