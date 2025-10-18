@@ -16,7 +16,8 @@ import (
 
 // Installer handles the actual installation of tools
 type Installer struct {
-	config *models.Configuration
+	config     *models.Configuration
+	InstallDir string
 }
 
 // NewInstaller creates a new Installer
@@ -94,9 +95,9 @@ func (i *Installer) downloadAndExtract(toolChain *models.ToolChain, version stri
 		return fmt.Errorf("failed to save downloaded file: %w", err)
 	}
 
-	installDir := i.formatURL(toolChain.InstallDir, version)
+	i.InstallDir = i.formatURL(toolChain.InstallDir, version)
 	// Extract the file based on extension
-	return i.extractFile(tmpFile.Name(), installDir)
+	return i.extractFile(tmpFile.Name(), i.InstallDir)
 }
 
 // formatURL formats the installation URL with the appropriate variables
@@ -117,12 +118,14 @@ func (i *Installer) extractFile(archivePath, destDir string) error {
 	// Determine the file type based on extension
 	if strings.HasSuffix(archivePath, ".zip") {
 		return i.extractZip(archivePath, destDir)
-	} else if strings.HasSuffix(archivePath, ".tar.gz") || strings.HasSuffix(archivePath, ".tgz") {
-		return i.extractTarGz(archivePath, destDir)
-	} else {
-		// If it's not an archive, just copy the file
-		return i.copyExecutable(archivePath, destDir)
 	}
+
+	if strings.HasSuffix(archivePath, ".tar.gz") || strings.HasSuffix(archivePath, ".tgz") {
+		return i.extractTarGz(archivePath, destDir)
+	}
+
+	// If it's not an archive, just copy the file
+	return i.copyExecutable(archivePath, destDir)
 }
 
 // extractZip extracts a ZIP archive
@@ -190,8 +193,8 @@ func isExecutable(filename string) bool {
 	if runtime.GOOS == "windows" {
 		return strings.HasSuffix(strings.ToLower(filename), ".exe") ||
 			strings.HasSuffix(strings.ToLower(filename), ".bat") ||
-			   strings.HasSuffix(strings.ToLower(filename), ".cmd") ||
-			   strings.HasSuffix(strings.ToLower(filename), ".com")
+			strings.HasSuffix(strings.ToLower(filename), ".cmd") ||
+			strings.HasSuffix(strings.ToLower(filename), ".com")
 	}
 	// For Unix-like systems, we can't determine executability just from the name
 	// We'll assume files without extensions are potentially executable

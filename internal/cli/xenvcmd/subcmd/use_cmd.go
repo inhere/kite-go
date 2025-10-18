@@ -5,8 +5,6 @@ import (
 
 	"github.com/gookit/gcli/v3"
 	"github.com/inhere/kite-go/pkg/xenv"
-	"github.com/inhere/kite-go/pkg/xenv/config"
-	"github.com/inhere/kite-go/pkg/xenv/tools"
 )
 
 var useCmdOpts = struct {
@@ -27,13 +25,11 @@ var UseCmd = &gcli.Command{
 	Func: func(c *gcli.Command, args []string) error {
 		useTools := c.Arg("tools").Strings()
 
-		// Initialize configuration and state
-		if err := xenv.Init(); err != nil {
+		// Create tool service
+		toolSvc, err := xenv.ToolService()
+		if err != nil {
 			return err
 		}
-
-		// Create activator
-		activator := tools.NewActivator(config.Mgr.Config, xenv.State())
 
 		for _, arg := range useTools {
 			// Parse name:version
@@ -43,7 +39,7 @@ var UseCmd = &gcli.Command{
 			}
 
 			// Activate the tool
-			if err := activator.ActivateTool(name, version, GlobalFlag); err != nil {
+			if err := toolSvc.ActivateTool(name, version, GlobalFlag); err != nil {
 				return fmt.Errorf("failed to activate tool %s:%s: %w", name, version, err)
 			}
 
@@ -71,13 +67,11 @@ var UnuseCmd = &gcli.Command{
 	Func: func(c *gcli.Command, args []string) error {
 		unTools := c.Arg("tools").Strings()
 
-		// Initialize configuration and state
-		if err := xenv.Init(); err != nil {
+		// Create tool service
+		toolSvc, err := xenv.ToolService()
+		if err != nil {
 			return err
 		}
-
-		// Create activator
-		activator := tools.NewActivator(config.Mgr.Config, xenv.State())
 
 		for _, arg := range unTools {
 			// Parse name:version
@@ -87,7 +81,7 @@ var UnuseCmd = &gcli.Command{
 			}
 
 			// Deactivate the tool
-			if err := activator.DeactivateTool(name, version, GlobalFlag); err != nil {
+			if err := toolSvc.DeactivateTool(name, version, GlobalFlag); err != nil {
 				return fmt.Errorf("failed to deactivate tool %s:%s: %w", name, version, err)
 			}
 

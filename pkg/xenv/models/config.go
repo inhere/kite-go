@@ -1,7 +1,5 @@
 package models
 
-import "time"
-
 // Configuration 代表用户的配置信息，包含工具管理设置、路径配置、环境激活状态等数据
 type Configuration struct {
 	// ID              string                  `json:"id"`
@@ -28,8 +26,6 @@ type Configuration struct {
 	DownloadDir   string            `json:"download_dir"` // 临时下载目录
 	Tools         []ToolChain       `json:"tools"`        // 可管理的工具链列表
 	SimpleTools   []SimpleTool      `json:"simple_tools"` // 配置的简单工具列表
-	CreatedAt     time.Time         `json:"created_at"`
-	UpdatedAt     time.Time         `json:"updated_at"`
 	// internal fields
 	configFile string
 	configDir  string

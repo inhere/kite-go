@@ -20,10 +20,10 @@ func main() {
 	xe := xenvcmd.XEnvCmd
 	xe.Help = `
 Commands Usage:
-  use <sdk:version>...     Activate SDK versions
+  use <sdk:version>...     Activate Name versions
     -s, --save             Save configuration to project file
   unuse <sdk>...           Deactivate SDKs
-  add <sdk:version>...     Download and install SDK versions
+  add <sdk:version>...     Download and install Name versions
   list [sdk]               List installed SDKs
 
 Examples:

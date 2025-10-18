@@ -16,7 +16,9 @@ type ToolChain struct {
 	// 	  linux: tar.gz
 	// 	  darwin: tar.gz
 	DownloadExt map[string]string `json:"download_ext"`
-	// sdk tool 安装目录路径 默认 ~/.xenv/tools/{name}/{version}
+	// sdk tool 安装目录路径 默认 ~/.xenv/tools/{Name}/{version}
+	//  - {version} 是动态的，根据版本号替换
+	//  - 可以自定义 eg: ~/.xenv/tools/go/go{version}
 	InstallDir string `json:"install_dir"`
 	// 激活时设置的额外环境变量
 	ActiveEnv map[string]string `json:"active_env"`

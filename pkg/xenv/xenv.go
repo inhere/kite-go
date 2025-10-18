@@ -16,7 +16,11 @@ func Init() error {
 	}
 
 	if err := stateMgr.Init(); err != nil {
-		return fmt.Errorf("failed to load global state: %w", err)
+		return fmt.Errorf("failed to initialize state manager: %w", err)
+	}
+
+	if err := toolMgr.Init(config.Config()); err != nil {
+		return fmt.Errorf("failed to initialize tool manager: %w", err)
 	}
 	return nil
 }
@@ -26,6 +30,12 @@ var stateMgr = manager.NewStateManager()
 // State returns the state manager
 func State() *manager.StateManager {
 	return stateMgr
+}
+
+var toolMgr = manager.NewToolManager()
+
+func ToolMgr() *manager.ToolManager {
+	return toolMgr
 }
 
 func EnvService() (*service.EnvService, error) {
@@ -38,3 +48,13 @@ func EnvService() (*service.EnvService, error) {
 	return service.NewEnvService(config.Mgr.Config, stateMgr), nil
 }
 
+func ToolService() (*service.ToolService, error) {
+	// Initialize configuration
+	if err := Init(); err != nil {
+		return nil, fmt.Errorf("failed to initialize configuration: %w", err)
+	}
+
+	// Create tool service
+	toolSvc := service.NewToolService(config.Config(), stateMgr, toolMgr)
+	return toolSvc, nil
+}

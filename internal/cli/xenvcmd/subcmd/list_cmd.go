@@ -5,8 +5,6 @@ import (
 
 	"github.com/gookit/gcli/v3"
 	"github.com/inhere/kite-go/pkg/xenv"
-	"github.com/inhere/kite-go/pkg/xenv/config"
-	"github.com/inhere/kite-go/pkg/xenv/tools"
 )
 
 // ListCmd the xenv list command
@@ -40,19 +38,14 @@ func ListToolsCmd() *gcli.Command {
 }
 
 func listTools() error {
-	// Initialize configuration
-	if err := config.Mgr.Init(); err != nil {
-		return fmt.Errorf("failed to initialize configuration: %w", err)
+	// Create tool service
+	toolSvc, err := xenv.ToolService()
+	if err != nil {
+		return err
 	}
 
-	// Create tool service
-	toolSvc := tools.NewToolService(config.Config())
-	list := tools.NewList(toolSvc)
-
 	// List all tools
-	list.ListAll(false)
-
-	return nil
+	return toolSvc.ListAll(false)
 }
 
 // ListEnvCmd lists environment variables
@@ -89,7 +82,7 @@ func ListActivityCmd() *gcli.Command {
 			}
 
 			globalState := xenv.State().Global()
-			fmt.Println("Active SDK Tools:")
+			fmt.Println("Active Name Tools:")
 			for name, version := range globalState.ActiveTools {
 				fmt.Printf("  %s:%s\n", name, version)
 			}

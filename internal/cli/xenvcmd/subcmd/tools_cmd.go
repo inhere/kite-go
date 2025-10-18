@@ -4,8 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gookit/gcli/v3"
-	"github.com/inhere/kite-go/pkg/xenv/config"
-	"github.com/inhere/kite-go/pkg/xenv/tools"
+	"github.com/inhere/kite-go/pkg/xenv"
 )
 
 // ToolsCmd the xenv tools command
@@ -20,13 +19,32 @@ var ToolsCmd = &gcli.Command{
 		ToolsShowCmd(),
 		ToolsListCmd(),
 		ToolsRegisterCmd(),
+		ToolsIndexCmd(),
 	},
 	Config: func(c *gcli.Command) {
 		// Add configuration for tools command if needed
 	},
-	Func: func(c *gcli.Command, args []string) error {
-		return c.ShowHelp()
-	},
+}
+
+// ToolsIndexCmd command for 将本地的工具信息索引到 local.json
+func ToolsIndexCmd() *gcli.Command {
+	return &gcli.Command{
+		Name:    "index",
+		Help:    "index",
+		Desc:    "Index local installed tools to metadata",
+		Aliases: []string{"idx"},
+		Func: func(c *gcli.Command, args []string) error {
+			// Create tool service
+			toolSvc, err := xenv.ToolService()
+			if err != nil {
+				return err
+			}
+
+			// Index local tools
+			return toolSvc.IndexLocalTools()
+		},
+	}
+
 }
 
 func ToolsRegisterCmd() *gcli.Command {
@@ -52,13 +70,12 @@ func ToolsRegisterCmd() *gcli.Command {
 			url := c.Arg("url").String()
 			bin := c.Arg("bin").String()
 
-			// Initialize configuration
-			if err := config.Mgr.Init(); err != nil {
-				return fmt.Errorf("failed to initialize configuration: %w", err)
+			// Create tool service
+			toolSvc, err := xenv.ToolService()
+			if err != nil {
+				return err
 			}
 
-			// Create tool service
-			toolSvc := tools.NewToolService(config.Config())
 			return toolSvc.Register(name, version, url, bin)
 		},
 	}
@@ -83,13 +100,11 @@ func ToolsInstallCmd() *gcli.Command {
 				return err
 			}
 
-			// Initialize configuration
-			if err := config.Mgr.Init(); err != nil {
-				return fmt.Errorf("failed to initialize configuration: %w", err)
-			}
-
 			// Create tool service
-			toolSvc := tools.NewToolService(config.Config())
+			toolSvc, err := xenv.ToolService()
+			if err != nil {
+				return err
+			}
 
 			// Install the tool
 			if err := toolSvc.InstallTool(name, version); err != nil {
@@ -123,13 +138,11 @@ func ToolsUninstallCmd() *gcli.Command {
 				return err
 			}
 
-			// Initialize configuration
-			if err := config.Mgr.Init(); err != nil {
-				return fmt.Errorf("failed to initialize configuration: %w", err)
-			}
-
 			// Create tool service
-			toolSvc := tools.NewToolService(config.Config())
+			toolSvc, err := xenv.ToolService()
+			if err != nil {
+				return err
+			}
 
 			// Uninstall the tool
 			if err := toolSvc.Uninstall(name, version); err != nil {
@@ -160,13 +173,11 @@ func ToolsUpdateCmd() *gcli.Command {
 				return err
 			}
 
-			// Initialize configuration
-			if err := config.Mgr.Init(); err != nil {
-				return fmt.Errorf("failed to initialize configuration: %w", err)
-			}
-
 			// Create tool service
-			toolSvc := tools.NewToolService(config.Config())
+			toolSvc, err := xenv.ToolService()
+			if err != nil {
+				return err
+			}
 
 			// Update the tool (install the new version)
 			if err := toolSvc.UpdateTool(name, version); err != nil {
@@ -191,13 +202,11 @@ func ToolsShowCmd() *gcli.Command {
 		Func: func(c *gcli.Command, args []string) error {
 			name := args[0]
 
-			// Initialize configuration
-			if err := config.Mgr.Init(); err != nil {
-				return fmt.Errorf("failed to initialize configuration: %w", err)
-			}
-
 			// Create tool service
-			toolSvc := tools.NewToolService(config.Config())
+			toolSvc, err := xenv.ToolService()
+			if err != nil {
+				return err
+			}
 
 			// Get tool info
 			tool := toolSvc.GetTool(name)
@@ -227,20 +236,7 @@ func ToolsListCmd() *gcli.Command {
 		Desc: "List all installed tools",
 		Aliases: []string{"ls"},
 		Func: func(c *gcli.Command, args []string) error {
-
-			// Initialize configuration
-			if err := config.Mgr.Init(); err != nil {
-				return fmt.Errorf("failed to initialize configuration: %w", err)
-			}
-
-			// Create tool service
-			toolSvc := tools.NewToolService(config.Config())
-			list := tools.NewList(toolSvc)
-
-			// List all tools
-			list.ListAll(false)
-
-			return nil
+			return listTools()
 		},
 	}
 }
