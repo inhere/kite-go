@@ -19,6 +19,7 @@ var ToolsCmd = &gcli.Command{
 		ToolsUpdateCmd(),
 		ToolsShowCmd(),
 		ToolsListCmd(),
+		ToolsRegisterCmd(),
 	},
 	Config: func(c *gcli.Command) {
 		// Add configuration for tools command if needed
@@ -28,13 +29,49 @@ var ToolsCmd = &gcli.Command{
 	},
 }
 
+func ToolsRegisterCmd() *gcli.Command {
+	var toolRegisterOpts = struct {
+		Name    string `flag:"desc=Name of the tool to register"`
+		Version string `flag:"shorts=v;desc=Version of the tool to register"`
+		URL     string `flag:"name=url;desc=URL of the tool to register"`
+		Bin     string `flag:"desc=Bin path of the tool to register"`
+		Refresh bool   `flag:"shorts=r;desc=Refresh register tools metadata"`
+	}{}
+
+	return &gcli.Command{
+		Name:    "register",
+		Help:    "Register a tool",
+		Desc:    "Register a tool to xenv",
+		Aliases: []string{"add", "reg"},
+		Config: func(c *gcli.Command) {
+			c.MustFromStruct(&toolRegisterOpts)
+		},
+		Func: func(c *gcli.Command, args []string) error {
+			name := c.Arg("name").String()
+			version := c.Arg("version").String()
+			url := c.Arg("url").String()
+			bin := c.Arg("bin").String()
+
+			// Initialize configuration
+			if err := config.Mgr.Init(); err != nil {
+				return fmt.Errorf("failed to initialize configuration: %w", err)
+			}
+
+			// Create tool service
+			toolSvc := tools.NewToolService(config.Config())
+			return toolSvc.Register(name, version, url, bin)
+		},
+	}
+
+}
+
 // ToolsInstallCmd command for installing tools
 func ToolsInstallCmd() *gcli.Command {
 	return &gcli.Command{
 		Name:    "install",
 		Help: "install <name:version>...",
 		Desc: "Install a tool with specific version",
-		Aliases: []string{"i", "in", "add"},
+		Aliases: []string{"i", "in"},
 		Config: func(c *gcli.Command) {
 			c.AddArg("tools", "Name of the tool to install, allow multi.", true, true)
 		},
@@ -168,7 +205,7 @@ func ToolsShowCmd() *gcli.Command {
 				return fmt.Errorf("tool %s is not installed", name)
 			}
 
-			c.Infof("Tool: %s\n", tool.ID)
+			c.Infof("Tool: %s\n", tool.Name)
 			c.Infof("  InstallDir: %s\n", tool.InstallDir)
 			c.Infof("  Installed: %t\n", tool.Installed)
 			if len(tool.Alias) > 0 {

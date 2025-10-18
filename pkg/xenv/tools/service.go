@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/jsonutil"
 	"github.com/inhere/kite-go/internal/util"
@@ -15,9 +16,11 @@ import (
 type ToolService struct {
 	config      *models.Configuration
 	loaded      bool
-	metaFile    string
+	localFile string
 	localTools  *models.LocalTools // TODO 安装后
 	globalState *models.ActivityState
+	// register data
+	registerFile string
 }
 
 // NewToolService creates a new ToolService
@@ -35,9 +38,9 @@ func (ts *ToolService) LoadLocalTools() error {
 	}
 	ts.loaded = true
 
-	ts.metaFile = ts.config.InstallDir + "/local.json"
-	if fsutil.IsFile(ts.metaFile) {
-		err := jsonutil.DecodeFile(ts.metaFile, ts.localTools)
+	ts.localFile = ts.config.InstallDir + "/local.json"
+	if fsutil.IsFile(ts.localFile) {
+		err := jsonutil.DecodeFile(ts.localFile, ts.localTools)
 		if err != nil {
 			return err
 		}
@@ -45,34 +48,33 @@ func (ts *ToolService) LoadLocalTools() error {
 	return nil
 }
 
+func (ts *ToolService) Register(name string, version string, url string, bin string) error {
+	return errorx.Raw("TODO register ...")
+}
+
 // InstallTool installs a tool with the specified version
 func (ts *ToolService) InstallTool(name, version string) error {
-	// Check if tool is already installed
-	id := fmt.Sprintf("%s:%s", name, version)
-	for _, tool := range ts.config.Tools {
-		if tool.ID == id {
-			return fmt.Errorf("tool %s is already installed", id)
-		}
+	toolChain := ts.config.FindToolConfig(name)
+	// Check if tool is defined
+	if toolChain == nil {
+		return fmt.Errorf("tool %s is not defined in config", name)
 	}
 
+	// 查找 local.json 是否存在
+	if ts.localTools.FindSdkTool(name, version) != nil {
+		return fmt.Errorf("tool %s:%s is already installed", name, version)
+	}
+
+	id := fmt.Sprintf("%s:%s", name, version)
 	// Prepare installation directory
 	installPath := filepath.Join(util.ExpandHome(ts.config.InstallDir), name, version)
 	if err := util.EnsureDir(installPath); err != nil {
 		return fmt.Errorf("failed to create installation directory: %w", err)
 	}
 
-	// Create a new ToolChain instance
-	toolChain := models.ToolChain{
-		ID:        id,
-		Name:      name,
-		InstallDir: installPath,
-		Installed: true,
-		BinPaths:  []string{installPath}, // Default to install directory
-	}
-
 	// download and install the tool here
 	installer := NewInstaller(ts.config)
-	err := installer.Install(&toolChain, version)
+	err := installer.Install(toolChain, version)
 	if err != nil {
 		return err
 	}
@@ -101,28 +103,29 @@ func (ts *ToolService) InstallTool(name, version string) error {
 // Uninstall uninstalls a sdk tool with the specified version
 func (ts *ToolService) Uninstall(name, version string) error {
 	id := fmt.Sprintf("%s:%s", name, version)
-	sdkTools := ts.localTools.SdkTools
 
 	// Find the tool in the configuration
-	foundIndex := -1
-	for i, tool := range sdkTools {
-		if tool.ID == id {
-			foundIndex = i
-			break
-		}
-	}
-	if foundIndex == -1 {
+	toolConfig := ts.config.FindToolConfig(name)
+	if toolConfig == nil {
 		return fmt.Errorf("tool %s is not installed", id)
 	}
 
+	// 查找 local.json 是否存在
+	localTool := ts.localTools.FindSdkTool(name, version)
+	if localTool == nil {
+		return fmt.Errorf("tool %s:%s is not installed", name, version)
+	}
+
+	toolIndex := localTool.Index
 	uninstaller := NewUninstaller(ts.config)
-	err := uninstaller.Uninstall(name, version, false)
+	err := uninstaller.Uninstall(toolConfig, localTool, false)
 	if err != nil {
 		return err
 	}
 
 	// remove from ts.localTools
-	ts.localTools.SdkTools = append(sdkTools[:foundIndex], sdkTools[foundIndex+1:]...)
+	sdkTools := ts.localTools.SdkTools
+	ts.localTools.SdkTools = append(sdkTools[:toolIndex], sdkTools[toolIndex+1:]...)
 	// save local.json
 	return ts.SaveLocalTools()
 }
@@ -171,5 +174,5 @@ func (ts *ToolService) EnsureBinDir() error {
 
 // SaveLocalTools saves the local tools information
 func (ts *ToolService) SaveLocalTools() error {
-	return jsonutil.WriteFile(ts.metaFile, ts.localTools)
+	return jsonutil.WriteFile(ts.localFile, ts.localTools)
 }

@@ -10,6 +10,8 @@ download_ext:
   windows: zip
   linux: tar.gz
   darwin: tar.gz
+tools_index_source:
+  url: index.json # TODO
 tools:
   - name: go
     alias: [golang]
@@ -32,3 +34,4 @@ tools:
 
 simple_tools:
   - name: git
+    source: https://github.com/git-for-windows/git

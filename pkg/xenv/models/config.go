@@ -48,6 +48,16 @@ func (c *Configuration) IsToolDefined(name string) bool {
 	return toolFound
 }
 
+// FindToolConfig returns the tool configuration if it is defined
+func (c *Configuration) FindToolConfig(name string) *ToolChain {
+	for _, tool := range c.Tools {
+		if tool.Name == name {
+			return &tool
+		}
+	}
+	return nil
+}
+
 func (c *Configuration) ConfigFile() string {
 	return c.configFile
 }

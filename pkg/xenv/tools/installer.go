@@ -42,7 +42,7 @@ func (i *Installer) Install(toolChain *models.ToolChain, version string) error {
 
 	// If InstallURL is provided, download the tool
 	if toolChain.InstallURL == "" {
-		return fmt.Errorf("tool %q install_url is not configed", toolChain.ID)
+		return fmt.Errorf("tool %q install_url is not configed", toolChain.Name)
 	}
 	if err := i.downloadAndExtract(toolChain, version); err != nil {
 		return fmt.Errorf("failed to download and extract tool: %w", err)

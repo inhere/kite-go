@@ -22,41 +22,18 @@ func NewUninstaller(config *models.Configuration) *Uninstaller {
 }
 
 // Uninstall removes a tool with the specified name and version
-func (u *Uninstaller) Uninstall(name, version string, keepConfig bool) error {
-	id := fmt.Sprintf("%s:%s", name, version)
-
-	// Find the tool in the configuration
-	var tool *models.ToolChain
-	var toolIndex int
-	found := false
-
-	for i, t := range u.config.Tools {
-		if t.ID == id {
-			tool = &u.config.Tools[i]
-			toolIndex = i
-			found = true
-			break
-		}
-	}
-
-	if !found {
-		return fmt.Errorf("tool %s is not installed", id)
-	}
-
+func (u *Uninstaller) Uninstall(toolConfig *models.ToolChain, installed *models.InstalledTool, keepConfig bool) error {
 	// Remove the tool from the bin directory (remove shims)
-	if err := u.removeShims(tool); err != nil {
+	if err := u.removeShims(toolConfig); err != nil {
 		// Continue execution even if removing shims fails
 	}
 
 	// Remove the installed tool directory if not keeping config
 	if !keepConfig {
-		if err := os.RemoveAll(tool.InstallDir); err != nil {
+		if err := os.RemoveAll(installed.InstallDir); err != nil {
 			return fmt.Errorf("failed to remove installation directory: %w", err)
 		}
 	}
-
-	// Remove the tool from configuration
-	u.config.Tools = append(u.config.Tools[:toolIndex], u.config.Tools[toolIndex+1:]...)
 
 	return nil
 }
