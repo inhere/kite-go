@@ -1,22 +1,25 @@
 package manager
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/jsonutil"
+	"github.com/gookit/goutil/x/ccolor"
 	"github.com/inhere/kite-go/pkg/xenv/models"
 	"github.com/inhere/kite-go/pkg/xenv/tools"
 )
 
 type ToolManager struct {
-	init      bool
+	init bool
 	config *models.Configuration
 	// local data file
 	localInit  bool
-	localFile string
-	localTools  *models.ToolsLocal
+	localFile  string
+	localTools *models.ToolsLocal
 	// register data - 从 config 配置中初始化 tools/config.json TODO
 	registerFile string
 }
@@ -40,7 +43,8 @@ func (m *ToolManager) Init(config *models.Configuration) error {
 
 // LoadLocalTools local installed tools information
 func (m *ToolManager) LoadLocalTools() error {
-	m.localFile = m.config.InstallDir + "/local.json"
+	m.localFile = fsutil.Expand("~/.xenv/tools.local.json")
+
 	if fsutil.IsFile(m.localFile) {
 		err := jsonutil.DecodeFile(m.localFile, m.localTools)
 		if err != nil {
@@ -67,6 +71,7 @@ func (m *ToolManager) IndexLocalTools() error {
 		m.localTools.CreatedAt = currentTime
 	}
 	m.localTools.UpdatedAt = currentTime
+	m.localTools.SDKs = nil // 重新添加
 
 	// SDK tools
 	for _, toolCfg := range m.config.Tools {
@@ -75,7 +80,9 @@ func (m *ToolManager) IndexLocalTools() error {
 			return err
 		}
 
+		ccolor.Cyanf("Found installed %q from %s\n", toolCfg.Name, toolCfg.InstallDir)
 		for version, installPath := range ver2dirMap {
+			ccolor.Infof("  Found %s %s\n", toolCfg.Name, version)
 			// build local installed tool info
 			m.localTools.SDKs = append(m.localTools.SDKs, models.InstalledTool{
 				ID:         fmt.Sprintf("%s:%s", toolCfg.Name, version),
@@ -90,12 +97,17 @@ func (m *ToolManager) IndexLocalTools() error {
 
 	// TODO Simple tools
 
+	ccolor.Magentaf("\nWrite indexed data to %s\n", m.localFile)
 	return m.SaveLocalTools()
 }
 
 // SaveLocalTools saves the local tools information
 func (m *ToolManager) SaveLocalTools() error {
-	return jsonutil.WriteFile(m.localFile, m.localTools)
+	jsonBytes, err := json.MarshalIndent(m.localTools, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(m.localFile, jsonBytes, 0664)
 }
 
 func (m *ToolManager) AddSDKTool(name, version, installDir string) error {
@@ -131,4 +143,8 @@ func (m *ToolManager) DeleteSDKTool(localTool *models.InstalledTool) error {
 
 func (m *ToolManager) FindSdkByID(id string) *models.InstalledTool {
 	return m.localTools.FindSdkByID(id)
+}
+
+func (m *ToolManager) ListLocalVersions(name string) []models.InstalledTool {
+	return m.localTools.ListSdkByName(name)
 }

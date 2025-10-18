@@ -3,9 +3,8 @@ package models
 // ToolChain SDK开发工具（如Go、Node.js等）配置，包含安装路径、别名等属性。
 //   - 只是工具信息配置，不含有特定的版本信息
 type ToolChain struct {
-	Name      string   `json:"name"`      // 工具名称，如 "go", "node"
-	Alias     []string `json:"alias"`     // 别名列表，如 ["golang"] for go
-	Installed bool     `json:"installed"` // 是否已安装 - 本地至少有一个版本的工具
+	Name  string `json:"name"`  // 工具名称，如 "go", "node"
+	Alias string `json:"alias"` // 工具别名列表，如 "golang" for go
 	// 可选，下载URL模板 eg: "https://golang.org/dl/go{version}.{os}-{arch}.{download_ext}"
 	InstallURL string `json:"install_url"`
 	// 从远程下载不同OS平台的工具包的后缀格式

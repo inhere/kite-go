@@ -7,7 +7,6 @@ import (
 
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/strutil"
-	"github.com/gookit/goutil/x/ccolor"
 )
 
 // ListVersionDirs 列出SDK的已安装版本目录
@@ -19,7 +18,7 @@ func ListVersionDirs(installDir string) (map[string]string, error) {
 	if !fsutil.IsDir(baseDir) {
 		return nil, nil
 	}
-	ccolor.Infof("DEBUG list installed version from %s\n", baseDir)
+	// ccolor.Infof("DEBUG list installed version from %s\n", baseDir)
 
 	entries, err := os.ReadDir(baseDir)
 	if err != nil {

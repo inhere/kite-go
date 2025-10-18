@@ -216,7 +216,7 @@ func ToolsShowCmd() *gcli.Command {
 
 			c.Infof("Tool: %s\n", tool.Name)
 			c.Infof("  InstallDir: %s\n", tool.InstallDir)
-			c.Infof("  Installed: %t\n", tool.Installed)
+			// c.Infof("  Installed: %t\n", tool.Installed)
 			if len(tool.Alias) > 0 {
 				c.Infoln(fmt.Sprintf("  Aliases: %v", tool.Alias))
 			}

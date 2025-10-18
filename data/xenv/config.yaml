@@ -14,7 +14,7 @@ tools_index_source:
   url: index.json # TODO
 tools:
   - name: go
-    alias: [golang]
+    alias: golang
     install_url: "https://golang.org/dl/go{version}.{os}-{arch}.{download_ext}" # 可选，不配置则使用本地已下载的工具链
     install_dir: D:/work/env/devsdk/gosdk/go{version} # 可选，默认使用顶级 `install_dir` 配置项
     active_env: # 可选，激活时额外设置ENV

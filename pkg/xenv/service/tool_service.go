@@ -13,7 +13,7 @@ import (
 
 // ToolService handles tool chain management operations
 type ToolService struct {
-	config      *models.Configuration
+	config *models.Configuration
 	state   *manager.StateManager
 	toolMgr *manager.ToolManager
 }
@@ -21,7 +21,7 @@ type ToolService struct {
 // NewToolService creates a new ToolService
 func NewToolService(config *models.Configuration, state *manager.StateManager, toolMgr *manager.ToolManager) *ToolService {
 	return &ToolService{
-		config:     config,
+		config: config,
 		state:   state,
 		toolMgr: toolMgr,
 	}
@@ -92,27 +92,28 @@ func (ts *ToolService) ListAll(showAll bool) error {
 		return nil
 	}
 
-	ccolor.Cyanf("Managed Name Tools(%d):\n", len(cfgTools))
+	ccolor.Cyanf("Managed SDK Tools(%d):\n", len(cfgTools))
 
 	for _, toolCfg := range cfgTools {
-		status := ""
-		if toolCfg.Installed {
-			status = " [INSTALLED]"
-		} else {
-			status = " [NOT INSTALLED]"
-		}
-
-		ccolor.Infof(" %s %s\n", toolCfg.Name, status)
-		fmt.Printf("  - InstallDir: %s\n", toolCfg.InstallDir)
-		fmt.Printf("  - BinPaths: %v\n", toolCfg.BinPaths)
+		ccolor.Magentaf("%s", toolCfg.Name)
 		if len(toolCfg.Alias) > 0 {
-			fmt.Printf("  - Aliases: %v\n", toolCfg.Alias)
+			fmt.Printf("(Aliases: %v) SDK:\n", toolCfg.Alias)
+		} else {
+			fmt.Println(" SDK:")
+		}
+		fmt.Printf("  - InstallDir: %s\n", toolCfg.InstallDir)
+		if len(toolCfg.BinPaths) > 0 {
+			fmt.Printf("  - BinPaths: %v\n", toolCfg.BinPaths)
 		}
 
-		// ver2dirMap, err := tools.ListVersionDirs(toolCfg.InstallDir)
-		// if err != nil {
-		// 	return err
-		// }
+		locals := ts.toolMgr.ListLocalVersions(toolCfg.Name)
+		if len(locals) > 0 {
+			fmt.Print("  - Installed: ")
+			for _, local := range locals {
+				ccolor.Infof("%s ", local.Version)
+			}
+			fmt.Println()
+		}
 	}
 	return nil
 }

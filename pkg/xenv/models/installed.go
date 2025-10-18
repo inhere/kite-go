@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"sort"
+	"time"
+)
 
 // ToolsLocal 代表本地已安装的工具链信息. 会保存到 ~/.xenv/tools/local.json
 type ToolsLocal struct {
@@ -44,6 +47,10 @@ func (lt *ToolsLocal) ListSdkByName(name string) []InstalledTool {
 			tools = append(tools, tool)
 		}
 	}
+
+	sort.Slice(tools, func(i, j int) bool {
+		return tools[i].Version > tools[j].Version
+	})
 	return tools
 }
 
