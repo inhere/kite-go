@@ -5,7 +5,6 @@ import (
 
 	"github.com/gookit/gcli/v3"
 	"github.com/inhere/kite-go/pkg/xenv/config"
-	"github.com/inhere/kite-go/pkg/xenv/models"
 	"github.com/inhere/kite-go/pkg/xenv/tools"
 )
 
@@ -34,19 +33,12 @@ var UseCmd = &gcli.Command{
 			}
 
 			// Initialize configuration
-			cfgMgr := config.NewConfigManager()
-			configPath := config.GetDefaultConfigPath()
-			// Try to load existing config, ignore errors (will use defaults)
-			_ = cfgMgr.LoadConfig(configPath)
-
-			// Initialize activity state
-			activityState, err := models.LoadActivityState()
-			if err != nil {
-				return fmt.Errorf("failed to load activity state: %w", err)
+			if err := config.Mgr.Init(); err != nil {
+				return fmt.Errorf("failed to initialize configuration: %w", err)
 			}
 
 			// Create activator
-			activator := tools.NewActivator(cfgMgr.Config, activityState)
+			activator := tools.NewActivator(config.Mgr.Config, config.Mgr.State)
 
 			// Activate the tool
 			if err := activator.ActivateTool(name, version, GlobalFlag); err != nil {
@@ -55,9 +47,6 @@ var UseCmd = &gcli.Command{
 
 			// Save configuration if global flag is set
 			if GlobalFlag {
-				if err := cfgMgr.SaveConfig(configPath); err != nil {
-					return fmt.Errorf("failed to save configuration: %w", err)
-				}
 				c.Infof("Set %s:%s as global default\n", name, version)
 			} else {
 				c.Infof("Set %s:%s for current session\n", name, version)
@@ -88,30 +77,20 @@ var UnuseCmd = &gcli.Command{
 			}
 
 			// Initialize configuration
-			cfgMgr := config.NewConfigManager()
-			configPath := config.GetDefaultConfigPath()
-			// Try to load existing config, ignore errors (will use defaults)
-			_ = cfgMgr.LoadConfig(configPath)
-
-			// Initialize activity state
-			activityState, err := models.LoadActivityState()
-			if err != nil {
-				return fmt.Errorf("failed to load activity state: %w", err)
+			if err := config.Mgr.Init(); err != nil {
+				return fmt.Errorf("failed to initialize configuration: %w", err)
 			}
 
-			// Create deactivator
-			deactivator := tools.NewDeactivator(cfgMgr.Config, activityState)
+			// Create activator
+			activator := tools.NewActivator(config.Mgr.Config, config.Mgr.State)
 
 			// Deactivate the tool
-			if err := deactivator.DeactivateTool(name, version, GlobalFlag); err != nil {
+			if err := activator.DeactivateTool(name, version, GlobalFlag); err != nil {
 				return fmt.Errorf("failed to deactivate tool %s:%s: %w", name, version, err)
 			}
 
 			// Save configuration if global flag is set
 			if GlobalFlag {
-				if err := cfgMgr.SaveConfig(configPath); err != nil {
-					return fmt.Errorf("failed to save configuration: %w", err)
-				}
 				c.Infof("Unset %s:%s from global default\n", name, version)
 			} else {
 				c.Infof("Unset %s:%s from current session\n", name, version)

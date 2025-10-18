@@ -11,11 +11,11 @@ import (
 
 // Importer handles configuration import functionality
 type Importer struct {
-	configManager *ConfigManager
+	configManager *Manager
 }
 
 // NewImporter creates a new Importer
-func NewImporter(configManager *ConfigManager) *Importer {
+func NewImporter(configManager *Manager) *Importer {
 	return &Importer{
 		configManager: configManager,
 	}

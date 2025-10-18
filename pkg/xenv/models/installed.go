@@ -4,10 +4,12 @@ import "time"
 
 // LocalTools 代表本地已安装的工具链信息. 会保存到 ~/.xenv/tools/local.json
 type LocalTools struct {
-	Tools []InstalledTool `json:"tools"`
+	Version   string    `json:"version"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	// SDK 工具链列表
+	SdkTools    []InstalledTool `json:"sdk_tools"`
 	SimpleTools []InstalledTool `json:"simple_tools"`
-	CreatedAt  time.Time `json:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at"`
 }
 
 // InstalledTool 代表已安装的工具链信息
@@ -18,6 +20,7 @@ type InstalledTool struct {
 	InstallDir string    `json:"install_dir"`
 	BinDir     string    `json:"bin_dir"`
 	BinPaths   []string  `json:"bin_paths"`
+	Source string `json:"source"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
 }

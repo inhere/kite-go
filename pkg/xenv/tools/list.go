@@ -20,25 +20,23 @@ func NewList(service *ToolService) *List {
 
 // ListAll lists all tools
 func (l *List) ListAll(showAll bool) {
-	tools := l.service.ListTools()
-	
-	if len(tools) == 0 {
-		fmt.Println("No tools installed")
+	cfgTools := l.service.ListTools()
+	if len(cfgTools) == 0 {
+		fmt.Println("No tools for managed. see config: tools, simple_tools")
 		return
 	}
-	
+
 	fmt.Println("Installed tools:")
-	
-	for _, tool := range tools {
+
+	for _, tool := range cfgTools {
 		status := ""
 		if tool.Installed {
 			status = " [INSTALLED]"
 		} else {
 			status = " [NOT INSTALLED]"
 		}
-		
-		fmt.Printf("- %s:%s%s\n", tool.Name, tool.Version, status)
-		
+
+		fmt.Printf("- %s %s\n", tool.Name, status)
 		if showAll {
 			fmt.Printf("  InstallDir: %s\n", tool.InstallDir)
 			fmt.Printf("  BinPaths: %v\n", tool.BinPaths)
@@ -52,7 +50,7 @@ func (l *List) ListAll(showAll bool) {
 // ListTools returns tools based on filters
 func (l *List) ListTools(filterType string) []models.ToolChain {
 	allTools := l.service.ListTools()
-	
+
 	switch filterType {
 	case "tool", "":
 		// Return all installed tools (default behavior)

@@ -4,10 +4,11 @@ import (
 	"fmt"
 
 	"github.com/gookit/gcli/v3"
-	"github.com/inhere/kite-go/pkg/xenv/config"
-	"github.com/inhere/kite-go/pkg/xenv/env"
-	"github.com/inhere/kite-go/pkg/xenv/models"
+	"github.com/inhere/kite-go/pkg/xenv"
 )
+
+// GlobalFlag option value
+var GlobalFlag bool
 
 // EnvCmd the xenv env command
 var EnvCmd = &gcli.Command{
@@ -19,37 +20,7 @@ var EnvCmd = &gcli.Command{
 		EnvListCmd(),
 	},
 	Func: func(c *gcli.Command, args []string) error {
-		// Initialize configuration
-		cfgMgr := config.NewConfigManager()
-		configPath := config.GetDefaultConfigPath()
-		// Try to load existing config, ignore errors (will use defaults)
-		_ = cfgMgr.LoadConfig(configPath)
-
-		// Load activity state
-		activityState, err := models.LoadActivityState()
-		if err != nil {
-			return fmt.Errorf("failed to load activity state: %w", err)
-		}
-
-		// Create env manager
-		envMgr := env.NewManager(cfgMgr.Config, activityState)
-
-		// List environment variables
-		envVars := envMgr.ListEnv()
-		fmt.Println("Environment Variables:")
-		for name, envVar := range envVars {
-			fmt.Printf("  %s=%s (%s)\n", name, envVar.Value, envVar.Scope)
-		}
-
-		// Also show session variables from activity state
-		if len(activityState.ActiveEnv) > 0 {
-			fmt.Println("\nSession Variables:")
-			for name, value := range activityState.ActiveEnv {
-				fmt.Printf("  %s=%s\n", name, value)
-			}
-		}
-
-		return nil
+		return listEnvs()
 	},
 }
 
@@ -69,29 +40,20 @@ func EnvSetCmd() *gcli.Command {
 			name := args[0]
 			value := args[1]
 
-			// Initialize configuration
-			cfgMgr := config.NewConfigManager()
-			configPath := config.GetDefaultConfigPath()
-			// Try to load existing config, ignore errors (will use defaults)
-			_ = cfgMgr.LoadConfig(configPath)
-
-			// Load activity state
-			activityState, err := models.LoadActivityState()
+			// Create env manager
+			envMgr, err := xenv.EnvManager()
 			if err != nil {
-				return fmt.Errorf("failed to load activity state: %w", err)
+				return err
 			}
 
-			// Create env manager
-			envMgr := env.NewManager(cfgMgr.Config, activityState)
-
 			// Set the environment variable
-			if err := envMgr.SetEnv(name, value, GlobalFlag); err != nil {
+			if err := envMgr.SetEnv(name, value); err != nil {
 				return fmt.Errorf("failed to set environment variable: %w", err)
 			}
 
 			// Save configuration if global
 			if GlobalFlag {
-				if err := cfgMgr.SaveConfig(configPath); err != nil {
+				if err := envMgr.SaveGlobalState(); err != nil {
 					return fmt.Errorf("failed to save configuration: %w", err)
 				}
 				fmt.Printf("Set %s=%s globally\n", name, value)
@@ -116,30 +78,21 @@ func EnvUnsetCmd() *gcli.Command {
 		},
 		Func: func(c *gcli.Command, args []string) error {
 
-			// Initialize configuration
-			cfgMgr := config.NewConfigManager()
-			configPath := config.GetDefaultConfigPath()
-			// Try to load existing config, ignore errors (will use defaults)
-			_ = cfgMgr.LoadConfig(configPath)
-
-			// Load activity state
-			activityState, err := models.LoadActivityState()
-			if err != nil {
-				return fmt.Errorf("failed to load activity state: %w", err)
-			}
-
 			// Create env manager
-			envMgr := env.NewManager(cfgMgr.Config, activityState)
+			envMgr, err := xenv.EnvManager()
+			if err != nil {
+				return err
+			}
 
 			for _, name := range args {
 				// Unset the environment variable
-				if err := envMgr.UnsetEnv(name, GlobalFlag); err != nil {
+				if err := envMgr.UnsetEnv(name); err != nil {
 					return fmt.Errorf("failed to unset environment variable %s: %w", name, err)
 				}
 
 				// Save configuration if global
 				if GlobalFlag {
-					if err := cfgMgr.SaveConfig(configPath); err != nil {
+					if err := envMgr.SaveGlobalState(); err != nil {
 						return fmt.Errorf("failed to save configuration: %w", err)
 					}
 					fmt.Printf("Unset %s globally\n", name)
@@ -160,40 +113,25 @@ func EnvListCmd() *gcli.Command {
 		Desc: "List environment variables",
 		Aliases: []string{"ls"},
 		Func: func(c *gcli.Command, args []string) error {
-			// This is the same as the main command's Run function
-			// Initialize configuration
-			cfgMgr := config.NewConfigManager()
-			configPath := config.GetDefaultConfigPath()
-			// Try to load existing config, ignore errors (will use defaults)
-			_ = cfgMgr.LoadConfig(configPath)
-
-			// Load activity state
-			activityState, err := models.LoadActivityState()
-			if err != nil {
-				return fmt.Errorf("failed to load activity state: %w", err)
-			}
-
-			// Create env manager
-			envMgr := env.NewManager(cfgMgr.Config, activityState)
-
-			// List environment variables
-			envVars := envMgr.ListEnv()
-			fmt.Println("Environment Variables:")
-			for name, envVar := range envVars {
-				fmt.Printf("  %s=%s (%s)\n", name, envVar.Value, envVar.Scope)
-			}
-
-			// Also show session variables from activity state
-			if len(activityState.ActiveEnv) > 0 {
-				fmt.Println("\nSession Variables:")
-				for name, value := range activityState.ActiveEnv {
-					fmt.Printf("  %s=%s\n", name, value)
-				}
-			}
-
-			return nil
+			return listEnvs()
 		},
 	}
+}
+
+func listEnvs() error {
+	// Create env manager
+	envMgr, err := xenv.EnvManager()
+	if err != nil {
+		return err
+	}
+
+	// List environment variables
+	envVars := envMgr.ListEnv()
+	fmt.Println("Environment Variables:")
+	for name, envVar := range envVars {
+		fmt.Printf("  %s=%s\n", name, envVar)
+	}
+	return nil
 }
 
 // PathCmd the xenv path command
@@ -207,37 +145,7 @@ var PathCmd = &gcli.Command{
 		PathSearchCmd(),
 	},
 	Func: func(c *gcli.Command, args []string) error {
-		// Initialize configuration
-		cfgMgr := config.NewConfigManager()
-		configPath := config.GetDefaultConfigPath()
-		// Try to load existing config, ignore errors (will use defaults)
-		_ = cfgMgr.LoadConfig(configPath)
-
-		// Load activity state
-		activityState, err := models.LoadActivityState()
-		if err != nil {
-			return fmt.Errorf("failed to load activity state: %w", err)
-		}
-
-		// Create path manager
-		pathMgr := env.NewPathManager(cfgMgr.Config, activityState)
-
-		// List PATH entries
-		paths := pathMgr.ListPaths()
-		fmt.Println("PATH Entries:")
-		for i, path := range paths {
-			fmt.Printf("  %d. %s (%s)\n", i+1, path.Path, path.Scope)
-		}
-
-		// Also show session paths from activity state
-		if len(activityState.ActivePaths) > 0 {
-			fmt.Println("\nSession PATH Entries:")
-			for i, path := range activityState.ActivePaths {
-				fmt.Printf("  %d. %s\n", i+1, path)
-			}
-		}
-
-		return nil
+		return listEnvPaths()
 	},
 }
 
@@ -254,29 +162,20 @@ func PathAddCmd() *gcli.Command {
 		Func: func(c *gcli.Command, args []string) error {
 			path := c.Arg("path").String()
 
-			// Initialize configuration
-			cfgMgr := config.NewConfigManager()
-			configPath := config.GetDefaultConfigPath()
-			// Try to load existing config, ignore errors (will use defaults)
-			_ = cfgMgr.LoadConfig(configPath)
-
-			// Load activity state
-			activityState, err := models.LoadActivityState()
+			// Create env manager
+			envMgr, err := xenv.EnvManager()
 			if err != nil {
-				return fmt.Errorf("failed to load activity state: %w", err)
+				return err
 			}
 
-			// Create path manager
-			pathMgr := env.NewPathManager(cfgMgr.Config, activityState)
-
 			// Add the path
-			if err := pathMgr.AddPath(path, GlobalFlag); err != nil {
+			if err := envMgr.AddPath(path); err != nil {
 				return fmt.Errorf("failed to add path: %w", err)
 			}
 
 			// Save configuration if global
 			if GlobalFlag {
-				if err := cfgMgr.SaveConfig(configPath); err != nil {
+				if err := envMgr.SaveGlobalState(); err != nil {
 					return fmt.Errorf("failed to save configuration: %w", err)
 				}
 				fmt.Printf("Added %s to PATH globally\n", path)
@@ -303,29 +202,20 @@ func PathRemoveCmd() *gcli.Command {
 		Func: func(c *gcli.Command, args []string) error {
 			path := c.Arg("path").String()
 
-			// Initialize configuration
-			cfgMgr := config.NewConfigManager()
-			configPath := config.GetDefaultConfigPath()
-			// Try to load existing config, ignore errors (will use defaults)
-			_ = cfgMgr.LoadConfig(configPath)
-
-			// Load activity state
-			activityState, err := models.LoadActivityState()
+			// Create env manager
+			envMgr, err := xenv.EnvManager()
 			if err != nil {
-				return fmt.Errorf("failed to load activity state: %w", err)
+				return err
 			}
 
-			// Create path manager
-			pathMgr := env.NewPathManager(cfgMgr.Config, activityState)
-
 			// Remove the path
-			if err := pathMgr.RemovePath(path, GlobalFlag); err != nil {
+			if err := envMgr.RemovePath(path); err != nil {
 				return fmt.Errorf("failed to remove path: %w", err)
 			}
 
 			// Save configuration if global
 			if GlobalFlag {
-				if err := cfgMgr.SaveConfig(configPath); err != nil {
+				if err := envMgr.SaveGlobalState(); err != nil {
 					return fmt.Errorf("failed to save configuration: %w", err)
 				}
 				fmt.Printf("Removed %s from PATH globally\n", path)
@@ -345,40 +235,26 @@ func PathListCmd() *gcli.Command {
 		Desc: "List PATH entries",
 		Aliases: []string{"ls"},
 		Func: func(c *gcli.Command, args []string) error {
-			// This is the same as the main command's Run function
-			// Initialize configuration
-			cfgMgr := config.NewConfigManager()
-			configPath := config.GetDefaultConfigPath()
-			// Try to load existing config, ignore errors (will use defaults)
-			_ = cfgMgr.LoadConfig(configPath)
-
-			// Load activity state
-			activityState, err := models.LoadActivityState()
-			if err != nil {
-				return fmt.Errorf("failed to load activity state: %w", err)
-			}
-
-			// Create path manager
-			pathMgr := env.NewPathManager(cfgMgr.Config, activityState)
-
-			// List PATH entries
-			paths := pathMgr.ListPaths()
-			fmt.Println("PATH Entries:")
-			for i, path := range paths {
-				fmt.Printf("  %d. %s (%s)\n", i+1, path.Path, path.Scope)
-			}
-
-			// Also show session paths from activity state
-			if len(activityState.ActivePaths) > 0 {
-				fmt.Println("\nSession PATH Entries:")
-				for i, path := range activityState.ActivePaths {
-					fmt.Printf("  %d. %s\n", i+1, path)
-				}
-			}
-
-			return nil
+			return listEnvPaths()
 		},
 	}
+}
+
+func listEnvPaths() error {
+	// Create env manager
+	envMgr, err := xenv.EnvManager()
+	if err != nil {
+		return err
+	}
+
+	// List PATH entries
+	paths := envMgr.ListPaths()
+	fmt.Println("PATH Entries:")
+	for i, path := range paths {
+		fmt.Printf("  %d. %s (%s)\n", i+1, path.Path, path.Scope)
+	}
+
+	return nil
 }
 
 // PathSearchCmd command for searching PATH entries
@@ -393,23 +269,14 @@ func PathSearchCmd() *gcli.Command {
 		Func: func(c *gcli.Command, args []string) error {
 			searchTerm := c.Arg("value").String()
 
-			// Initialize configuration
-			cfgMgr := config.NewConfigManager()
-			configPath := config.GetDefaultConfigPath()
-			// Try to load existing config, ignore errors (will use defaults)
-			_ = cfgMgr.LoadConfig(configPath)
-
-			// Load activity state
-			activityState, err := models.LoadActivityState()
+			// Create env manager
+			envMgr, err := xenv.EnvManager()
 			if err != nil {
-				return fmt.Errorf("failed to load activity state: %w", err)
+				return err
 			}
 
-			// Create path manager
-			pathMgr := env.NewPathManager(cfgMgr.Config, activityState)
-
 			// Search for the path
-			matches := pathMgr.SearchPath(searchTerm)
+			matches := envMgr.SearchPath(searchTerm)
 			if len(matches) == 0 {
 				fmt.Printf("No paths found containing: %s\n", searchTerm)
 			} else {

@@ -9,11 +9,11 @@ import (
 
 // Exporter handles configuration export functionality
 type Exporter struct {
-	configManager *ConfigManager
+	configManager *Manager
 }
 
 // NewExporter creates a new Exporter
-func NewExporter(configManager *ConfigManager) *Exporter {
+func NewExporter(configManager *Manager) *Exporter {
 	return &Exporter{
 		configManager: configManager,
 	}

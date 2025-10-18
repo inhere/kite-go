@@ -15,32 +15,35 @@ import (
 
 // Installer handles the actual installation of tools
 type Installer struct {
-	service *ToolService
+	config *models.Configuration
 }
 
 // NewInstaller creates a new Installer
-func NewInstaller(service *ToolService) *Installer {
+func NewInstaller(config *models.Configuration) *Installer {
 	return &Installer{
-		service: service,
+		config: config,
 	}
 }
 
+// EnsureBinDir ensures the bin directory exists and is in the PATH
+func (i *Installer) EnsureBinDir() error {
+	binDir := util.ExpandHome(i.config.BinDir)
+	return util.EnsureDir(binDir)
+}
+
 // Install downloads and installs a tool
-func (i *Installer) Install(toolChain *models.ToolChain) error {
+func (i *Installer) Install(toolChain *models.ToolChain, version string) error {
 	// Ensure bin directory exists
-	if err := i.service.EnsureBinDir(); err != nil {
+	if err := i.EnsureBinDir(); err != nil {
 		return fmt.Errorf("failed to ensure bin directory: %w", err)
 	}
 
 	// If InstallURL is provided, download the tool
-	if toolChain.InstallURL != "" {
-		if err := i.downloadAndExtract(toolChain); err != nil {
-			return fmt.Errorf("failed to download and extract tool: %w", err)
-		}
-	} else {
-		// If no InstallURL, assume the tool is already available locally
-		// This is for manually installed tools
-		fmt.Printf("Tool %s marked as installed (local installation)\n", toolChain.ID)
+	if toolChain.InstallURL == "" {
+		return fmt.Errorf("tool %q install_url is not configed", toolChain.ID)
+	}
+	if err := i.downloadAndExtract(toolChain, version); err != nil {
+		return fmt.Errorf("failed to download and extract tool: %w", err)
 	}
 
 	// Create symlinks for executables
@@ -48,16 +51,26 @@ func (i *Installer) Install(toolChain *models.ToolChain) error {
 }
 
 // downloadAndExtract downloads and extracts a tool based on its InstallURL
-func (i *Installer) downloadAndExtract(toolChain *models.ToolChain) error {
+func (i *Installer) downloadAndExtract(toolChain *models.ToolChain, version string) (err error) {
 	// Format the URL with version, os, and arch variables
-	url := i.formatURL(toolChain.InstallURL, toolChain.Version)
+	url := i.formatURL(toolChain, version)
 
-	// Create temporary file for download
-	tmpFile, err := os.CreateTemp("", fmt.Sprintf("xenv_%s_*", toolChain.Name))
-	if err != nil {
-		return fmt.Errorf("failed to create temp file: %w", err)
+	var tmpFile *os.File
+	tmpDir := i.config.DownloadDir
+	if tmpDir == "" {
+		// Create temporary file for download
+		tmpFile, err = os.CreateTemp("", fmt.Sprintf("xenv_%s_*", toolChain.Name))
+		if err != nil {
+			return fmt.Errorf("failed to create temp file: %w", err)
+		}
+		defer os.Remove(tmpFile.Name()) // Clean up
+	} else {
+		// Use the provided directory
+		tmpFile, err = os.Open(tmpDir + "/" + toolChain.Name + "_" + version + ".zip")
+		if err != nil {
+			return fmt.Errorf("failed to open temp directory: %w", err)
+		}
 	}
-	defer os.Remove(tmpFile.Name()) // Clean up
 	defer tmpFile.Close()
 
 	// Download the file
@@ -83,12 +96,13 @@ func (i *Installer) downloadAndExtract(toolChain *models.ToolChain) error {
 }
 
 // formatURL formats the installation URL with the appropriate variables
-func (i *Installer) formatURL(template, version string) string {
-	result := template
+func (i *Installer) formatURL(toolChain *models.ToolChain, version string) string {
+	result := toolChain.InstallURL
 	result = replaceAll(result, "{version}", version)
 	result = replaceAll(result, "{os}", runtime.GOOS)
 	result = replaceAll(result, "{arch}", runtime.GOARCH)
-	
+	downExt := i.config.OSDownloadExt[runtime.GOOS]
+
 	// Simple Windows check for file extension
 	if runtime.GOOS == "windows" {
 		result = replaceAll(result, "{isWindows ? zip : tar.gz}", "zip")
@@ -97,7 +111,7 @@ func (i *Installer) formatURL(template, version string) string {
 		result = replaceAll(result, "{isWindows ? zip : tar.gz}", "tar.gz")
 		result = replaceAll(result, "{isWindows ? .exe : }", "")
 	}
-	
+
 	return result
 }
 
@@ -138,15 +152,15 @@ func (i *Installer) copyExecutable(srcPath, destDir string) error {
 	// Get the file name
 	_, fileName := filepath.Split(srcPath)
 	destPath := filepath.Join(destDir, fileName)
-	
+
 	// Copy the file
 	return util.CopyFile(srcPath, destPath)
 }
 
 // createShims creates symlinks (shims) for the tool executables
 func (i *Installer) createShims(toolChain *models.ToolChain) error {
-	binDir := util.ExpandHome(i.service.config.BinDir)
-	
+	binDir := util.ExpandHome(i.config.BinDir)
+
 	// For each binary path of the tool, create a shim
 	for _, binPath := range toolChain.BinPaths {
 		// Get all executable files in the bin path
@@ -154,13 +168,13 @@ func (i *Installer) createShims(toolChain *models.ToolChain) error {
 		if err != nil {
 			continue // Skip if directory doesn't exist
 		}
-		
+
 		for _, entry := range entries {
 			if !entry.IsDir() && isExecutable(entry.Name()) {
 				// Create a symlink in the bin directory
 				srcPath := filepath.Join(binPath, entry.Name())
 				dstPath := filepath.Join(binDir, entry.Name())
-				
+
 				// Create the shim (symbolic link)
 				if err := util.CreateSymlink(srcPath, dstPath); err != nil {
 					// If symlinks aren't supported (e.g., on Windows without admin), copy instead
@@ -175,15 +189,15 @@ func (i *Installer) createShims(toolChain *models.ToolChain) error {
 			}
 		}
 	}
-	
+
 	return nil
 }
 
 // isExecutable checks if a file name suggests it's executable
 func isExecutable(filename string) bool {
 	if runtime.GOOS == "windows" {
-		return strings.HasSuffix(strings.ToLower(filename), ".exe") || 
-			   strings.HasSuffix(strings.ToLower(filename), ".bat") || 
+		return strings.HasSuffix(strings.ToLower(filename), ".exe") ||
+			strings.HasSuffix(strings.ToLower(filename), ".bat") ||
 			   strings.HasSuffix(strings.ToLower(filename), ".cmd") ||
 			   strings.HasSuffix(strings.ToLower(filename), ".com")
 	}

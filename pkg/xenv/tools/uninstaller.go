@@ -11,14 +11,12 @@ import (
 
 // Uninstaller handles uninstalling tools
 type Uninstaller struct {
-	service *ToolService
 	config  *models.Configuration
 }
 
 // NewUninstaller creates a new Uninstaller
-func NewUninstaller(service *ToolService, config *models.Configuration) *Uninstaller {
+func NewUninstaller(config *models.Configuration) *Uninstaller {
 	return &Uninstaller{
-		service: service,
 		config:  config,
 	}
 }
@@ -26,12 +24,12 @@ func NewUninstaller(service *ToolService, config *models.Configuration) *Uninsta
 // Uninstall removes a tool with the specified name and version
 func (u *Uninstaller) Uninstall(name, version string, keepConfig bool) error {
 	id := fmt.Sprintf("%s:%s", name, version)
-	
+
 	// Find the tool in the configuration
 	var tool *models.ToolChain
 	var toolIndex int
 	found := false
-	
+
 	for i, t := range u.config.Tools {
 		if t.ID == id {
 			tool = &u.config.Tools[i]
@@ -40,7 +38,7 @@ func (u *Uninstaller) Uninstall(name, version string, keepConfig bool) error {
 			break
 		}
 	}
-	
+
 	if !found {
 		return fmt.Errorf("tool %s is not installed", id)
 	}
@@ -55,7 +53,7 @@ func (u *Uninstaller) Uninstall(name, version string, keepConfig bool) error {
 		if err := os.RemoveAll(tool.InstallDir); err != nil {
 			return fmt.Errorf("failed to remove installation directory: %w", err)
 		}
-	} 
+	}
 
 	// Remove the tool from configuration
 	u.config.Tools = append(u.config.Tools[:toolIndex], u.config.Tools[toolIndex+1:]...)
@@ -65,8 +63,8 @@ func (u *Uninstaller) Uninstall(name, version string, keepConfig bool) error {
 
 // removeShims removes the symlinks (shims) for the tool executables
 func (u *Uninstaller) removeShims(tool *models.ToolChain) error {
-	binDir := util.ExpandHome(u.service.config.BinDir)
-	
+	binDir := util.ExpandHome(u.config.BinDir)
+
 	// For each binary path of the tool, remove the shim
 	for _, binPath := range tool.BinPaths {
 		// Get all executable files in the bin path
@@ -74,12 +72,12 @@ func (u *Uninstaller) removeShims(tool *models.ToolChain) error {
 		if err != nil {
 			continue // Skip if directory doesn't exist
 		}
-		
+
 		for _, entry := range entries {
 			if !entry.IsDir() && isUninstallExecutable(entry.Name()) {
 				// Construct the expected shim path
 				shimPath := filepath.Join(binDir, entry.Name())
-				
+
 				// Check if the shim exists and remove it
 				if _, err := os.Stat(shimPath); err == nil {
 					if err := os.Remove(shimPath); err != nil {
@@ -89,7 +87,7 @@ func (u *Uninstaller) removeShims(tool *models.ToolChain) error {
 			}
 		}
 	}
-	
+
 	return nil
 }
 

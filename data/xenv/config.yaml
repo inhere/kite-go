@@ -3,11 +3,13 @@ install_dir: "~/.xenv/tools"
 shell_hooks_dir: "~/.config/xenv/hooks/"
 global_env: {}
 global_paths: []
+# 快速配置默认 shell 命令别名
+shell_aliases: {}
 # 从远程下载的工具包默认格式
 download_ext:
   windows: zip
   linux: tar.gz
-  macos: tar.gz
+  darwin: tar.gz
 tools:
   - name: go
     alias: [golang]

@@ -47,22 +47,16 @@ func ToolsInstallCmd() *gcli.Command {
 			}
 
 			// Initialize configuration
-			cfgMgr := config.NewConfigManager()
-			configPath := config.GetDefaultConfigPath()
-			// Try to load existing config, ignore errors (will use defaults)
-			_ = cfgMgr.LoadConfig(configPath)
+			if err := config.Mgr.Init(); err != nil {
+				return fmt.Errorf("failed to initialize configuration: %w", err)
+			}
 
 			// Create tool service
-			toolSvc := tools.NewToolService(cfgMgr.Config)
+			toolSvc := tools.NewToolService(config.Config())
 
 			// Install the tool
 			if err := toolSvc.InstallTool(name, version); err != nil {
 				return fmt.Errorf("failed to install tool %s:%s: %w", name, version, err)
-			}
-
-			// Save configuration
-			if err := cfgMgr.SaveConfig(configPath); err != nil {
-				return fmt.Errorf("failed to save configuration: %w", err)
 			}
 
 			c.Infof("Successfully installed %s:%s\n", name, version)
@@ -93,23 +87,16 @@ func ToolsUninstallCmd() *gcli.Command {
 			}
 
 			// Initialize configuration
-			cfgMgr := config.NewConfigManager()
-			configPath := config.GetDefaultConfigPath()
-			// Try to load existing config, ignore errors (will use defaults)
-			_ = cfgMgr.LoadConfig(configPath)
-
-			// Create tool service
-			toolSvc := tools.NewToolService(cfgMgr.Config)
-			uninstaller := tools.NewUninstaller(toolSvc, cfgMgr.Config)
-
-			// Uninstall the tool
-			if err := uninstaller.Uninstall(name, version, keepConfig); err != nil {
-				return fmt.Errorf("failed to uninstall tool %s:%s: %w", name, version, err)
+			if err := config.Mgr.Init(); err != nil {
+				return fmt.Errorf("failed to initialize configuration: %w", err)
 			}
 
-			// Save configuration
-			if err := cfgMgr.SaveConfig(configPath); err != nil {
-				return fmt.Errorf("failed to save configuration: %w", err)
+			// Create tool service
+			toolSvc := tools.NewToolService(config.Config())
+
+			// Uninstall the tool
+			if err := toolSvc.Uninstall(name, version); err != nil {
+				return fmt.Errorf("failed to uninstall tool %s:%s: %w", name, version, err)
 			}
 
 			c.Infof("Successfully uninstalled %s:%s\n", name, version)
@@ -137,22 +124,16 @@ func ToolsUpdateCmd() *gcli.Command {
 			}
 
 			// Initialize configuration
-			cfgMgr := config.NewConfigManager()
-			configPath := config.GetDefaultConfigPath()
-			// Try to load existing config, ignore errors (will use defaults)
-			_ = cfgMgr.LoadConfig(configPath)
+			if err := config.Mgr.Init(); err != nil {
+				return fmt.Errorf("failed to initialize configuration: %w", err)
+			}
 
 			// Create tool service
-			toolSvc := tools.NewToolService(cfgMgr.Config)
+			toolSvc := tools.NewToolService(config.Config())
 
 			// Update the tool (install the new version)
 			if err := toolSvc.UpdateTool(name, version); err != nil {
 				return fmt.Errorf("failed to update tool %s:%s: %w", name, version, err)
-			}
-
-			// Save configuration
-			if err := cfgMgr.SaveConfig(configPath); err != nil {
-				return fmt.Errorf("failed to save configuration: %w", err)
 			}
 
 			c.Infof("Successfully updated %s:%s\n", name, version)
@@ -174,13 +155,12 @@ func ToolsShowCmd() *gcli.Command {
 			name := args[0]
 
 			// Initialize configuration
-			cfgMgr := config.NewConfigManager()
-			configPath := config.GetDefaultConfigPath()
-			// Try to load existing config, ignore errors (will use defaults)
-			_ = cfgMgr.LoadConfig(configPath)
+			if err := config.Mgr.Init(); err != nil {
+				return fmt.Errorf("failed to initialize configuration: %w", err)
+			}
 
 			// Create tool service
-			toolSvc := tools.NewToolService(cfgMgr.Config)
+			toolSvc := tools.NewToolService(config.Config())
 
 			// Get tool info
 			tool := toolSvc.GetTool(name)
@@ -210,14 +190,14 @@ func ToolsListCmd() *gcli.Command {
 		Desc: "List all installed tools",
 		Aliases: []string{"ls"},
 		Func: func(c *gcli.Command, args []string) error {
+
 			// Initialize configuration
-			cfgMgr := config.NewConfigManager()
-			configPath := config.GetDefaultConfigPath()
-			// Try to load existing config, ignore errors (will use defaults)
-			_ = cfgMgr.LoadConfig(configPath)
+			if err := config.Mgr.Init(); err != nil {
+				return fmt.Errorf("failed to initialize configuration: %w", err)
+			}
 
 			// Create tool service
-			toolSvc := tools.NewToolService(cfgMgr.Config)
+			toolSvc := tools.NewToolService(config.Config())
 			list := tools.NewList(toolSvc)
 
 			// List all tools

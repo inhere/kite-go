@@ -18,8 +18,8 @@ type ActivityState struct {
 	UpdatedAt    time.Time         `json:"updated_at"`
 }
 
-// LoadActivityState loads the activity state from file
-func LoadActivityState() (*ActivityState, error) {
+// LoadGlobalState loads the activity state from file
+func LoadGlobalState() (*ActivityState, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
