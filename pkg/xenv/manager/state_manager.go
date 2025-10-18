@@ -12,6 +12,7 @@ import (
 // StateManager manages the state data of the environment
 type StateManager struct {
 	init      bool
+	batchMode bool
 	stateFile string
 	// global state data
 	global  *models.ActivityState
@@ -44,6 +45,16 @@ func (m *StateManager) Init() error {
 	return m.LoadGlobalState()
 }
 
+// StateFile returns the state file path
+func (m *StateManager) StateFile() string {
+	return m.stateFile
+}
+
+// SetBatchMode sets the batch mode flag
+func (m *StateManager) SetBatchMode(enabled bool) {
+	m.batchMode = enabled
+}
+
 //
 // Tool state management
 //
@@ -54,10 +65,13 @@ func (m *StateManager) ActivateTool(name, version string, global bool) error {
 
 	if global {
 		m.global.ActiveTools[name] = version
-		return m.SaveGlobalState()
+		// Save the global state
+		if !m.batchMode {
+			return m.SaveGlobalState()
+		}
+	} else {
+		m.session.ActiveTools[name] = version
 	}
-
-	m.session.ActiveTools[name] = version
 	return nil
 }
 

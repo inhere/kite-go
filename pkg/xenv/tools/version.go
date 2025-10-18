@@ -21,7 +21,7 @@ func (vs *VersionSpec) String() string {
 	return vs.Name + ":" + vs.Version
 }
 
-// ParseVersionSpec 解析版本规格 "sdk" or "sdk:version" or "sdk@version"
+// ParseVersionSpec 解析版本规格 format: "sdk" or "sdk:version" or "sdk@version"
 func ParseVersionSpec(spec string) (*VersionSpec, error) {
 	if spec == "" {
 		return nil, ErrEmptyVersionSpec

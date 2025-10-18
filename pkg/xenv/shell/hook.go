@@ -39,7 +39,7 @@ func (sg *XenvScriptGenerator) GenerateScripts(shellType string) (string, error)
 func (sg *XenvScriptGenerator) addCommonForLinuxShell(sb *strings.Builder) {
 	// 添加全局环境变量
 	maputil.EachTypedMap(sg.cfg.GlobalEnv, func(key, value string) {
-		sb.WriteString(fmt.Sprintf("export %s=%s\n", key, value))
+		sb.WriteString(fmt.Sprintf("export %s=%s\n", strings.ToUpper(key), value))
 	})
 
 	// 添加全局PATH条目

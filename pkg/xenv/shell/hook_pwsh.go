@@ -12,7 +12,7 @@ func (sg *XenvScriptGenerator) generatePwshScripts() string {
 	var sb strings.Builder
 	// 添加全局环境变量
 	maputil.EachTypedMap(sg.cfg.GlobalEnv, func(key, value string) {
-		sb.WriteString(fmt.Sprintf("$env:%s = '%s'\n", key, value))
+		sb.WriteString(fmt.Sprintf("$env:%s = '%s'\n", strings.ToUpper(key), value))
 	})
 
 	// 添加全局PATH
@@ -31,13 +31,22 @@ func (sg *XenvScriptGenerator) generatePwshScripts() string {
 		}
 	})
 
-	return strutil.Replaces(ZshHookTemplate, map[string]string{
-		"{{HooksDir}}":     sg.cfg.ShellHooksDir,
+	return strutil.Replaces(PwshHookTemplate, map[string]string{
+		"{{HooksDir}}": sg.cfg.ShellHooksDir,
 		"{{EnvAliases}}": sb.String(),
 	})
 }
 
 // PwshHookTemplate PowerShell hook模板
+//
+// Config for pwsh:
+//
+//	# write to profile. (find by: echo $Profile)
+//	# Method 1:
+//	Invoke-Expression (&kite xenv shell --type pwsh)
+//
+//	# Method 2:
+//	kite xenv shell --type pwsh | Out-String | Invoke-Expression
 var PwshHookTemplate = `# xenv PowerShell hook
 # This script enables xenv to work in PowerShell shells
 
@@ -93,13 +102,13 @@ function Setup-Xenv {
         $env:XENV_AUTO_INITIALIZED = "1"
     }
 
-	# Load custom hooks script files
-	$hookFiles = Get-ChildItem -Path "{{HooksDir}}" -Filter "*.ps1" -ErrorAction SilentlyContinue
-	foreach ($file in $hookFiles) {
-		if (Test-Path $file.FullName -PathType Leaf) {
-			. $file.FullName
-		}
-	}
+    # Load custom hooks script files
+    $hookFiles = Get-ChildItem -Path "{{HooksDir}}" -Filter "*.ps1" -ErrorAction SilentlyContinue
+    foreach ($file in $hookFiles) {
+        if (Test-Path $file.FullName -PathType Leaf) {
+            . $file.FullName
+        }
+    }
 }
 
 # Call setup function to initialize xenv

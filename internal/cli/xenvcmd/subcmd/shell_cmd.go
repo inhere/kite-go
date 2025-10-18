@@ -8,6 +8,7 @@ import (
 	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/envutil"
 	"github.com/gookit/goutil/errorx"
+	"github.com/inhere/kite-go/pkg/xenv"
 	"github.com/inhere/kite-go/pkg/xenv/config"
 	"github.com/inhere/kite-go/pkg/xenv/shell"
 )
@@ -23,6 +24,22 @@ var shellCmdOpts = struct {
 var ShellCmd = &gcli.Command{
 	Name: "shell",
 	Desc: "Generate shell integration script",
+	Help: `
+<mga>Config for Bash:</>
+  // write to .bashrc OR .bash_profile
+  eval "$(kite xenv shell --type bash)"
+
+<mga>Config for Zsh:<mga>
+  // write to .zshrc OR .zsh_profile
+  eval "$(kite xenv shell --type zsh)"
+
+<mga>Config for Pwsh:<mga>
+  # write to profile. (find by: echo $Profile)
+  # Method 1:
+  Invoke-Expression (&kite xenv shell --type pwsh)
+  # Method 2:
+  kite xenv shell --type pwsh | Out-String | Invoke-Expression
+`,
 	Config: func(c *gcli.Command) {
 		c.BoolOpt(&shellCmdOpts.Reload, "reload", "r", false, "Reload the xenv shell script codes")
 		c.VarOpt(&shellCmdOpts.Type, "type", "t", "Shell type (bash, zsh, pwsh)")
@@ -39,7 +56,7 @@ var ShellCmd = &gcli.Command{
 			c.Infoln("shell type using the XENV_HOOK_SHELL environment variable:", shellType)
 		}
 
-		if err := config.Mgr.Init(); err != nil {
+		if err := xenv.Init(); err != nil {
 			return err
 		}
 

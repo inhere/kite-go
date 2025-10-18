@@ -149,22 +149,82 @@ func (ts *ToolService) EnsureBinDir() error {
 	return util.EnsureDir(binDir)
 }
 
-// ActivateTool activates a specific tool version
-func (ts *ToolService) ActivateTool(name, version string, global bool) error {
+//
+// Tool Activation
+//
+
+// ActivateTools activates multiple tools
+func (ts *ToolService) ActivateTools(useTools []string, global bool) error {
+	ts.state.SetBatchMode(true)
+	defer ts.state.SetBatchMode(false)
+
+	for _, arg := range useTools {
+		// Parse name:version
+		spec, err := tools.ParseVersionSpec(arg)
+		if err != nil {
+			return err
+		}
+
+		// Activate the tool
+		if err := ts.activateTool(spec, global); err != nil {
+			return fmt.Errorf("failed to activate tool %q: %w", spec, err)
+		}
+
+		if global {
+			ccolor.Infof("Activate %s as global default\n", spec)
+		} else {
+			ccolor.Infof("Activate %s for current session\n", spec)
+		}
+	}
+
+	if global {
+		ccolor.Printf("Global: save state to %s\n", ts.state.StateFile())
+	}
+	return ts.state.SaveGlobalState()
+}
+
+// activateTool activates a specific tool version
+func (ts *ToolService) activateTool(spec *tools.VersionSpec, global bool) error {
 	// Check if the tool is definition
-	if !ts.config.IsToolDefined(name) {
-		return fmt.Errorf("tool %s:%s config is not definition", name, version)
+	if !ts.config.IsToolDefined(spec.Name) {
+		return fmt.Errorf("tool %s config is not definition", spec.Name)
 	}
 
 	// Update the activity state
-	return ts.state.ActivateTool(name, version, global)
+	return ts.state.ActivateTool(spec.Name, spec.Version, global)
 }
 
-// DeactivateTool deactivates a specific tool version
-func (ts *ToolService) DeactivateTool(name, version string, global bool) error {
+// DeactivateTools deactivates multiple tools at once
+func (ts *ToolService) DeactivateTools(deTools []string, global bool) error {
+	ts.state.SetBatchMode(true)
+	defer ts.state.SetBatchMode(false)
+
+	for _, arg := range deTools {
+		spec, err := tools.ParseVersionSpec(arg)
+		if err != nil {
+			return err
+		}
+		if err := ts.deactivateTool(spec.Name, spec.Version, global); err != nil {
+			return fmt.Errorf("failed to deactivate tool %q: %w", spec, err)
+		}
+		if global {
+			ccolor.Printf("Deactivate %s for global default\n", spec)
+		} else {
+			ccolor.Printf("Deactivate %s for current session\n", spec)
+		}
+	}
+
+	if global {
+		ccolor.Printf("Global: save state to %s\n", ts.state.StateFile())
+	}
+	return ts.state.SaveGlobalState()
+}
+
+// deactivateTool deactivates a specific tool version
+func (ts *ToolService) deactivateTool(name, version string, global bool) error {
 	// Check if the tool is definition
 	if !ts.config.IsToolDefined(name) {
-		return fmt.Errorf("tool %s:%s config is not definition", name, version)
+		return fmt.Errorf("tool %s config is not definition", name)
 	}
 
 	return ts.state.DeactivateTool(name, version, global)

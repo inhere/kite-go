@@ -17,11 +17,12 @@ type ToolManager struct {
 	init bool
 	config *models.Configuration
 	// local data file
-	localInit  bool
+	localLoad bool
 	localFile  string
 	localTools *models.ToolsLocal
-	// register data - 从 config 配置中初始化 tools/config.json TODO
-	registerFile string
+	// tools register data - 从 config 配置中初始化 tools/config.json TODO
+	configFile string
+	configLoad bool
 }
 
 // NewToolManager creates a new ToolManager instance
@@ -38,7 +39,21 @@ func (m *ToolManager) Init(config *models.Configuration) error {
 	}
 	m.init = true
 	m.config = config
-	return m.LoadLocalTools()
+	return nil
+}
+
+// ensureLocalLoad ensure local data file loaded
+func (m *ToolManager) ensureLocalLoad(must bool) error {
+	if m.localLoad {
+		return nil
+	}
+	m.localLoad = true
+
+	err := m.LoadLocalTools()
+	if err != nil && must {
+		panic(err)
+	}
+	return err
 }
 
 // LoadLocalTools local installed tools information
@@ -56,6 +71,8 @@ func (m *ToolManager) LoadLocalTools() error {
 
 // FindLocalSdk find local installed sdk tool by name and version
 func (m *ToolManager) FindLocalSdk(name, version string) *models.InstalledTool {
+	_ = m.ensureLocalLoad(true)
+
 	for _, tool := range m.localTools.SDKs {
 		if tool.Name == name && tool.Version == version {
 			return &tool
@@ -66,6 +83,10 @@ func (m *ToolManager) FindLocalSdk(name, version string) *models.InstalledTool {
 
 // IndexLocalTools index local installed tools to datafile
 func (m *ToolManager) IndexLocalTools() error {
+	if err := m.ensureLocalLoad(false); err != nil {
+		return err
+	}
+
 	currentTime := time.Now()
 	if m.localTools.CreatedAt.IsZero() {
 		m.localTools.CreatedAt = currentTime
@@ -111,6 +132,10 @@ func (m *ToolManager) SaveLocalTools() error {
 }
 
 func (m *ToolManager) AddSDKTool(name, version, installDir string) error {
+	if err := m.ensureLocalLoad(false); err != nil {
+		return err
+	}
+
 	// build local installed tool info
 	currentTime := time.Now()
 	if m.localTools.CreatedAt.IsZero() {
@@ -132,6 +157,10 @@ func (m *ToolManager) AddSDKTool(name, version, installDir string) error {
 }
 
 func (m *ToolManager) DeleteSDKTool(localTool *models.InstalledTool) error {
+	if err := m.ensureLocalLoad(false); err != nil {
+		return err
+	}
+
 	// remove from ts.localTools
 	sdkTools := m.localTools.SDKs
 	toolIndex := localTool.Index
@@ -142,9 +171,11 @@ func (m *ToolManager) DeleteSDKTool(localTool *models.InstalledTool) error {
 }
 
 func (m *ToolManager) FindSdkByID(id string) *models.InstalledTool {
+	_ = m.ensureLocalLoad(true)
 	return m.localTools.FindSdkByID(id)
 }
 
 func (m *ToolManager) ListLocalVersions(name string) []models.InstalledTool {
+	_ = m.ensureLocalLoad(true)
 	return m.localTools.ListSdkByName(name)
 }

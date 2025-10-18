@@ -9,10 +9,17 @@ import (
 )
 
 func (sg *XenvScriptGenerator) generateCmdScripts() string {
-	// clink 通过 os.execute('doskey ll=dir /a $*') 实现别名
 	var sb strings.Builder
+	// 添加全局环境变量
+	maputil.EachTypedMap(sg.cfg.GlobalEnv, func(key, value string) {
+		sb.WriteString(fmt.Sprintf(`os.setenv("%s", "%s")\n`, strings.ToUpper(key), value))
+	})
+
+	// 添加全局PATH条目
+
+	// clink 通过 os.execute('doskey ll=dir /a $*') 实现别名
 	maputil.EachTypedMap(sg.cfg.ShellAliases, func(key, value string) {
-		sb.WriteString(fmt.Sprintf("doskey %s=%s\n", key, value))
+		sb.WriteString(fmt.Sprintf(`os.execute("doskey %s=%s")\n`, key, value))
 	})
 
 	return strutil.Replaces(CmdLuaHookTemplate, map[string]string{
