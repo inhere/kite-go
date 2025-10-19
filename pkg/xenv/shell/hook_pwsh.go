@@ -9,30 +9,39 @@ import (
 )
 
 func (sg *XenvScriptGenerator) generatePwshScripts() string {
+	cfg := sg.cfg
 	var sb strings.Builder
 	// 添加全局环境变量
-	maputil.EachTypedMap(sg.cfg.GlobalEnv, func(key, value string) {
-		sb.WriteString(fmt.Sprintf("$env:%s = '%s'\n", strings.ToUpper(key), value))
-	})
+	if len(sg.cfg.GlobalEnv) > 0 {
+		sb.WriteString("  # Add global ENV variables from kite xenv\n")
+		maputil.EachTypedMap(cfg.GlobalEnv, func(key, value string) {
+			sb.WriteString(fmt.Sprintf("  $env:%s = '%s'\n", strings.ToUpper(key), value))
+		})
+	}
 
 	// 添加全局PATH
-	for _, path := range sg.cfg.GlobalPaths {
-		sb.WriteString(fmt.Sprintf("$env:PATH += ';%s'\n", path))
+	if len(cfg.GlobalPaths) > 0 {
+		sb.WriteString("  # Add global PATH from kite xenv\n")
+		paths := strings.Join(sg.cfg.GlobalPaths, ";")
+		sb.WriteString(fmt.Sprintf("  $env:PATH = '%s;' + $env:PATH\n", paths))
 	}
 
 	// 添加全局别名
-	maputil.EachTypedMap(sg.cfg.ShellAliases, func(key, value string) {
-		// 复杂 value, 封装为简易方法 eg: function ll { ls.exe -alh $args }
-		if strutil.ContainsByte(value, ' ') {
-			sb.WriteString(fmt.Sprintf("function %s() { %s $args }\n", key, value))
-		} else {
-			// 简单 value, 直接使用 Set-Alias
-			sb.WriteString(fmt.Sprintf("Set-Alias -name %s -value %s\n", key, value))
-		}
-	})
+	if len(sg.cfg.ShellAliases) > 0 {
+		sb.WriteString("  # Add global aliases from kite xenv\n")
+		maputil.EachTypedMap(cfg.ShellAliases, func(key, value string) {
+			// 复杂 value, 封装为简易方法 eg: function ll { ls.exe -alh $args }
+			if strutil.ContainsByte(value, ' ') {
+				sb.WriteString(fmt.Sprintf("  function %s() { %s $args }\n", key, value))
+			} else {
+				// 简单 value, 直接使用 Set-Alias
+				sb.WriteString(fmt.Sprintf("  Set-Alias -name %s -value %s\n", key, value))
+			}
+		})
+	}
 
 	return strutil.Replaces(PwshHookTemplate, map[string]string{
-		"{{HooksDir}}": sg.cfg.ShellHooksDir,
+		"{{HooksDir}}": cfg.ShellHooksDir,
 		"{{EnvAliases}}": sb.String(),
 	})
 }
@@ -62,8 +71,7 @@ function Setup-Xenv {
         $env:PATH = "$xenvShimsDir;$env:PATH"
     }
 
-    # Add global shell ENV and aliases
-    {{EnvAliases}}
+{{EnvAliases}}
 
     # Define the xenv function to activate tools
     function global:xenv {
@@ -78,28 +86,28 @@ function Setup-Xenv {
         switch ($Command) {
             "use" {
                 # Implementation for switching tool versions
-                & kenv use @Arguments
+                & kite xenv use @Arguments
             }
             "unuse" {
-                # Implementation for unusing tool versions
-                & kenv unuse @Arguments
+                # Implementation for un-using tool versions
+                & kite xenv unuse @Arguments
             }
             "shell" {
                 # Output the shell commands needed to set up xenv
-                & kenv shell pwsh
+                & kite xenv shell pwsh
             }
             default {
                 # For other commands, just pass through to xenv
-                & kenv $Command @Arguments
+                & kite xenv $Command @Arguments
             }
         }
     }
 
     # Auto-initialize xenv if needed
     $xenvrcPath = "$HOME\.xenvrc.ps1"
-    if (Test-Path $xenvrcPath -PathType Leaf -and (-not $env:XENV_AUTO_INITIALIZED)) {
+    if ((Test-Path $xenvrcPath -PathType Leaf) -and (-not $env:XENV_AUTO_INIT)) {
         . $xenvrcPath
-        $env:XENV_AUTO_INITIALIZED = "1"
+        $env:XENV_AUTO_INIT = "1"
     }
 
     # Load custom hooks script files
@@ -113,4 +121,10 @@ function Setup-Xenv {
 
 # Call setup function to initialize xenv
 Setup-Xenv
+
+# Enable command completion for xenv
+Register-ArgumentCompleter -CommandName xenv -ParameterName Command -ScriptBlock {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
+    @('use', 'unuse', 'set', 'list', '--help') | Where-Object { $_ -like "$wordToComplete*" }
+}
 `

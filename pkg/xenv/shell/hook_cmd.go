@@ -11,11 +11,19 @@ import (
 func (sg *XenvScriptGenerator) generateCmdScripts() string {
 	var sb strings.Builder
 	// 添加全局环境变量
-	maputil.EachTypedMap(sg.cfg.GlobalEnv, func(key, value string) {
-		sb.WriteString(fmt.Sprintf(`os.setenv("%s", "%s")\n`, strings.ToUpper(key), value))
-	})
+	if len(sg.cfg.GlobalEnv) > 0 {
+		sb.WriteString("  -- Add global ENV variables from kite xenv\n")
+		maputil.EachTypedMap(sg.cfg.GlobalEnv, func(key, value string) {
+			sb.WriteString(fmt.Sprintf(`os.setenv("%s", "%s")\n`, strings.ToUpper(key), value))
+		})
+	}
 
 	// 添加全局PATH条目
+	if len(sg.cfg.GlobalPaths) > 0 {
+		sb.WriteString("  -- Add global PATH variables from kite xenv\n")
+		addPaths := strings.Join(sg.cfg.GlobalPaths, ";")
+		sb.WriteString(fmt.Sprintf(`os.setenv("PATH", "%s;%%PATH%%")\n`, addPaths))
+	}
 
 	// clink 通过 os.execute('doskey ll=dir /a $*') 实现别名
 	maputil.EachTypedMap(sg.cfg.ShellAliases, func(key, value string) {
@@ -53,8 +61,7 @@ function Setup-Xenv()
         os.setenv("PATH", xenv_shims_dir .. ";" .. path)
     end
 
-    -- Add global shell ENV and aliases
-    {{EnvAliases}}
+{{EnvAliases}}
 
     -- Define the xenv function to activate tools
     function xenv(command)

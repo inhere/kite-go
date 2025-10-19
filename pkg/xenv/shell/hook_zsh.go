@@ -38,8 +38,7 @@ setup_xenv() {
         *) export PATH="$xenv_shims_dir:$PATH" ;;
     esac
 
-    # Add global shell ENV and aliases
-    {{EnvAliases}}
+{{EnvAliases}}
 
     # Define the xenv function to activate tools
     xenv() {

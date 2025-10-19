@@ -23,18 +23,18 @@ var shellCmdOpts = struct {
 // ShellCmd the xenv shell command
 var ShellCmd = &gcli.Command{
 	Name: "shell",
-	Desc: "Generate shell integration script",
+	Desc: "Generate shell integration script contents",
 	Help: `
-<mga>Config for Bash:</>
+<cyan>Config for Bash:</>
   // write to .bashrc OR .bash_profile
   eval "$(kite xenv shell --type bash)"
 
-<mga>Config for Zsh:<mga>
+<cyan>Config for Zsh:</>
   // write to .zshrc OR .zsh_profile
   eval "$(kite xenv shell --type zsh)"
 
-<mga>Config for Pwsh:<mga>
-  # write to profile. (find by: echo $Profile)
+<cyan>Config for Pwsh:</>
+  # write expr to profile. (find by: echo $Profile)
   # Method 1:
   Invoke-Expression (&kite xenv shell --type pwsh)
   # Method 2:
