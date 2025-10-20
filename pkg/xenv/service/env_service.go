@@ -5,36 +5,76 @@ import (
 	"os"
 	"strings"
 
+	"github.com/gookit/goutil/maputil"
+	"github.com/gookit/goutil/x/ccolor"
 	"github.com/inhere/kite-go/internal/util"
 	"github.com/inhere/kite-go/pkg/xenv/manager"
 	"github.com/inhere/kite-go/pkg/xenv/models"
+	"github.com/inhere/kite-go/pkg/xenv/shell"
 )
 
 // EnvService handles environment variable and PATH management
 type EnvService struct {
-	config       *models.Configuration
-	state *manager.StateManager
+	config *models.Configuration
+	state  *manager.StateManager
 }
 
 // NewEnvService creates a new EnvService
 func NewEnvService(config *models.Configuration, state *manager.StateManager) *EnvService {
 	return &EnvService{
-		config:       config,
+		config: config,
 		state:  state,
 	}
 }
 
-// SetEnv sets an environment variable
-func (m *EnvService) SetEnv(name, value string, global bool) error {
-	// Add to session (would be handled differently in practice)
-	// For now, we'll just validate the variable can be set
-	if err := os.Setenv(name, value); err != nil {
-		return fmt.Errorf("failed to set environment variable: %w", err)
+// IsSessionEnv 判断当前是否在shell hook环境
+func (m *EnvService) IsSessionEnv() bool {
+	return shell.InHookShell()
+}
+
+// getShellGenerator 获取当前shell的脚本生成器. 注意：不在shell hook环境，会返回nil
+func (m *EnvService) getShellGenerator() (*shell.XenvScriptGenerator, error) {
+	// hookShell 不为空表明在shell hook环境中
+	hookShell := shell.HookShell()
+	if hookShell == "" {
+		return nil, nil
 	}
 
-	// Add to activity state data
-	return m.state.SetEnv(name, value, global)
+	shellType, err := shell.TypeFromString(hookShell)
+	if err != nil {
+		return nil, err
+	}
+
+	return shell.NewScriptGenerator(shellType, m.config), nil
 }
+
+// SetEnv sets an environment variable
+func (m *EnvService) SetEnv(name, value string, global bool) (script string, err error) {
+	// Generate shell eval scripts
+	gen, err1 := m.getShellGenerator()
+	if err1 != nil {
+		return "", err1
+	}
+	// 在shell hook环境中, 生成 ENV set 脚本
+	if gen != nil {
+		script = gen.GenEnvSet(name, value)
+	} else {
+		ccolor.Magentaln("TIP: NOT IN SHELL HOOK. Will not take effect in current shell")
+	}
+
+	// TIP: 设置程序内部 ENV 没有意义
+	// if err := os.Setenv(name, value); err != nil {
+	// 	return "", fmt.Errorf("failed to set environment variable: %w", err)
+	// }
+
+	// Add to activity state data
+	err = m.state.SetEnv(name, value, global)
+	return
+}
+
+// endregion
+// region ENV management
+//
 
 // UnsetEnv unsets an environment variable
 func (m *EnvService) UnsetEnv(name string, global bool) error {
@@ -47,14 +87,50 @@ func (m *EnvService) UnsetEnv(name string, global bool) error {
 	return m.state.UnsetEnv(name, global)
 }
 
-// ListEnv lists environment variables
-func (m *EnvService) ListEnv() map[string]string {
-	// Return the global environment variables
-	return m.config.GlobalEnv
+// UnsetEnvs unsets multi environment variables
+func (m *EnvService) UnsetEnvs(names []string, global bool) (script string, err error) {
+	var sb strings.Builder
+	// Generate shell eval scripts
+	gen, err1 := m.getShellGenerator()
+	if err1 != nil {
+		return "", err1
+	}
+	if gen == nil {
+		ccolor.Magentaln("TIP: NOT IN SHELL HOOK. Will not take effect in current shell")
+	}
+
+	m.state.SetBatchMode(true)
+	defer m.state.SetBatchMode(false)
+	for _, name := range names {
+		// 在shell hook环境中, 生成ENV set脚本
+		if gen != nil {
+			sb.WriteString(gen.GenEnvUnset(name))
+		}
+		err = m.state.UnsetEnv(name, global)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	if global {
+		err = m.state.SaveGlobalState()
+	}
+	return sb.String(), err
 }
 
-//
-// PATH management
+// GlobalEnv lists environment variables in the global scope
+func (m *EnvService) GlobalEnv() map[string]string {
+	// Return the global environment variables
+	return maputil.MergeStrMap(m.config.GlobalEnv, m.state.Global().ActiveEnv)
+}
+
+// SessionEnv lists environment variables in the current session
+func (m *EnvService) SessionEnv() map[string]string {
+	return m.state.Session().ActiveEnv
+}
+
+// endregion
+// region PATH management
 //
 
 // AddPath adds a path to the PATH environment variable
@@ -122,7 +198,7 @@ func (m *EnvService) RemovePath(path string, global bool) error {
 	}
 
 	// Remove from activity state
-	return m.state.RemovePath(normalizedPath,  global)
+	return m.state.RemovePath(normalizedPath, global)
 }
 
 // ListPaths lists PATH entries
@@ -170,9 +246,4 @@ func (m *EnvService) SearchPath(path string) []string {
 	}
 
 	return matches
-}
-
-// SaveGlobalState saves the global state to file
-func (m *EnvService) SaveGlobalState() error {
-	return m.state.SaveGlobalState()
 }

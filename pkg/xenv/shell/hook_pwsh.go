@@ -59,6 +59,40 @@ func (sg *XenvScriptGenerator) generatePwshScripts() string {
 var PwshHookTemplate = `# xenv PowerShell hook
 # This script enables xenv to work in PowerShell shells
 
+# Helper function to evaluate xenv command results
+function Eval-XenvResult {
+	param(
+		[string]$Result,
+		[int]$ExitCode
+	)
+
+	if ($ExitCode -eq 0) {
+		if ($Result) {
+			# 检查结果是否包含 '--Expression--' 分隔符
+			if ($Result.Contains('--Expression--')) {
+				# 使用 '--Expression--' 分割内容
+				$parts = $Result.Split('--Expression--', 2)
+				$msgPart = $parts[0].Trim()
+				$exprPart = $parts[1].Trim()
+
+				# 后面部分当做代码执行
+				if ($exprPart) {
+					Invoke-Expression $exprPart
+				}
+				# 前面部分直接输出
+				if ($msgPart) {
+					Write-Output $msgPart
+				}
+			} else {
+				# 否则直接输出内容
+				Write-Output $Result
+			}
+		}
+	} else {
+		Write-Error $Result
+	}
+}
+
 # Function to set up xenv in the current shell
 function Setup-Xenv {
     # Mark hook enabled
@@ -84,17 +118,14 @@ function Setup-Xenv {
         )
 
         switch ($Command) {
-            "use" {
-                # Implementation for switching tool versions
-                & kite xenv use @Arguments
+            { $_ -in @('use', 'unuse', 'env', 'path') } {
+				# Call kite command and evaluate the result
+				$result = & kite xenv $Command @Arguments
+				Eval-XenvResult -Result $result -ExitCode $LASTEXITCODE
             }
-            "unuse" {
-                # Implementation for un-using tool versions
-                & kite xenv unuse @Arguments
-            }
-            "shell" {
-                # Output the shell commands needed to set up xenv
-                & kite xenv shell pwsh
+            { $_ -in @('set', 'unset') } {
+				$result = & kite xenv env $Command @Arguments
+				Eval-XenvResult -Result $result -ExitCode $LASTEXITCODE
             }
             default {
                 # For other commands, just pass through to xenv
@@ -102,6 +133,10 @@ function Setup-Xenv {
             }
         }
     }
+
+    # fire xenv hooks to kite, use for generate code to exec TODO
+    # $result = & kite xenv hook-init --type pwsh
+    # TODO exec output result
 
     # Auto-initialize xenv if needed
     $xenvrcPath = "$HOME\.xenvrc.ps1"
@@ -125,6 +160,6 @@ Setup-Xenv
 # Enable command completion for xenv
 Register-ArgumentCompleter -CommandName xenv -ParameterName Command -ScriptBlock {
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
-    @('use', 'unuse', 'set', 'list', '--help') | Where-Object { $_ -like "$wordToComplete*" }
+    @('use', 'unuse', 'env', 'set', 'unset', 'path', 'list', '--help') | Where-Object { $_ -like "$wordToComplete*" }
 }
 `

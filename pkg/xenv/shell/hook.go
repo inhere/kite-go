@@ -11,28 +11,51 @@ import (
 // XenvScriptGenerator xenv Shell脚本生成器实现
 type XenvScriptGenerator struct {
 	cfg *models.Configuration
+	shell ShellType
 }
 
 // NewScriptGenerator creates a new ShellGenerator
-func NewScriptGenerator(cfg *models.Configuration) *XenvScriptGenerator {
-	return &XenvScriptGenerator{cfg: cfg}
+func NewScriptGenerator(shellType ShellType, cfg *models.Configuration) *XenvScriptGenerator {
+	return &XenvScriptGenerator{cfg: cfg, shell: shellType}
 }
 
-// GenerateScripts 生成Shell hook脚本代码
-func (sg *XenvScriptGenerator) GenerateScripts(shellType string) (string, error) {
-	shellType = strings.ToLower(shellType)
-
-	switch shellType {
-	case "bash":
+// GenHookScripts 生成 Shell Hook 初始化脚本代码
+func (sg *XenvScriptGenerator) GenHookScripts() (string, error) {
+	switch sg.shell {
+	case Bash:
 		return sg.generateBashScripts(), nil
-	case "zsh":
+	case Zsh:
 		return sg.generateZshScripts(), nil
-	case "pwsh", "powershell":
+	case Pwsh:
 		return sg.generatePwshScripts(), nil
-	case "cmd", "clink":
-		return sg.generateCmdScripts(), nil
 	default:
-		return "", fmt.Errorf("unsupported shell type: %s (use bash, zsh, or pwsh)", shellType)
+		return sg.generateCmdScripts(), nil
+	}
+}
+
+// GenEnvSet 生成环境变量设置脚本代码
+func (sg *XenvScriptGenerator) GenEnvSet(name, value string) string {
+	name = strings.ToUpper(name)
+	switch sg.shell {
+	case Bash, Zsh:
+		return fmt.Sprintf(`export %s=%s`, name, value)
+	case Pwsh:
+		return fmt.Sprintf(`$Env:%s = "%s"`, name, value)
+	default:
+		return fmt.Sprintf(`os.setenv("%s", "%s")`, name, value)
+	}
+}
+
+// GenEnvUnset 删除环境变量的脚本代码
+func (sg *XenvScriptGenerator) GenEnvUnset(name string) string {
+	name = strings.ToUpper(name)
+	switch sg.shell {
+	case Bash, Zsh:
+		return fmt.Sprintf(`unset %s`, name)
+	case Pwsh:
+		return fmt.Sprintf(`Remove-Item Env:%s`, name)
+	default:
+		return fmt.Sprintf(`os.unsetenv("%s")`, name)
 	}
 }
 
@@ -65,3 +88,4 @@ func (sg *XenvScriptGenerator) addCommonForLinuxShell(sb *strings.Builder) {
 	}
 
 }
+

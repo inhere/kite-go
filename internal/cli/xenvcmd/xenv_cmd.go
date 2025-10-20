@@ -1,7 +1,11 @@
 package xenvcmd
 
 import (
+	"fmt"
+
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/gcli/v3/events"
+	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/internal/cli/xenvcmd/subcmd"
 )
 
@@ -10,6 +14,11 @@ var XEnvCmd = &gcli.Command{
 	Name:    "xenv",
 	// Aliases: []string{"xenv"},
 	Desc:   "Manage local development environments and tools, similar to mise and vfox",
+	Help: `
+Quick commands:
+  <info>set</>    Quick exec the 'env set' subcommand
+  <info>unset</>  Quick exec the 'env unset' subcommand
+`,
 	Subs: []*gcli.Command{
 		subcmd.ToolsCmd,
 		subcmd.UseCmd,
@@ -20,6 +29,7 @@ var XEnvCmd = &gcli.Command{
 		subcmd.ListCmd,
 		subcmd.ShellCmd,
 		subcmd.InitCmd,
+		subcmd.HookInitCmd,
 	},
 	// Configure the command
 	Config: func(c *gcli.Command) {
@@ -27,9 +37,19 @@ var XEnvCmd = &gcli.Command{
 		c.BoolOpt(&subcmd.GlobalFlag, "global", "g", false, "Operate for global config")
 
 		// Add any configuration here if needed
-	},
-	// Define the main command behavior (this is for the base xenv command)
-	Func: func(c *gcli.Command, args []string) error {
-		return c.ShowHelp()
+		c.On(events.OnCmdNotFound, func(ctx *gcli.HookCtx) (stop bool) {
+			name := ctx.Str("name")
+			// 重定向执行 env set/unset 命令
+			if name == "set" || name == "unset" {
+				newArgs := []string{"env", name}
+				newArgs = append(newArgs, ctx.Strings("args")...)
+				err := app.Cli.RunCmd("xenv", newArgs)
+				if err != nil {
+					fmt.Println(err)
+				}
+				return true
+			}
+			return false
+		})
 	},
 }

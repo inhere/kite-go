@@ -8,6 +8,9 @@ import (
 	"github.com/inhere/kite-go/pkg/xenv/service"
 )
 
+// ScriptMark 输出的脚本必须添加标记，前面部分为message, 后面部分为脚本
+const ScriptMark = "--Expression--"
+
 // Init initializes the xenv config and state
 func Init() error {
 	// Initialize configuration

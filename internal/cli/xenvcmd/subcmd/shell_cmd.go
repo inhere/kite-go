@@ -47,24 +47,40 @@ var ShellCmd = &gcli.Command{
 	Func: func(c *gcli.Command, args []string) error {
 		// XENV_HOOK_SHELL for reload shell hook script
 		xenvHookShell := envutil.Getenv("XENV_HOOK_SHELL")
-		shellType := shellCmdOpts.Type.String()
-		if shellType == "" {
+		shellName := shellCmdOpts.Type.String()
+		if shellName == "" {
 			if !shellCmdOpts.Reload || xenvHookShell == "" {
 				return errorx.Err("please specify the shell type (bash, zsh, or pwsh)")
 			}
-			shellType = xenvHookShell
-			c.Infoln("shell type using the XENV_HOOK_SHELL environment variable:", shellType)
+			shellName = xenvHookShell
+			c.Infoln("shell type using the XENV_HOOK_SHELL environment variable:", shellName)
+		}
+
+		shellType, err := shell.TypeFromString(shellName)
+		if err != nil {
+			return err
 		}
 
 		if err := xenv.Init(); err != nil {
 			return err
 		}
 
-		generator := shell.NewScriptGenerator(config.Config())
-		hookScript, err := generator.GenerateScripts(shellType)
+		generator := shell.NewScriptGenerator(shellType, config.Config())
+		hookScript, err := generator.GenHookScripts()
 		if err == nil {
 			fmt.Print(hookScript)
 		}
 		return err
+	},
+}
+
+// HookInitCmd the xenv hook init command
+//  - 将会在 ~/.bashrc, ~/.zshrc, ~/.pwshrc 中执行注入hook脚本时，同时会调用当前命令，可以返回脚本内容自动执行
+var HookInitCmd = &gcli.Command{
+	Hidden: true,
+	Name:   "hook-init",
+	Desc:   "Initialize the xenv hook script",
+	Func: func(c *gcli.Command, args []string) error {
+		return nil
 	},
 }

@@ -86,7 +86,10 @@ func (m *StateManager) DeactivateTool(name, version string, global bool) error {
 		}
 
 		delete(m.global.ActiveTools, name)
-		return m.SaveGlobalState()
+		// Save the global state
+		if !m.batchMode {
+			return m.SaveGlobalState()
+		}
 	}
 
 	// Check if the tool is currently active
@@ -109,7 +112,10 @@ func (m *StateManager) SetEnv(name, value string, global bool) error {
 	// Set global env
 	if global {
 		m.global.ActiveEnv[name] = value
-		return m.SaveGlobalState()
+		// Save the global state
+		if !m.batchMode {
+			return m.SaveGlobalState()
+		}
 	}
 
 	m.session.ActiveEnv[name] = value
@@ -122,11 +128,22 @@ func (m *StateManager) UnsetEnv(name string, global bool) error {
 
 	// Unset global env
 	if global {
-		delete(m.global.ActiveEnv, name)
-		return m.SaveGlobalState()
+		// check exists
+		if _, exists := m.global.ActiveEnv[name]; exists {
+			// return fmt.Errorf("environment variable %s is not currently set", name)
+			delete(m.global.ActiveEnv, name)
+			// Save the global state
+			if !m.batchMode {
+				return m.SaveGlobalState()
+			}
+		}
+	} else {
+		// check exists
+		if _, exists := m.session.ActiveEnv[name]; exists {
+			// return fmt.Errorf("environment variable %s is not currently set", name)
+			delete(m.session.ActiveEnv, name)
+		}
 	}
-
-	delete(m.session.ActiveEnv, name)
 	return nil
 }
 
@@ -135,8 +152,12 @@ func (m *StateManager) AddPath(path string, global bool) error {
 	m.ensureInit()
 
 	if global {
+		// TODO 检测是否存在
 		m.global.ActivePaths = append(m.global.ActivePaths, path)
-		return m.SaveGlobalState()
+		// Save the global state
+		if !m.batchMode {
+			return m.SaveGlobalState()
+		}
 	}
 
 	m.session.ActivePaths = append(m.session.ActivePaths, path)
@@ -155,7 +176,10 @@ func (m *StateManager) RemovePath(path string, global bool) error {
 			}
 		}
 		m.global.ActivePaths = newPaths
-		return m.SaveGlobalState()
+		// Save the global state
+		if !m.batchMode {
+			return m.SaveGlobalState()
+		}
 	}
 
 	newPaths := make([]string, 0, len(m.session.ActivePaths))
