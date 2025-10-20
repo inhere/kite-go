@@ -16,6 +16,9 @@ type VersionSpec struct {
 	Version string // 版本规格
 }
 
+// ID 返回版本规格的ID name:version
+func (vs *VersionSpec) ID() string { return vs.String() }
+
 // String 返回版本规格的字符串表示
 func (vs *VersionSpec) String() string {
 	return vs.Name + ":" + vs.Version

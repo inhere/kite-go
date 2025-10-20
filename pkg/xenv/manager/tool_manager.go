@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/jsonutil"
+	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/x/ccolor"
 	"github.com/inhere/kite-go/pkg/xenv/models"
 	"github.com/inhere/kite-go/pkg/xenv/tools"
@@ -110,7 +112,6 @@ func (m *ToolManager) IndexLocalTools() error {
 				Name:       toolCfg.Name,
 				Version:    version,
 				InstallDir: installPath,
-				BinPaths:   []string{},
 				CreatedAt:  currentTime,
 			})
 		}
@@ -148,7 +149,6 @@ func (m *ToolManager) AddSDKTool(name, version, installDir string) error {
 		Name:       name,
 		Version:    version,
 		InstallDir: installDir,
-		BinPaths:   []string{},
 		CreatedAt:  currentTime,
 		UpdatedAt:  currentTime,
 	})
@@ -170,12 +170,52 @@ func (m *ToolManager) DeleteSDKTool(localTool *models.InstalledTool) error {
 	return m.SaveLocalTools()
 }
 
+// FindSdkByID find local installed sdk tool by id
 func (m *ToolManager) FindSdkByID(id string) *models.InstalledTool {
 	_ = m.ensureLocalLoad(true)
 	return m.localTools.FindSdkByID(id)
 }
 
-func (m *ToolManager) ListLocalVersions(name string) []models.InstalledTool {
+// ListSDKVersions 根据名称列出本地安装的SDK版本列表
+func (m *ToolManager) ListSDKVersions(name string) []models.InstalledTool {
 	_ = m.ensureLocalLoad(true)
 	return m.localTools.ListSdkByName(name)
 }
+
+// MatchSdkByVersion 根据版本匹配本地可用的sdk
+//
+// 规则和优先级：
+//   - 先完全匹配版本
+//   - latest 匹配最新版本
+//   - 1 可以匹配 1.19.x
+//   - 1.19 可以匹配 1.19.x
+//   - 1.19.x 可以匹配 1.19.x.x
+func (m *ToolManager) MatchSdkByVersion(localSdks []models.InstalledTool, version string) *models.InstalledTool {
+	// 完全匹配版本
+	if strutil.ContainsByte(version, '.') {
+		for _, localSdk := range localSdks {
+			if localSdk.Version == version {
+				return &localSdk
+			}
+		}
+	}
+
+	// latest 匹配最新版本 - 已排序，返回第一个
+	if version == "latest" {
+		return &localSdks[0]
+	}
+
+	// 前缀匹配
+	for _, localSdk := range localSdks {
+		locVersion := localSdk.Version
+		// 检查版本是否以指定前缀开始，并且下一个字符是 '.' 或者字符串结束
+		if strings.HasPrefix(locVersion, version) {
+			if len(locVersion) == len(version) || locVersion[len(version)] == '.' {
+				return &localSdk
+			}
+		}
+	}
+
+	return nil
+}
+

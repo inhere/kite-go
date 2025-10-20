@@ -24,8 +24,10 @@ type Configuration struct {
 	// 	  darwin: tar.gz
 	DownloadExt map[string]string `json:"download_ext"`
 	DownloadDir   string            `json:"download_dir"` // 临时下载目录
-	Tools         []ToolChain       `json:"tools"`        // 可管理的工具链列表
-	SimpleTools   []SimpleTool      `json:"simple_tools"` // 配置的简单工具列表
+	// 可管理的工具链列表 TODO rename sdks
+	Tools []ToolChain `json:"tools"`
+	// 配置的简单工具列表 TODO rename tools
+	SimpleTools []SimpleTool `json:"simple_tools"`
 	// internal fields
 	configFile string
 	configDir  string

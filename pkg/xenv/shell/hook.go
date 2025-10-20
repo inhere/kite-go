@@ -71,6 +71,19 @@ func (sg *XenvScriptGenerator) GenAddPath(path string) string {
 	}
 }
 
+// GenAddPaths 一次添加多个到 PATH 的脚本代码
+func (sg *XenvScriptGenerator) GenAddPaths(paths []string) string {
+	newPath := JoinPaths(paths)
+	switch sg.shell {
+	case Bash, Zsh:
+		return fmt.Sprintf(`export PATH=%s:$PATH`, newPath)
+	case Pwsh:
+		return fmt.Sprintf(`$Env:PATH = "%s;$Env:PATH"`, newPath)
+	default:
+		return fmt.Sprintf(`os.setenv("PATH", "%s;%%PATH%%")\n`, newPath)
+	}
+}
+
 // GenSetPath 设置 PATH 脚本代码
 func (sg *XenvScriptGenerator) GenSetPath(paths []string) string {
 	newPath := JoinPaths(paths)

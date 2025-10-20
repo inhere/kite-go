@@ -66,15 +66,24 @@ func (lt *ToolsLocal) FindToolByName(name string) *InstalledTool {
 
 // InstalledTool 代表已安装的工具链信息
 type InstalledTool struct {
-	ID         string    `json:"id"` // 唯一标识符，格式为 name:version
-	Index    int      `json:"-"`     // 内部使用，表示在列表中的索引
-	Name       string    `json:"name"`
-	Version    string    `json:"version"`
-	InstallDir string    `json:"install_dir"`
-	BinDir   string   `json:"bin_dir,omitempty"`
-	BinPaths []string `json:"bin_paths,omitempty"`
-	Source   string   `json:"source"`
-	IsSDK    bool     `json:"is_sdk"`
-	CreatedAt  time.Time `json:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at"`
+	ID         string `json:"id"` // 唯一标识符，格式为 name:version
+	Index      int    `json:"-"`  // 内部使用，表示在列表中的索引
+	Name       string `json:"name"`
+	Version    string `json:"version"`
+	InstallDir string `json:"install_dir"`
+	// BinDir 可执行文件目录, 相对于 InstallDir
+	//  - 为空时，默认为 install_dir/bin
+	BinDir    string    `json:"bin_dir,omitempty"`
+	Source    string    `json:"source"`
+	IsSDK     bool      `json:"is_sdk"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// BinDirPath 返回可执行文件目录的绝对路径
+func (t *InstalledTool) BinDirPath() string {
+	if t.BinDir == "" {
+		return t.InstallDir + "/bin"
+	}
+	return t.InstallDir + "/" + t.BinDir
 }

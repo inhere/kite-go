@@ -2,10 +2,11 @@ package service
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/gookit/goutil/errorx"
+	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/x/ccolor"
-	"github.com/inhere/kite-go/internal/util"
 	"github.com/inhere/kite-go/pkg/xenv/manager"
 	"github.com/inhere/kite-go/pkg/xenv/models"
 	"github.com/inhere/kite-go/pkg/xenv/tools"
@@ -106,7 +107,7 @@ func (ts *ToolService) ListAll(showAll bool) error {
 			fmt.Printf("  - BinPaths: %v\n", toolCfg.BinPaths)
 		}
 
-		locals := ts.toolMgr.ListLocalVersions(toolCfg.Name)
+		locals := ts.toolMgr.ListSDKVersions(toolCfg.Name)
 		if len(locals) > 0 {
 			fmt.Print("  - Installed: ")
 			for _, local := range locals {
@@ -145,53 +146,82 @@ func (ts *ToolService) GetTool(name string) *models.ToolChain {
 
 // EnsureBinDir ensures the bin directory exists and is in the PATH
 func (ts *ToolService) EnsureBinDir() error {
-	binDir := util.ExpandHome(ts.config.BinDir)
-	return util.EnsureDir(binDir)
+	binDir := fsutil.ExpandHome(ts.config.BinDir)
+	return fsutil.EnsureDir(binDir)
 }
 
-//
-// Tool Activation
+// endregion
+// region Tool Activation
 //
 
 // ActivateTools activates multiple tools
-func (ts *ToolService) ActivateTools(useTools []string, global bool) error {
+func (ts *ToolService) ActivateTools(useTools []string, global bool) (script string, err error) {
 	ts.state.SetBatchMode(true)
 	defer ts.state.SetBatchMode(false)
 
+	// Generate shell eval scripts
+	gen, err1 := getShellGenerator(ts.config)
+	if err1 != nil {
+		return "", err1
+	}
+
+	var sb strings.Builder
+	var addPaths []string
+
 	for _, arg := range useTools {
 		// Parse name:version
-		spec, err := tools.ParseVersionSpec(arg)
-		if err != nil {
-			return err
+		spec, err2 := tools.ParseVersionSpec(arg)
+		if err2 != nil {
+			return "", err2
 		}
 
 		// Activate the tool
-		if err := ts.activateTool(spec, global); err != nil {
-			return fmt.Errorf("failed to activate tool %q: %w", spec, err)
+		localSdk, err2 := ts.activateTool(spec, global)
+		if err2 != nil {
+			return "", fmt.Errorf("failed to activate tool %q: %w", spec, err2)
 		}
 
+		addPaths = append(addPaths, localSdk.BinDirPath())
 		if global {
-			ccolor.Infof("Activate %s as global default\n", spec)
+			ccolor.Infof("Activate %s as global default\n", localSdk.ID)
 		} else {
-			ccolor.Infof("Activate %s for current session\n", spec)
+			ccolor.Infof("Activate %s for current session\n", localSdk.ID)
 		}
 	}
 
+	// 在shell hook环境中, 生成ENV set脚本
+	if gen != nil {
+		sb.WriteString(gen.GenAddPaths(addPaths))
+	}
 	if global {
 		ccolor.Printf("Global: save state to %s\n", ts.state.StateFile())
 	}
-	return ts.state.SaveGlobalState()
+	err = ts.state.SaveGlobalState()
+	return sb.String(), err
 }
 
-// activateTool activates a specific tool version
-func (ts *ToolService) activateTool(spec *tools.VersionSpec, global bool) error {
+// activates a specific tool version
+func (ts *ToolService) activateTool(spec *tools.VersionSpec, global bool) (*models.InstalledTool, error) {
 	// Check if the tool is definition
-	if !ts.config.IsToolDefined(spec.Name) {
-		return fmt.Errorf("tool %s config is not definition", spec.Name)
+	toolCfg := ts.config.FindToolConfig(spec.Name)
+	if toolCfg == nil {
+		return nil, fmt.Errorf("tool %s config is not definition", spec.Name)
+	}
+
+	localSdks := ts.toolMgr.ListSDKVersions(toolCfg.Name)
+	if len(localSdks) == 0 {
+		return nil, fmt.Errorf("sdk tool %s is not installed locally", spec.Name)
+	}
+
+	// 根据版本匹配本地可用的sdk
+	localSdk := ts.toolMgr.MatchSdkByVersion(localSdks, spec.Version)
+	if localSdk == nil {
+		return nil, fmt.Errorf("sdk tool %s is not installed locally", spec.ID())
 	}
 
 	// Update the activity state
-	return ts.state.ActivateTool(spec.Name, spec.Version, global)
+	err := ts.state.ActivateTool(spec.Name, spec.Version, global)
+	return localSdk, err
 }
 
 // DeactivateTools deactivates multiple tools at once
