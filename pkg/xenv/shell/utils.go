@@ -2,10 +2,12 @@ package shell
 
 import (
 	"fmt"
+	"path/filepath"
 	"runtime"
 	"strings"
 
 	"github.com/gookit/goutil/envutil"
+	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/sysutil"
 )
 
@@ -58,4 +60,30 @@ func ClinkIsInstalled() bool {
 		return false
 	}
 	return sysutil.HasExecutable("clink.exe")
+}
+
+// PathSeparator returns the appropriate path separator for the current OS
+func PathSeparator() string {
+	if runtime.GOOS == "windows" {
+		if xenvHookShell == "bash" {
+			return ":"
+		}
+		return ";"
+	}
+	return ":"
+}
+
+// SplitPath splits a PATH string into individual paths
+func SplitPath(envPath string) []string {
+	return strings.Split(envPath, PathSeparator())
+}
+
+// JoinPaths joins multiple path entries into a single PATH string
+func JoinPaths(paths []string) string {
+	return strings.Join(paths, PathSeparator())
+}
+
+// NormalizePath normalizes a path by expanding home directory and cleaning it
+func NormalizePath(path string) string {
+	return filepath.Clean(fsutil.ExpandPath(path))
 }

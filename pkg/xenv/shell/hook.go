@@ -59,6 +59,31 @@ func (sg *XenvScriptGenerator) GenEnvUnset(name string) string {
 	}
 }
 
+// GenAddPath 添加 PATH 脚本代码（添加到 PATH 的第一个位置）
+func (sg *XenvScriptGenerator) GenAddPath(path string) string {
+	switch sg.shell {
+	case Bash, Zsh:
+		return fmt.Sprintf(`export PATH=%s:$PATH`, path)
+	case Pwsh:
+		return fmt.Sprintf(`$Env:PATH = "%s;$Env:PATH"`, path)
+	default:
+		return fmt.Sprintf(`os.setenv("PATH", "%s;%%PATH%%")\n`, path)
+	}
+}
+
+// GenSetPath 设置 PATH 脚本代码
+func (sg *XenvScriptGenerator) GenSetPath(paths []string) string {
+	newPath := JoinPaths(paths)
+	switch sg.shell {
+	case Bash, Zsh:
+		return fmt.Sprintf(`export PATH=%s`, newPath)
+	case Pwsh:
+		return fmt.Sprintf(`$Env:PATH = "%s"`, newPath)
+	default:
+		return fmt.Sprintf(`os.setenv("PATH", "%s")\n`, newPath)
+	}
+}
+
 func (sg *XenvScriptGenerator) addCommonForLinuxShell(sb *strings.Builder) {
 	// 添加全局环境变量
 	if len(sg.cfg.GlobalEnv) > 0 {

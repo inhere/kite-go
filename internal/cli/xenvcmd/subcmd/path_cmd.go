@@ -33,17 +33,17 @@ func PathAddCmd() *gcli.Command {
 			c.AddArg("path", "PATH environment value", true)
 		},
 		Func: func(c *gcli.Command, args []string) error {
-			path := c.Arg("path").String()
-
-			// Create env manager
-			envMgr, err := xenv.EnvService()
+			// Create env service
+			envSvc, err := xenv.EnvService()
 			if err != nil {
 				return err
 			}
 
 			// Add the path
-			if err := envMgr.AddPath(path, GlobalFlag); err != nil {
-				return fmt.Errorf("failed to add path: %w", err)
+			path := c.Arg("path").String()
+			script, err1 := envSvc.AddPath(path, GlobalFlag)
+			if err1 != nil {
+				return fmt.Errorf("failed to add path: %w", err1)
 			}
 
 			// Save configuration if global
@@ -53,6 +53,9 @@ func PathAddCmd() *gcli.Command {
 				fmt.Printf("Added %s to PATH for current session\n", path)
 			}
 
+			if script != "" {
+				fmt.Printf("%s\n%s\n", xenv.ScriptMark, script)
+			}
 			return nil
 		},
 	}
@@ -60,6 +63,10 @@ func PathAddCmd() *gcli.Command {
 
 // PathRemoveCmd command for removing a path from PATH
 func PathRemoveCmd() *gcli.Command {
+	var pathRmOpts = struct {
+		matchMode bool // TODO
+	}{}
+
 	return &gcli.Command{
 		Name:    "remove",
 		Help:    "remove [-g] <path>",
@@ -67,20 +74,21 @@ func PathRemoveCmd() *gcli.Command {
 		Aliases: []string{"rm", "delete"},
 		Config: func(c *gcli.Command) {
 			c.BoolOpt(&GlobalFlag, "global", "g", false, "Global operation, not the current session")
+			c.BoolOpt(&pathRmOpts.matchMode, "match", "m", false, "Match mode, remove paths that match the given path")
 			c.AddArg("path", "PATH environment value", true)
 		},
 		Func: func(c *gcli.Command, args []string) error {
-			path := c.Arg("path").String()
-
-			// Create env manager
-			envMgr, err := xenv.EnvService()
+			// Create env service
+			envSvc, err := xenv.EnvService()
 			if err != nil {
 				return err
 			}
 
 			// Remove the path
-			if err := envMgr.RemovePath(path, GlobalFlag); err != nil {
-				return fmt.Errorf("failed to remove path: %w", err)
+			path := c.Arg("path").String()
+			script, err1 := envSvc.RemovePath(path, GlobalFlag)
+			if err1 != nil {
+				return fmt.Errorf("failed to remove path: %w", err1)
 			}
 
 			// Save configuration if global
@@ -88,6 +96,10 @@ func PathRemoveCmd() *gcli.Command {
 				fmt.Printf("Removed %s from PATH globally\n", path)
 			} else {
 				fmt.Printf("Removed %s from PATH for current session\n", path)
+			}
+
+			if script != "" {
+				fmt.Printf("%s\n%s\n", xenv.ScriptMark, script)
 			}
 			return nil
 		},
@@ -107,14 +119,14 @@ func PathListCmd() *gcli.Command {
 }
 
 func listEnvPaths() error {
-	// Create env manager
-	envMgr, err := xenv.EnvService()
+	// Create env service
+	envSvc, err := xenv.EnvService()
 	if err != nil {
 		return err
 	}
 
 	// List PATH entries
-	paths := envMgr.ListPaths()
+	paths := envSvc.ListPaths()
 	fmt.Println("PATH Entries:")
 	for i, path := range paths {
 		fmt.Printf("  %d. %s (%s)\n", i+1, path.Path, path.Scope)
@@ -135,14 +147,14 @@ func PathSearchCmd() *gcli.Command {
 		Func: func(c *gcli.Command, args []string) error {
 			searchTerm := c.Arg("value").String()
 
-			// Create env manager
-			envMgr, err := xenv.EnvService()
+			// Create env service
+			envSvc, err := xenv.EnvService()
 			if err != nil {
 				return err
 			}
 
 			// Search for the path
-			matches := envMgr.SearchPath(searchTerm)
+			matches := envSvc.SearchPath(searchTerm)
 			if len(matches) == 0 {
 				fmt.Printf("No paths found containing: %s\n", searchTerm)
 			} else {

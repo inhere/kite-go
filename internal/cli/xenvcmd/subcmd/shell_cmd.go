@@ -77,10 +77,10 @@ var ShellCmd = &gcli.Command{
 // HookInitCmd the xenv hook init command
 //  - 将会在 ~/.bashrc, ~/.zshrc, ~/.pwshrc 中执行注入hook脚本时，同时会调用当前命令，可以返回脚本内容自动执行
 var HookInitCmd = &gcli.Command{
-	Hidden: true,
+	Hidden: true, // This is an internal command
 	Name:   "hook-init",
 	Desc:   "Initialize the xenv hook script",
 	Func: func(c *gcli.Command, args []string) error {
-		return nil
+		return nil // TODO
 	},
 }

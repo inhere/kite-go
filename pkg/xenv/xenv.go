@@ -47,6 +47,10 @@ func EnvService() (*service.EnvService, error) {
 		return nil, fmt.Errorf("failed to initialize configuration: %w", err)
 	}
 
+	if err := stateMgr.Init(); err != nil {
+		return nil, fmt.Errorf("failed to initialize state manager: %w", err)
+	}
+
 	// Create env manager
 	return service.NewEnvService(config.Mgr.Config, stateMgr), nil
 }
