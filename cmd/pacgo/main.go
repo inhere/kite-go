@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/inhere/kite-go/pkg/pacutil"
+	"github.com/inhere/kite-go/pkg/util/pacutil"
 )
 
 // dev run:

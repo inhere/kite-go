@@ -33,7 +33,7 @@ import (
 	"github.com/inhere/kite-go/internal/cli/toolcmd"
 	"github.com/inhere/kite-go/internal/cli/xenvcmd"
 	"github.com/inhere/kite-go/pkg/kiteext"
-	"github.com/inhere/kite-go/pkg/pacutil"
+	"github.com/inhere/kite-go/pkg/util/pacutil"
 )
 
 // Boot commands to gcli.App

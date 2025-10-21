@@ -14,7 +14,7 @@ import (
 	"github.com/gookit/goutil/fsutil"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/pkg/kautorw"
-	"github.com/inhere/kite-go/pkg/pkgutil"
+	"github.com/inhere/kite-go/pkg/util/bizutil"
 )
 
 type RenderFn func(src string, vars map[string]any) string
@@ -38,8 +38,8 @@ func (o *templateCmdOpt) loadConfig(varBox *config.Config) error {
 		return nil
 	}
 
-	// varBox := pkgutil.NewConfig()
-	runConf := pkgutil.NewConfig()
+	// varBox := bizutil.NewConfig()
+	runConf := bizutil.NewConfig()
 	cfgFile := app.PathMap.Resolve(o.config)
 	err := runConf.LoadFiles(cfgFile)
 	if err != nil {
@@ -123,8 +123,8 @@ func (o *templateCmdOpt) loadConfig(varBox *config.Config) error {
 	return nil
 }
 
-func (o *templateCmdOpt) makeEng() (pkgutil.RenderFn, error) {
-	return pkgutil.NewTxtRender(o.engine, o.varFmt)
+func (o *templateCmdOpt) makeEng() (bizutil.RenderFn, error) {
+	return bizutil.NewTxtRender(o.engine, o.varFmt)
 }
 
 // NewTemplateCmd instance
@@ -183,7 +183,7 @@ func NewTemplateCmd() *gcli.Command {
   {$fullCmd} --config /path/to/_config.yaml /path/to/my-template.tpl
 `,
 		Func: func(c *gcli.Command, _ []string) error {
-			varBox := pkgutil.NewConfig()
+			varBox := bizutil.NewConfig()
 			// load config file
 			err := ttOpts.loadConfig(varBox)
 			if err != nil {

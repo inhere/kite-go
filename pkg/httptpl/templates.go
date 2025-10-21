@@ -7,7 +7,7 @@ import (
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/strutil"
-	"github.com/inhere/kite-go/pkg/pkgutil"
+	"github.com/inhere/kite-go/pkg/util/bizutil"
 )
 
 // Templates type constants
@@ -108,7 +108,7 @@ func (ts *Templates) Lookup(name string) (*Template, error) {
 
 // LoadTemplate file and register
 func (ts *Templates) LoadTemplate(name string) (*Template, error) {
-	c := pkgutil.NewConfig()
+	c := bizutil.NewConfig()
 	t := NewTemplate()
 
 	tplFile := ts.path + "/" + name

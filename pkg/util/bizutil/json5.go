@@ -1,4 +1,4 @@
-package pkgutil
+package bizutil
 
 import (
 	"encoding/json"

@@ -8,7 +8,7 @@ import (
 	"github.com/gookit/goutil/fsutil"
 	"github.com/inhere/kite-go/internal/apputil"
 	"github.com/inhere/kite-go/pkg/kautorw"
-	"github.com/inhere/kite-go/pkg/pkgutil"
+	"github.com/inhere/kite-go/pkg/util/bizutil"
 )
 
 type templateCmdOpt struct {
@@ -77,7 +77,7 @@ func NewTemplateCmd(mustFile bool) *gcli.Command {
 				return err
 			}
 
-			varBox := pkgutil.NewConfig()
+			varBox := bizutil.NewConfig()
 			// load config file
 			if ttOpts.varFile != "" {
 				err = varBox.LoadFiles(ttOpts.varFile)
@@ -92,7 +92,7 @@ func NewTemplateCmd(mustFile bool) *gcli.Command {
 			show.AList("Loaded variables:", varBox.Data())
 
 			// do rendering
-			engFn, err := pkgutil.NewTxtRender(ttOpts.engine, ttOpts.varFmt)
+			engFn, err := bizutil.NewTxtRender(ttOpts.engine, ttOpts.varFmt)
 			if err != nil {
 				return err
 			}

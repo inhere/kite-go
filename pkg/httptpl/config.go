@@ -7,7 +7,7 @@ import (
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
-	"github.com/inhere/kite-go/pkg/pkgutil"
+	"github.com/inhere/kite-go/pkg/util/bizutil"
 )
 
 // EnvsMap type
@@ -26,7 +26,7 @@ func (m EnvsMap) Merge(s EnvsMap) {
 
 // LoadEnvsByFile handle
 func LoadEnvsByFile(envFile string) (EnvsMap, error) {
-	ec := pkgutil.NewConfig()
+	ec := bizutil.NewConfig()
 	if err := ec.LoadFiles(envFile); err != nil {
 		return nil, errorx.Stacked(err)
 	}
@@ -118,7 +118,7 @@ func (d *DomainConfig) Init() error {
 
 // LoadConfig file and env file
 func (d *DomainConfig) LoadConfig() error {
-	cfg := pkgutil.NewConfig()
+	cfg := bizutil.NewConfig()
 
 	if len(d.ConfigFile) > 0 {
 		if err := cfg.LoadFiles(d.ConfigFile); err != nil {

@@ -11,7 +11,7 @@ import (
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/x/finder"
 	"github.com/inhere/kite-go/internal/apputil"
-	"github.com/inhere/kite-go/pkg/pkgutil"
+	"github.com/inhere/kite-go/pkg/util/bizutil"
 )
 
 // MultiRenderOpt options
@@ -44,7 +44,7 @@ func (o *MultiRenderOpt) initVars() error {
 	}
 
 	o.init = true
-	o.vars = pkgutil.NewConfig()
+	o.vars = bizutil.NewConfig()
 
 	// load vars from file
 	if o.VarFile != "" {
