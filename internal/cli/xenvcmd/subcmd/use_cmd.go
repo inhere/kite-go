@@ -3,6 +3,7 @@ package subcmd
 import (
 	"github.com/gookit/gcli/v3"
 	"github.com/inhere/kite-go/pkg/xenv"
+	"github.com/inhere/kite-go/pkg/xenv/shell"
 )
 
 var useCmdOpts = struct {
@@ -16,9 +17,9 @@ var UseCmd = &gcli.Command{
 	Desc: "Switch and activate different versions of development tools",
 	Config: func(c *gcli.Command) {
 		c.BoolOpt(&GlobalFlag, "global", "g", false, "Global operation, not the current session")
-		c.BoolOpt(&useCmdOpts.Save, "save", "s", false, "Save the tool version to current workdir .xenv.toml")
+		c.BoolOpt(&useCmdOpts.Save, "save", "s", false, "Save the tools to current workdir .xenv.toml")
 
-		c.AddArg("tools", "Name of the tool to install, allow multi.", true, true)
+		c.AddArg("tools", "Name of the tool to activate, allow multi.", true, true)
 	},
 	Func: func(c *gcli.Command, args []string) error {
 		// Create tool service
@@ -28,7 +29,11 @@ var UseCmd = &gcli.Command{
 		}
 
 		useTools := c.Arg("tools").Strings()
-		return toolSvc.ActivateTools(useTools, GlobalFlag)
+		script, err1 := toolSvc.ActivateTools(useTools, GlobalFlag)
+		if err1 == nil {
+			shell.OutputScript(script)
+		}
+		return err1
 	},
 }
 
@@ -39,7 +44,7 @@ var UnuseCmd = &gcli.Command{
 	Desc: "Deactivate specific tool versions",
 	Config: func(c *gcli.Command) {
 		c.BoolOpt(&GlobalFlag, "global", "g", false, "Global operation, not the current session")
-		c.AddArg("tools", "Name of the tool to install, allow multi.", true, true)
+		c.AddArg("tools", "Name of the tool to deactivate, allow multi.", true, true)
 	},
 	Func: func(c *gcli.Command, args []string) error {
 		// Create tool service
@@ -49,6 +54,10 @@ var UnuseCmd = &gcli.Command{
 		}
 
 		unTools := c.Arg("tools").Strings()
-		return toolSvc.DeactivateTools(unTools, GlobalFlag)
+		script, err1 := toolSvc.DeactivateTools(unTools, GlobalFlag)
+		if err1 == nil {
+			shell.OutputScript(script)
+		}
+		return err1
 	},
 }

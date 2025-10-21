@@ -1,5 +1,7 @@
 package models
 
+import "github.com/gookit/goutil/maputil"
+
 // ToolChain SDK开发工具（如Go、Node.js等）配置，包含安装路径、别名等属性。
 //   - 只是工具信息配置，不含有特定的版本信息
 type ToolChain struct {
@@ -29,15 +31,34 @@ type ToolChain struct {
 	LocalVersions map[string]string `json:"local_versions"`
 }
 
+// ActiveEnvNames 返回激活环境变量列表
+func (t *ToolChain) ActiveEnvNames() []string {
+	return maputil.TypedKeys(t.ActiveEnv)
+}
+
 // SimpleTool 简单独立工具 - 单文件，可执行，不需要多版本处理的工具，只需安装最新的即可。PortableTool, StaticTool
 //   - 例如 `curl`, `wget`, `ast-grep`, `ripgrep` 等工具。
 //   - 支持直接从 github 快速下载安装 `xenv tools install --uri github:user/repo rg@latest`
 //   - 支持从任意 URL 下载安装 `xenv tools install --uri https://example.com/file.tar.gz`
 type SimpleTool struct {
-	ID         string `json:"id"`
+	// ID         string `json:"id"`
 	Name       string `json:"name"`
 	InstallURL string `json:"install_url"`
 	InstallDir string `json:"install_dir"`
 	BinName    string `json:"bin_name"`
 	Version    string `json:"version"` // 版本号，如 "1.21", "lts", "latest"
+}
+
+// VersionSpec 版本规格
+type VersionSpec struct {
+	Name    string // SDK名称
+	Version string // 版本规格
+}
+
+// ID 返回版本规格的ID name:version
+func (vs *VersionSpec) ID() string { return vs.String() }
+
+// String 返回版本规格的字符串表示
+func (vs *VersionSpec) String() string {
+	return vs.Name + ":" + vs.Version
 }

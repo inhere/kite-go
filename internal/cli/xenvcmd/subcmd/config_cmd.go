@@ -7,6 +7,10 @@ import (
 	"github.com/inhere/kite-go/pkg/xenv/config"
 )
 
+var configOpts = struct {
+	edit bool
+}{}
+
 // ConfigCmd the xenv config command
 var ConfigCmd = &gcli.Command{
 	Name:    "config",
@@ -18,16 +22,20 @@ var ConfigCmd = &gcli.Command{
 		ConfigExportCmd(),
 		ConfigImportCmd(),
 	},
+	Config: func(c *gcli.Command) {
+		// builtin editors: TODO
+		//  - 通用: vim, helix, nvim
+		//  - Linux: nano, vi
+		//  - Windows: notepad
+		c.BoolOpt(&configOpts.edit, "edit", "e", false, "Edit the configuration file in the default editor")
+	},
 	Func: func(c *gcli.Command, args []string) error {
-		// Initialize configuration
-		cfgMgr := config.NewConfigManager()
-		configPath := config.GetDefaultConfigPath()
-		c.Infoln("Loading config file:", configPath)
-		// Try to load existing config, ignore errors (will use defaults)
-		err := cfgMgr.LoadConfig(configPath)
-		if err != nil {
+		// Initialize load config file
+		if err := config.Mgr.Init(); err != nil {
 			return fmt.Errorf("failed to load configuration: %w", err)
 		}
+		cfgMgr := config.Mgr
+		c.Infoln("Loading config file:", cfgMgr.Config.ConfigFile())
 
 		// Display current configuration
 		fmt.Println("Current xenv configuration:")
@@ -42,18 +50,26 @@ var ConfigCmd = &gcli.Command{
 
 // ConfigSetCmd command for setting configuration values
 func ConfigSetCmd() *gcli.Command {
+	// var configSetOpts = struct {
+	// 	configPath string
+	// }{}
+
 	return &gcli.Command{
 		Name:    "set",
 		Desc:    "Set a configuration value",
+		Config: func(c *gcli.Command) {
+			c.AddArg("name", "configuration key name", true)
+			c.AddArg("value", "configuration value", true)
+		},
 		Func: func(c *gcli.Command, args []string) error {
-			name := args[0]
-			value := args[1]
+			name := c.Arg("name").String()
+			value := c.Arg("value").String()
 
-			// Initialize configuration
-			cfgMgr := config.NewConfigManager()
-			configPath := config.GetDefaultConfigPath()
-			// Try to load existing config, ignore errors (will use defaults)
-			_ = cfgMgr.LoadConfig(configPath)
+			// Initialize load config file
+			if err := config.Mgr.Init(); err != nil {
+				return fmt.Errorf("failed to load configuration: %w", err)
+			}
+			cfgMgr := config.Mgr
 
 			// Set the configuration value based on the name
 			switch name {
@@ -67,17 +83,13 @@ func ConfigSetCmd() *gcli.Command {
 				return fmt.Errorf("unknown configuration option: %s", name)
 			}
 
-			// Save the configuration
-			if err := cfgMgr.SaveConfig(configPath); err != nil {
-				return fmt.Errorf("failed to save configuration: %w", err)
-			}
+			// Save the configuration TODO
+			// if err := cfgMgr.SaveConfig(""); err != nil {
+			// 	return fmt.Errorf("failed to save configuration: %w", err)
+			// }
 
 			fmt.Printf("Set %s=%s\n", name, value)
 			return nil
-		},
-		Config: func(c *gcli.Command) {
-			c.AddArg("name", "configuration key name", true)
-			c.AddArg("value", "configuration value", true)
 		},
 	}
 }
@@ -87,14 +99,16 @@ func ConfigGetCmd() *gcli.Command {
 	return &gcli.Command{
 		Name:    "get",
 		Desc:    "Get a configuration value",
+		Config: func(c *gcli.Command) {
+			c.AddArg("name", "configuration key name", true)
+		},
 		Func: func(c *gcli.Command, args []string) error {
-			name := args[0]
-
-			// Initialize configuration
-			cfgMgr := config.NewConfigManager()
-			configPath := config.GetDefaultConfigPath()
-			// Try to load existing config, ignore errors (will use defaults)
-			_ = cfgMgr.LoadConfig(configPath)
+			// Initialize load config file
+			if err := config.Mgr.Init(); err != nil {
+				return fmt.Errorf("failed to load configuration: %w", err)
+			}
+			cfgMgr := config.Mgr
+			name := c.Arg("name").String()
 
 			// Get the configuration value based on the name
 			var value string
@@ -112,9 +126,6 @@ func ConfigGetCmd() *gcli.Command {
 			fmt.Printf("%s=%s\n", name, value)
 			return nil
 		},
-		Config: func(c *gcli.Command) {
-			c.AddArg("name", "configuration key name", true)
-		},
 	}
 }
 
@@ -123,27 +134,24 @@ func ConfigExportCmd() *gcli.Command {
 	return &gcli.Command{
 		Name:    "export",
 		Desc:    "Export configuration",
+		Config: func(c *gcli.Command) {
+			c.AddArg("format", "export format, allow: zip, json").WithDefault("zip")
+		},
 		Func: func(c *gcli.Command, args []string) error {
-			format := "zip" // default format
-			if len(args) > 0 {
-				format = args[0]
-			}
-
+			format := c.Arg("format").String()
 			// Validate format
 			if format != "zip" && format != "json" {
 				return fmt.Errorf("unsupported export format: %s (use 'zip' or 'json')", format)
 			}
 
-			// Initialize configuration
-			cfgMgr := config.NewConfigManager()
-			configPath := config.GetDefaultConfigPath()
-			// Try to load existing config, ignore errors (will use defaults)
-			_ = cfgMgr.LoadConfig(configPath)
+			// Initialize load config file
+			if err := config.Mgr.Init(); err != nil {
+				return fmt.Errorf("failed to load configuration: %w", err)
+			}
+			cfgMgr := config.Mgr
 
 			// Create exporter
 			exporter := config.NewExporter(cfgMgr)
-
-			// Determine export file path
 			exportPath := "xenv_config_export." + format
 
 			// Export the configuration
@@ -154,9 +162,6 @@ func ConfigExportCmd() *gcli.Command {
 			fmt.Printf("Configuration exported to: %s\n", exportPath)
 			return nil
 		},
-		Config: func(c *gcli.Command) {
-			c.AddArg("format", "export format (zip or json)")
-		},
 	}
 }
 
@@ -165,14 +170,17 @@ func ConfigImportCmd() *gcli.Command {
 	return &gcli.Command{
 		Name:    "import",
 		Desc:    "Import configuration from file",
+		Config: func(c *gcli.Command) {
+			c.AddArg("path", "path to import configuration from", true)
+		},
 		Func: func(c *gcli.Command, args []string) error {
-			importPath := args[0]
+			importPath := c.Arg("path").String()
 
-			// Initialize configuration
-			cfgMgr := config.NewConfigManager()
-			configPath := config.GetDefaultConfigPath()
-			// Try to load existing config, ignore errors (will use defaults)
-			_ = cfgMgr.LoadConfig(configPath)
+			// Initialize load config file
+			if err := config.Mgr.Init(); err != nil {
+				return fmt.Errorf("failed to load configuration: %w", err)
+			}
+			cfgMgr := config.Mgr
 
 			// Create importer
 			importer := config.NewImporter(cfgMgr)
@@ -182,16 +190,13 @@ func ConfigImportCmd() *gcli.Command {
 				return fmt.Errorf("failed to import configuration: %w", err)
 			}
 
-			// Save the imported configuration
-			if err := cfgMgr.SaveConfig(configPath); err != nil {
-				return fmt.Errorf("failed to save imported configuration: %w", err)
-			}
+			// Save the imported configuration TODO
+			// if err := cfgMgr.SaveConfig("configPath"); err != nil {
+			// 	return fmt.Errorf("failed to save imported configuration: %w", err)
+			// }
 
 			fmt.Printf("Configuration imported from: %s\n", importPath)
 			return nil
-		},
-		Config: func(c *gcli.Command) {
-			c.AddArg("path", "path to import configuration from", true)
 		},
 	}
 }

@@ -16,6 +16,7 @@ import (
 type EnvService struct {
 	config *models.Configuration
 	state  *manager.StateManager
+	envMgr *manager.EnvManager
 }
 
 // NewEnvService creates a new EnvService
@@ -23,6 +24,7 @@ func NewEnvService(config *models.Configuration, state *manager.StateManager) *E
 	return &EnvService{
 		config: config,
 		state:  state,
+		envMgr: manager.NewEnvManager(),
 	}
 }
 
@@ -44,7 +46,7 @@ func (s *EnvService) SetEnv(name, value string, global bool) (script string, err
 	}
 	// 在shell hook环境中, 生成 ENV set 脚本
 	if gen != nil {
-		script = gen.GenEnvSet(name, value)
+		script = gen.GenSetEnv(name, value)
 	} else {
 		ccolor.Magentaln("TIP: NOT IN SHELL HOOK. Will not take effect in current shell")
 	}
@@ -76,7 +78,7 @@ func (s *EnvService) UnsetEnvs(names []string, global bool) (script string, err 
 	for _, name := range names {
 		// 在shell hook环境中, 生成ENV set脚本
 		if gen != nil {
-			sb.WriteString(gen.GenEnvUnset(name))
+			sb.WriteString(gen.GenUnsetEnv(name))
 		}
 		err = s.state.UnsetEnv(name, global)
 		if err != nil {
@@ -150,8 +152,7 @@ func (s *EnvService) AddPath(path string, global bool) (script string, err error
 func (s *EnvService) RemovePath(path string, global bool) (script string, err error) {
 	// Normalize the path
 	normalizedPath := shell.NormalizePath(path)
-	currentPath := os.Getenv("PATH")
-	pathList := shell.SplitPath(currentPath)
+	pathList := shell.SplitPath(os.Getenv("PATH"))
 
 	found := false
 	var newPaths []string
@@ -165,7 +166,10 @@ func (s *EnvService) RemovePath(path string, global bool) (script string, err er
 		}
 	}
 	if !found {
-		return "", fmt.Errorf("path not found in PATH: %s", normalizedPath)
+		ccolor.Warnf("path not found in PATH: %s", normalizedPath)
+		// Remove from activity state
+		err = s.state.RemovePath(normalizedPath, global)
+		return "", err
 	}
 
 	// Generate shell eval scripts

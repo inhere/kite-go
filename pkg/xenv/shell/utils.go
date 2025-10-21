@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/envutil"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/sysutil"
@@ -24,34 +25,6 @@ func InHookShell() bool { return xenvHookShell != "" }
 // IsHookWinBash checks if the current hook shell is Windows Bash(eg: git-bash)
 func IsHookWinBash() bool {
 	return runtime.GOOS == "windows" && xenvHookShell == "bash"
-}
-
-// IsValidShellType checks if a shell type is valid
-func IsValidShellType(shellType string) bool {
-	shellType = strings.ToLower(shellType)
-	switch shellType {
-	case string(Bash), string(Zsh), string(Pwsh), string(Cmd):
-		return true
-	default:
-		return false
-	}
-}
-
-// TypeFromString returns the shell type from a string
-func TypeFromString(shellType string) (ShellType, error) {
-	shellType = strings.ToLower(shellType)
-	switch shellType {
-	case "bash":
-		return Bash, nil
-	case "zsh":
-		return Zsh, nil
-	case "pwsh", "powershell":
-		return Pwsh, nil
-	case "cmd", "clink":
-		return Cmd, nil
-	default:
-		return "", fmt.Errorf("unsupported shell type: %s (should: bash, zsh, pwsh or cmd)", shellType)
-	}
 }
 
 // ClinkIsInstalled checks if Clink is installed on Windows
@@ -86,4 +59,37 @@ func JoinPaths(paths []string) string {
 // NormalizePath normalizes a path by expanding home directory and cleaning it
 func NormalizePath(path string) string {
 	return filepath.Clean(fsutil.ExpandPath(path))
+}
+
+// OutputScript outputs shell scripts to stdout
+func OutputScript(script string) {
+	if script != "" {
+		fmt.Printf("%s\n%s\n", ScriptMark, script)
+	}
+}
+
+// DiffRemovePaths diffs and removes paths from the PATH
+func DiffRemovePaths(osPaths, rmPaths []string) (fmtRmPaths, newPaths, notFounds []string) {
+	// format input paths
+	for _, p := range rmPaths {
+		fmtRmPaths = append(fmtRmPaths, NormalizePath(p))
+	}
+
+	var founds map[string]bool
+	// find and remove from session PATH
+	for _, p := range osPaths {
+		if arrutil.StringsContains(fmtRmPaths, p) {
+			founds[p] = true
+		} else {
+			newPaths = append(newPaths, p)
+		}
+	}
+
+	// check found paths
+	for _, p := range fmtRmPaths {
+		if !founds[p] {
+			notFounds = append(notFounds, p)
+		}
+	}
+	return
 }

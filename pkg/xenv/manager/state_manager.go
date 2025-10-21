@@ -1,11 +1,14 @@
 package manager
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/gookit/goutil"
+	"github.com/gookit/goutil/fsutil"
 	"github.com/inhere/kite-go/pkg/xenv/models"
 )
 
@@ -55,13 +58,34 @@ func (m *StateManager) SetBatchMode(enabled bool) {
 	m.batchMode = enabled
 }
 
+// endregion
+// region Tool state management
 //
-// Tool state management
-//
+
+// UseToolsWithEnvsPaths activates multiple tools and with envs, paths
+func (m *StateManager) UseToolsWithEnvsPaths(tools, envs map[string]string, paths []string, global bool) error {
+	if err := m.Init(); err != nil {
+		return err
+	}
+
+	if global {
+		m.global.AddToolsWithEnvsPaths(tools, envs, paths)
+		// Save the global state
+		if !m.batchMode {
+			return m.SaveGlobalState()
+		}
+	} else {
+		m.session.AddToolsWithEnvsPaths(tools, envs, paths)
+	}
+
+	return nil
+}
 
 // ActivateTool activates a specific tool version
 func (m *StateManager) ActivateTool(name, version string, global bool) error {
-	m.ensureInit()
+	if err := m.Init(); err != nil {
+		return err
+	}
 
 	if global {
 		m.global.ActiveTools[name] = version
@@ -75,9 +99,30 @@ func (m *StateManager) ActivateTool(name, version string, global bool) error {
 	return nil
 }
 
+// DelToolsWithEnvsPaths deletes multiple tools and with envs, paths
+func (m *StateManager) DelToolsWithEnvsPaths(tools, envs, paths []string, global bool) error {
+	if err := m.Init(); err != nil {
+		return err
+	}
+
+	if global {
+		m.global.DelToolsWithEnvsPaths(tools, envs, paths)
+		// Save the global state
+		if !m.batchMode {
+			return m.SaveGlobalState()
+		}
+	} else {
+		m.session.DelToolsWithEnvsPaths(tools, envs, paths)
+	}
+	return nil
+}
+
 // DeactivateTool deactivates a specific tool version
 func (m *StateManager) DeactivateTool(name, version string, global bool) error {
-	m.ensureInit()
+	if err := m.Init(); err != nil {
+		return err
+	}
+
 	if global {
 		// Check if the tool is currently active
 		currentVersion, exists := m.global.ActiveTools[name]
@@ -90,6 +135,7 @@ func (m *StateManager) DeactivateTool(name, version string, global bool) error {
 		if !m.batchMode {
 			return m.SaveGlobalState()
 		}
+		return nil
 	}
 
 	// Check if the tool is currently active
@@ -101,13 +147,38 @@ func (m *StateManager) DeactivateTool(name, version string, global bool) error {
 	return nil
 }
 
+// endregion
+// region Env state management
 //
-// Env state management
-//
+
+// AddEnvs sets multiple environment variables
+func (m *StateManager) AddEnvs(envs map[string]string, global bool) error {
+	if err := m.Init(); err != nil {
+		return err
+	}
+
+	if global {
+		for name, value := range envs {
+			m.global.ActiveEnv[name] = value
+		}
+		// Save the global state
+		if !m.batchMode {
+			return m.SaveGlobalState()
+		}
+		return nil
+	}
+
+	for name, value := range envs {
+		m.session.ActiveEnv[name] = value
+	}
+	return nil
+}
 
 // SetEnv sets an environment variable
 func (m *StateManager) SetEnv(name, value string, global bool) error {
-	m.ensureInit()
+	if err := m.Init(); err != nil {
+		return err
+	}
 
 	// Set global env
 	if global {
@@ -116,15 +187,18 @@ func (m *StateManager) SetEnv(name, value string, global bool) error {
 		if !m.batchMode {
 			return m.SaveGlobalState()
 		}
+	} else {
+		// Set session env
+		m.session.ActiveEnv[name] = value
 	}
-
-	m.session.ActiveEnv[name] = value
 	return nil
 }
 
 // UnsetEnv unsets an environment variable
 func (m *StateManager) UnsetEnv(name string, global bool) error {
-	m.ensureInit()
+	if err := m.Init(); err != nil {
+		return err
+	}
 
 	// Unset global env
 	if global {
@@ -147,26 +221,59 @@ func (m *StateManager) UnsetEnv(name string, global bool) error {
 	return nil
 }
 
-// AddPath adds a path to the PATH environment variable
-func (m *StateManager) AddPath(path string, global bool) error {
-	m.ensureInit()
+// endregion
+// region PATH state management
+//
+
+// AddPaths adds multiple paths to the PATH environment variable
+func (m *StateManager) AddPaths(paths []string, global bool) (err error) {
+	if err = m.Init(); err != nil {
+		return err
+	}
 
 	if global {
-		// TODO 检测是否存在
-		m.global.ActivePaths = append(m.global.ActivePaths, path)
+		for _, path := range paths {
+			m.global.AddActivePath(path)
+		}
 		// Save the global state
 		if !m.batchMode {
 			return m.SaveGlobalState()
 		}
+		return
 	}
 
-	m.session.ActivePaths = append(m.session.ActivePaths, path)
+	for _, path := range paths {
+		m.session.AddActivePath(path)
+	}
+	return
+}
+
+// AddPath adds a path to the PATH environment variable
+func (m *StateManager) AddPath(path string, global bool) error {
+	if err := m.Init(); err != nil {
+		return err
+	}
+
+	// Add to global
+	if global {
+		m.global.AddActivePath(path)
+		// Save the global state
+		if !m.batchMode {
+			return m.SaveGlobalState()
+		}
+		return nil
+	}
+
+	// Add to session
+	m.session.AddActivePath(path)
 	return nil
 }
 
 // RemovePath removes a path from the PATH environment variable
 func (m *StateManager) RemovePath(path string, global bool) error {
-	m.ensureInit()
+	if err := m.Init(); err != nil {
+		return err
+	}
 
 	if global {
 		newPaths := make([]string, 0, len(m.global.ActivePaths))
@@ -192,8 +299,59 @@ func (m *StateManager) RemovePath(path string, global bool) error {
 	return nil
 }
 
+// endregion
+// region Load/Save GlobalState
 //
-// Helper methods
+
+// LoadGlobalState loads the global state from file
+func (m *StateManager) LoadGlobalState() error {
+	// Check if file exists
+	if _, err := os.Stat(m.stateFile); os.IsNotExist(err) {
+		// Return default state if file doesn't exist
+		m.global = models.NewActivityState()
+		return nil
+	}
+
+	// Read the file
+	data, err := os.ReadFile(m.stateFile)
+	if err != nil {
+		return err
+	}
+
+	// Unmarshal the JSON
+	var state models.ActivityState
+	if err1 := json.Unmarshal(data, &state); err1 != nil {
+		return err1
+	}
+
+	m.global = &state
+	return nil
+}
+
+// SaveGlobalState saves the global state to file
+func (m *StateManager) SaveGlobalState() error {
+	if err := fsutil.MkParentDir(m.stateFile); err != nil {
+		return err
+	}
+
+	// Update timestamps
+	m.global.UpdatedAt = time.Now()
+	if m.global.CreatedAt.IsZero() {
+		m.global.CreatedAt = m.global.UpdatedAt
+	}
+
+	// Marshal to JSON
+	data, err := json.MarshalIndent(m.global, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	// Write to file
+	return os.WriteFile(m.stateFile, data, 0644)
+}
+
+// endregion
+// region Helper methods
 //
 
 // Global returns the global activity state
@@ -206,24 +364,6 @@ func (m *StateManager) Session() *models.ActivityState {
 	return m.session
 }
 
-// LoadGlobalState loads the global state from file
-func (m *StateManager) LoadGlobalState() error {
-	// Load global activity state
-	globalState, err := models.LoadGlobalState()
-	if err != nil {
-		return err
-	}
-	m.global = globalState
-	return nil
-}
-
-// SaveGlobalState saves the global state to file
-func (m *StateManager) SaveGlobalState() error {
-	return m.global.Save(m.stateFile)
-}
-
-func (m *StateManager) ensureInit() {
-	if !m.init {
-		goutil.PanicErr(m.Init())
-	}
+func (m *StateManager) requireInit() {
+	goutil.PanicErr(m.Init())
 }

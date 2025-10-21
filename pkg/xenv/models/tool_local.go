@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// ToolsLocal 代表本地已安装的工具链信息. 会保存到 ~/.xenv/tools/local.json
+// ToolsLocal 代表本地已安装的工具链信息. 会保存到 ~/.xenv/tools.local.json
 type ToolsLocal struct {
 	Version   string    `json:"version"`
 	CreatedAt time.Time `json:"created_at"`
@@ -67,7 +67,6 @@ func (lt *ToolsLocal) FindToolByName(name string) *InstalledTool {
 // InstalledTool 代表已安装的工具链信息
 type InstalledTool struct {
 	ID         string `json:"id"` // 唯一标识符，格式为 name:version
-	Index      int    `json:"-"`  // 内部使用，表示在列表中的索引
 	Name       string `json:"name"`
 	Version    string `json:"version"`
 	InstallDir string `json:"install_dir"`
@@ -78,6 +77,9 @@ type InstalledTool struct {
 	IsSDK     bool      `json:"is_sdk"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	// 内部使用
+	Index  int        `json:"-"` // 表示在列表中的索引
+	Config *ToolChain `json:"-"` // 工具链配置
 }
 
 // BinDirPath 返回可执行文件目录的绝对路径

@@ -2,6 +2,7 @@ package shell
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/gookit/goutil/maputil"
@@ -33,8 +34,17 @@ func (sg *XenvScriptGenerator) GenHookScripts() (string, error) {
 	}
 }
 
-// GenEnvSet 生成环境变量设置脚本代码
-func (sg *XenvScriptGenerator) GenEnvSet(name, value string) string {
+// GenSetEnvs 批量生成环境变量设置脚本代码
+func (sg *XenvScriptGenerator) GenSetEnvs(envs map[string]string) string {
+	var sb strings.Builder
+	for name, value := range envs {
+		sb.WriteString(sg.GenSetEnv(name, value))
+	}
+	return sb.String()
+}
+
+// GenSetEnv 生成环境变量设置脚本代码
+func (sg *XenvScriptGenerator) GenSetEnv(name, value string) string {
 	name = strings.ToUpper(name)
 	switch sg.shell {
 	case Bash, Zsh:
@@ -46,8 +56,17 @@ func (sg *XenvScriptGenerator) GenEnvSet(name, value string) string {
 	}
 }
 
-// GenEnvUnset 删除环境变量的脚本代码
-func (sg *XenvScriptGenerator) GenEnvUnset(name string) string {
+// GenUnsetEnvs 批量生成环境变量删除脚本代码
+func (sg *XenvScriptGenerator) GenUnsetEnvs(names []string) string {
+	var sb strings.Builder
+	for _, name := range names {
+		sb.WriteString(sg.GenUnsetEnv(name))
+	}
+	return sb.String()
+}
+
+// GenUnsetEnv 删除环境变量的脚本代码
+func (sg *XenvScriptGenerator) GenUnsetEnv(name string) string {
 	name = strings.ToUpper(name)
 	switch sg.shell {
 	case Bash, Zsh:
@@ -82,6 +101,18 @@ func (sg *XenvScriptGenerator) GenAddPaths(paths []string) string {
 	default:
 		return fmt.Sprintf(`os.setenv("PATH", "%s;%%PATH%%")\n`, newPath)
 	}
+}
+
+// GenRemovePaths 生成批量删除 PATH 的脚本代码
+func (sg *XenvScriptGenerator) GenRemovePaths(paths []string) (script string, notFounds []string) {
+	var newPaths []string
+	osPathList := SplitPath(os.Getenv("PATH"))
+
+	_, newPaths, notFounds = DiffRemovePaths(osPathList, paths)
+	if len(newPaths) > 0 {
+		script = sg.GenSetPath(newPaths)
+	}
+	return
 }
 
 // GenSetPath 设置 PATH 脚本代码
@@ -126,4 +157,3 @@ func (sg *XenvScriptGenerator) addCommonForLinuxShell(sb *strings.Builder) {
 	}
 
 }
-
