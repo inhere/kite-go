@@ -11,6 +11,7 @@ import (
 	"github.com/gookit/goutil/jsonutil"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/x/ccolor"
+	"github.com/inhere/kite-go/pkg/util"
 	"github.com/inhere/kite-go/pkg/xenv/models"
 	"github.com/inhere/kite-go/pkg/xenv/tools"
 )
@@ -60,7 +61,7 @@ func (m *ToolManager) ensureLocalLoad(must bool) error {
 
 // LoadLocalTools local installed tools information
 func (m *ToolManager) LoadLocalTools() error {
-	m.localFile = fsutil.Expand("~/.xenv/tools.local.json")
+	m.localFile = util.NormalizePath("~/.xenv/tools.local.json")
 
 	if fsutil.IsFile(m.localFile) {
 		err := jsonutil.DecodeFile(m.localFile, m.localTools)
@@ -129,6 +130,7 @@ func (m *ToolManager) SaveLocalTools() error {
 	if err != nil {
 		return err
 	}
+
 	return os.WriteFile(m.localFile, jsonBytes, 0664)
 }
 

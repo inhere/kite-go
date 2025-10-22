@@ -9,8 +9,9 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/strutil"
-	"github.com/inhere/kite-go/internal/util"
+	"github.com/inhere/kite-go/pkg/util"
 	"github.com/inhere/kite-go/pkg/xenv/models"
 )
 
@@ -29,8 +30,7 @@ func NewInstaller(config *models.Configuration) *Installer {
 
 // EnsureBinDir ensures the bin directory exists and is in the PATH
 func (i *Installer) EnsureBinDir() error {
-	binDir := util.ExpandHome(i.config.BinDir)
-	return util.EnsureDir(binDir)
+	return util.EnsureDir(i.config.BinDir)
 }
 
 // Install downloads and installs a tool
@@ -154,7 +154,7 @@ func (i *Installer) copyExecutable(srcPath, destDir string) error {
 
 // createShims creates symlinks (shims) for the tool executables
 func (i *Installer) createShims(toolChain *models.ToolChain) error {
-	binDir := util.ExpandHome(i.config.BinDir)
+	binDir := fsutil.ExpandHome(i.config.BinDir)
 
 	// For each binary path of the tool, create a shim
 	for _, binPath := range toolChain.BinPaths {

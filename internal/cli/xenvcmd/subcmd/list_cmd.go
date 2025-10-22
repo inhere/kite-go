@@ -29,23 +29,12 @@ var ListCmd = &gcli.Command{
 func ListToolsCmd() *gcli.Command {
 	return &gcli.Command{
 		Name:    "tools",
-		Desc:    "List installed tools",
+		Desc: "List local installed tools",
 		Aliases: []string{"t"},
 		Func: func(c *gcli.Command, args []string) error {
 			return listTools()
 		},
 	}
-}
-
-func listTools() error {
-	// Create tool service
-	toolSvc, err := xenv.ToolService()
-	if err != nil {
-		return err
-	}
-
-	// List all tools
-	return toolSvc.ListAll(false)
 }
 
 // ListEnvCmd lists environment variables

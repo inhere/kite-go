@@ -10,9 +10,21 @@ download_ext:
   windows: zip
   linux: tar.gz
   darwin: tar.gz
+
+# 拉取工具包索引，方便本地搜索 TODO
 tools_index_source:
-  url: index.json # TODO
-tools:
+  url: index.json
+
+# 配置可用的工具安装管理器
+# - 默认内置支持通过 http 方式下载安装 github 发布的工具
+tools_backends:
+  darwin: ["brew"]
+  windows: ["scoop", "winget"]
+  linux: ["apt", "yum", "dnf", "pacman"]
+
+# SDK工具链配置
+# sdks 和 tools 差异是：sdk 允许本地同时存在多个版本，tools 只允许一个版本
+sdks:
   - name: go
     alias: golang
     install_url: "https://golang.org/dl/go{version}.{os}-{arch}.{download_ext}" # 可选，不配置则使用本地已下载的工具链
@@ -32,6 +44,6 @@ tools:
   - name: flutter # 不配制下载地址，手动下载到指定目录下即可
     install_dir: D:/work/env/devsdk/flutter/flutter-{version}
 
-simple_tools:
+tools:
   - name: git
     source: https://github.com/git-for-windows/git

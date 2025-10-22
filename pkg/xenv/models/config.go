@@ -25,9 +25,10 @@ type Configuration struct {
 	DownloadExt map[string]string `json:"download_ext"`
 	DownloadDir   string            `json:"download_dir"` // 临时下载目录
 	// 可管理的工具链列表 TODO rename sdks
-	Tools []ToolChain `json:"tools"`
+	//  - sdks 和 tools 差异是：sdk 允许本地同时存在多个版本，tools 只允许一个版本
+	Tools []ToolChain `json:"sdks"`
 	// 配置的简单工具列表 TODO rename tools
-	SimpleTools []SimpleTool `json:"simple_tools"`
+	SimpleTools []SimpleTool `json:"tools"`
 	// internal fields
 	configFile string
 	configDir  string

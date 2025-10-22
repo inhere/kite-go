@@ -10,7 +10,7 @@ import (
 // ToolsCmd the xenv tools command
 var ToolsCmd = &gcli.Command{
 	Name:    "tools",
-	Desc: "Manage local development tools (install, list, etc.)",
+	Desc: "Manage local development SDK, tools (install, list, etc.)",
 	Aliases: []string{"t", "tool"},
 	Subs: []*gcli.Command{
 		ToolsInstallCmd(),
@@ -231,12 +231,30 @@ func ToolsShowCmd() *gcli.Command {
 
 // ToolsListCmd command for listing tools
 func ToolsListCmd() *gcli.Command {
+	var toolsListOpts = struct {
+		All bool `flag:"shorts=a;desc=List all configuration tools, including uninstalled ones"`
+	}{}
+
 	return &gcli.Command{
 		Name:    "list",
-		Desc: "List all installed tools",
+		Desc: "List all configuration tools",
 		Aliases: []string{"ls"},
+		Config: func(c *gcli.Command) {
+			c.MustFromStruct(&toolsListOpts)
+		},
 		Func: func(c *gcli.Command, args []string) error {
 			return listTools()
 		},
 	}
+}
+
+func listTools() error {
+	// Create tool service
+	toolSvc, err := xenv.ToolService()
+	if err != nil {
+		return err
+	}
+
+	// List all tools
+	return toolSvc.ListAll(false)
 }

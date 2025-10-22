@@ -1,6 +1,11 @@
 package models
 
-import "github.com/gookit/goutil/maputil"
+import (
+	"strings"
+
+	"github.com/gookit/goutil/maputil"
+	"github.com/gookit/goutil/strutil"
+)
 
 // ToolChain SDK开发工具（如Go、Node.js等）配置，包含安装路径、别名等属性。
 //   - 只是工具信息配置，不含有特定的版本信息
@@ -22,11 +27,13 @@ type ToolChain struct {
 	//  - 可以自定义 eg: ~/.xenv/tools/go/go{version}
 	InstallDir string `json:"install_dir"`
 	// 激活时设置的额外环境变量
+	//  - value 可用使用一些内部变量，如 {version}，{install_dir}
 	ActiveEnv map[string]string `json:"active_env"`
-	// 该工具的 bin 文件目录名称，不设置就是 install_dir 目录
+	// 该工具的 bin 文件目录名称，不设置就是 install_dir/bin 目录
 	BinDir      string   `json:"bin_dir"`
 	BinPaths    []string `json:"bin_paths"`    // 该工具提供的二进制文件路径列表
-	PostInstall []string `json:"post_install"` // 安装完成后执行的shell hook脚本
+	// 安装完成后执行的shell hook脚本
+	PostInstall []string `json:"post_install"`
 	// 自定义版本安装目录,不在统一目录下的版本 key: version, value: install_dir
 	LocalVersions map[string]string `json:"local_versions"`
 }
@@ -34,6 +41,18 @@ type ToolChain struct {
 // ActiveEnvNames 返回激活环境变量列表
 func (t *ToolChain) ActiveEnvNames() []string {
 	return maputil.TypedKeys(t.ActiveEnv)
+}
+
+// RenderActiveEnv 渲染激活环境变量值中的一些表达式变量 eg: {version}, {install_dir}
+func (t *ToolChain) RenderActiveEnv(varMap map[string]string) map[string]string {
+	realEnvMap := make(map[string]string)
+	for k, val := range t.ActiveEnv {
+		if strings.Contains(val, "{") {
+			val = strutil.Replaces(val, varMap)
+		}
+		realEnvMap[k] = val
+	}
+	return realEnvMap
 }
 
 // SimpleTool 简单独立工具 - 单文件，可执行，不需要多版本处理的工具，只需安装最新的即可。PortableTool, StaticTool

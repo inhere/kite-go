@@ -69,6 +69,7 @@ type InstalledTool struct {
 	ID         string `json:"id"` // 唯一标识符，格式为 name:version
 	Name       string `json:"name"`
 	Version    string `json:"version"`
+	// InstallDir 当前版本的工具安装目录路径
 	InstallDir string `json:"install_dir"`
 	// BinDir 可执行文件目录, 相对于 InstallDir
 	//  - 为空时，默认为 install_dir/bin

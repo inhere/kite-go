@@ -7,6 +7,7 @@ import (
 
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/strutil"
+	"github.com/inhere/kite-go/pkg/util"
 )
 
 // ListVersionDirs 列出SDK的已安装版本目录
@@ -14,9 +15,9 @@ import (
 // return key: version, value: dir path
 func ListVersionDirs(installDir string) (map[string]string, error) {
 	// 获取SDK基础目录
-	baseDir := filepath.Dir(installDir)
+	baseDir := filepath.Dir(util.NormalizePath(installDir))
 	if !fsutil.IsDir(baseDir) {
-		return nil, nil
+		return nil, fmt.Errorf("SDK directory does not exist: %s", baseDir)
 	}
 	// ccolor.Infof("DEBUG list installed version from %s\n", baseDir)
 

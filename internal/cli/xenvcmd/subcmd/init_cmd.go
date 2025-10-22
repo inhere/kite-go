@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/gookit/gcli/v3"
-	"github.com/inhere/kite-go/internal/util"
+	"github.com/inhere/kite-go/pkg/util"
 	"github.com/inhere/kite-go/pkg/xenv/config"
 )
 
@@ -39,15 +39,15 @@ var InitCmd = &gcli.Command{
 		}
 
 		// Ensure required directories exist
-		if err := util.EnsureDir(util.ExpandHome(cfgMgr.Config.BinDir)); err != nil {
+		if err := util.EnsureDir(cfgMgr.Config.BinDir); err != nil {
 			return fmt.Errorf("failed to create bin directory: %w", err)
 		}
 
-		if err := util.EnsureDir(util.ExpandHome(cfgMgr.Config.InstallDir)); err != nil {
+		if err := util.EnsureDir(cfgMgr.Config.InstallDir); err != nil {
 			return fmt.Errorf("failed to create install directory: %w", err)
 		}
 
-		if err := util.EnsureDir(util.ExpandHome(cfgMgr.Config.ShellHooksDir)); err != nil {
+		if err := util.EnsureDir(cfgMgr.Config.ShellHooksDir); err != nil {
 			return fmt.Errorf("failed to create shell scripts directory: %w", err)
 		}
 

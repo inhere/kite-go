@@ -5,11 +5,11 @@ import (
 	"strings"
 
 	"github.com/gookit/goutil/errorx"
-	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/x/ccolor"
 	"github.com/inhere/kite-go/pkg/xenv/manager"
 	"github.com/inhere/kite-go/pkg/xenv/models"
+	"github.com/inhere/kite-go/pkg/xenv/shell"
 	"github.com/inhere/kite-go/pkg/xenv/tools"
 )
 
@@ -34,6 +34,71 @@ func NewToolService(config *models.Configuration, state *manager.StateManager, t
 func (ts *ToolService) Register(name string, version string, url string, bin string) error {
 	return errorx.Raw("TODO register ...")
 }
+
+// ListAll lists all tools
+func (ts *ToolService) ListAll(showAll bool) error {
+	cfgTools := ts.config.Tools
+	if len(cfgTools) == 0 {
+		fmt.Println("No tools for managed. see config: sdks, tools")
+		return nil
+	}
+
+	ccolor.Cyanf("Managed SDK Tools(%d):\n", len(cfgTools))
+
+	for _, toolCfg := range cfgTools {
+		ccolor.Magentaf("%s", toolCfg.Name)
+		if len(toolCfg.Alias) > 0 {
+			fmt.Printf("(Alias: %v) SDK:\n", toolCfg.Alias)
+		} else {
+			fmt.Println(" SDK:")
+		}
+		fmt.Printf("  - InstallDir: %s\n", toolCfg.InstallDir)
+		if len(toolCfg.BinPaths) > 0 {
+			fmt.Printf("  - BinPaths: %v\n", toolCfg.BinPaths)
+		}
+
+		locals := ts.toolMgr.ListSDKVersions(toolCfg.Name)
+		fmt.Print("  - Installed: ")
+		if len(locals) > 0 {
+			for _, local := range locals {
+				ccolor.Infof("%s ", local.Version)
+			}
+			fmt.Println()
+		} else {
+			ccolor.Cyanln("None")
+		}
+	}
+	return nil
+}
+
+func (ts *ToolService) IndexLocalTools() error {
+	return ts.toolMgr.IndexLocalTools()
+}
+
+// UpdateTool updates a tool to the specified version
+func (ts *ToolService) UpdateTool(name, version string) error {
+	// For update, we'll install the new version
+	return ts.InstallTool(name, version)
+}
+
+// GetTool returns information about a specific tool
+func (ts *ToolService) GetTool(name string) *models.ToolChain {
+	// Find the latest version of the tool
+	var latest *models.ToolChain
+	for i, tool := range ts.config.Tools {
+		if tool.Name == name {
+			if latest == nil {
+				// Simple version comparison - in real implementation, we'd use semver
+				latest = &ts.config.Tools[i]
+			}
+		}
+	}
+	return latest
+}
+
+// endregion
+// region Tool Un/Install
+//
 
 // InstallTool installs a tool with the specified version
 func (ts *ToolService) InstallTool(name, version string) error {
@@ -88,73 +153,8 @@ func (ts *ToolService) Uninstall(name, version string) error {
 	return ts.toolMgr.DeleteSDKTool(localTool)
 }
 
-// ListAll lists all tools
-func (ts *ToolService) ListAll(showAll bool) error {
-	cfgTools := ts.config.Tools
-	if len(cfgTools) == 0 {
-		fmt.Println("No tools for managed. see config: tools, simple_tools")
-		return nil
-	}
-
-	ccolor.Cyanf("Managed SDK Tools(%d):\n", len(cfgTools))
-
-	for _, toolCfg := range cfgTools {
-		ccolor.Magentaf("%s", toolCfg.Name)
-		if len(toolCfg.Alias) > 0 {
-			fmt.Printf("(Aliases: %v) SDK:\n", toolCfg.Alias)
-		} else {
-			fmt.Println(" SDK:")
-		}
-		fmt.Printf("  - InstallDir: %s\n", toolCfg.InstallDir)
-		if len(toolCfg.BinPaths) > 0 {
-			fmt.Printf("  - BinPaths: %v\n", toolCfg.BinPaths)
-		}
-
-		locals := ts.toolMgr.ListSDKVersions(toolCfg.Name)
-		if len(locals) > 0 {
-			fmt.Print("  - Installed: ")
-			for _, local := range locals {
-				ccolor.Infof("%s ", local.Version)
-			}
-			fmt.Println()
-		}
-	}
-	return nil
-}
-
-func (ts *ToolService) IndexLocalTools() error {
-	return ts.toolMgr.IndexLocalTools()
-}
-
-// UpdateTool updates a tool to the specified version
-func (ts *ToolService) UpdateTool(name, version string) error {
-	// For update, we'll install the new version
-	return ts.InstallTool(name, version)
-}
-
-// GetTool returns information about a specific tool
-func (ts *ToolService) GetTool(name string) *models.ToolChain {
-	// Find the latest version of the tool
-	var latest *models.ToolChain
-	for i, tool := range ts.config.Tools {
-		if tool.Name == name {
-			if latest == nil {
-				// Simple version comparison - in real implementation, we'd use semver
-				latest = &ts.config.Tools[i]
-			}
-		}
-	}
-	return latest
-}
-
-// EnsureBinDir ensures the bin directory exists and is in the PATH
-func (ts *ToolService) EnsureBinDir() error {
-	binDir := fsutil.ExpandHome(ts.config.BinDir)
-	return fsutil.EnsureDir(binDir)
-}
-
 // endregion
-// region Tool Activation
+// region Tool Activate
 //
 
 // ActivateTools activates multiple tools
@@ -168,9 +168,13 @@ func (ts *ToolService) ActivateTools(useTools []string, global bool) (script str
 		return "", err1
 	}
 
-	var sb strings.Builder
-	var addPaths []string
-	var toolsMap, setEnvs map[string]string
+	var (
+		sb strings.Builder
+
+		addPaths []string
+		toolsMap = make(map[string]string)
+		setEnvs  = make(map[string]string)
+	)
 
 	for _, arg := range useTools {
 		// Parse name:version
@@ -187,9 +191,14 @@ func (ts *ToolService) ActivateTools(useTools []string, global bool) (script str
 
 		toolsMap[spec.Name] = spec.Version
 		// Add to PATH and ENVs
-		addPaths = append(addPaths, localSdk.BinDirPath())
+		addPaths = append(addPaths, shell.NormalizePath(localSdk.BinDirPath()))
 		if len(localSdk.Config.ActiveEnv) > 0 {
-			setEnvs = maputil.MergeStrMap(localSdk.Config.ActiveEnv, setEnvs)
+			varMap := map[string]string{
+				"name":        spec.Name,
+				"version":     spec.Version,
+				"install_dir": localSdk.InstallDir,
+			}
+			setEnvs = maputil.MergeStrMap(localSdk.Config.RenderActiveEnv(varMap), setEnvs)
 		}
 
 		if global {
@@ -245,7 +254,7 @@ func (ts *ToolService) checkActivateTool(spec *tools.VersionSpec, global bool) (
 }
 
 // endregion
-// region Tool Deactivation
+// region Tool Deactivate
 //
 
 // DeactivateTools deactivates multiple tools at once

@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/inhere/kite-go/internal/util"
+	"github.com/gookit/goutil/fsutil"
 	"github.com/inhere/kite-go/pkg/xenv/models"
 )
 
@@ -40,7 +40,7 @@ func (u *Uninstaller) Uninstall(toolConfig *models.ToolChain, installed *models.
 
 // removeShims removes the symlinks (shims) for the tool executables
 func (u *Uninstaller) removeShims(tool *models.ToolChain) error {
-	binDir := util.ExpandHome(u.config.BinDir)
+	binDir := fsutil.ExpandHome(u.config.BinDir)
 
 	// For each binary path of the tool, remove the shim
 	for _, binPath := range tool.BinPaths {

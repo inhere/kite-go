@@ -48,11 +48,11 @@ func (sg *XenvScriptGenerator) GenSetEnv(name, value string) string {
 	name = strings.ToUpper(name)
 	switch sg.shell {
 	case Bash, Zsh:
-		return fmt.Sprintf(`export %s=%s`, name, value)
+		return fmt.Sprintf("export %s='%s'\n", name, value)
 	case Pwsh:
-		return fmt.Sprintf(`$Env:%s = "%s"`, name, value)
+		return fmt.Sprintf("$Env:%s = '%s'\n", name, value)
 	default:
-		return fmt.Sprintf(`os.setenv("%s", "%s")`, name, value)
+		return fmt.Sprintf("os.setenv('%s', '%s')\n", name, value)
 	}
 }
 
@@ -70,11 +70,11 @@ func (sg *XenvScriptGenerator) GenUnsetEnv(name string) string {
 	name = strings.ToUpper(name)
 	switch sg.shell {
 	case Bash, Zsh:
-		return fmt.Sprintf(`unset %s`, name)
+		return fmt.Sprintf("unset %s\n", name)
 	case Pwsh:
-		return fmt.Sprintf(`Remove-Item Env:%s`, name)
+		return fmt.Sprintf("Remove-Item Env:%s\n", name)
 	default:
-		return fmt.Sprintf(`os.unsetenv("%s")`, name)
+		return fmt.Sprintf("os.unsetenv('%s')\n", name)
 	}
 }
 
@@ -82,11 +82,11 @@ func (sg *XenvScriptGenerator) GenUnsetEnv(name string) string {
 func (sg *XenvScriptGenerator) GenAddPath(path string) string {
 	switch sg.shell {
 	case Bash, Zsh:
-		return fmt.Sprintf(`export PATH=%s:$PATH`, path)
+		return fmt.Sprintf("export PATH=%s:$PATH\n", path)
 	case Pwsh:
-		return fmt.Sprintf(`$Env:PATH = "%s;$Env:PATH"`, path)
+		return fmt.Sprintf("$Env:PATH = \"%s;$Env:PATH\"\n", path)
 	default:
-		return fmt.Sprintf(`os.setenv("PATH", "%s;%%PATH%%")\n`, path)
+		return fmt.Sprintf("os.setenv('PATH', '%s;%%PATH%%')\n", path)
 	}
 }
 
@@ -95,11 +95,12 @@ func (sg *XenvScriptGenerator) GenAddPaths(paths []string) string {
 	newPath := JoinPaths(paths)
 	switch sg.shell {
 	case Bash, Zsh:
-		return fmt.Sprintf(`export PATH=%s:$PATH`, newPath)
+		return fmt.Sprintf("export PATH=%s:$PATH\n", newPath)
 	case Pwsh:
-		return fmt.Sprintf(`$Env:PATH = "%s;$Env:PATH"`, newPath)
+		// pwsh "" 支持变量插值和表达式求值
+		return fmt.Sprintf("$Env:PATH = \"%s;$Env:PATH\"\n", newPath)
 	default:
-		return fmt.Sprintf(`os.setenv("PATH", "%s;%%PATH%%")\n`, newPath)
+		return fmt.Sprintf("os.setenv('PATH', '%s;%%PATH%%')\n", newPath)
 	}
 }
 
@@ -120,11 +121,11 @@ func (sg *XenvScriptGenerator) GenSetPath(paths []string) string {
 	newPath := JoinPaths(paths)
 	switch sg.shell {
 	case Bash, Zsh:
-		return fmt.Sprintf(`export PATH=%s`, newPath)
+		return fmt.Sprintf("export PATH=%s\n", newPath)
 	case Pwsh:
-		return fmt.Sprintf(`$Env:PATH = "%s"`, newPath)
+		return fmt.Sprintf("$Env:PATH = '%s'\n", newPath)
 	default:
-		return fmt.Sprintf(`os.setenv("PATH", "%s")\n`, newPath)
+		return fmt.Sprintf("os.setenv('PATH', '%s')\n", newPath)
 	}
 }
 

@@ -2,7 +2,9 @@ package shell
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 
@@ -24,7 +26,10 @@ func InHookShell() bool { return xenvHookShell != "" }
 
 // IsHookWinBash checks if the current hook shell is Windows Bash(eg: git-bash)
 func IsHookWinBash() bool {
-	return runtime.GOOS == "windows" && xenvHookShell == "bash"
+	if runtime.GOOS == "windows" {
+		return xenvHookShell == "bash" || strings.Contains(os.Getenv("SHELL"), "bash")
+	}
+	return false
 }
 
 // ClinkIsInstalled checks if Clink is installed on Windows
@@ -56,9 +61,19 @@ func JoinPaths(paths []string) string {
 	return strings.Join(paths, PathSeparator())
 }
 
+var winDiskPrefix = regexp.MustCompile(`^[a-zA-Z]:`)
+
 // NormalizePath normalizes a path by expanding home directory and cleaning it
 func NormalizePath(path string) string {
-	return filepath.Clean(fsutil.ExpandPath(path))
+	fmtPath := filepath.Clean(fsutil.ExpandPath(path))
+
+	if IsHookWinBash() {
+		// Windows Git-Bash: 需要转换为 Unix 路径，同时需要处理盘符 eg: D:/ 转换为 /d/
+		fmtPath = winDiskPrefix.ReplaceAllStringFunc(fsutil.UnixPath(fmtPath), func(sub string) string {
+			return "/" + strings.ToLower(string(sub[0]))
+		})
+	}
+	return fmtPath
 }
 
 // OutputScript outputs shell scripts to stdout

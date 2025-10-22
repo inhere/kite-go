@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/gookit/goutil/maputil"
+	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/x/ccolor"
 	"github.com/inhere/kite-go/pkg/xenv/manager"
 	"github.com/inhere/kite-go/pkg/xenv/models"
@@ -44,6 +45,12 @@ func (s *EnvService) SetEnv(name, value string, global bool) (script string, err
 	if err1 != nil {
 		return "", err1
 	}
+
+	name = strings.ToUpper(name)
+	if !strutil.IsVarName(name) {
+		return "", fmt.Errorf("invalid environment variable name: %s", name)
+	}
+
 	// 在shell hook环境中, 生成 ENV set 脚本
 	if gen != nil {
 		script = gen.GenSetEnv(name, value)
@@ -76,10 +83,16 @@ func (s *EnvService) UnsetEnvs(names []string, global bool) (script string, err 
 	s.state.SetBatchMode(true)
 	defer s.state.SetBatchMode(false)
 	for _, name := range names {
+		name = strings.ToUpper(name)
+		if val := os.Getenv(name); val == "" {
+			ccolor.Warnf("ENV var not found: %s\n", name)
+		}
+
 		// 在shell hook环境中, 生成ENV set脚本
 		if gen != nil {
 			sb.WriteString(gen.GenUnsetEnv(name))
 		}
+
 		err = s.state.UnsetEnv(name, global)
 		if err != nil {
 			return "", err

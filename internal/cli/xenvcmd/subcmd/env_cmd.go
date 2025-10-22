@@ -59,9 +59,9 @@ func EnvSetCmd() *gcli.Command {
 
 			// Save configuration if global
 			if GlobalFlag {
-				fmt.Printf("Set %s=%s globally\n", name, value)
+				ccolor.Infof("Set %s=%s globally\n", name, value)
 			} else {
-				fmt.Printf("Set %s=%s for current session\n", name, value)
+				ccolor.Infof("Set %s=%s for current session\n", name, value)
 			}
 
 			if script != "" {
@@ -99,9 +99,9 @@ func EnvUnsetCmd() *gcli.Command {
 
 			// Save configuration if global
 			if GlobalFlag {
-				fmt.Printf("Unset %s globally\n", names)
+				ccolor.Infof("Unset %s globally\n", names)
 			} else {
-				fmt.Printf("Unset %s for current session\n", names)
+				ccolor.Infof("Unset %s for current session\n", names)
 			}
 
 			if script != "" {
