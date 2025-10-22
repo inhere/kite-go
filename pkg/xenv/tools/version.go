@@ -14,6 +14,7 @@ var (
 type VersionSpec struct {
 	Name    string // SDK名称
 	Version string // 版本规格
+	// Global bool    // scope: global
 }
 
 // ID 返回版本规格的ID name:version
@@ -81,7 +82,7 @@ func IsValidSDKName(name string) bool {
 		if !((r >= 'a' && r <= 'z') ||
 			(r >= 'A' && r <= 'Z') ||
 			(r >= '0' && r <= '9') ||
-			 r == '_' || r == '-') {
+			r == '_' || r == '-') {
 			return false
 		}
 	}

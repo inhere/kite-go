@@ -48,7 +48,7 @@ func (t *ToolChain) RenderActiveEnv(varMap map[string]string) map[string]string 
 	realEnvMap := make(map[string]string)
 	for k, val := range t.ActiveEnv {
 		if strings.Contains(val, "{") {
-			val = strutil.Replaces(val, varMap)
+			val = strutil.ReplaceVars(val, varMap)
 		}
 		realEnvMap[k] = val
 	}
@@ -72,6 +72,7 @@ type SimpleTool struct {
 type VersionSpec struct {
 	Name    string // SDK名称
 	Version string // 版本规格
+	Global bool    // scope: global
 }
 
 // ID 返回版本规格的ID name:version

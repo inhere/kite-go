@@ -40,7 +40,7 @@ func (sg *XenvScriptGenerator) generateCmdScripts() string {
 //
 // 使用:
 //
-// 在 C:\Users\{username}\AppData\Local\clink 创建 cmdrc.lua 文件。
+// 在 C:\Users\{username}\AppData\Local\clink 创建 profile.lua 文件。
 // 添加内容：
 //
 //	load(io.popen('kite xenv shell --type cmd'):read("*a"))()

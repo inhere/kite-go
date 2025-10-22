@@ -55,14 +55,7 @@ func (as *ActivityState) DelToolsWithEnvsPaths(toolNames, envNames, paths []stri
 		}
 	}
 
-	var newPaths []string
-	for _, path := range as.ActivePaths {
-		if arrutil.StringsContains(paths, path) {
-			continue
-		}
-		newPaths = append(newPaths, path)
-	}
-	as.ActivePaths = newPaths
+	as.RemovePaths(paths)
 }
 
 // AddActivePath 添加激活路径, 会先检测是否已存在
@@ -74,4 +67,29 @@ func (as *ActivityState) AddActivePath(path string) {
 		}
 	}
 	as.ActivePaths = append(as.ActivePaths, path)
+}
+
+// RemovePaths 删除激活路径
+func (as *ActivityState) RemovePaths(paths []string) {
+	if len(paths) == 0 {
+		return
+	}
+
+	var newPaths []string
+	for _, path := range as.ActivePaths {
+		if arrutil.StringsContains(paths, path) {
+			continue
+		}
+		newPaths = append(newPaths, path)
+	}
+	as.ActivePaths = newPaths
+}
+
+// RemoveTool 删除激活的工具
+func (as *ActivityState) RemoveTool(name string) bool {
+	_, exists := as.ActiveTools[name]
+	if exists {
+		delete(as.ActiveTools, name)
+	}
+	return exists
 }

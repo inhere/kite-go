@@ -3,6 +3,8 @@ package models
 import (
 	"sort"
 	"time"
+
+	"github.com/inhere/kite-go/pkg/util"
 )
 
 // ToolsLocal 代表本地已安装的工具链信息. 会保存到 ~/.xenv/tools.local.json
@@ -85,8 +87,27 @@ type InstalledTool struct {
 
 // BinDirPath 返回可执行文件目录的绝对路径
 func (t *InstalledTool) BinDirPath() string {
+	return util.NormalizePath(t.binDirPath())
+}
+
+// 返回可执行文件目录的绝对路径
+func (t *InstalledTool) binDirPath() string {
 	if t.BinDir == "" {
 		return t.InstallDir + "/bin"
 	}
 	return t.InstallDir + "/" + t.BinDir
+}
+
+// RenderActiveEnv 渲染工具链的激活环境变量
+func (t *InstalledTool) RenderActiveEnv() map[string]string {
+	if len(t.Config.ActiveEnv) == 0 {
+		return nil
+	}
+
+	varMap := map[string]string{
+		"name":        t.Name,
+		"version":     t.Version,
+		"install_dir": util.NormalizePath(t.InstallDir),
+	}
+	return t.Config.RenderActiveEnv(varMap)
 }

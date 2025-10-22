@@ -34,6 +34,30 @@ func (sg *XenvScriptGenerator) GenHookScripts() (string, error) {
 	}
 }
 
+// InstallHookScripts 安装 Shell Hook 脚本到配置文件(eg: .bashrc, .zshrc)
+func (sg *XenvScriptGenerator) InstallHookScripts(script string) error {
+	switch sg.shell {
+	case Bash:
+	case Zsh:
+	case Pwsh:
+		// echo $PROFILE.CurrentUserAllHosts
+		// v1: path-to-users\Documents\WindowsPowerShell\profile.ps1
+		// v7: path-to-users\Documents\PowerShell\profile.ps1
+	default:
+		// C:\Users\{username}\AppData\Local\clink\ 创建 profile.lua
+	}
+	return nil
+}
+
+// installScriptsToProfile 安装 Shell Hook 脚本到配置文件(eg: .bashrc, .zshrc)
+//  - 检查文件是否存在，如果不存在则创建一个
+//  - 检查文件内容是否包含 xenv 脚本，如果存在则返回
+//  - 如果不存在内容则添加到文件的末尾
+func (sg *XenvScriptGenerator) installScriptsToProfile(script, profile string) error {
+
+	return nil
+}
+
 // GenSetEnvs 批量生成环境变量设置脚本代码
 func (sg *XenvScriptGenerator) GenSetEnvs(envs map[string]string) string {
 	var sb strings.Builder
@@ -112,6 +136,23 @@ func (sg *XenvScriptGenerator) GenRemovePaths(paths []string) (script string, no
 	_, newPaths, notFounds = DiffRemovePaths(osPathList, paths)
 	if len(newPaths) > 0 {
 		script = sg.GenSetPath(newPaths)
+	}
+	return
+}
+
+// GenRemThenAddPaths 生成批量删除后再新增的 PATH 的脚本代码
+func (sg *XenvScriptGenerator) GenRemThenAddPaths(rmPaths, addPaths []string) (script string) {
+	var newPaths []string
+	osPathList := SplitPath(os.Getenv("PATH"))
+
+	_, newPaths, _ = DiffRemovePaths(osPathList, rmPaths)
+	if len(newPaths) > 0 {
+		if len(addPaths) > 0 {
+			newPaths = append(addPaths, newPaths...)
+		}
+		script = sg.GenSetPath(newPaths)
+	} else if len(addPaths) > 0 {
+		script = sg.GenAddPaths(addPaths)
 	}
 	return
 }

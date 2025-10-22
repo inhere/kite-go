@@ -13,11 +13,11 @@ import (
 // Debug run:
 //	KITE_VERBOSE=debug go run ./cmd/kite <CMD>
 //  // Windows PowerShell
-//	$env:KITE_VERBOSE="debug" go run ./cmd/kite <CMD>
+//	$env:KITE_VERBOSE="debug"; go run ./cmd/kite <CMD>
 //
 // Install:
 //
-//	go install ./cmd/kite
+//	make install-dev
 func main() {
 	// boot and run app
 	bootstrap.MustRun(app.App())

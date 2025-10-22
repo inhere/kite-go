@@ -5,11 +5,9 @@ import (
 	"strings"
 
 	"github.com/gookit/goutil/errorx"
-	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/x/ccolor"
 	"github.com/inhere/kite-go/pkg/xenv/manager"
 	"github.com/inhere/kite-go/pkg/xenv/models"
-	"github.com/inhere/kite-go/pkg/xenv/shell"
 	"github.com/inhere/kite-go/pkg/xenv/tools"
 )
 
@@ -168,13 +166,7 @@ func (ts *ToolService) ActivateTools(useTools []string, global bool) (script str
 		return "", err1
 	}
 
-	var (
-		sb strings.Builder
-
-		addPaths []string
-		toolsMap = make(map[string]string)
-		setEnvs  = make(map[string]string)
-	)
+	actParams := models.NewActivateToolsParams()
 
 	for _, arg := range useTools {
 		// Parse name:version
@@ -184,21 +176,31 @@ func (ts *ToolService) ActivateTools(useTools []string, global bool) (script str
 		}
 
 		// check activate the tool
-		localSdk, err3 := ts.checkActivateTool(spec, global)
+		localSdk, err3 := ts.checkActivateTool(spec)
 		if err3 != nil {
 			return "", fmt.Errorf("failed to activate tool %q: %w", spec, err3)
 		}
 
-		toolsMap[spec.Name] = spec.Version
-		// Add to PATH and ENVs
-		addPaths = append(addPaths, shell.NormalizePath(localSdk.BinDirPath()))
-		if len(localSdk.Config.ActiveEnv) > 0 {
-			varMap := map[string]string{
-				"name":        spec.Name,
-				"version":     spec.Version,
-				"install_dir": localSdk.InstallDir,
+		// 如果sdk已经激活过，先要删除之前的激活版本设置的 ENV, PATH
+		oldActiveVer := ts.state.GetActiveTool(spec.Name, global)
+		if oldActiveVer != "" {
+			if oldActiveVer == localSdk.Version {
+				ccolor.Warnf("The tool %s is already activated, please deactivate it first.\n", localSdk.ID)
+				continue
 			}
-			setEnvs = maputil.MergeStrMap(localSdk.Config.RenderActiveEnv(varMap), setEnvs)
+
+			oldSdk := ts.toolMgr.FindSdkByID(spec.Name + ":" + oldActiveVer)
+			if oldSdk != nil {
+				actParams.AddRemPath(oldSdk.BinDirPath())
+			}
+		}
+
+		// 存储激活的真实版本
+		actParams.AddTool(spec.Name, localSdk.Version)
+		// Add to PATH and ENVs
+		actParams.AddPath(localSdk.BinDirPath())
+		if len(localSdk.Config.ActiveEnv) > 0 {
+			actParams.AddSetEnvs(localSdk.RenderActiveEnv())
 		}
 
 		if global {
@@ -209,15 +211,19 @@ func (ts *ToolService) ActivateTools(useTools []string, global bool) (script str
 	}
 
 	// 在shell hook环境中, 生成ENV set脚本
+	var sb strings.Builder
 	if gen != nil {
-		sb.WriteString(gen.GenAddPaths(addPaths))
-		if len(setEnvs) > 0 {
-			sb.WriteString(gen.GenSetEnvs(setEnvs))
+		script1 := gen.GenRemThenAddPaths(actParams.RemPaths, actParams.AddPaths)
+		sb.WriteString(script1)
+		if len(actParams.AddEnvs) > 0 {
+			sb.WriteString(gen.GenSetEnvs(actParams.AddEnvs))
 		}
+	} else {
+		ccolor.Warnln("TIP: The operation will not take effect, please setup the SHELL HOOK first.")
 	}
 
 	// Update the activity state
-	err = ts.state.UseToolsWithEnvsPaths(toolsMap, setEnvs, addPaths, global)
+	err = ts.state.UseToolsWithParams(actParams, global)
 	if err != nil {
 		return "", err
 	}
@@ -230,7 +236,7 @@ func (ts *ToolService) ActivateTools(useTools []string, global bool) (script str
 }
 
 // check for activates a specific tool version
-func (ts *ToolService) checkActivateTool(spec *tools.VersionSpec, global bool) (*models.InstalledTool, error) {
+func (ts *ToolService) checkActivateTool(spec *tools.VersionSpec) (*models.InstalledTool, error) {
 	// Check if the tool is definition
 	toolCfg := ts.config.FindToolConfig(spec.Name)
 	if toolCfg == nil {
@@ -301,7 +307,9 @@ func (ts *ToolService) DeactivateTools(deTools []string, global bool) (script st
 	// 在shell hook环境中, 生成ENV remove脚本
 	if gen != nil && len(delPaths) > 0 {
 		script1, notFounds := gen.GenRemovePaths(delPaths)
-		ccolor.Warnf("WARN: %d paths not found in PATH: %v\n", len(notFounds), notFounds)
+		if len(notFounds) > 0 {
+			ccolor.Warnf("WARN: %d paths not found in PATH: %v\n", len(notFounds), notFounds)
+		}
 
 		sb.WriteString(script1)
 		if len(delEnvs) > 0 {
@@ -332,7 +340,7 @@ func (ts *ToolService) checkDeactivate(spec *tools.VersionSpec, global bool) (*m
 	localSdks := ts.toolMgr.ListSDKVersions(toolCfg.Name)
 	if len(localSdks) == 0 {
 		// 工具未安装，但仍需从状态中移除
-		err := ts.state.DeactivateTool(spec.Name, spec.Version, global)
+		err := ts.state.DeactivateTool(spec.Name, global)
 		return nil, err
 	}
 
@@ -340,7 +348,7 @@ func (ts *ToolService) checkDeactivate(spec *tools.VersionSpec, global bool) (*m
 	localSdk := ts.toolMgr.MatchSdkByVersion(localSdks, spec.Version)
 	// 版本不匹配，但仍需从状态中移除
 	if localSdk == nil {
-		err := ts.state.DeactivateTool(spec.Name, spec.Version, global)
+		err := ts.state.DeactivateTool(spec.Name, global)
 		return nil, err
 	}
 

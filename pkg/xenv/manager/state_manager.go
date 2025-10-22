@@ -62,6 +62,27 @@ func (m *StateManager) SetBatchMode(enabled bool) {
 // region Tool state management
 //
 
+// UseToolsWithParams activates multiple tools with params
+func (m *StateManager) UseToolsWithParams(ps *models.ActivateToolsParams, global bool) error {
+	if err := m.Init(); err != nil {
+		return err
+	}
+
+	if global {
+		m.global.RemovePaths(ps.RemPaths)
+		m.global.AddToolsWithEnvsPaths(ps.AddTools, ps.AddEnvs, ps.AddPaths)
+		// Save the global state
+		if !m.batchMode {
+			return m.SaveGlobalState()
+		}
+	} else {
+		m.session.RemovePaths(ps.RemPaths)
+		m.session.AddToolsWithEnvsPaths(ps.AddTools, ps.AddEnvs, ps.AddPaths)
+	}
+
+	return nil
+}
+
 // UseToolsWithEnvsPaths activates multiple tools and with envs, paths
 func (m *StateManager) UseToolsWithEnvsPaths(tools, envs map[string]string, paths []string, global bool) error {
 	if err := m.Init(); err != nil {
@@ -118,33 +139,25 @@ func (m *StateManager) DelToolsWithEnvsPaths(tools, envs, paths []string, global
 }
 
 // DeactivateTool deactivates a specific tool version
-func (m *StateManager) DeactivateTool(name, version string, global bool) error {
+func (m *StateManager) DeactivateTool(name string, global bool) error {
 	if err := m.Init(); err != nil {
 		return err
 	}
 
 	if global {
-		// Check if the tool is currently active
-		currentVersion, exists := m.global.ActiveTools[name]
-		if !exists || currentVersion != version {
-			return fmt.Errorf("tool %s:%s is not currently active", name, version)
+		if m.global.RemoveTool(name) {
+			// Save the global state
+			if !m.batchMode {
+				return m.SaveGlobalState()
+			}
 		}
+		return fmt.Errorf("tool %q was never activated in global", name)
+	}
 
-		delete(m.global.ActiveTools, name)
-		// Save the global state
-		if !m.batchMode {
-			return m.SaveGlobalState()
-		}
+	if m.session.RemoveTool(name) {
 		return nil
 	}
-
-	// Check if the tool is currently active
-	currentVersion, exists := m.session.ActiveTools[name]
-	if !exists || currentVersion != version {
-		return fmt.Errorf("tool %s:%s is not currently active", name, version)
-	}
-	delete(m.session.ActiveTools, name)
-	return nil
+	return fmt.Errorf("tool %q was never activated in session", name)
 }
 
 // endregion
@@ -354,6 +367,10 @@ func (m *StateManager) SaveGlobalState() error {
 // region Helper methods
 //
 
+func (m *StateManager) requireInit() {
+	goutil.PanicErr(m.Init())
+}
+
 // Global returns the global activity state
 func (m *StateManager) Global() *models.ActivityState {
 	return m.global
@@ -364,6 +381,10 @@ func (m *StateManager) Session() *models.ActivityState {
 	return m.session
 }
 
-func (m *StateManager) requireInit() {
-	goutil.PanicErr(m.Init())
+// GetActiveTool returns the active tool version for a given name
+func (m *StateManager) GetActiveTool(name string, global bool) string {
+	if global {
+		return m.global.ActiveTools[name]
+	}
+	return m.session.ActiveTools[name]
 }

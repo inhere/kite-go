@@ -104,13 +104,12 @@ func (i *Installer) downloadAndExtract(toolChain *models.ToolChain, version stri
 func (i *Installer) formatURL(urlOrPath, version string) string {
 	downExt := i.config.DownloadExt[runtime.GOOS]
 	varMap := map[string]string{
-		"{os}":           runtime.GOOS,
-		"{arch}":         runtime.GOARCH,
-		"{version}":      version,
-		"{download_ext}": downExt,
+		"os":           runtime.GOOS,
+		"arch":         runtime.GOARCH,
+		"version":      version,
+		"download_ext": downExt,
 	}
-
-	return strutil.Replaces(urlOrPath, varMap)
+	return strutil.ReplaceVars(urlOrPath, varMap)
 }
 
 // extractFile extracts an archive file to the destination directory

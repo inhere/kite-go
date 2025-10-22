@@ -48,9 +48,14 @@ func (sg *XenvScriptGenerator) generatePwshScripts() string {
 
 // PwshHookTemplate PowerShell hook模板
 //
-// Config for pwsh:
+// PS version:
+//  echo $PSVersionTable.PSVersion.ToString()
 //
-//	# write to profile. (find by: echo $Profile)
+// Config on pwsh:
+//
+//	# Write to profile.
+//	 find by: echo $PROFILE.CurrentUserAllHosts
+//
 //	# Method 1:
 //	Invoke-Expression (&kite xenv shell --type pwsh)
 //

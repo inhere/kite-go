@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/goutil/x/ccolor"
 	"github.com/inhere/kite-go/pkg/xenv"
 )
 
@@ -126,10 +127,14 @@ func listEnvPaths() error {
 	}
 
 	// List PATH entries
-	paths := envSvc.ListPaths()
-	fmt.Println("PATH Entries:")
-	for i, path := range paths {
-		fmt.Printf("  %d. %s (%s)\n", i+1, path.Path, path.Scope)
+	ccolor.Infoln("Global PATH Entries:")
+	for i, path := range envSvc.GlobalState().ActivePaths {
+		fmt.Printf("  %d. %s\n", i+1, path)
+	}
+
+	ccolor.Infoln("Session PATH Entries:")
+	for i, path := range envSvc.SessionState().ActivePaths {
+		fmt.Printf("  %d. %s\n", i+1, path)
 	}
 
 	return nil

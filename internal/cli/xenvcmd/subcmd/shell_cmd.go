@@ -15,6 +15,7 @@ import (
 
 var shellCmdOpts = struct {
 	Type gflag.EnumString
+	Install bool
 	Reload  bool
 }{
 	Type: cflag.NewEnumString("bash", "zsh", "pwsh"),
@@ -34,7 +35,7 @@ var ShellCmd = &gcli.Command{
   eval "$(kite xenv shell --type zsh)"
 
 <cyan>Config for Pwsh:</>
-  # write expr to profile. (find by: echo $Profile)
+  # write expr to profile. (find by: echo $PROFILE.CurrentUserAllHosts)
   # Method 1:
   Invoke-Expression (&kite xenv shell --type pwsh)
   # Method 2:
@@ -42,6 +43,7 @@ var ShellCmd = &gcli.Command{
 `,
 	Config: func(c *gcli.Command) {
 		c.BoolOpt(&shellCmdOpts.Reload, "reload", "r", false, "Reload the xenv shell script codes")
+		c.BoolOpt(&shellCmdOpts.Install, "install", "i", false, "Install the xenv hook script to profile")
 		c.VarOpt(&shellCmdOpts.Type, "type", "t", "Shell type (bash, zsh, pwsh)")
 	},
 	Func: func(c *gcli.Command, args []string) error {
@@ -67,10 +69,23 @@ var ShellCmd = &gcli.Command{
 
 		generator := shell.NewScriptGenerator(shellType, config.Config())
 		hookScript, err := generator.GenHookScripts()
-		if err == nil {
+		if err != nil {
+			return err
+		}
+
+		if shellCmdOpts.Install {
+			if shell.InHookShell() {
+				c.Infoln("The hook script is already installed in the current shell")
+				return nil
+			}
+
+			if err := generator.InstallHookScripts(hookScript); err != nil {
+				return err
+			}
+		} else {
 			fmt.Print(hookScript)
 		}
-		return err
+		return nil
 	},
 }
 

@@ -34,6 +34,14 @@ func (s *EnvService) IsSessionEnv() bool {
 	return shell.InHookShell()
 }
 
+func (s *EnvService) GlobalState() *models.ActivityState {
+	return s.state.Global()
+}
+
+func (s *EnvService) SessionState() *models.ActivityState {
+	return s.state.Session()
+}
+
 // endregion
 // region ENV management
 //
@@ -55,7 +63,7 @@ func (s *EnvService) SetEnv(name, value string, global bool) (script string, err
 	if gen != nil {
 		script = gen.GenSetEnv(name, value)
 	} else {
-		ccolor.Magentaln("TIP: NOT IN SHELL HOOK. Will not take effect in current shell")
+		ccolor.Warnln("TIP: The operation will not take effect, please setup the SHELL HOOK first.")
 	}
 
 	// TIP: 设置程序内部 ENV 没有意义
@@ -77,7 +85,7 @@ func (s *EnvService) UnsetEnvs(names []string, global bool) (script string, err 
 		return "", err1
 	}
 	if gen == nil {
-		ccolor.Magentaln("TIP: NOT IN SHELL HOOK. Will not take effect in current shell")
+		ccolor.Warnln("TIP: The operation will not take effect, please setup the SHELL HOOK first.")
 	}
 
 	s.state.SetBatchMode(true)
@@ -153,7 +161,7 @@ func (s *EnvService) AddPath(path string, global bool) (script string, err error
 	if gen != nil {
 		script = gen.GenAddPath(normalizedPath)
 	} else {
-		ccolor.Magentaln("TIP: NOT IN SHELL HOOK. Will not take effect in current shell")
+		ccolor.Warnln("TIP: The operation will not take effect, please setup the SHELL HOOK first.")
 	}
 
 	// Add to activity state
@@ -195,7 +203,7 @@ func (s *EnvService) RemovePath(path string, global bool) (script string, err er
 	if gen != nil {
 		script = gen.GenSetPath(newPaths)
 	} else {
-		ccolor.Magentaln("TIP: NOT IN SHELL HOOK. Will not take effect in current shell")
+		ccolor.Warnln("TIP: The operation will not take effect, please setup the SHELL HOOK first.")
 	}
 
 	// Remove from activity state

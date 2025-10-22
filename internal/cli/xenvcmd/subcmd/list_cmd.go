@@ -4,7 +4,11 @@ import (
 	"fmt"
 
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/gcli/v3/show"
+	"github.com/gookit/goutil/x/ccolor"
 	"github.com/inhere/kite-go/pkg/xenv"
+	"github.com/inhere/kite-go/pkg/xenv/models"
+	"github.com/inhere/kite-go/pkg/xenv/shell"
 )
 
 // ListCmd the xenv list command
@@ -64,30 +68,40 @@ func ListActivityCmd() *gcli.Command {
 	return &gcli.Command{
 		Name:    "activity",
 		Desc:   "List active tools and settings",
+		Aliases: []string{"act", "active"},
 		Func: func(c *gcli.Command, args []string) error {
 			// Load activity state
 			if err := xenv.State().Init(); err != nil {
 				return fmt.Errorf("failed to load activity state: %w", err)
 			}
 
-			globalState := xenv.State().Global()
-			fmt.Println("Active Name Tools:")
-			for name, version := range globalState.ActiveTools {
-				fmt.Printf("  %s:%s\n", name, version)
-			}
+			show.ATitle("Global State")
+			listActivity(xenv.State().Global())
 
-			fmt.Println("\nActive Environment Variables:")
-			for name, value := range globalState.ActiveEnv {
-				fmt.Printf("  %s=%s\n", name, value)
+			if shell.InHookShell() {
+				fmt.Println()
+				show.ATitle("Session State")
+				listActivity(xenv.State().Session())
 			}
-
-			fmt.Println("\nActive PATH Entries:")
-			for i, path := range globalState.ActivePaths {
-				fmt.Printf("  %d. %s\n", i+1, path)
-			}
-
 			return nil
 		},
+	}
+}
+
+func listActivity(state *models.ActivityState) {
+	ccolor.Cyanln("Active SDK Tools:")
+	for name, version := range state.ActiveTools {
+		ccolor.Printf("  <green>%s</> => %s\n", name, version)
+	}
+
+	ccolor.Cyanln("\nActive Environment Variables:")
+	for name, value := range state.ActiveEnv {
+		ccolor.Printf("  <green>%s</>=%s\n", name, value)
+	}
+
+	ccolor.Cyanln("\nActive PATH Entries:")
+	for i, path := range state.ActivePaths {
+		ccolor.Printf("  <green>%d</>. %s\n", i+1, path)
 	}
 }
 
