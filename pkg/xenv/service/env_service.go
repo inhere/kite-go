@@ -8,6 +8,7 @@ import (
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/x/ccolor"
+	"github.com/inhere/kite-go/pkg/util"
 	"github.com/inhere/kite-go/pkg/xenv/manager"
 	"github.com/inhere/kite-go/pkg/xenv/models"
 	"github.com/inhere/kite-go/pkg/xenv/shell"
@@ -130,7 +131,7 @@ func (s *EnvService) SessionEnv() map[string]string {
 
 // AddPath adds a path to the PATH environment variable
 func (s *EnvService) AddPath(path string, global bool) (script string, err error) {
-	normalizedPath := shell.NormalizePath(path)
+	normalizedPath := util.NormalizePath(path)
 
 	// Check if path exists
 	if _, err := os.Stat(normalizedPath); os.IsNotExist(err) {
@@ -139,7 +140,7 @@ func (s *EnvService) AddPath(path string, global bool) (script string, err error
 
 	// Add to session PATH
 	currentPath := os.Getenv("PATH")
-	pathList := shell.SplitPath(currentPath)
+	pathList := util.SplitPath(currentPath)
 
 	// Check if path already exists
 	for _, p := range pathList {
@@ -172,8 +173,8 @@ func (s *EnvService) AddPath(path string, global bool) (script string, err error
 // RemovePath removes a path from the PATH environment variable
 func (s *EnvService) RemovePath(path string, global bool) (script string, err error) {
 	// Normalize the path
-	normalizedPath := shell.NormalizePath(path)
-	pathList := shell.SplitPath(os.Getenv("PATH"))
+	normalizedPath := util.NormalizePath(path)
+	pathList := util.SplitPath(os.Getenv("PATH"))
 
 	found := false
 	var newPaths []string
@@ -236,7 +237,7 @@ func (s *EnvService) ListPaths() []models.PathEntry {
 
 // SearchPath searches for a path in PATH
 func (s *EnvService) SearchPath(path string) []string {
-	normalizedPath := shell.NormalizePath(path)
+	normalizedPath := util.NormalizePath(path)
 	var matches []string
 
 	// Search in active paths
@@ -248,7 +249,7 @@ func (s *EnvService) SearchPath(path string) []string {
 
 	// Also search in current system PATH
 	currentPath := os.Getenv("PATH")
-	pathList := shell.SplitPath(currentPath)
+	pathList := util.SplitPath(currentPath)
 	for _, p := range pathList {
 		if strings.Contains(p, normalizedPath) {
 			matches = append(matches, p)

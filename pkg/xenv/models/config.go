@@ -1,6 +1,7 @@
 package models
 
 // Configuration 代表用户的配置信息，包含工具管理设置、路径配置、环境激活状态等数据
+// TODO 将外部工具独立出去， xenv 只管理 ENV, PATH, SDK
 type Configuration struct {
 	// ID              string                  `json:"id"`
 	// tools 可执行文件链接目录 默认: ~/.local/bin
@@ -24,11 +25,11 @@ type Configuration struct {
 	// 	  darwin: tar.gz
 	DownloadExt map[string]string `json:"download_ext"`
 	DownloadDir   string            `json:"download_dir"` // 临时下载目录
-	// 可管理的工具链列表 TODO rename sdks
+	// 可管理的工具链列表
 	//  - sdks 和 tools 差异是：sdk 允许本地同时存在多个版本，tools 只允许一个版本
-	Tools []ToolChain `json:"sdks"`
-	// 配置的简单工具列表 TODO rename tools
-	SimpleTools []SimpleTool `json:"tools"`
+	SDKs []ToolChain `json:"sdks"`
+	// 配置的简单工具列表
+	Tools []SimpleTool `json:"tools"`
 	// internal fields
 	configFile string
 	configDir  string
@@ -38,7 +39,7 @@ type Configuration struct {
 func (c *Configuration) IsToolDefined(name string) bool {
 	// Check if the tool is installed
 	toolFound := false
-	for _, tool := range c.Tools {
+	for _, tool := range c.SDKs {
 		if tool.Name == name {
 			toolFound = true
 			break
@@ -49,7 +50,7 @@ func (c *Configuration) IsToolDefined(name string) bool {
 
 // FindToolConfig returns the tool configuration if it is defined
 func (c *Configuration) FindToolConfig(name string) *ToolChain {
-	for _, tool := range c.Tools {
+	for _, tool := range c.SDKs {
 		if tool.Name == name {
 			return &tool
 		}

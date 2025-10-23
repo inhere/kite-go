@@ -67,9 +67,9 @@ func (i *Importer) importFromZip(importPath string) error {
 				BinDir          string                                   `json:"bin_dir"`
 				InstallDir      string                                   `json:"install_dir"`
 				ShellHooksDir string `json:"shell_hooks_dir"`
-				Tools           []interface{}                           `json:"tools"` // Will be handled separately
-				GlobalEnv       map[string]map[string]interface{}       `json:"global_env"`
-				GlobalPaths     []interface{}                           `json:"global_paths"`
+				Tools       []any             `json:"tools"` // Will be handled separately
+				GlobalEnv   map[string]string `json:"global_env"`
+				GlobalPaths []string          `json:"global_paths"`
 			}
 
 			if err := json.Unmarshal(configData, &importedConfig); err != nil {

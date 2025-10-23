@@ -35,7 +35,7 @@ func (ts *ToolService) Register(name string, version string, url string, bin str
 
 // ListAll lists all tools
 func (ts *ToolService) ListAll(showAll bool) error {
-	cfgTools := ts.config.Tools
+	cfgTools := ts.config.SDKs
 	if len(cfgTools) == 0 {
 		fmt.Println("No tools for managed. see config: sdks, tools")
 		return nil
@@ -83,11 +83,11 @@ func (ts *ToolService) UpdateTool(name, version string) error {
 func (ts *ToolService) GetTool(name string) *models.ToolChain {
 	// Find the latest version of the tool
 	var latest *models.ToolChain
-	for i, tool := range ts.config.Tools {
+	for i, tool := range ts.config.SDKs {
 		if tool.Name == name {
 			if latest == nil {
 				// Simple version comparison - in real implementation, we'd use semver
-				latest = &ts.config.Tools[i]
+				latest = &ts.config.SDKs[i]
 			}
 		}
 	}

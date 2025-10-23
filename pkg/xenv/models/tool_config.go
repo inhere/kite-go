@@ -7,11 +7,12 @@ import (
 	"github.com/gookit/goutil/strutil"
 )
 
-// ToolChain SDK开发工具（如Go、Node.js等）配置，包含安装路径、别名等属性。
-//   - 只是工具信息配置，不含有特定的版本信息
+// ToolChain SDK 开发工具（如Go、Node.js等）配置，包含安装路径、别名等属性。
+//  - SDKToolConfig, ToolConfig
+//  - SDK信息配置，不含有特定的版本信息(支持多版本存在)
 type ToolChain struct {
-	Name  string `json:"name"`  // 工具名称，如 "go", "node"
-	Alias string `json:"alias"` // 工具别名列表，如 "golang" for go
+	Name  string `json:"name"`  // 工具名称，如 "go", "node", jdk
+	Alias string `json:"alias"` // 工具别名列表，如 "golang" for go, jdk for java
 	// 可选，下载URL模板 eg: "https://golang.org/dl/go{version}.{os}-{arch}.{download_ext}"
 	InstallURL string `json:"install_url"`
 	// 从远程下载不同OS平台的工具包的后缀格式
@@ -71,12 +72,17 @@ type SimpleTool struct {
 // VersionSpec 版本规格
 type VersionSpec struct {
 	Name    string // SDK名称
-	Version string // 版本规格
-	Global bool    // scope: global
+	Version string // 输入的版本 可以是 lts, latest
+	// 实际的版本号 eg: 1.21.1
+	RealVersion string
+	// Global bool    // scope: global
 }
 
 // ID 返回版本规格的ID name:version
 func (vs *VersionSpec) ID() string { return vs.String() }
+
+// RealID 返回版本规格的ID name:real_version
+func (vs *VersionSpec) RealID() string { return vs.Name + ":" + vs.RealVersion }
 
 // String 返回版本规格的字符串表示
 func (vs *VersionSpec) String() string {

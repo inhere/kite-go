@@ -98,7 +98,7 @@ func (m *ToolManager) IndexLocalTools() error {
 	m.localTools.SDKs = nil // 重新添加
 
 	// SDK tools
-	for _, toolCfg := range m.config.Tools {
+	for _, toolCfg := range m.config.SDKs {
 		ver2dirMap, err := tools.ListVersionDirs(toolCfg.InstallDir)
 		if err != nil {
 			return err

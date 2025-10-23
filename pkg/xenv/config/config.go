@@ -48,8 +48,8 @@ func NewConfigManager() *Manager {
 			GlobalEnv:   make(map[string]string),
 			GlobalPaths: []string{},
 			// tools
-			Tools:       []models.ToolChain{},
-			SimpleTools: []models.SimpleTool{},
+			SDKs:  []models.ToolChain{},
+			Tools: []models.SimpleTool{},
 			DownloadDir: DefaultInstallDir + "/cache",
 			DownloadExt: map[string]string{
 				"windows": "zip",

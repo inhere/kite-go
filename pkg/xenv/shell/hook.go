@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/gookit/goutil/maputil"
+	"github.com/inhere/kite-go/pkg/util"
 	"github.com/inhere/kite-go/pkg/xenv/models"
 )
 
@@ -116,7 +117,7 @@ func (sg *XenvScriptGenerator) GenAddPath(path string) string {
 
 // GenAddPaths 一次添加多个到 PATH 的脚本代码
 func (sg *XenvScriptGenerator) GenAddPaths(paths []string) string {
-	newPath := JoinPaths(paths)
+	newPath := util.JoinPaths(paths)
 	switch sg.shell {
 	case Bash, Zsh:
 		return fmt.Sprintf("export PATH=%s:$PATH\n", newPath)
@@ -131,7 +132,7 @@ func (sg *XenvScriptGenerator) GenAddPaths(paths []string) string {
 // GenRemovePaths 生成批量删除 PATH 的脚本代码
 func (sg *XenvScriptGenerator) GenRemovePaths(paths []string) (script string, notFounds []string) {
 	var newPaths []string
-	osPathList := SplitPath(os.Getenv("PATH"))
+	osPathList := util.SplitPath(os.Getenv("PATH"))
 
 	_, newPaths, notFounds = DiffRemovePaths(osPathList, paths)
 	if len(newPaths) > 0 {
@@ -143,7 +144,7 @@ func (sg *XenvScriptGenerator) GenRemovePaths(paths []string) (script string, no
 // GenRemThenAddPaths 生成批量删除后再新增的 PATH 的脚本代码
 func (sg *XenvScriptGenerator) GenRemThenAddPaths(rmPaths, addPaths []string) (script string) {
 	var newPaths []string
-	osPathList := SplitPath(os.Getenv("PATH"))
+	osPathList := util.SplitPath(os.Getenv("PATH"))
 
 	_, newPaths, _ = DiffRemovePaths(osPathList, rmPaths)
 	if len(newPaths) > 0 {
@@ -159,7 +160,7 @@ func (sg *XenvScriptGenerator) GenRemThenAddPaths(rmPaths, addPaths []string) (s
 
 // GenSetPath 设置 PATH 脚本代码
 func (sg *XenvScriptGenerator) GenSetPath(paths []string) string {
-	newPath := JoinPaths(paths)
+	newPath := util.JoinPaths(paths)
 	switch sg.shell {
 	case Bash, Zsh:
 		return fmt.Sprintf("export PATH=%s\n", newPath)

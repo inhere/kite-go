@@ -3,15 +3,12 @@ package shell
 import (
 	"fmt"
 	"os"
-	"path/filepath"
-	"regexp"
 	"runtime"
 	"strings"
 
 	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/envutil"
-	"github.com/gookit/goutil/fsutil"
-	"github.com/gookit/goutil/sysutil"
+	"github.com/inhere/kite-go/pkg/util"
 )
 
 // This file contains shell integration utilities
@@ -32,50 +29,6 @@ func IsHookWinBash() bool {
 	return false
 }
 
-// ClinkIsInstalled checks if Clink is installed on Windows
-func ClinkIsInstalled() bool {
-	if runtime.GOOS != "windows" {
-		return false
-	}
-	return sysutil.HasExecutable("clink.exe")
-}
-
-// PathSeparator returns the appropriate path separator for the current OS
-func PathSeparator() string {
-	if runtime.GOOS == "windows" {
-		if xenvHookShell == "bash" {
-			return ":"
-		}
-		return ";"
-	}
-	return ":"
-}
-
-// SplitPath splits a PATH string into individual paths
-func SplitPath(envPath string) []string {
-	return strings.Split(envPath, PathSeparator())
-}
-
-// JoinPaths joins multiple path entries into a single PATH string
-func JoinPaths(paths []string) string {
-	return strings.Join(paths, PathSeparator())
-}
-
-var winDiskPrefix = regexp.MustCompile(`^[a-zA-Z]:`)
-
-// NormalizePath normalizes a path by expanding home directory and cleaning it
-func NormalizePath(path string) string {
-	fmtPath := filepath.Clean(fsutil.ExpandPath(path))
-
-	if IsHookWinBash() {
-		// Windows Git-Bash: 需要转换为 Unix 路径，同时需要处理盘符 eg: D:/ 转换为 /d/
-		fmtPath = winDiskPrefix.ReplaceAllStringFunc(fsutil.UnixPath(fmtPath), func(sub string) string {
-			return "/" + strings.ToLower(string(sub[0]))
-		})
-	}
-	return fmtPath
-}
-
 // OutputScript outputs shell scripts to stdout
 func OutputScript(script string) {
 	if script != "" {
@@ -87,10 +40,10 @@ func OutputScript(script string) {
 func DiffRemovePaths(osPaths, rmPaths []string) (fmtRmPaths, newPaths, notFounds []string) {
 	// format input paths
 	for _, p := range rmPaths {
-		fmtRmPaths = append(fmtRmPaths, NormalizePath(p))
+		fmtRmPaths = append(fmtRmPaths, util.NormalizePath(p))
 	}
 
-	var founds map[string]bool
+	founds := make(map[string]bool)
 	// find and remove from session PATH
 	for _, p := range osPaths {
 		if arrutil.StringsContains(fmtRmPaths, p) {

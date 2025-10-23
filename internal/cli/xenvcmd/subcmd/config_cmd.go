@@ -42,7 +42,7 @@ var ConfigCmd = &gcli.Command{
 		fmt.Printf("  BinDir: %s\n", cfgMgr.Config.BinDir)
 		fmt.Printf("  InstallDir: %s\n", cfgMgr.Config.InstallDir)
 		fmt.Printf("  ShellHooksDir: %s\n", cfgMgr.Config.ShellHooksDir)
-		fmt.Printf("  Number of managed tools: %d\n", len(cfgMgr.Config.Tools))
+		fmt.Printf("  Number of managed SDKs: %d\n", len(cfgMgr.Config.SDKs))
 
 		return nil
 	},

@@ -3,6 +3,8 @@ package tools
 import (
 	"errors"
 	"strings"
+
+	"github.com/inhere/kite-go/pkg/xenv/models"
 )
 
 var (
@@ -11,22 +13,10 @@ var (
 )
 
 // VersionSpec 版本规格
-type VersionSpec struct {
-	Name    string // SDK名称
-	Version string // 版本规格
-	// Global bool    // scope: global
-}
-
-// ID 返回版本规格的ID name:version
-func (vs *VersionSpec) ID() string { return vs.String() }
-
-// String 返回版本规格的字符串表示
-func (vs *VersionSpec) String() string {
-	return vs.Name + ":" + vs.Version
-}
+type VersionSpec = models.VersionSpec
 
 // ParseVersionSpec 解析版本规格 format: "sdk" or "sdk:version" or "sdk@version"
-func ParseVersionSpec(spec string) (*VersionSpec, error) {
+func ParseVersionSpec(spec string) (*models.VersionSpec, error) {
 	if spec == "" {
 		return nil, ErrEmptyVersionSpec
 	}
@@ -54,7 +44,7 @@ func ParseVersionSpec(spec string) (*VersionSpec, error) {
 }
 
 // ParseMultipleVersionSpecs 解析多个版本规格
-func ParseMultipleVersionSpecs(specs []string) ([]*VersionSpec, error) {
+func ParseMultipleVersionSpecs(specs []string) ([]*models.VersionSpec, error) {
 	if len(specs) == 0 {
 		return nil, nil
 	}
