@@ -135,11 +135,11 @@ function Kite-Jump {
 
    # 执行命令并将输出存储在变量中
    $joinedPath = $Path -join " "
-   $output = Invoke-Expression "kite.exe tool jump get $joinedPath"
+   $output = Invoke-Expression "kite.exe tool jump get @Path"
 
    # 检查输出是否为空或无效
    if (-not $output) {
-       Write-Host "Error: No valid directory found for input '$joinedPath'."
+       Write-Host "Error: No valid directory found for input '$Path'."
        return
    }
 

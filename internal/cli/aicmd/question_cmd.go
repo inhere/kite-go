@@ -16,6 +16,8 @@ func NewQuestionCmd() *gcli.Command {
 	var askOpts = struct {
 		AICommonOptions
 		interactive bool
+		// 内置的角色名称 go-dev, java-dev, android-dev 等，选择后将会使用对应的提示词设置系统提示词
+		roleName string
 	}{}
 
 	return &gcli.Command{
@@ -44,6 +46,7 @@ func NewQuestionCmd() *gcli.Command {
 				},
 			}
 
+			c.Infof("Questioning AI Model(%s) ...\n", modelName)
 			resp, err := client.CreateChatCompletion(
 				context.Background(),
 				openai.ChatCompletionRequest{

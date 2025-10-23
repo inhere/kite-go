@@ -136,9 +136,10 @@ func (e *KiteExt) SetAliases(str string) {
 }
 
 // ExtManager kite cli 扩展管理器实现
+// TODO 重构：将外部工具独立出去 external, 这里只管理 kite extension
 type ExtManager struct {
 	Disable bool `json:"disable"`
-	// Metafile kite ext 注册记录文件
+	// Metafile kite ext 注册记录文件 default: $config/module/ext.json
 	Metafile string `json:"metafile"`
 	// SearchPaths 除了 env PATH 外，额外搜索ext文件的目录
 	SearchPaths []string `json:"search_paths"`
