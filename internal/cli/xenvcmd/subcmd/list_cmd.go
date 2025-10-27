@@ -90,17 +90,17 @@ func ListActivityCmd() *gcli.Command {
 
 func listActivity(state *models.ActivityState) {
 	ccolor.Cyanln("Active SDK Tools:")
-	for name, version := range state.ActiveTools {
+	for name, version := range state.SDKs {
 		ccolor.Printf("  <green>%s</> => %s\n", name, version)
 	}
 
 	ccolor.Cyanln("\nActive Environment Variables:")
-	for name, value := range state.ActiveEnv {
+	for name, value := range state.Envs {
 		ccolor.Printf("  <green>%s</>=%s\n", name, value)
 	}
 
 	ccolor.Cyanln("\nActive PATH Entries:")
-	for i, path := range state.ActivePaths {
+	for i, path := range state.Paths {
 		ccolor.Printf("  <green>%d</>. %s\n", i+1, path)
 	}
 }

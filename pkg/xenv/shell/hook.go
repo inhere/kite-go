@@ -21,8 +21,12 @@ func NewScriptGenerator(shellType ShellType, cfg *models.Configuration) *XenvScr
 	return &XenvScriptGenerator{cfg: cfg, shell: shellType}
 }
 
+// endregion
+// region Generate Init Scripts
+//
+
 // GenHookScripts 生成 Shell Hook 初始化脚本代码
-func (sg *XenvScriptGenerator) GenHookScripts() (string, error) {
+func (sg *XenvScriptGenerator) GenHookScripts(gState *models.ActivityState) (string, error) {
 	switch sg.shell {
 	case Bash:
 		return sg.generateBashScripts(), nil
@@ -35,8 +39,8 @@ func (sg *XenvScriptGenerator) GenHookScripts() (string, error) {
 	}
 }
 
-// InstallHookScripts 安装 Shell Hook 脚本到配置文件(eg: .bashrc, .zshrc)
-func (sg *XenvScriptGenerator) InstallHookScripts(script string) error {
+// InstallToProfile 安装 Shell Hook 脚本到配置文件(eg: .bashrc, .zshrc)
+func (sg *XenvScriptGenerator) InstallToProfile(pwshProfile string) error {
 	switch sg.shell {
 	case Bash:
 	case Zsh:
@@ -58,6 +62,10 @@ func (sg *XenvScriptGenerator) installScriptsToProfile(script, profile string) e
 
 	return nil
 }
+
+// endregion
+// region Generate Snippets
+//
 
 // GenSetEnvs 批量生成环境变量设置脚本代码
 func (sg *XenvScriptGenerator) GenSetEnvs(envs map[string]string) string {
@@ -170,6 +178,10 @@ func (sg *XenvScriptGenerator) GenSetPath(paths []string) string {
 		return fmt.Sprintf("os.setenv('PATH', '%s')\n", newPath)
 	}
 }
+
+// endregion
+// region Helper methods
+//
 
 func (sg *XenvScriptGenerator) addCommonForLinuxShell(sb *strings.Builder) {
 	// 添加全局环境变量

@@ -1,0 +1,28 @@
+#
+# 全局/项目级别xenv配置
+#
+
+# 默认启用全局sdk配置 ~/.xenv/.xenv.toml
+enable_global = true
+# 当前根目录 为 ture 时，不在继续向上查找
+is_root = true
+
+# Env Paths
+paths = [
+    # "~/.local/bin",
+]
+
+# Envs
+[envs]
+SOME_ENV001 = "some_value_001"
+
+# SDKs
+[sdks]
+go = "1.19"
+javo = "17"
+
+# Tools
+[tools]
+git = "*,true" # 任意版本，但必须存在
+fzf = "*"
+

@@ -17,9 +17,12 @@ type StateManager struct {
 	init      bool
 	batchMode bool
 	stateFile string
-	// global state data
-	global  *models.ActivityState
+	// session merged state data
 	session *models.ActivityState
+	// global state data
+	global *models.ActivityState
+	// directory states. 从当前目录开始，会向上级目录递归查找 .xenv.toml
+	dirStates map[string]*models.ActivityState
 }
 
 func stateFilePath() string {
@@ -28,7 +31,7 @@ func stateFilePath() string {
 		panic(err)
 	}
 
-	return filepath.Join(homeDir, ".config", "xenv", "activity.json")
+	return filepath.Join(homeDir, ".config", "xenv", "global.toml")
 }
 
 // NewStateManager creates a new StateManager
@@ -109,13 +112,13 @@ func (m *StateManager) ActivateTool(name, version string, global bool) error {
 	}
 
 	if global {
-		m.global.ActiveTools[name] = version
+		m.global.SDKs[name] = version
 		// Save the global state
 		if !m.batchMode {
 			return m.SaveGlobalState()
 		}
 	} else {
-		m.session.ActiveTools[name] = version
+		m.session.SDKs[name] = version
 	}
 	return nil
 }
@@ -172,7 +175,7 @@ func (m *StateManager) AddEnvs(envs map[string]string, global bool) error {
 
 	if global {
 		for name, value := range envs {
-			m.global.ActiveEnv[name] = value
+			m.global.Envs[name] = value
 		}
 		// Save the global state
 		if !m.batchMode {
@@ -182,7 +185,7 @@ func (m *StateManager) AddEnvs(envs map[string]string, global bool) error {
 	}
 
 	for name, value := range envs {
-		m.session.ActiveEnv[name] = value
+		m.session.Envs[name] = value
 	}
 	return nil
 }
@@ -195,14 +198,14 @@ func (m *StateManager) SetEnv(name, value string, global bool) error {
 
 	// Set global env
 	if global {
-		m.global.ActiveEnv[name] = value
+		m.global.Envs[name] = value
 		// Save the global state
 		if !m.batchMode {
 			return m.SaveGlobalState()
 		}
 	} else {
 		// Set session env
-		m.session.ActiveEnv[name] = value
+		m.session.Envs[name] = value
 	}
 	return nil
 }
@@ -216,9 +219,9 @@ func (m *StateManager) UnsetEnv(name string, global bool) error {
 	// Unset global env
 	if global {
 		// check exists
-		if _, exists := m.global.ActiveEnv[name]; exists {
+		if _, exists := m.global.Envs[name]; exists {
 			// return fmt.Errorf("environment variable %s is not currently set", name)
-			delete(m.global.ActiveEnv, name)
+			delete(m.global.Envs, name)
 			// Save the global state
 			if !m.batchMode {
 				return m.SaveGlobalState()
@@ -226,9 +229,9 @@ func (m *StateManager) UnsetEnv(name string, global bool) error {
 		}
 	} else {
 		// check exists
-		if _, exists := m.session.ActiveEnv[name]; exists {
+		if _, exists := m.session.Envs[name]; exists {
 			// return fmt.Errorf("environment variable %s is not currently set", name)
-			delete(m.session.ActiveEnv, name)
+			delete(m.session.Envs, name)
 		}
 	}
 	return nil
@@ -289,26 +292,26 @@ func (m *StateManager) RemovePath(path string, global bool) error {
 	}
 
 	if global {
-		newPaths := make([]string, 0, len(m.global.ActivePaths))
-		for _, p := range m.global.ActivePaths {
+		newPaths := make([]string, 0, len(m.global.Paths))
+		for _, p := range m.global.Paths {
 			if p != path {
 				newPaths = append(newPaths, p)
 			}
 		}
-		m.global.ActivePaths = newPaths
+		m.global.Paths = newPaths
 		// Save the global state
 		if !m.batchMode {
 			return m.SaveGlobalState()
 		}
 	}
 
-	newPaths := make([]string, 0, len(m.session.ActivePaths))
-	for _, p := range m.session.ActivePaths {
+	newPaths := make([]string, 0, len(m.session.Paths))
+	for _, p := range m.session.Paths {
 		if p != path {
 			newPaths = append(newPaths, p)
 		}
 	}
-	m.session.ActivePaths = newPaths
+	m.session.Paths = newPaths
 	return nil
 }
 
@@ -318,10 +321,10 @@ func (m *StateManager) RemovePath(path string, global bool) error {
 
 // LoadGlobalState loads the global state from file
 func (m *StateManager) LoadGlobalState() error {
+	m.global = models.NewActivityState("global")
+
 	// Check if file exists
 	if _, err := os.Stat(m.stateFile); os.IsNotExist(err) {
-		// Return default state if file doesn't exist
-		m.global = models.NewActivityState()
 		return nil
 	}
 
@@ -332,13 +335,7 @@ func (m *StateManager) LoadGlobalState() error {
 	}
 
 	// Unmarshal the JSON
-	var state models.ActivityState
-	if err1 := json.Unmarshal(data, &state); err1 != nil {
-		return err1
-	}
-
-	m.global = &state
-	return nil
+	return json.Unmarshal(data, m.global)
 }
 
 // SaveGlobalState saves the global state to file
@@ -384,7 +381,7 @@ func (m *StateManager) Session() *models.ActivityState {
 // GetActiveTool returns the active tool version for a given name
 func (m *StateManager) GetActiveTool(name string, global bool) string {
 	if global {
-		return m.global.ActiveTools[name]
+		return m.global.SDKs[name]
 	}
-	return m.session.ActiveTools[name]
+	return m.session.SDKs[name]
 }

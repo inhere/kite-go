@@ -35,6 +35,9 @@ const (
 	Zsh  ShellType = "zsh"
 	Pwsh ShellType = "pwsh"
 	Cmd  ShellType = "cmd"
+
+	// Unknown shell type
+	Unknown ShellType = "unknown"
 )
 
 // ScriptMark 输出的脚本必须添加标记，前面部分为message, 后面部分为脚本

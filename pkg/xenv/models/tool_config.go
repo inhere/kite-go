@@ -8,8 +8,8 @@ import (
 )
 
 // ToolChain SDK 开发工具（如Go、Node.js等）配置，包含安装路径、别名等属性。
-//  - SDKToolConfig, ToolConfig
-//  - SDK信息配置，不含有特定的版本信息(支持多版本存在)
+//   - SDKToolConfig, ToolConfig
+//   - SDK信息配置，不含有特定的版本信息(支持多版本存在)
 type ToolChain struct {
 	Name  string `json:"name"`  // 工具名称，如 "go", "node", jdk
 	Alias string `json:"alias"` // 工具别名列表，如 "golang" for go, jdk for java
@@ -31,8 +31,8 @@ type ToolChain struct {
 	//  - value 可用使用一些内部变量，如 {version}，{install_dir}
 	ActiveEnv map[string]string `json:"active_env"`
 	// 该工具的 bin 文件目录名称，不设置就是 install_dir/bin 目录
-	BinDir      string   `json:"bin_dir"`
-	BinPaths    []string `json:"bin_paths"`    // 该工具提供的二进制文件路径列表
+	BinDir   string   `json:"bin_dir"`
+	BinPaths []string `json:"bin_paths"` // 该工具提供的二进制文件路径列表
 	// 安装完成后执行的shell hook脚本
 	PostInstall []string `json:"post_install"`
 	// 自定义版本安装目录,不在统一目录下的版本 key: version, value: install_dir

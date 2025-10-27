@@ -44,6 +44,28 @@ func (s *EnvService) SessionState() *models.ActivityState {
 }
 
 // endregion
+// region Shell Hook Init
+//
+
+// WriteHookToProfile installs the hook script to the user's profile
+func (s *EnvService) WriteHookToProfile(st shell.ShellType, pwshProfile string) error {
+	gen := shell.NewScriptGenerator(st, s.config)
+	if shell.InHookShell() {
+		ccolor.Infoln("The hook script is already installed in the current shell")
+		return nil
+	}
+
+	return gen.InstallToProfile(pwshProfile)
+}
+
+// GenHookScripts generates Shell hook init scripts
+func (s *EnvService) GenHookScripts(st shell.ShellType) (string, error) {
+	gen := shell.NewScriptGenerator(st, s.config)
+
+	return gen.GenHookScripts(s.state.Global())
+}
+
+// endregion
 // region ENV management
 //
 
@@ -117,12 +139,12 @@ func (s *EnvService) UnsetEnvs(names []string, global bool) (script string, err 
 // GlobalEnv lists environment variables in the global scope
 func (s *EnvService) GlobalEnv() map[string]string {
 	// Return the global environment variables
-	return maputil.MergeStrMap(s.config.GlobalEnv, s.state.Global().ActiveEnv)
+	return maputil.MergeStrMap(s.config.GlobalEnv, s.state.Global().Envs)
 }
 
 // SessionEnv lists environment variables in the current session
 func (s *EnvService) SessionEnv() map[string]string {
-	return s.state.Session().ActiveEnv
+	return s.state.Session().Envs
 }
 
 // endregion
@@ -215,7 +237,7 @@ func (s *EnvService) RemovePath(path string, global bool) (script string, err er
 // ListPaths lists PATH entries
 func (s *EnvService) ListPaths() []models.PathEntry {
 	var paths []models.PathEntry
-	for _, entry := range s.state.Global().ActivePaths {
+	for _, entry := range s.state.Global().Paths {
 		paths = append(paths, models.PathEntry{
 			Path:     entry,
 			Priority: 0,
@@ -224,7 +246,7 @@ func (s *EnvService) ListPaths() []models.PathEntry {
 		})
 	}
 
-	for _, entry := range s.state.Session().ActivePaths {
+	for _, entry := range s.state.Session().Paths {
 		paths = append(paths, models.PathEntry{
 			Path:     entry,
 			Priority: 0,
@@ -241,7 +263,7 @@ func (s *EnvService) SearchPath(path string) []string {
 	var matches []string
 
 	// Search in active paths
-	for _, p := range s.state.Global().ActivePaths {
+	for _, p := range s.state.Global().Paths {
 		if strings.Contains(p, normalizedPath) {
 			matches = append(matches, p)
 		}

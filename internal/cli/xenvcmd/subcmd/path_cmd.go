@@ -128,12 +128,12 @@ func listEnvPaths() error {
 
 	// List PATH entries
 	ccolor.Infoln("Global PATH Entries:")
-	for i, path := range envSvc.GlobalState().ActivePaths {
+	for i, path := range envSvc.GlobalState().Paths {
 		fmt.Printf("  %d. %s\n", i+1, path)
 	}
 
 	ccolor.Infoln("Session PATH Entries:")
-	for i, path := range envSvc.SessionState().ActivePaths {
+	for i, path := range envSvc.SessionState().Paths {
 		fmt.Printf("  %d. %s\n", i+1, path)
 	}
 
