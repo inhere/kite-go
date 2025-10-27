@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
@@ -11,14 +12,15 @@ import (
 	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/netutil/httpreq"
+	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/greq"
 	"github.com/inhere/kite-go/internal/apputil"
 	"github.com/inhere/kite-go/internal/biz/cmdbiz"
 )
 
-var reqOpts = struct {
+var reqCmdOpts = struct {
 	cmdbiz.CommonOpts
-	// url  string
+	url string
 	data string
 	json bool
 
@@ -36,44 +38,61 @@ var SendRequestCmd = &gcli.Command{
 	Aliases: []string{"req", "curl"},
 	Desc:    "send http request like curl, ide-http-client",
 	Config: func(c *gcli.Command) {
-		reqOpts.BindProxyConfirm(c)
+		reqCmdOpts.BindProxyConfirm(c)
 
-		c.BoolOpt2(&reqOpts.json, "j,json", "set use json content type")
-		c.StrOpt2(&reqOpts.method, "method, m", "set the reqeust method, default is GET", gflag.WithDefault("GET"))
-		c.VarOpt2(&reqOpts.headers, "header, H", "set custom headers, eg: \"Content-Type: application/json\"")
-		c.VarOpt2(&reqOpts.query, "query, Q", "append set custom queries, eg: name=inhere")
-		c.StrOpt2(&reqOpts.data, "data, d", `set the request body data, eg: '{"name":"inhere"}'`)
+		c.BoolOpt2(&reqCmdOpts.json, "j,json", "set use json content type")
+		c.StrOpt2(&reqCmdOpts.method, "method, m", "set the request method, default is GET", gflag.WithDefault("GET"))
+		c.VarOpt2(&reqCmdOpts.headers, "header, H", `set custom headers, eg: "Content-Type: application/json"`)
+		c.VarOpt2(&reqCmdOpts.query, "query, Q", "append set custom queries, eg: name=inhere")
+		c.StrOpt2(&reqCmdOpts.data, "data, d", `set the request body data, eg: '{"name":"inhere"}'`)
+		c.StrOpt2(&reqCmdOpts.url, "url", "set the request url")
 
-		c.AddArg("url", "the url to send request", true)
+		c.AddArg("url", "set the request url, same of --url")
 	},
 	Func: func(c *gcli.Command, _ []string) error {
-		hc := greq.New()
-		hc.DefaultMethod(reqOpts.method)
+		apiUrl := strutil.OrElse(reqCmdOpts.url, c.Arg("url").String())
+		if apiUrl == "" {
+			return c.NewErr("the request url is required")
+		}
 
-		hc.BeforeSend = func(r *http.Request) {
+		// create client
+		hc := greq.New()
+
+		hc.BeforeSend = func(r *http.Request) error {
 			cliutil.Yellowln("REQUEST:")
 			cliutil.Greenf("%s %s\n\n", r.Method, r.URL.String())
 			if len(r.Header) > 0 {
 				fmt.Println(httpreq.HeaderToString(r.Header))
 			}
+			if reqCmdOpts.data != "" {
+				fmt.Println("\n")
+				fmt.Println(reqCmdOpts.data)
+			}
+			return nil
 		}
 
 		b := hc.Builder()
-		b.SetHeaderMap(reqOpts.headers.Data())
+		b.SetHeaderMap(reqCmdOpts.headers.Data())
 
-		if reqOpts.json {
+		if reqCmdOpts.json {
 			b.JSONType()
+			if strings.EqualFold(reqCmdOpts.method, http.MethodGet) {
+				b.Method = http.MethodPost
+			}
 		}
-		if reqOpts.data != "" {
-			b.AnyBody(reqOpts.data)
+		if reqCmdOpts.data != "" {
+			b.AnyBody(reqCmdOpts.data)
 		}
-		if !reqOpts.query.IsEmpty() {
-			b.WithQuerySMap(reqOpts.query.Data())
+		if !reqCmdOpts.query.IsEmpty() {
+			b.WithQuerySMap(reqCmdOpts.query.Data())
 		}
 
-		reqOpts := greq.NewOpt()
-		apiUrl := c.Arg("url").String()
-		resp, err := hc.SendWithOpt(apiUrl, reqOpts)
+		request, err := b.Build(reqCmdOpts.method, apiUrl)
+		if err != nil {
+			return err
+		}
+
+		resp, err := hc.SendRequest(request)
 		if err != nil {
 			return err
 		}
