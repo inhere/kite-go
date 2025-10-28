@@ -13,7 +13,7 @@ func TestNormalizePath(t *testing.T) {
 		// expand home directory
 		assert.Eq(t, "/home/user1/bin", NormalizePath("~/bin"))
 		// windows bash 特殊处理
-		assert.True(t, IsHookWinBash())
+		assert.True(t, IsHookBash())
 		assert.Eq(t, "/d/tools/bin", NormalizePath("D:\\tools\\bin"))
 	})
 }

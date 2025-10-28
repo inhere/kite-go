@@ -17,7 +17,7 @@ var winDiskPrefix = regexp.MustCompile(`^[a-zA-Z]:`)
 func NormalizePath(path string) string {
 	fmtPath := filepath.Clean(fsutil.ExpandPath(path))
 
-	if IsHookWinBash() {
+	if IsHookBash() {
 		// Windows Git-Bash: 需要转换为 Unix 路径，同时需要处理盘符 eg: D:/ 转换为 /d/
 		fmtPath = winDiskPrefix.ReplaceAllStringFunc(fsutil.UnixPath(fmtPath), func(sub string) string {
 			return "/" + strings.ToLower(string(sub[0]))

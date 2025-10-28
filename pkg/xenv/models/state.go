@@ -1,37 +1,46 @@
 package models
 
 import (
-	"time"
-
 	"github.com/gookit/goutil/arrutil"
 )
 
+const (
+	// GlobalStateFile global state file path
+	GlobalStateFile = "~/.config/xenv/global.toml"
+	// LocalStateFile local state file path
+	LocalStateFile = ".xenv.toml"
+)
+
 // ActivityState 代表用户当前激活的工具链和环境状态.
-//  - 全局的会保存到 ~/.xenv/.xenv.toml
+//  - 全局的会保存到 ~/.config/xenv/global.toml
 type ActivityState struct {
-	ID string `json:"id"` // name or file path
-	// 创建时间
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	// 激活的 ENV 路径列表
+	Paths []string `json:"paths"`
 	// 激活的工具链映射 key为工具名，value为版本
-	SDKs map[string]string `json:"active_sdks"`
+	SDKs map[string]string `json:"sdks"`
 	// 激活的环境变量
 	Envs map[string]string `json:"envs"`
-	// 激活的路径列表
-	Paths []string `json:"paths"`
 	// Tools 需要的工具列表
 	Tools map[string]string `json:"tools"`
+	// enable_global 是否启用全局环境配置
+	// EnableGlobal bool `json:"enable_global"`
+	File string `json:"-"` // state file path
+	// 本次改变的数据,保存后置为nil
+	ChangeData *ActivityState `json:"-"`
+	// 创建时间
+	// CreatedAt time.Time `json:"created_at"`
+	// UpdatedAt time.Time `json:"updated_at"`
 }
 
 // NewActivityState creates a new ActivityState
-func NewActivityState(id ...string) *ActivityState {
+func NewActivityState(filePath ...string) *ActivityState {
 	return &ActivityState{
-		ID:        arrutil.FirstOr(id, "default"),
-		SDKs:      make(map[string]string),
-		Envs:      make(map[string]string),
-		Paths:     []string{},
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		File:  arrutil.FirstOr(filePath),
+		SDKs:  make(map[string]string),
+		Envs:  make(map[string]string),
+		Paths: []string{},
+		// CreatedAt: time.Now(),
+		// UpdatedAt: time.Now(),
 	}
 }
 
@@ -46,6 +55,14 @@ func (as *ActivityState) AddToolsWithEnvsPaths(tools, envs map[string]string, pa
 	for _, path := range paths {
 		as.AddActivePath(path)
 	}
+}
+
+// Merge other to current. 合并两个状态数据
+func (as *ActivityState) Merge(other *ActivityState) {
+	if other == nil {
+		return
+	}
+	as.AddToolsWithEnvsPaths(other.SDKs, other.Envs, other.Paths)
 }
 
 // DelToolsWithEnvsPaths 删除激活工具和相关的 ENV, PATH

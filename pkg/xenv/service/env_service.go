@@ -131,7 +131,7 @@ func (s *EnvService) UnsetEnvs(names []string, global bool) (script string, err 
 	}
 
 	if global {
-		err = s.state.SaveGlobalState()
+		err = s.state.SaveStateFile()
 	}
 	return sb.String(), err
 }

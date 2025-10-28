@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"time"
 
+	"github.com/BurntSushi/toml"
 	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/inhere/kite-go/pkg/xenv/models"
@@ -22,15 +22,18 @@ type StateManager struct {
 	// global state data
 	global *models.ActivityState
 	// directory states. 从当前目录开始，会向上级目录递归查找 .xenv.toml
+	//  - 当前只会查找最近的一个 .xenv.toml 文件 TODO 后续支持多个
 	dirStates map[string]*models.ActivityState
 }
 
+// global state file path
 func stateFilePath() string {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		panic(err)
 	}
 
+	// ~/.config/xenv/global.toml
 	return filepath.Join(homeDir, ".config", "xenv", "global.toml")
 }
 
@@ -39,6 +42,7 @@ func NewStateManager() *StateManager {
 	return &StateManager{
 		stateFile: stateFilePath(),
 		session:   models.NewActivityState(),
+		dirStates: make(map[string]*models.ActivityState),
 	}
 }
 
@@ -76,7 +80,7 @@ func (m *StateManager) UseToolsWithParams(ps *models.ActivateToolsParams, global
 		m.global.AddToolsWithEnvsPaths(ps.AddTools, ps.AddEnvs, ps.AddPaths)
 		// Save the global state
 		if !m.batchMode {
-			return m.SaveGlobalState()
+			return m.SaveStateFile()
 		}
 	} else {
 		m.session.RemovePaths(ps.RemPaths)
@@ -96,7 +100,7 @@ func (m *StateManager) UseToolsWithEnvsPaths(tools, envs map[string]string, path
 		m.global.AddToolsWithEnvsPaths(tools, envs, paths)
 		// Save the global state
 		if !m.batchMode {
-			return m.SaveGlobalState()
+			return m.SaveStateFile()
 		}
 	} else {
 		m.session.AddToolsWithEnvsPaths(tools, envs, paths)
@@ -115,7 +119,7 @@ func (m *StateManager) ActivateTool(name, version string, global bool) error {
 		m.global.SDKs[name] = version
 		// Save the global state
 		if !m.batchMode {
-			return m.SaveGlobalState()
+			return m.SaveStateFile()
 		}
 	} else {
 		m.session.SDKs[name] = version
@@ -133,7 +137,7 @@ func (m *StateManager) DelToolsWithEnvsPaths(tools, envs, paths []string, global
 		m.global.DelToolsWithEnvsPaths(tools, envs, paths)
 		// Save the global state
 		if !m.batchMode {
-			return m.SaveGlobalState()
+			return m.SaveStateFile()
 		}
 	} else {
 		m.session.DelToolsWithEnvsPaths(tools, envs, paths)
@@ -151,7 +155,7 @@ func (m *StateManager) DeactivateTool(name string, global bool) error {
 		if m.global.RemoveTool(name) {
 			// Save the global state
 			if !m.batchMode {
-				return m.SaveGlobalState()
+				return m.SaveStateFile()
 			}
 		}
 		return fmt.Errorf("tool %q was never activated in global", name)
@@ -179,7 +183,7 @@ func (m *StateManager) AddEnvs(envs map[string]string, global bool) error {
 		}
 		// Save the global state
 		if !m.batchMode {
-			return m.SaveGlobalState()
+			return m.SaveStateFile()
 		}
 		return nil
 	}
@@ -201,7 +205,7 @@ func (m *StateManager) SetEnv(name, value string, global bool) error {
 		m.global.Envs[name] = value
 		// Save the global state
 		if !m.batchMode {
-			return m.SaveGlobalState()
+			return m.SaveStateFile()
 		}
 	} else {
 		// Set session env
@@ -224,7 +228,7 @@ func (m *StateManager) UnsetEnv(name string, global bool) error {
 			delete(m.global.Envs, name)
 			// Save the global state
 			if !m.batchMode {
-				return m.SaveGlobalState()
+				return m.SaveStateFile()
 			}
 		}
 	} else {
@@ -253,7 +257,7 @@ func (m *StateManager) AddPaths(paths []string, global bool) (err error) {
 		}
 		// Save the global state
 		if !m.batchMode {
-			return m.SaveGlobalState()
+			return m.SaveStateFile()
 		}
 		return
 	}
@@ -275,7 +279,7 @@ func (m *StateManager) AddPath(path string, global bool) error {
 		m.global.AddActivePath(path)
 		// Save the global state
 		if !m.batchMode {
-			return m.SaveGlobalState()
+			return m.SaveStateFile()
 		}
 		return nil
 	}
@@ -301,7 +305,7 @@ func (m *StateManager) RemovePath(path string, global bool) error {
 		m.global.Paths = newPaths
 		// Save the global state
 		if !m.batchMode {
-			return m.SaveGlobalState()
+			return m.SaveStateFile()
 		}
 	}
 
@@ -321,7 +325,7 @@ func (m *StateManager) RemovePath(path string, global bool) error {
 
 // LoadGlobalState loads the global state from file
 func (m *StateManager) LoadGlobalState() error {
-	m.global = models.NewActivityState("global")
+	m.global = models.NewActivityState(m.stateFile)
 
 	// Check if file exists
 	if _, err := os.Stat(m.stateFile); os.IsNotExist(err) {
@@ -334,21 +338,21 @@ func (m *StateManager) LoadGlobalState() error {
 		return err
 	}
 
-	// Unmarshal the JSON
-	return json.Unmarshal(data, m.global)
+	// Unmarshal the TOML
+	return toml.Unmarshal(data, m.global)
 }
 
-// SaveGlobalState saves the global state to file
-func (m *StateManager) SaveGlobalState() error {
+// SaveStateFile saves the global state to file
+func (m *StateManager) SaveStateFile() error {
 	if err := fsutil.MkParentDir(m.stateFile); err != nil {
 		return err
 	}
 
 	// Update timestamps
-	m.global.UpdatedAt = time.Now()
-	if m.global.CreatedAt.IsZero() {
-		m.global.CreatedAt = m.global.UpdatedAt
-	}
+	// m.global.UpdatedAt = time.Now()
+	// if m.global.CreatedAt.IsZero() {
+	// 	m.global.CreatedAt = m.global.UpdatedAt
+	// }
 
 	// Marshal to JSON
 	data, err := json.MarshalIndent(m.global, "", "  ")
@@ -385,3 +389,4 @@ func (m *StateManager) GetActiveTool(name string, global bool) string {
 	}
 	return m.session.SDKs[name]
 }
+

@@ -21,8 +21,8 @@ func HookShell() string { return xenvHookShell }
 // InHookShell returns true if the current shell is in the hook shell
 func InHookShell() bool { return xenvHookShell != "" }
 
-// IsHookWinBash checks if the current hook shell is Windows Bash(eg: git-bash)
-func IsHookWinBash() bool {
+// IsHookBash checks if the current hook shell is Linux/Windows Bash(eg: git-bash)
+func IsHookBash() bool {
 	if runtime.GOOS == "windows" {
 		return xenvHookShell == "bash" || strings.Contains(os.Getenv("SHELL"), "bash")
 	}

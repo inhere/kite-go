@@ -3,11 +3,20 @@ package manager
 import (
 	"fmt"
 	"os"
-	"path/filepath"
+
+	"github.com/gookit/goutil/fsutil"
+	"github.com/gookit/goutil/strutil"
+	"github.com/inhere/kite-go/pkg/util"
+	"github.com/inhere/kite-go/pkg/xenv/models"
 )
 
 // DirenvManager handles directory-level configuration files like .xenv.toml or .envrc
 type DirenvManager struct {
+}
+
+// EditTomlFile edits a TOML file
+func (m *DirenvManager) EditTomlFile(state *models.ActivityState) error {
+
 }
 
 // ProcessDirectoryConfig processes directory-level configuration files like .xenv.toml or .envrc
@@ -19,8 +28,8 @@ func ProcessDirectoryConfig() error {
 	}
 
 	// Check for .xenv.toml file in the current directory and parent directories up to the root
-	xenvTomlPath, err := findFileInParentDirs(wd, ".xenv.toml")
-	if err == nil && xenvTomlPath != "" {
+	xenvTomlPath := fsutil.FindOneInParentDirs(wd, ".xenv.toml")
+	if xenvTomlPath != "" {
 		fmt.Printf("Found .xenv.toml at: %s\n", xenvTomlPath)
 		// Process the .xenv.toml file
 		if err := processXenvToml(xenvTomlPath); err != nil {
@@ -29,8 +38,8 @@ func ProcessDirectoryConfig() error {
 	}
 
 	// Check for .envrc file in the current directory and parent directories up to the root
-	envrcPath, err := findFileInParentDirs(wd, ".envrc")
-	if err == nil && envrcPath != "" {
+	envrcPath := fsutil.FindOneInParentDirs(wd, strutil.OrCond(util.IsHookBash(), ".envrc", ".envrc.ps1"))
+	if envrcPath != "" {
 		fmt.Printf("Found .envrc at: %s\n", envrcPath)
 		// Process the .envrc file
 		if err := processEnvrc(envrcPath); err != nil {
@@ -39,32 +48,6 @@ func ProcessDirectoryConfig() error {
 	}
 
 	return nil
-}
-
-// findFileInParentDirs looks for a file in the current directory and parent directories
-func findFileInParentDirs(startDir, fileName string) (string, error) {
-	currentDir := startDir
-
-	for {
-		// Check if the file exists in the current directory
-		filePath := filepath.Join(currentDir, fileName)
-		if _, err := os.Stat(filePath); err == nil {
-			// File found
-			return filePath, nil
-		}
-
-		// Get parent directory
-		parentDir := filepath.Dir(currentDir)
-
-		// If we reached the root directory, stop searching
-		if parentDir == currentDir {
-			// Reached the root, file not found
-			return "", nil
-		}
-
-		// Move to parent directory
-		currentDir = parentDir
-	}
 }
 
 // processXenvToml processes an .xenv.toml file
