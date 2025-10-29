@@ -7,16 +7,10 @@ import (
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/strutil"
 	"github.com/inhere/kite-go/pkg/util"
-	"github.com/inhere/kite-go/pkg/xenv/models"
 )
 
 // DirenvManager handles directory-level configuration files like .xenv.toml or .envrc
 type DirenvManager struct {
-}
-
-// EditTomlFile edits a TOML file
-func (m *DirenvManager) EditTomlFile(state *models.ActivityState) error {
-
 }
 
 // ProcessDirectoryConfig processes directory-level configuration files like .xenv.toml or .envrc

@@ -22,11 +22,12 @@ type ActivityState struct {
 	Envs map[string]string `json:"envs"`
 	// Tools 需要的工具列表
 	Tools map[string]string `json:"tools"`
-	// enable_global 是否启用全局环境配置
-	// EnableGlobal bool `json:"enable_global"`
-	File string `json:"-"` // state file path
+	// state file path OR ID string.
+	File string `json:"-"`
 	// 本次改变的数据,保存后置为nil
 	ChangeData *ActivityState `json:"-"`
+	// enable_global 是否启用全局环境配置
+	// EnableGlobal bool `json:"enable_global"`
 	// 创建时间
 	// CreatedAt time.Time `json:"created_at"`
 	// UpdatedAt time.Time `json:"updated_at"`
