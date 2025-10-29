@@ -18,7 +18,7 @@ import (
 type EnvService struct {
 	config *models.Configuration
 	state  *manager.StateManager
-	envMgr *manager.EnvManager
+	// envMgr *manager.EnvManager
 }
 
 // NewEnvService creates a new EnvService
@@ -26,13 +26,13 @@ func NewEnvService(config *models.Configuration, state *manager.StateManager) *E
 	return &EnvService{
 		config: config,
 		state:  state,
-		envMgr: manager.NewEnvManager(),
+		// envMgr: manager.NewEnvManager(),
 	}
 }
 
 // IsSessionEnv 判断当前是否在shell hook环境
 func (s *EnvService) IsSessionEnv() bool {
-	return shell.InHookShell()
+	return util.InHookShell()
 }
 
 func (s *EnvService) GlobalState() *models.ActivityState {
@@ -50,7 +50,7 @@ func (s *EnvService) SessionState() *models.ActivityState {
 // WriteHookToProfile installs the hook script to the user's profile
 func (s *EnvService) WriteHookToProfile(st shell.ShellType, pwshProfile string) error {
 	gen := shell.NewScriptGenerator(st, s.config)
-	if shell.InHookShell() {
+	if util.InHookShell() {
 		ccolor.Infoln("The hook script is already installed in the current shell")
 		return nil
 	}

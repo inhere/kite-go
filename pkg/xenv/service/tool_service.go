@@ -229,7 +229,7 @@ func (ts *ToolService) ActivateTools(useTools []string, global bool) (script str
 	}
 
 	if global {
-		ccolor.Infof("Global: save state to %s\n", ts.state.StateFile())
+		ccolor.Infof("Global: save state to %s\n", ts.state.GlobalFile())
 	}
 	err = ts.state.SaveStateFile()
 	return sb.String(), err
@@ -323,7 +323,7 @@ func (ts *ToolService) DeactivateTools(deTools []string, global bool) (script st
 	}
 
 	if global {
-		ccolor.Printf("Global: save state to %s\n", ts.state.StateFile())
+		ccolor.Infof("Global: save state to %s\n", ts.state.GlobalFile())
 	}
 	err = ts.state.SaveStateFile()
 	return sb.String(), err

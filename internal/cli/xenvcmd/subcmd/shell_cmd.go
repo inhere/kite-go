@@ -9,6 +9,7 @@ import (
 	"github.com/gookit/goutil/envutil"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/strutil"
+	"github.com/inhere/kite-go/pkg/util"
 	"github.com/inhere/kite-go/pkg/xenv"
 	"github.com/inhere/kite-go/pkg/xenv/shell"
 )
@@ -86,7 +87,7 @@ var ShellCmd = &gcli.Command{
 func getShellType() (st shell.ShellType, err error) {
 	var shellName string
 	if shellCmdOpts.Reload {
-		hookShellName := shell.HookShell()
+		hookShellName := util.HookShell()
 		if hookShellName == "" {
 			return st, errorx.New("current is not in Shell hooking, XENV_HOOK_SHELL is empty")
 		}

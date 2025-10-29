@@ -26,7 +26,7 @@ func NewScriptGenerator(shellType ShellType, cfg *models.Configuration) *XenvScr
 //
 
 // GenHookScripts 生成 Shell Hook 初始化脚本代码
-func (sg *XenvScriptGenerator) GenHookScripts(gState *models.ActivityState) (string, error) {
+func (sg *XenvScriptGenerator) GenHookScripts(merged *models.ActivityState) (string, error) {
 	switch sg.shell {
 	case Bash:
 		return sg.generateBashScripts(), nil

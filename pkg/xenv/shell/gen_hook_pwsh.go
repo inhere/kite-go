@@ -6,6 +6,7 @@ import (
 
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
+	"github.com/inhere/kite-go/pkg/xenv/models"
 )
 
 func (sg *XenvScriptGenerator) generatePwshScripts() string {
@@ -42,6 +43,7 @@ func (sg *XenvScriptGenerator) generatePwshScripts() string {
 
 	return strutil.Replaces(PwshHookTemplate, map[string]string{
 		"{{HooksDir}}": cfg.ShellHooksDir,
+		"{{SessionId}}": models.SessionID(),
 		"{{EnvAliases}}": sb.String(),
 	})
 }
@@ -102,6 +104,7 @@ function Eval-XenvResult {
 function Setup-Xenv {
     # Mark hook enabled
     $env:XENV_HOOK_SHELL = "pwsh"
+    $env:XENV_SESSION_ID = "{{SessionId}}"
     # Set up the xenv shims directory in PATH
     $xenvShimsDir = if ($env:XENV_ROOT) { "$env:XENV_ROOT\shims" } else { "$HOME\.xenv\shims" }
 

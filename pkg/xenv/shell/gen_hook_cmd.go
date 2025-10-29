@@ -6,6 +6,7 @@ import (
 
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
+	"github.com/inhere/kite-go/pkg/xenv/models"
 )
 
 func (sg *XenvScriptGenerator) generateCmdScripts() string {
@@ -31,7 +32,8 @@ func (sg *XenvScriptGenerator) generateCmdScripts() string {
 	})
 
 	return strutil.Replaces(CmdLuaHookTemplate, map[string]string{
-		"{{HooksDir}}":     sg.cfg.ShellHooksDir,
+		"{{HooksDir}}":  sg.cfg.ShellHooksDir,
+		"{{SessionId}}": models.SessionID(),
 		"{{EnvAliases}}": sb.String(),
 	})
 }
@@ -52,6 +54,7 @@ function Setup-Xenv()
 {
     -- Mark hook enabled
     os.setenv("XENV_HOOK_SHELL", "cmd")
+    os.setenv("XENV_SESSION_ID", "{{SessionId}}")
     -- Set up the xenv shims directory in PATH
     local xenv_shims_dir = os.getenv("XENV_ROOT") or os.getenv("USERPROFILE") .. "\\.xenv\\shims"
 

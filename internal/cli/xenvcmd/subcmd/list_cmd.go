@@ -6,9 +6,9 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/x/ccolor"
+	"github.com/inhere/kite-go/pkg/util"
 	"github.com/inhere/kite-go/pkg/xenv"
 	"github.com/inhere/kite-go/pkg/xenv/models"
-	"github.com/inhere/kite-go/pkg/xenv/shell"
 )
 
 // ListCmd the xenv list command
@@ -78,7 +78,7 @@ func ListActivityCmd() *gcli.Command {
 			show.ATitle("Global State")
 			listActivity(xenv.State().Global())
 
-			if shell.InHookShell() {
+			if util.InHookShell() {
 				fmt.Println()
 				show.ATitle("Session State")
 				listActivity(xenv.State().Session())

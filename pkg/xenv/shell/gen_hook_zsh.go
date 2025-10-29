@@ -4,33 +4,35 @@ import (
 	"strings"
 
 	"github.com/gookit/goutil/strutil"
+	"github.com/inhere/kite-go/pkg/xenv/models"
 )
 
-// generate bash script contents
-func (sg *XenvScriptGenerator) generateBashScripts() string {
+// generateBashScripts generates the zsh shell hook script
+func (sg *XenvScriptGenerator) generateZshScripts() string {
 	// 添加全局环境, PATH, 别名
 	var sb strings.Builder
 	sg.addCommonForLinuxShell(&sb)
 
-	return strutil.Replaces(BashHookTemplate, map[string]string{
-		"{{HooksDir}}":   sg.cfg.ShellHooksDir,
+	return strutil.Replaces(ZshHookTemplate, map[string]string{
+		"{{HooksDir}}":  sg.cfg.ShellHooksDir,
+		"{{SessionId}}": models.SessionID(),
 		"{{EnvAliases}}": sb.String(),
 	})
 }
 
-// GenerateBashHook generates the bash shell hook script
-
-// BashHookTemplate 生成 Bash Hook 的模板
+// ZshHookTemplate 生成 zsh hook 的模板
 //
-// Usage, .bashrc or .bash_profile 新增：
-//   eval "$(kite xenv shell --type bash)"
-var BashHookTemplate = `# kite xenv bash hook
-# This script enables xenv to work in bash shells
-# Start to set up xenv in the current shell
+// Usage, .zshrc or .zsh_profile 新增：
+//
+//	eval "$(kite xenv shell --type bash)"
+var ZshHookTemplate = `# xenv zsh hook
+# This script enables xenv to work in zsh shells
 
+# Function to set up xenv in the current shell
 setup_xenv() {
     # Mark hook enabled
-    export XENV_HOOK_SHELL=bash
+    export XENV_HOOK_SHELL=zsh
+    export XENV_SESSION_ID="{{SessionId}}"
     # Set up the xenv shims directory in PATH
     local xenv_shims_dir="${XENV_ROOT:-$HOME/.xenv}/shims"
 
@@ -58,7 +60,7 @@ setup_xenv() {
                 ;;
             shell)
                 # Output the shell commands needed to set up xenv
-                command kenv shell bash
+                command kenv shell zsh
                 ;;
             *)
                 # For other commands, just pass through to xenv
@@ -73,16 +75,10 @@ setup_xenv() {
         export XENV_AUTO_INITIALIZED=1
     fi
 
-	# Enable command completion for xenv
-	if command -v complete >/dev/null 2>&1; then
-		complete -W "use unuse add list help" xenv
-	fi
-
-    # Load custom hooks script files
-	# 使用 glob 获取匹配的文件, 加载所有匹配的脚本
-	hook_files=({{HooksDir}}/*.sh)
+	# Load custom hooks script files
+	hook_files={{HooksDir}}/*.sh
 	for file in "${hook_files[@]}"; do
-		if [[ -f "$file" ]] && [[ -r "$file" ]]; then
+		if [[ -f "$file" && -r "$file" ]]; then
 			source "$file"
 		fi
 	done

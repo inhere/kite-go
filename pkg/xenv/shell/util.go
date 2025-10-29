@@ -2,32 +2,12 @@ package shell
 
 import (
 	"fmt"
-	"os"
-	"runtime"
-	"strings"
 
 	"github.com/gookit/goutil/arrutil"
-	"github.com/gookit/goutil/envutil"
 	"github.com/inhere/kite-go/pkg/util"
 )
 
 // This file contains shell integration utilities
-
-var xenvHookShell = envutil.Getenv("XENV_HOOK_SHELL")
-
-// HookShell returns the hook shell name. 不为空表明在shell hook环境中
-func HookShell() string { return xenvHookShell }
-
-// InHookShell returns true if the current shell is in the hook shell
-func InHookShell() bool { return xenvHookShell != "" }
-
-// IsHookBash checks if the current hook shell is Linux/Windows Bash(eg: git-bash)
-func IsHookBash() bool {
-	if runtime.GOOS == "windows" {
-		return xenvHookShell == "bash" || strings.Contains(os.Getenv("SHELL"), "bash")
-	}
-	return false
-}
 
 // OutputScript outputs shell scripts to stdout
 func OutputScript(script string) {
