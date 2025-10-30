@@ -44,8 +44,8 @@ func ListToolsCmd() *gcli.Command {
 // ListEnvCmd lists environment variables
 func ListEnvCmd() *gcli.Command {
 	return &gcli.Command{
-		Name:    "env",
-		Desc:   "List environment variables",
+		Name: "env",
+		Desc: "List environment variables",
 		Func: func(c *gcli.Command, args []string) error {
 			return listEnvs()
 		},
@@ -55,8 +55,8 @@ func ListEnvCmd() *gcli.Command {
 // ListPathCmd lists PATH entries
 func ListPathCmd() *gcli.Command {
 	return &gcli.Command{
-		Name:    "path",
-		Desc:   "List PATH entries",
+		Name: "path",
+		Desc: "List PATH entries",
 		Func: func(c *gcli.Command, args []string) error {
 			return listEnvPaths()
 		},
@@ -67,8 +67,8 @@ func ListPathCmd() *gcli.Command {
 func ListActivityCmd() *gcli.Command {
 	return &gcli.Command{
 		Name:    "activity",
-		Desc:   "List active tools and settings",
-		Aliases: []string{"act", "active"},
+		Desc:    "List active tools and settings",
+		Aliases: []string{"act", "active", "use"},
 		Func: func(c *gcli.Command, args []string) error {
 			// Load activity state
 			if err := xenv.State().Init(); err != nil {
@@ -76,7 +76,22 @@ func ListActivityCmd() *gcli.Command {
 			}
 
 			show.ATitle("Global State")
-			listActivity(xenv.State().Global())
+			global := xenv.State().Global()
+			if global.IsEmpty() {
+				ccolor.Infoln("No global state found")
+			} else {
+				listActivity(global)
+			}
+
+			dirStates := xenv.State().DirStates()
+			if len(dirStates) > 0 {
+				fmt.Println()
+				show.ATitle("Directory States")
+				for _, dirState := range dirStates {
+					ccolor.Infoln(" - form: %s", dirState.File)
+					listActivity(dirState)
+				}
+			}
 
 			if util.InHookShell() {
 				fmt.Println()
@@ -108,8 +123,8 @@ func listActivity(state *models.ActivityState) {
 // ListAllCmd lists everything
 func ListAllCmd() *gcli.Command {
 	return &gcli.Command{
-		Name:    "all",
-		Desc:   "List all tools, env vars, and paths",
+		Name: "all",
+		Desc: "List all tools, env vars, and paths",
 		Func: func(c *gcli.Command, args []string) error {
 			// This would call all the other list commands
 			fmt.Println("This would list all items - implementation needed")

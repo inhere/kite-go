@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/gcli/v3/show"
 	"github.com/inhere/kite-go/pkg/xenv/config"
 )
 
@@ -34,15 +35,17 @@ var ConfigCmd = &gcli.Command{
 		if err := config.Mgr.Init(); err != nil {
 			return fmt.Errorf("failed to load configuration: %w", err)
 		}
-		cfgMgr := config.Mgr
-		c.Infoln("Loading config file:", cfgMgr.Config.ConfigFile())
+		cfg := config.Mgr.Config
+		c.Infoln("Loading config file:", cfg.ConfigFile())
 
 		// Display current configuration
-		fmt.Println("Current xenv configuration:")
-		fmt.Printf("  BinDir: %s\n", cfgMgr.Config.BinDir)
-		fmt.Printf("  InstallDir: %s\n", cfgMgr.Config.InstallDir)
-		fmt.Printf("  ShellHooksDir: %s\n", cfgMgr.Config.ShellHooksDir)
-		fmt.Printf("  Number of managed SDKs: %d\n", len(cfgMgr.Config.SDKs))
+		managedSdkKey := fmt.Sprintf("4. Managed SDKs(%d)", len(cfg.SDKs))
+		show.AList("【Current Xenv Configuration】:", map[string]any{
+			"1. Default Bin Dir":  cfg.BinDir,
+			"2. Tool Install Dir": cfg.InstallDir,
+			"3. Shell Hooks Dir":  cfg.ShellHooksDir,
+			managedSdkKey:         cfg.SDKNames(),
+		})
 
 		return nil
 	},
@@ -55,8 +58,8 @@ func ConfigSetCmd() *gcli.Command {
 	// }{}
 
 	return &gcli.Command{
-		Name:    "set",
-		Desc:    "Set a configuration value",
+		Name: "set",
+		Desc: "Set a configuration value",
 		Config: func(c *gcli.Command) {
 			c.AddArg("name", "configuration key name", true)
 			c.AddArg("value", "configuration value", true)
@@ -97,8 +100,8 @@ func ConfigSetCmd() *gcli.Command {
 // ConfigGetCmd command for getting configuration values
 func ConfigGetCmd() *gcli.Command {
 	return &gcli.Command{
-		Name:    "get",
-		Desc:    "Get a configuration value",
+		Name: "get",
+		Desc: "Get a configuration value",
 		Config: func(c *gcli.Command) {
 			c.AddArg("name", "configuration key name", true)
 		},
@@ -132,8 +135,8 @@ func ConfigGetCmd() *gcli.Command {
 // ConfigExportCmd command for exporting configuration
 func ConfigExportCmd() *gcli.Command {
 	return &gcli.Command{
-		Name:    "export",
-		Desc:    "Export configuration",
+		Name: "export",
+		Desc: "Export configuration",
 		Config: func(c *gcli.Command) {
 			c.AddArg("format", "export format, allow: zip, json").WithDefault("zip")
 		},
@@ -168,8 +171,8 @@ func ConfigExportCmd() *gcli.Command {
 // ConfigImportCmd command for importing configuration
 func ConfigImportCmd() *gcli.Command {
 	return &gcli.Command{
-		Name:    "import",
-		Desc:    "Import configuration from file",
+		Name: "import",
+		Desc: "Import configuration from file",
 		Config: func(c *gcli.Command) {
 			c.AddArg("path", "path to import configuration from", true)
 		},

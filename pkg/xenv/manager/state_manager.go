@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/BurntSushi/toml"
-	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/x/ccolor"
@@ -18,6 +17,7 @@ type StateManager struct {
 	init bool
 	// batch mode
 	batchMode bool
+	debugMode bool
 	// all merged state data.
 	//  - 数据按 global, direnv, session 的顺序合并进来
 	merged *models.ActivityState
@@ -60,13 +60,16 @@ func (m *StateManager) GlobalFile() string { return m.global.File }
 // SetBatchMode sets the batch mode flag
 func (m *StateManager) SetBatchMode(enabled bool) { m.batchMode = enabled }
 
+// SetDebugMode sets the debug mode flag
+func (m *StateManager) SetDebugMode(enabled bool) { m.debugMode = enabled }
+
 // endregion
 // region SDK state management
 //
 
 // UseSDKsWithParams activates multiple SDKs with params
 func (m *StateManager) UseSDKsWithParams(ps *models.ActivateSDKsParams) error {
-	if err := m.Init(); err != nil {
+	if err := m.requireInit(); err != nil {
 		return err
 	}
 
@@ -77,7 +80,7 @@ func (m *StateManager) UseSDKsWithParams(ps *models.ActivateSDKsParams) error {
 	case models.OpFlagGlobal:
 		m.global.AddSDKs(ps.AddSdks)
 	case models.OpFlagDirenv:
-		if ds := m.NearestState(); ds != nil {
+		if ds := m.Nearest(); ds != nil {
 			ds.AddSDKs(ps.AddSdks)
 		}
 	default:
@@ -93,7 +96,7 @@ func (m *StateManager) UseSDKsWithParams(ps *models.ActivateSDKsParams) error {
 
 // ActivateSDK activates a specific SDK version
 func (m *StateManager) ActivateSDK(name, version string, opFlag models.OpFlag) error {
-	if err := m.Init(); err != nil {
+	if err := m.requireInit(); err != nil {
 		return err
 	}
 
@@ -104,7 +107,7 @@ func (m *StateManager) ActivateSDK(name, version string, opFlag models.OpFlag) e
 	case models.OpFlagGlobal:
 		m.global.SDKs[name] = version
 	case models.OpFlagDirenv:
-		if ds := m.NearestState(); ds != nil {
+		if ds := m.Nearest(); ds != nil {
 			ds.SDKs[name] = version
 		}
 	default:
@@ -120,7 +123,7 @@ func (m *StateManager) ActivateSDK(name, version string, opFlag models.OpFlag) e
 
 // DelSDKsWithEnvsPaths deletes multiple tools and with envs, paths
 func (m *StateManager) DelSDKsWithEnvsPaths(names, envs, paths []string, opFlag models.OpFlag) error {
-	if err := m.Init(); err != nil {
+	if err := m.requireInit(); err != nil {
 		return err
 	}
 
@@ -131,7 +134,7 @@ func (m *StateManager) DelSDKsWithEnvsPaths(names, envs, paths []string, opFlag 
 	case models.OpFlagGlobal:
 		m.global.DelSDKs(names)
 	case models.OpFlagDirenv:
-		if ds := m.NearestState(); ds != nil {
+		if ds := m.Nearest(); ds != nil {
 			ds.DelSDKs(names)
 		}
 	default:
@@ -147,7 +150,7 @@ func (m *StateManager) DelSDKsWithEnvsPaths(names, envs, paths []string, opFlag 
 
 // DeactivateTool deactivates a specific tool version
 func (m *StateManager) DeactivateTool(name string, global bool) error {
-	if err := m.Init(); err != nil {
+	if err := m.requireInit(); err != nil {
 		return err
 	}
 
@@ -173,7 +176,7 @@ func (m *StateManager) DeactivateTool(name string, global bool) error {
 
 // AddEnvs sets multiple environment variables
 func (m *StateManager) AddEnvs(envs map[string]string, global bool) error {
-	if err := m.Init(); err != nil {
+	if err := m.requireInit(); err != nil {
 		return err
 	}
 
@@ -196,7 +199,7 @@ func (m *StateManager) AddEnvs(envs map[string]string, global bool) error {
 
 // SetEnv sets an environment variable
 func (m *StateManager) SetEnv(name, value string, global bool) error {
-	if err := m.Init(); err != nil {
+	if err := m.requireInit(); err != nil {
 		return err
 	}
 
@@ -216,7 +219,7 @@ func (m *StateManager) SetEnv(name, value string, global bool) error {
 
 // UnsetEnv unsets an environment variable
 func (m *StateManager) UnsetEnv(name string, global bool) error {
-	if err := m.Init(); err != nil {
+	if err := m.requireInit(); err != nil {
 		return err
 	}
 
@@ -247,7 +250,7 @@ func (m *StateManager) UnsetEnv(name string, global bool) error {
 
 // AddPaths adds multiple paths to the PATH environment variable
 func (m *StateManager) AddPaths(paths []string, global bool) (err error) {
-	if err = m.Init(); err != nil {
+	if err = m.requireInit(); err != nil {
 		return err
 	}
 
@@ -270,7 +273,7 @@ func (m *StateManager) AddPaths(paths []string, global bool) (err error) {
 
 // AddPath adds a path to the PATH environment variable
 func (m *StateManager) AddPath(path string, global bool) error {
-	if err := m.Init(); err != nil {
+	if err := m.requireInit(); err != nil {
 		return err
 	}
 
@@ -291,7 +294,7 @@ func (m *StateManager) AddPath(path string, global bool) error {
 
 // RemovePath removes a path from the PATH environment variable
 func (m *StateManager) RemovePath(path string, global bool) error {
-	if err := m.Init(); err != nil {
+	if err := m.requireInit(); err != nil {
 		return err
 	}
 
@@ -357,7 +360,7 @@ func (m *StateManager) LoadDirEnvState() error {
 	// Check for .xenv.toml file in the current directory and parent directories up to the root
 	xenvTomlPath := fsutil.FindOneInParentDirs(wd, models.LocalStateFile)
 	if xenvTomlPath != "" {
-		fmt.Printf("Found .xenv.toml at: %s\n", xenvTomlPath)
+		m.debugf("Found .xenv.toml at: %s\n", xenvTomlPath)
 		// Process the .xenv.toml file
 		if err1 := m.processDirenvToml(xenvTomlPath); err1 != nil {
 			return fmt.Errorf("failed to process .xenv.toml: %w", err1)
@@ -368,11 +371,18 @@ func (m *StateManager) LoadDirEnvState() error {
 	fileName := strutil.OrCond(util.IsHookBash(), ".envrc", ".envrc.ps1")
 	envrcPath := fsutil.FindOneInParentDirs(wd, fileName)
 	if envrcPath != "" {
-		fmt.Printf("Found envrc at: %s\n", envrcPath)
+		m.debugf("Found envrc at: %s\n", envrcPath)
 		m.envrcFiles = append(m.envrcFiles, envrcPath)
 	}
 
 	return nil
+}
+
+// debugf prints debug messages
+func (m *StateManager) debugf(format string, args ...any) {
+	if m.debugMode {
+		ccolor.Printf("<cyan>DEBUG</>: "+format+"\n", args...)
+	}
 }
 
 // processDirenvToml processes an .xenv.toml file
@@ -430,7 +440,7 @@ func (m *StateManager) SaveStateFile() error {
 }
 
 func (m *StateManager) saveStateFile(state *models.ActivityState) error {
-	ccolor.Infoln("Saving state file: %s", state.File)
+	m.debugf("Saving state file: %s", state.File)
 	return NewTomlUpdater().Update(state)
 }
 
@@ -438,8 +448,11 @@ func (m *StateManager) saveStateFile(state *models.ActivityState) error {
 // region Helper methods
 //
 
-func (m *StateManager) requireInit() {
-	goutil.PanicErr(m.Init())
+func (m *StateManager) requireInit() error {
+	if !m.init {
+		return fmt.Errorf("please call Init() before using the state manager")
+	}
+	return nil
 }
 
 func (m *StateManager) Merged() *models.ActivityState {
@@ -447,19 +460,18 @@ func (m *StateManager) Merged() *models.ActivityState {
 }
 
 // Global returns the global activity state
-func (m *StateManager) Global() *models.ActivityState {
-	return m.global
-}
+func (m *StateManager) Global() *models.ActivityState { return m.global }
 
-// NearestState returns the nearest direnv activity state
-func (m *StateManager) NearestState() *models.ActivityState {
+// DirStates returns the direnv activity states
+func (m *StateManager) DirStates() []*models.ActivityState { return m.dirStates }
+
+// Session returns the session activity state
+func (m *StateManager) Session() *models.ActivityState { return m.session }
+
+// Nearest returns the nearest direnv activity state
+func (m *StateManager) Nearest() *models.ActivityState {
 	if len(m.dirStates) > 0 {
 		return m.dirStates[len(m.dirStates)-1]
 	}
 	return nil
-}
-
-// Session returns the session activity state
-func (m *StateManager) Session() *models.ActivityState {
-	return m.session
 }

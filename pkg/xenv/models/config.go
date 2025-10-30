@@ -58,6 +58,14 @@ func (c *Configuration) FindSDKConfig(name string) *ToolChain {
 	return nil
 }
 
+func (c *Configuration) SDKNames() []string {
+	names := make([]string, len(c.SDKs))
+	for i, tool := range c.SDKs {
+		names[i] = tool.Name
+	}
+	return names
+}
+
 func (c *Configuration) ConfigFile() string {
 	return c.configFile
 }

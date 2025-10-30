@@ -35,6 +35,7 @@ Quick commands:
 	Config: func(c *gcli.Command) {
 		// Add global options for xenv command if needed
 		c.BoolOpt(&subcmd.GlobalFlag, "global", "g", false, "Operate for global config")
+		c.BoolOpt(&subcmd.DebugMode, "debug", "d", false, "Enable debug mode")
 
 		// Add any configuration here if needed
 		c.On(events.OnCmdNotFound, func(ctx *gcli.HookCtx) (stop bool) {

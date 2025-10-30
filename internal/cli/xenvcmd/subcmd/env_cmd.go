@@ -8,8 +8,11 @@ import (
 	"github.com/inhere/kite-go/pkg/xenv"
 )
 
-// GlobalFlag option value
-var GlobalFlag bool
+var (
+	// GlobalFlag option value
+	GlobalFlag bool
+	DebugMode  bool
+)
 
 // EnvCmd the xenv env command
 var EnvCmd = &gcli.Command{
@@ -28,8 +31,9 @@ var EnvCmd = &gcli.Command{
 // EnvSetCmd command for setting environment variables
 //
 // Test run:
-//  // pwsh
-//  $env:XENV_HOOK_SHELL="pwsh"; kite xenv set TEST003 value003
+//
+//	// pwsh
+//	$env:XENV_HOOK_SHELL="pwsh"; kite xenv set TEST003 value003
 func EnvSetCmd() *gcli.Command {
 	return &gcli.Command{
 		Name: "set",

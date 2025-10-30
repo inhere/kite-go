@@ -44,7 +44,7 @@ func (ts *ToolService) ListAll(showAll bool) error {
 	ccolor.Cyanf("Managed SDK Tools(%d):\n", len(cfgTools))
 
 	for _, toolCfg := range cfgTools {
-		ccolor.Magentaf("%s", toolCfg.Name)
+		ccolor.Magentaf(" %s", toolCfg.Name)
 		if len(toolCfg.Alias) > 0 {
 			fmt.Printf("(Alias: %v) SDK:\n", toolCfg.Alias)
 		} else {

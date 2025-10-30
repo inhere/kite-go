@@ -54,7 +54,7 @@ var sessionID = os.Getenv(SessIdEnvName)
 // SessionID 获取当前会话ID
 func SessionID() string {
 	if sessionID == "" {
-		sessionID = time.Now().Format("20060102150405")
+		sessionID = time.Now().Format("20060102_150405")
 	}
 	return sessionID
 }
@@ -103,6 +103,7 @@ func NewActivityState(filePath string) *ActivityState {
 		File: filePath,
 		SDKs:  make(map[string]string),
 		Envs:  make(map[string]string),
+		Tools: make(map[string]string),
 		Paths: []string{},
 		// CreatedAt: time.Now(),
 		// UpdatedAt: time.Now(),
@@ -219,4 +220,12 @@ func (as *ActivityState) DelSDKs(names []string) {
 	for _, name := range names {
 		delete(as.SDKs, name)
 	}
+}
+
+// IsEmpty 检查状态数据是否为空
+func (as *ActivityState) IsEmpty() bool {
+	return len(as.SDKs) == 0 &&
+		len(as.Envs) == 0 &&
+		len(as.Paths) == 0 &&
+		len(as.Tools) == 0
 }

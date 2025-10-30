@@ -6,9 +6,9 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/goutil/cflag"
-	"github.com/gookit/goutil/envutil"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/strutil"
+	"github.com/gookit/goutil/sysutil"
 	"github.com/inhere/kite-go/pkg/util"
 	"github.com/inhere/kite-go/pkg/xenv"
 	"github.com/inhere/kite-go/pkg/xenv/shell"
@@ -93,7 +93,7 @@ func getShellType() (st shell.ShellType, err error) {
 		}
 		shellName = hookShellName
 	} else {
-		shellName = strutil.OrElse(shellCmdOpts.Type.String(), envutil.Getenv("SHELL"))
+		shellName = strutil.OrElse(shellCmdOpts.Type.String(), sysutil.CurrentShell(true))
 		if shellName == "" {
 			return st, errorx.Errf("please specify the shell type (%s)", shellCmdOpts.Type.EnumString())
 		}
