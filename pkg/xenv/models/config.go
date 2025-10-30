@@ -35,8 +35,8 @@ type Configuration struct {
 	configDir  string
 }
 
-// IsToolDefined returns true if the tool configuration is defined
-func (c *Configuration) IsToolDefined(name string) bool {
+// IsDefinedSDK returns true if the SDK configuration is defined
+func (c *Configuration) IsDefinedSDK(name string) bool {
 	// Check if the tool is installed
 	toolFound := false
 	for _, tool := range c.SDKs {
@@ -48,8 +48,8 @@ func (c *Configuration) IsToolDefined(name string) bool {
 	return toolFound
 }
 
-// FindToolConfig returns the tool configuration if it is defined
-func (c *Configuration) FindToolConfig(name string) *ToolChain {
+// FindSDKConfig returns the SDK configuration if it is defined
+func (c *Configuration) FindSDKConfig(name string) *ToolChain {
 	for _, tool := range c.SDKs {
 		if tool.Name == name {
 			return &tool

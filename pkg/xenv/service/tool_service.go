@@ -100,7 +100,7 @@ func (ts *ToolService) GetTool(name string) *models.ToolChain {
 
 // InstallTool installs a tool with the specified version
 func (ts *ToolService) InstallTool(name, version string) error {
-	toolConfig := ts.config.FindToolConfig(name)
+	toolConfig := ts.config.FindSDKConfig(name)
 	// Check if tool is defined
 	if toolConfig == nil {
 		return fmt.Errorf("tool %s is not defined in config", name)
@@ -128,7 +128,7 @@ func (ts *ToolService) Uninstall(name, version string) error {
 	id := fmt.Sprintf("%s:%s", name, version)
 
 	// Find the tool in the configuration
-	toolConfig := ts.config.FindToolConfig(name)
+	toolConfig := ts.config.FindSDKConfig(name)
 	if toolConfig == nil {
 		return fmt.Errorf("tool %s is not installed", id)
 	}
@@ -152,11 +152,11 @@ func (ts *ToolService) Uninstall(name, version string) error {
 }
 
 // endregion
-// region Tool Activate
+// region SDK Activate
 //
 
-// ActivateTools activates multiple tools
-func (ts *ToolService) ActivateTools(useTools []string, global bool) (script string, err error) {
+// ActivateSDKs activates multiple SDK tools
+func (ts *ToolService) ActivateSDKs(useTools []string, opFlag models.OpFlag) (script string, err error) {
 	ts.state.SetBatchMode(true)
 	defer ts.state.SetBatchMode(false)
 
@@ -166,7 +166,8 @@ func (ts *ToolService) ActivateTools(useTools []string, global bool) (script str
 		return "", err1
 	}
 
-	actParams := models.NewActivateToolsParams()
+	actParams := models.NewActivateSDKsParams()
+	actParams.OpFlag = opFlag
 
 	for _, arg := range useTools {
 		// Parse name:version
@@ -176,13 +177,13 @@ func (ts *ToolService) ActivateTools(useTools []string, global bool) (script str
 		}
 
 		// check activate the tool
-		localSdk, err3 := ts.checkActivateTool(spec)
+		localSdk, err3 := ts.checkActivateSDK(spec)
 		if err3 != nil {
 			return "", fmt.Errorf("failed to activate tool %q: %w", spec, err3)
 		}
 
 		// 如果sdk已经激活过，先要删除之前的激活版本设置的 ENV, PATH
-		oldActiveVer := ts.state.GetActiveTool(spec.Name, global)
+		oldActiveVer := ts.state.Merged().SDKs[spec.Name]
 		if oldActiveVer != "" {
 			if oldActiveVer == localSdk.Version {
 				ccolor.Warnf("The tool %s is already activated, please deactivate it first.\n", localSdk.ID)
@@ -196,15 +197,17 @@ func (ts *ToolService) ActivateTools(useTools []string, global bool) (script str
 		}
 
 		// 存储激活的真实版本
-		actParams.AddTool(spec.Name, localSdk.Version)
+		actParams.AddSdk(spec.Name, localSdk.Version)
 		// Add to PATH and ENVs
 		actParams.AddPath(localSdk.BinDirPath())
 		if len(localSdk.Config.ActiveEnv) > 0 {
 			actParams.AddSetEnvs(localSdk.RenderActiveEnv())
 		}
 
-		if global {
+		if opFlag == models.OpFlagGlobal {
 			ccolor.Infof("Activate %s as global default\n", localSdk.ID)
+		} else if opFlag == models.OpFlagDirenv {
+			ccolor.Infof("Activate %s for direnv state\n", localSdk.ID)
 		} else {
 			ccolor.Infof("Activate %s for current session\n", localSdk.ID)
 		}
@@ -223,22 +226,19 @@ func (ts *ToolService) ActivateTools(useTools []string, global bool) (script str
 	}
 
 	// Update the activity state
-	err = ts.state.UseToolsWithParams(actParams, global)
+	err = ts.state.UseSDKsWithParams(actParams)
 	if err != nil {
 		return "", err
 	}
 
-	if global {
-		ccolor.Infof("Global: save state to %s\n", ts.state.GlobalFile())
-	}
 	err = ts.state.SaveStateFile()
 	return sb.String(), err
 }
 
 // check for activates a specific tool version
-func (ts *ToolService) checkActivateTool(spec *tools.VersionSpec) (*models.InstalledTool, error) {
+func (ts *ToolService) checkActivateSDK(spec *tools.VersionSpec) (*models.InstalledTool, error) {
 	// Check if the tool is definition
-	toolCfg := ts.config.FindToolConfig(spec.Name)
+	toolCfg := ts.config.FindSDKConfig(spec.Name)
 	if toolCfg == nil {
 		return nil, fmt.Errorf("tool %s config is not definition", spec.Name)
 	}
@@ -260,11 +260,11 @@ func (ts *ToolService) checkActivateTool(spec *tools.VersionSpec) (*models.Insta
 }
 
 // endregion
-// region Tool Deactivate
+// region SDK Deactivate
 //
 
-// DeactivateTools deactivates multiple tools at once
-func (ts *ToolService) DeactivateTools(deTools []string, global bool) (script string, err error) {
+// DeactivateSDKs deactivates multiple SDK tools at once
+func (ts *ToolService) DeactivateSDKs(deTools []string, opFlag models.OpFlag) (script string, err error) {
 	ts.state.SetBatchMode(true)
 	defer ts.state.SetBatchMode(false)
 
@@ -284,7 +284,7 @@ func (ts *ToolService) DeactivateTools(deTools []string, global bool) (script st
 		}
 
 		// Deactivate the tool
-		localSdk, err3 := ts.checkDeactivate(spec, global)
+		localSdk, err3 := ts.checkDeactivateSDK(spec, opFlag)
 		if err3 != nil {
 			ccolor.Warnf("WARN: failed to deactivate tool %q: %w", spec, err3)
 			continue
@@ -297,10 +297,12 @@ func (ts *ToolService) DeactivateTools(deTools []string, global bool) (script st
 			}
 		}
 
-		if global {
-			ccolor.Printf("Deactivate %s for global default\n", spec)
+		if opFlag == models.OpFlagGlobal {
+			ccolor.Infof("Deactivate %s for global stae\n", spec)
+		} else if opFlag == models.OpFlagDirenv {
+			ccolor.Infof("Deactivate %s for direnv state\n", spec)
 		} else {
-			ccolor.Printf("Deactivate %s for current session\n", spec)
+			ccolor.Infof("Deactivate %s for current session\n", spec)
 		}
 	}
 
@@ -317,39 +319,36 @@ func (ts *ToolService) DeactivateTools(deTools []string, global bool) (script st
 		}
 	}
 
-	err = ts.state.DelToolsWithEnvsPaths(nil, delEnvs, delPaths, global)
+	err = ts.state.DelSDKsWithEnvsPaths(deTools, delEnvs, delPaths, opFlag)
 	if err != nil {
 		return "", err
 	}
 
-	if global {
-		ccolor.Infof("Global: save state to %s\n", ts.state.GlobalFile())
-	}
 	err = ts.state.SaveStateFile()
 	return sb.String(), err
 }
 
 // deactivateTool deactivates a specific tool version
-func (ts *ToolService) checkDeactivate(spec *tools.VersionSpec, global bool) (*models.InstalledTool, error) {
+func (ts *ToolService) checkDeactivateSDK(spec *tools.VersionSpec, opFlag models.OpFlag) (*models.InstalledTool, error) {
 	// Check if the tool is definition
-	toolCfg := ts.config.FindToolConfig(spec.Name)
+	toolCfg := ts.config.FindSDKConfig(spec.Name)
 	if toolCfg == nil {
-		return nil, fmt.Errorf("tool %s config is not definition", spec.Name)
+		return nil, fmt.Errorf("sdk %s config is not definition", spec.Name)
 	}
 
 	localSdks := ts.toolMgr.ListSDKVersions(toolCfg.Name)
 	if len(localSdks) == 0 {
-		// 工具未安装，但仍需从状态中移除
-		err := ts.state.DeactivateTool(spec.Name, global)
-		return nil, err
+		return nil, fmt.Errorf("sdk %s is not installed locally", spec.Name)
 	}
 
 	// 根据版本匹配本地可用的sdk
 	localSdk := ts.toolMgr.MatchSdkByVersion(localSdks, spec.Version)
-	// 版本不匹配，但仍需从状态中移除
 	if localSdk == nil {
-		err := ts.state.DeactivateTool(spec.Name, global)
-		return nil, err
+		// installed := strings.Join(arrutil.Map1(localSdks, func(t models.InstalledTool) string {
+		// 	return t.ID
+		// }), ", ")
+		// return nil, fmt.Errorf("sdk %s is not installed locally(installed: %s)", spec.ID(), installed)
+		return nil, nil
 	}
 
 	// Update the activity state

@@ -7,6 +7,37 @@ import (
 	"github.com/gookit/goutil/arrutil"
 )
 
+type OpFlag uint8
+
+const (
+	OpFlagSession OpFlag = iota
+	OpFlagDirenv
+	OpFlagGlobal
+)
+
+func (of OpFlag) String() string {
+	switch of {
+	case OpFlagSession:
+		return "session"
+	case OpFlagDirenv:
+		return "direnv"
+	case OpFlagGlobal:
+		return "global"
+	}
+	return "unknown"
+}
+
+// GetOpFlag 根据参数获取操作标识
+func GetOpFlag(saveDirenv, global bool) OpFlag {
+	if global {
+		return OpFlagGlobal
+	}
+	if saveDirenv {
+		return OpFlagDirenv
+	}
+	return OpFlagSession
+}
+
 const (
 	// GlobalStateFile global state file path
 	GlobalStateFile = "~/.config/xenv/global.toml"
@@ -45,6 +76,12 @@ type ActivityState struct {
 	// 激活的环境变量
 	Envs map[string]string `json:"envs" toml:"envs"`
 	// Tools 需要的工具列表
+	//
+	// value 工具版本:
+	//  - value 可以是 "*"
+	//  - value 可以是 "*,required"
+	//  - value 可以是 ">1.2"
+	//  - value 可以是 ">1.2,required"
 	Tools map[string]string `json:"tools" toml:"tools"`
 	// state file path OR ID string.
 	File string `json:"-" toml:"-"`
@@ -72,17 +109,36 @@ func NewActivityState(filePath string) *ActivityState {
 	}
 }
 
-// AddToolsWithEnvsPaths 新增激活工具和配置ENV, PATH
-func (as *ActivityState) AddToolsWithEnvsPaths(tools, envs map[string]string, paths []string) {
+// AddSDKs 新增激活工具
+func (as *ActivityState) AddSDKs(tools map[string]string) *ActivityState {
 	for name, version := range tools {
 		as.SDKs[name] = version
 	}
+	return as
+}
+
+// AddEnvs 新增激活环境变量
+func (as *ActivityState) AddEnvs(envs map[string]string) *ActivityState {
 	for name, value := range envs {
 		as.Envs[name] = value
 	}
+	return as
+}
+
+// AddTools 新增激活工具
+func (as *ActivityState) AddTools(tools map[string]string) *ActivityState {
+	for name, version := range tools {
+		as.Tools[name] = version
+	}
+	return as
+}
+
+// AddPaths 新增激活路径
+func (as *ActivityState) AddPaths(paths []string) *ActivityState {
 	for _, path := range paths {
 		as.AddActivePath(path)
 	}
+	return as
 }
 
 // Merge other to current. 合并两个状态数据
@@ -90,13 +146,13 @@ func (as *ActivityState) Merge(other *ActivityState) {
 	if other == nil {
 		return
 	}
-	as.AddToolsWithEnvsPaths(other.SDKs, other.Envs, other.Paths)
+	as.AddSDKs(other.SDKs).AddEnvs(other.Envs).AddTools(other.Tools).AddPaths(other.Paths)
 }
 
-// DelToolsWithEnvsPaths 删除激活工具和相关的 ENV, PATH
-func (as *ActivityState) DelToolsWithEnvsPaths(toolNames, envNames, paths []string) {
-	if len(toolNames) > 0 {
-		for _, name := range toolNames {
+// DelSDKsEnvsPaths 删除激活工具和相关的 ENV, PATH
+func (as *ActivityState) DelSDKsEnvsPaths(sdkNames, envNames, paths []string) {
+	if len(sdkNames) > 0 {
+		for _, name := range sdkNames {
 			delete(as.SDKs, name)
 		}
 	}
@@ -107,7 +163,9 @@ func (as *ActivityState) DelToolsWithEnvsPaths(toolNames, envNames, paths []stri
 		}
 	}
 
-	as.RemovePaths(paths)
+	if len(paths) > 0 {
+		as.RemovePaths(paths)
+	}
 }
 
 // AddActivePath 添加激活路径, 会先检测是否已存在
@@ -121,10 +179,15 @@ func (as *ActivityState) AddActivePath(path string) {
 	as.Paths = append(as.Paths, path)
 }
 
+// RemoveThenAddPaths 先删除然后新增激活路径
+func (as *ActivityState) RemoveThenAddPaths(rmPaths, addPaths []string) *ActivityState {
+	return as.RemovePaths(rmPaths).AddPaths(addPaths)
+}
+
 // RemovePaths 删除激活路径
-func (as *ActivityState) RemovePaths(paths []string) {
+func (as *ActivityState) RemovePaths(paths []string) *ActivityState {
 	if len(paths) == 0 {
-		return
+		return as
 	}
 
 	var newPaths []string
@@ -135,6 +198,7 @@ func (as *ActivityState) RemovePaths(paths []string) {
 		newPaths = append(newPaths, path)
 	}
 	as.Paths = newPaths
+	return as
 }
 
 // RemoveTool 删除激活的工具
@@ -149,4 +213,10 @@ func (as *ActivityState) RemoveTool(name string) bool {
 // ExistsPath 检查路径是否已存在
 func (as *ActivityState) ExistsPath(val string) bool {
 	return arrutil.StringsContains(as.Paths, val)
+}
+
+func (as *ActivityState) DelSDKs(names []string) {
+	for _, name := range names {
+		delete(as.SDKs, name)
+	}
 }

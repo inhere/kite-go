@@ -8,6 +8,7 @@ import (
 	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/strutil"
+	"github.com/gookit/goutil/x/ccolor"
 	"github.com/inhere/kite-go/pkg/util"
 	"github.com/inhere/kite-go/pkg/xenv/models"
 )
@@ -17,13 +18,15 @@ type StateManager struct {
 	init bool
 	// batch mode
 	batchMode bool
-	// all merged state data
+	// all merged state data.
+	//  - 数据按 global, direnv, session 的顺序合并进来
 	merged *models.ActivityState
 	// session current session state data. NOTE: 只有在 HOOK SHELL 中才会生效
 	session *models.ActivityState
 	// global state data from global state file models.GlobalStateFile
 	global *models.ActivityState
 	// directory states. 从当前目录开始，会向上级目录递归查找 .xenv.toml
+	//  - index 越大的优先级越高，距离当前目录越近
 	//  - 当前只会查找最近的一个 .xenv.toml 文件 TODO 后续支持多个
 	dirStates  []*models.ActivityState
 	envrcFiles []string // TODO
@@ -35,6 +38,7 @@ func NewStateManager() *StateManager {
 	sessionFile := fsutil.ExpandHome(models.SessionStateFile())
 
 	return &StateManager{
+		merged: models.NewActivityState("MERGED"),
 		global:  models.NewActivityState(globalFile),
 		session: models.NewActivityState(sessionFile),
 		dirStates: make([]*models.ActivityState, 0),
@@ -57,81 +61,86 @@ func (m *StateManager) GlobalFile() string { return m.global.File }
 func (m *StateManager) SetBatchMode(enabled bool) { m.batchMode = enabled }
 
 // endregion
-// region Tool state management
+// region SDK state management
 //
 
-// UseToolsWithParams activates multiple tools with params
-func (m *StateManager) UseToolsWithParams(ps *models.ActivateToolsParams, global bool) error {
+// UseSDKsWithParams activates multiple SDKs with params
+func (m *StateManager) UseSDKsWithParams(ps *models.ActivateSDKsParams) error {
 	if err := m.Init(); err != nil {
 		return err
 	}
 
-	if global {
-		m.global.RemovePaths(ps.RemPaths)
-		m.global.AddToolsWithEnvsPaths(ps.AddTools, ps.AddEnvs, ps.AddPaths)
-		// Save the global state
-		if !m.batchMode {
-			return m.SaveStateFile()
+	// update 合并数据
+	m.merged.AddSDKs(ps.AddSdks).AddEnvs(ps.AddEnvs).RemovePaths(ps.RemPaths).AddPaths(ps.AddPaths)
+
+	switch ps.OpFlag {
+	case models.OpFlagGlobal:
+		m.global.AddSDKs(ps.AddSdks)
+	case models.OpFlagDirenv:
+		if ds := m.NearestState(); ds != nil {
+			ds.AddSDKs(ps.AddSdks)
 		}
-	} else {
-		m.session.RemovePaths(ps.RemPaths)
-		m.session.AddToolsWithEnvsPaths(ps.AddTools, ps.AddEnvs, ps.AddPaths)
+	default:
+		m.session.AddSDKs(ps.AddSdks)
 	}
 
+	// Save the state file
+	if !m.batchMode {
+		return m.SaveStateFile()
+	}
 	return nil
 }
 
-// UseToolsWithEnvsPaths activates multiple tools and with envs, paths
-func (m *StateManager) UseToolsWithEnvsPaths(tools, envs map[string]string, paths []string, global bool) error {
+// ActivateSDK activates a specific SDK version
+func (m *StateManager) ActivateSDK(name, version string, opFlag models.OpFlag) error {
 	if err := m.Init(); err != nil {
 		return err
 	}
 
-	if global {
-		m.global.AddToolsWithEnvsPaths(tools, envs, paths)
-		// Save the global state
-		if !m.batchMode {
-			return m.SaveStateFile()
-		}
-	} else {
-		m.session.AddToolsWithEnvsPaths(tools, envs, paths)
-	}
+	// update 合并数据
+	m.merged.SDKs[name] = version
 
-	return nil
-}
-
-// ActivateTool activates a specific tool version
-func (m *StateManager) ActivateTool(name, version string, global bool) error {
-	if err := m.Init(); err != nil {
-		return err
-	}
-
-	if global {
+	switch opFlag {
+	case models.OpFlagGlobal:
 		m.global.SDKs[name] = version
-		// Save the global state
-		if !m.batchMode {
-			return m.SaveStateFile()
+	case models.OpFlagDirenv:
+		if ds := m.NearestState(); ds != nil {
+			ds.SDKs[name] = version
 		}
-	} else {
+	default:
 		m.session.SDKs[name] = version
 	}
+
+	// Save the state file
+	if !m.batchMode {
+		return m.SaveStateFile()
+	}
 	return nil
 }
 
-// DelToolsWithEnvsPaths deletes multiple tools and with envs, paths
-func (m *StateManager) DelToolsWithEnvsPaths(tools, envs, paths []string, global bool) error {
+// DelSDKsWithEnvsPaths deletes multiple tools and with envs, paths
+func (m *StateManager) DelSDKsWithEnvsPaths(names, envs, paths []string, opFlag models.OpFlag) error {
 	if err := m.Init(); err != nil {
 		return err
 	}
 
-	if global {
-		m.global.DelToolsWithEnvsPaths(tools, envs, paths)
-		// Save the global state
-		if !m.batchMode {
-			return m.SaveStateFile()
+	// update 合并数据
+	m.merged.DelSDKsEnvsPaths(names, envs, paths)
+
+	switch opFlag {
+	case models.OpFlagGlobal:
+		m.global.DelSDKs(names)
+	case models.OpFlagDirenv:
+		if ds := m.NearestState(); ds != nil {
+			ds.DelSDKs(names)
 		}
-	} else {
-		m.session.DelToolsWithEnvsPaths(tools, envs, paths)
+	default:
+		m.session.DelSDKs(names)
+	}
+
+	// Save the state file
+	if !m.batchMode {
+		return m.SaveStateFile()
 	}
 	return nil
 }
@@ -421,6 +430,7 @@ func (m *StateManager) SaveStateFile() error {
 }
 
 func (m *StateManager) saveStateFile(state *models.ActivityState) error {
+	ccolor.Infoln("Saving state file: %s", state.File)
 	return NewTomlUpdater().Update(state)
 }
 
@@ -432,20 +442,24 @@ func (m *StateManager) requireInit() {
 	goutil.PanicErr(m.Init())
 }
 
+func (m *StateManager) Merged() *models.ActivityState {
+	return m.merged
+}
+
 // Global returns the global activity state
 func (m *StateManager) Global() *models.ActivityState {
 	return m.global
 }
 
+// NearestState returns the nearest direnv activity state
+func (m *StateManager) NearestState() *models.ActivityState {
+	if len(m.dirStates) > 0 {
+		return m.dirStates[len(m.dirStates)-1]
+	}
+	return nil
+}
+
 // Session returns the session activity state
 func (m *StateManager) Session() *models.ActivityState {
 	return m.session
-}
-
-// GetActiveTool returns the active tool version for a given name
-func (m *StateManager) GetActiveTool(name string, global bool) string {
-	if global {
-		return m.global.SDKs[name]
-	}
-	return m.session.SDKs[name]
 }

@@ -21,8 +21,8 @@ Quick commands:
 `,
 	Subs: []*gcli.Command{
 		subcmd.ToolsCmd,
-		subcmd.UseCmd,
-		subcmd.UnuseCmd,
+		subcmd.NewUseCmd(),
+		subcmd.NewUnuseCmd(),
 		subcmd.EnvCmd,
 		subcmd.PathCmd,
 		subcmd.ConfigCmd,
