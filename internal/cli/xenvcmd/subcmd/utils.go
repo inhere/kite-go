@@ -1,6 +1,21 @@
 package subcmd
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/inhere/kite-go/pkg/xenv/models"
+)
+
+// GetOpFlag 根据参数获取操作标识
+func GetOpFlag(saveDirenv, global bool) models.OpFlag {
+	if global {
+		return models.OpFlagGlobal
+	}
+	if saveDirenv {
+		return models.OpFlagDirenv
+	}
+	return models.OpFlagSession
+}
 
 // parseNameVersion parses a string in the format name:version into its components
 func parseNameVersion(input string) (name, version string, err error) {

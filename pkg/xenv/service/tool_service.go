@@ -2,9 +2,9 @@ package service
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/gookit/goutil/errorx"
+	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/x/ccolor"
 	"github.com/inhere/kite-go/pkg/xenv/manager"
 	"github.com/inhere/kite-go/pkg/xenv/models"
@@ -35,15 +35,19 @@ func (ts *ToolService) Register(name string, version string, url string, bin str
 
 // ListAll lists all tools
 func (ts *ToolService) ListAll(showAll bool) error {
-	cfgTools := ts.config.SDKs
-	if len(cfgTools) == 0 {
-		fmt.Println("No tools for managed. see config: sdks, tools")
+	cfgSdks := ts.config.SDKs
+	if len(cfgSdks) == 0 {
+		fmt.Println("No SDK tools for managed. see config: sdks, tools")
 		return nil
 	}
+	if err := ts.toolMgr.InitLoad(); err != nil {
+		return err
+	}
 
-	ccolor.Cyanf("Managed SDK Tools(%d):\n", len(cfgTools))
+	ccolor.Cyanf("Managed SDK Tools(%d):\n", len(cfgSdks))
+	// dump.P(ts.toolMgr.LocalIndexes().SDKs)
 
-	for _, toolCfg := range cfgTools {
+	for _, toolCfg := range cfgSdks {
 		ccolor.Magentaf(" %s", toolCfg.Name)
 		if len(toolCfg.Alias) > 0 {
 			fmt.Printf("(Alias: %v) SDK:\n", toolCfg.Alias)
@@ -214,12 +218,12 @@ func (ts *ToolService) ActivateSDKs(useTools []string, opFlag models.OpFlag) (sc
 	}
 
 	// 在shell hook环境中, 生成ENV set脚本
-	var sb strings.Builder
+	var sb strutil.Builder
 	if gen != nil {
 		script1 := gen.GenRemThenAddPaths(actParams.RemPaths, actParams.AddPaths)
-		sb.WriteString(script1)
+		sb.Writeln(script1)
 		if len(actParams.AddEnvs) > 0 {
-			sb.WriteString(gen.GenSetEnvs(actParams.AddEnvs))
+			sb.Writeln(gen.GenSetEnvs(actParams.AddEnvs))
 		}
 	} else {
 		ccolor.Warnln("TIP: The operation will not take effect, please setup the SHELL HOOK first.")
@@ -274,7 +278,6 @@ func (ts *ToolService) DeactivateSDKs(deTools []string, opFlag models.OpFlag) (s
 		return "", err1
 	}
 
-	var sb strings.Builder
 	var delPaths, delEnvs []string
 
 	for _, arg := range deTools {
@@ -307,15 +310,16 @@ func (ts *ToolService) DeactivateSDKs(deTools []string, opFlag models.OpFlag) (s
 	}
 
 	// 在shell hook环境中, 生成ENV remove脚本
+	var sb strutil.Builder
 	if gen != nil && len(delPaths) > 0 {
 		script1, notFounds := gen.GenRemovePaths(delPaths)
 		if len(notFounds) > 0 {
 			ccolor.Warnf("WARN: %d paths not found in PATH: %v\n", len(notFounds), notFounds)
 		}
 
-		sb.WriteString(script1)
+		sb.Writeln(script1)
 		if len(delEnvs) > 0 {
-			sb.WriteString(gen.GenUnsetEnvs(delEnvs))
+			sb.Writeln(gen.GenUnsetEnvs(delEnvs))
 		}
 	}
 

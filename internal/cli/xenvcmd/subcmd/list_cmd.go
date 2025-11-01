@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/gcli/v3/show"
+	"github.com/gookit/gcli/v3/show/title"
 	"github.com/gookit/goutil/x/ccolor"
 	"github.com/inhere/kite-go/pkg/util"
 	"github.com/inhere/kite-go/pkg/xenv"
@@ -33,8 +33,8 @@ var ListCmd = &gcli.Command{
 func ListToolsCmd() *gcli.Command {
 	return &gcli.Command{
 		Name:    "tools",
-		Desc: "List local installed tools",
-		Aliases: []string{"t"},
+		Desc:    "List local installed SDK tools",
+		Aliases: []string{"t", "tool", "sdk", "sdks"},
 		Func: func(c *gcli.Command, args []string) error {
 			return listTools()
 		},
@@ -65,17 +65,35 @@ func ListPathCmd() *gcli.Command {
 
 // ListActivityCmd lists active tools and settings
 func ListActivityCmd() *gcli.Command {
+	var listActOpts = struct {
+		Group bool `flag:"shorts=t;desc=List activity states and group by global, dir, session"`
+	}{}
+
 	return &gcli.Command{
 		Name:    "activity",
-		Desc:    "List active tools and settings",
+		Desc: "List active SDKs, envs, paths and tools",
 		Aliases: []string{"act", "active", "use"},
+		Config: func(c *gcli.Command) {
+			c.MustFromStruct(&listActOpts)
+		},
 		Func: func(c *gcli.Command, args []string) error {
 			// Load activity state
-			if err := xenv.State().Init(); err != nil {
+			if err := xenv.InitState(); err != nil {
 				return fmt.Errorf("failed to load activity state: %w", err)
 			}
 
-			show.ATitle("Global State")
+			tl := title.New("", func(t *title.Title) {
+				t.Width = 40
+				t.PaddingLR = false
+				t.ShowBorder = true
+			})
+			if !listActOpts.Group {
+				tl.ShowNew("Activity States")
+				listActivity(xenv.State().Merged())
+				return nil
+			}
+
+			tl.ShowNew("Global State")
 			global := xenv.State().Global()
 			if global.IsEmpty() {
 				ccolor.Infoln("No global state found")
@@ -86,17 +104,20 @@ func ListActivityCmd() *gcli.Command {
 			dirStates := xenv.State().DirStates()
 			if len(dirStates) > 0 {
 				fmt.Println()
-				show.ATitle("Directory States")
+				tl.ShowNew("Directory States")
 				for _, dirState := range dirStates {
-					ccolor.Infoln(" - form: %s", dirState.File)
+					fmt.Println(" - form:", dirState.File)
 					listActivity(dirState)
 				}
 			}
 
 			if util.InHookShell() {
 				fmt.Println()
-				show.ATitle("Session State")
-				listActivity(xenv.State().Session())
+
+				sess := xenv.State().Session()
+				tl.ShowNew("Session State")
+				fmt.Println(" - session ID:", sess.SessionID())
+				listActivity(sess)
 			}
 			return nil
 		},
@@ -104,12 +125,12 @@ func ListActivityCmd() *gcli.Command {
 }
 
 func listActivity(state *models.ActivityState) {
-	ccolor.Cyanln("Active SDK Tools:")
+	ccolor.Cyanln("Active Development SDKs:")
 	for name, version := range state.SDKs {
 		ccolor.Printf("  <green>%s</> => %s\n", name, version)
 	}
 
-	ccolor.Cyanln("\nActive Environment Variables:")
+	ccolor.Cyanln("\nActive Env Variables:")
 	for name, value := range state.Envs {
 		ccolor.Printf("  <green>%s</>=%s\n", name, value)
 	}

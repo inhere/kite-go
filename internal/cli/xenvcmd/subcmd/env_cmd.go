@@ -11,6 +11,7 @@ import (
 var (
 	// GlobalFlag option value
 	GlobalFlag bool
+	SaveDirenv bool
 	DebugMode  bool
 )
 
@@ -37,9 +38,10 @@ var EnvCmd = &gcli.Command{
 func EnvSetCmd() *gcli.Command {
 	return &gcli.Command{
 		Name: "set",
-		Help: "set [-g] <name> <value>",
+		Help: "set [-g] [-s|-d] <name> <value>",
 		Desc: "Set an environment variable",
 		Config: func(c *gcli.Command) {
+			c.BoolOpt(&SaveDirenv, "direnv", "s,d", false, "Save change to direnv config .xenv.toml")
 			c.BoolOpt(&GlobalFlag, "global", "g", false, "Operate for global config")
 
 			c.AddArg("name", "environment key name", true)
@@ -80,9 +82,10 @@ func EnvSetCmd() *gcli.Command {
 func EnvUnsetCmd() *gcli.Command {
 	return &gcli.Command{
 		Name: "unset",
-		Help: "unset [-g] <name...>",
+		Help: "unset [-g] [-s|-d] <name...>",
 		Desc: "Unset environment variables",
 		Config: func(c *gcli.Command) {
+			c.BoolOpt(&SaveDirenv, "direnv", "s,d", false, "Operate for direnv config .xenv.toml")
 			c.BoolOpt(&GlobalFlag, "global", "g", false, "Operate for global config")
 			c.AddArg("names", "environment key name", true, true)
 		},

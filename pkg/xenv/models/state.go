@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gookit/goutil/arrutil"
+	"github.com/gookit/goutil/fsutil"
 )
 
 type OpFlag uint8
@@ -110,9 +111,14 @@ func NewActivityState(filePath string) *ActivityState {
 	}
 }
 
+// SessionID 从 as.File 获取当前会话ID. NOTE: 必须在 session 下使用
+func (as *ActivityState) SessionID() string {
+	return fsutil.NameNoExt(as.File)
+}
+
 // AddSDKs 新增激活工具
-func (as *ActivityState) AddSDKs(tools map[string]string) *ActivityState {
-	for name, version := range tools {
+func (as *ActivityState) AddSDKs(sdks map[string]string) *ActivityState {
+	for name, version := range sdks {
 		as.SDKs[name] = version
 	}
 	return as
@@ -137,14 +143,14 @@ func (as *ActivityState) AddTools(tools map[string]string) *ActivityState {
 // AddPaths 新增激活路径
 func (as *ActivityState) AddPaths(paths []string) *ActivityState {
 	for _, path := range paths {
-		as.AddActivePath(path)
+		as.AddPath(path)
 	}
 	return as
 }
 
 // Merge other to current. 合并两个状态数据
 func (as *ActivityState) Merge(other *ActivityState) {
-	if other == nil {
+	if other == nil || other.IsEmpty() {
 		return
 	}
 	as.AddSDKs(other.SDKs).AddEnvs(other.Envs).AddTools(other.Tools).AddPaths(other.Paths)
@@ -165,28 +171,42 @@ func (as *ActivityState) DelSDKsEnvsPaths(sdkNames, envNames, paths []string) {
 	}
 
 	if len(paths) > 0 {
-		as.RemovePaths(paths)
+		as.DelPaths(paths)
 	}
 }
 
-// AddActivePath 添加激活路径, 会先检测是否已存在
-func (as *ActivityState) AddActivePath(path string) {
-	// 检查路径是否已存在
-	for _, p := range as.Paths {
-		if p == path {
-			return
-		}
+// DelSDKs 删除多个SDK工具
+func (as *ActivityState) DelSDKs(names []string) {
+	for _, name := range names {
+		delete(as.SDKs, name)
 	}
-	as.Paths = append(as.Paths, path)
 }
 
-// RemoveThenAddPaths 先删除然后新增激活路径
-func (as *ActivityState) RemoveThenAddPaths(rmPaths, addPaths []string) *ActivityState {
-	return as.RemovePaths(rmPaths).AddPaths(addPaths)
+// RemoveSDK 删除激活的SDK
+func (as *ActivityState) RemoveSDK(name string) bool {
+	_, exists := as.SDKs[name]
+	if exists {
+		delete(as.SDKs, name)
+	}
+	return exists
 }
 
-// RemovePaths 删除激活路径
-func (as *ActivityState) RemovePaths(paths []string) *ActivityState {
+// DelTool 删除激活的工具
+func (as *ActivityState) DelTool(name string) bool {
+	_, exists := as.Tools[name]
+	if exists {
+		delete(as.Tools, name)
+	}
+	return exists
+}
+
+// DelThenAddPaths 先删除然后新增激活路径
+func (as *ActivityState) DelThenAddPaths(rmPaths, addPaths []string) *ActivityState {
+	return as.DelPaths(rmPaths).AddPaths(addPaths)
+}
+
+// DelPaths 删除激活路径
+func (as *ActivityState) DelPaths(paths []string) *ActivityState {
 	if len(paths) == 0 {
 		return as
 	}
@@ -202,24 +222,20 @@ func (as *ActivityState) RemovePaths(paths []string) *ActivityState {
 	return as
 }
 
-// RemoveTool 删除激活的工具
-func (as *ActivityState) RemoveTool(name string) bool {
-	_, exists := as.SDKs[name]
-	if exists {
-		delete(as.SDKs, name)
+// AddPath 添加激活路径, 会先检测是否已存在
+func (as *ActivityState) AddPath(path string) {
+	// 检查路径是否已存在
+	for _, p := range as.Paths {
+		if p == path {
+			return
+		}
 	}
-	return exists
+	as.Paths = append(as.Paths, path)
 }
 
 // ExistsPath 检查路径是否已存在
 func (as *ActivityState) ExistsPath(val string) bool {
 	return arrutil.StringsContains(as.Paths, val)
-}
-
-func (as *ActivityState) DelSDKs(names []string) {
-	for _, name := range names {
-		delete(as.SDKs, name)
-	}
 }
 
 // IsEmpty 检查状态数据是否为空

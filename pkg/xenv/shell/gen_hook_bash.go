@@ -30,6 +30,39 @@ var BashHookTemplate = `# kite xenv bash hook
 # This script enables xenv to work in bash shells
 # Start to set up xenv in the current shell
 
+# Helper function to evaluate xenv command results
+eval_xenv_result() {
+    local result="$1"
+    local exit_code="$2"
+
+    if [ "$exit_code" -eq 0 ]; then
+        if [ -n "$result" ]; then
+            # 检查结果是否包含 '--Expression--' 分隔符
+            if [[ "$result" == *"--Expression--"* ]]; then
+                # 使用 '--Expression--' 分割内容
+                local msg_part="$(echo "$result" | cut -d'-' -f1)"
+                local expr_part="$(echo "$result" | cut -d'-' -f4-)"
+
+                # 后面部分当做代码执行
+                if [ -n "$expr_part" ]; then
+                    eval "$expr_part"
+                fi
+                # 前面部分直接输出
+                if [ -n "$msg_part" ]; then
+                    echo "$msg_part"
+                    # echo "$result"  # 输出完整结果用于调试
+                fi
+            else
+                # 否则直接输出内容
+                echo "$result"
+            fi
+        fi
+    else
+        echo "$result" >&2
+        return $exit_code
+    fi
+}
+
 setup_xenv() {
     # Mark hook enabled
     export XENV_HOOK_SHELL=bash
@@ -51,17 +84,17 @@ setup_xenv() {
         shift
 
         case "$command" in
-            use)
-                # Implementation for switching tool versions
-                command kenv use "$@"
+            use|unuse|env|path)
+                # 对于这些命令，获取结果并评估
+                local result="$(kite xenv "$command" "$@")"
+                local exit_code=$?
+                eval_xenv_result "$result" $exit_code
                 ;;
-            unuse)
-                # Implementation for unusing tool versions
-                command kenv unuse "$@"
-                ;;
-            shell)
-                # Output the shell commands needed to set up xenv
-                command kenv shell bash
+            set|unset)
+                # 对于环境变量设置/取消设置命令
+                local result="$(kite xenv env "$command" "$@")"
+                local exit_code=$?
+                eval_xenv_result "$result" $exit_code
                 ;;
             *)
                 # For other commands, just pass through to xenv
@@ -78,7 +111,7 @@ setup_xenv() {
 
 	# Enable command completion for xenv
 	if command -v complete >/dev/null 2>&1; then
-		complete -W "use unuse add list help" xenv
+		complete -W "use unuse env set unset path list help" xenv
 	fi
 
     # Load custom hooks script files

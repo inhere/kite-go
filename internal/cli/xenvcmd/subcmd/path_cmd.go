@@ -31,6 +31,7 @@ func PathAddCmd() *gcli.Command {
 		Desc: "Add a path to PATH environment variable",
 		Config: func(c *gcli.Command) {
 			c.BoolOpt(&GlobalFlag, "global", "g", false, "Global operation, not the current session")
+			c.BoolOpt(&SaveDirenv, "direnv", "s,d", false, "Operate for direnv config .xenv.toml")
 			c.AddArg("path", "PATH environment value", true)
 		},
 		Func: func(c *gcli.Command, args []string) error {
@@ -75,6 +76,7 @@ func PathRemoveCmd() *gcli.Command {
 		Aliases: []string{"rm", "delete"},
 		Config: func(c *gcli.Command) {
 			c.BoolOpt(&GlobalFlag, "global", "g", false, "Global operation, not the current session")
+			c.BoolOpt(&SaveDirenv, "direnv", "s,d", false, "Operate for direnv config .xenv.toml")
 			c.BoolOpt(&pathRmOpts.matchMode, "match", "m", false, "Match mode, remove paths that match the given path")
 			c.AddArg("path", "PATH environment value", true)
 		},

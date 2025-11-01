@@ -2,14 +2,9 @@
 # 全局/项目级别xenv配置
 #
 
-# 默认启用全局sdk配置 ~/.xenv/.xenv.toml
-enable_global = true
-# 当前根目录 为 ture 时，不在继续向上查找
-is_root = true
-
 # Env Paths
 paths = [
-    # "~/.local/bin",
+     "~/.local/bin", #dd
 ]
 
 # Envs

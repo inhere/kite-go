@@ -5,11 +5,20 @@ import (
 
 	"github.com/inhere/kite-go/pkg/xenv/config"
 	"github.com/inhere/kite-go/pkg/xenv/manager"
+	"github.com/inhere/kite-go/pkg/xenv/models"
 	"github.com/inhere/kite-go/pkg/xenv/service"
 )
 
 // ScriptMark 输出的脚本必须添加标记，前面部分为message, 后面部分为脚本
 const ScriptMark = "--Expression--"
+
+var debugMode bool
+
+// SetDebugMode sets the debug mode
+func SetDebugMode(debug bool) {
+	debugMode = debug
+	models.DebugMode = debug
+}
 
 // Init initializes the xenv config and state
 func Init() error {
@@ -18,7 +27,7 @@ func Init() error {
 		return fmt.Errorf("failed to initialize configuration: %w", err)
 	}
 
-	if err := stateMgr.Init(); err != nil {
+	if err := InitState(); err != nil {
 		return fmt.Errorf("failed to initialize state manager: %w", err)
 	}
 
@@ -35,6 +44,11 @@ func State() *manager.StateManager {
 	return stateMgr
 }
 
+// InitState initializes the state manager
+func InitState() error {
+	return stateMgr.Init()
+}
+
 var toolMgr = manager.NewToolManager()
 
 func ToolMgr() *manager.ToolManager {
@@ -47,7 +61,7 @@ func EnvService() (*service.EnvService, error) {
 		return nil, fmt.Errorf("failed to initialize configuration: %w", err)
 	}
 
-	if err := stateMgr.Init(); err != nil {
+	if err := InitState(); err != nil {
 		return nil, fmt.Errorf("failed to initialize state manager: %w", err)
 	}
 

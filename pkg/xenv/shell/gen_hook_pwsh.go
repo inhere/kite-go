@@ -88,7 +88,8 @@ function Eval-XenvResult {
 				}
 				# 前面部分直接输出
 				if ($msgPart) {
-					Write-Output $msgPart
+					# Write-Output $msgPart
+					Write-Output $Result # DEBUG
 				}
 			} else {
 				# 否则直接输出内容

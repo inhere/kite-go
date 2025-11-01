@@ -11,13 +11,13 @@ import (
 	"github.com/gookit/goutil/jsonutil"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/x/ccolor"
-	"github.com/inhere/kite-go/pkg/util"
 	"github.com/inhere/kite-go/pkg/xenv/models"
 	"github.com/inhere/kite-go/pkg/xenv/tools"
 )
 
 type ToolManager struct {
 	init bool
+	// config
 	config *models.Configuration
 	// local data file
 	localLoad bool
@@ -45,6 +45,11 @@ func (m *ToolManager) Init(config *models.Configuration) error {
 	return nil
 }
 
+// InitLoad loads the local indexes
+func (m *ToolManager) InitLoad() error {
+	return m.ensureLocalLoad(false)
+}
+
 // ensureLocalLoad ensure local data file loaded
 func (m *ToolManager) ensureLocalLoad(must bool) error {
 	if m.localLoad {
@@ -52,18 +57,20 @@ func (m *ToolManager) ensureLocalLoad(must bool) error {
 	}
 	m.localLoad = true
 
-	err := m.LoadLocalTools()
+	err := m.LoadLocalIndexes()
 	if err != nil && must {
 		panic(err)
 	}
 	return err
 }
 
-// LoadLocalTools local installed tools information
-func (m *ToolManager) LoadLocalTools() error {
-	m.localFile = util.NormalizePath("~/.xenv/tools.local.json")
+// LoadLocalIndexes local installed SDK,tool index information
+func (m *ToolManager) LoadLocalIndexes() error {
+	m.localFile = fsutil.ExpandHome("~/.xenv/tools.local.json")
+	fileExist := fsutil.IsFile(m.localFile)
+	models.Debugf("Load local index file: %s(exist=%v)\n", m.localFile, fileExist)
 
-	if fsutil.IsFile(m.localFile) {
+	if fileExist {
 		err := jsonutil.DecodeFile(m.localFile, m.localTools)
 		if err != nil {
 			return err
@@ -98,19 +105,19 @@ func (m *ToolManager) IndexLocalTools() error {
 	m.localTools.SDKs = nil // 重新添加
 
 	// SDK tools
-	for _, toolCfg := range m.config.SDKs {
-		ver2dirMap, err := tools.ListVersionDirs(toolCfg.InstallDir)
+	for _, sdkCfg := range m.config.SDKs {
+		ver2dirMap, err := tools.ListVersionDirs(sdkCfg.InstallDir)
 		if err != nil {
 			return err
 		}
 
-		ccolor.Cyanf("Found installed %q from %s\n", toolCfg.Name, toolCfg.InstallDir)
+		ccolor.Cyanf("Found installed %q from %s\n", sdkCfg.Name, sdkCfg.InstallDir)
 		for version, installPath := range ver2dirMap {
-			ccolor.Infof("  Found %s %s\n", toolCfg.Name, version)
+			ccolor.Infof("  Found %s %s\n", sdkCfg.Name, version)
 			// build local installed tool info
 			m.localTools.SDKs = append(m.localTools.SDKs, models.InstalledTool{
-				ID:         fmt.Sprintf("%s:%s", toolCfg.Name, version),
-				Name:       toolCfg.Name,
+				ID:   fmt.Sprintf("%s:%s", sdkCfg.Name, version),
+				Name: sdkCfg.Name,
 				Version:    version,
 				InstallDir: installPath,
 				CreatedAt:  currentTime,
@@ -221,3 +228,7 @@ func (m *ToolManager) MatchSdkByVersion(localSdks []models.InstalledTool, versio
 	return nil
 }
 
+// LocalIndexes returns the local indexes
+func (m *ToolManager) LocalIndexes() *models.ToolsLocal {
+	return m.localTools
+}

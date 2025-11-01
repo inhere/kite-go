@@ -7,7 +7,6 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/strutil"
-	"github.com/gookit/goutil/x/ccolor"
 	"github.com/inhere/kite-go/pkg/util"
 	"github.com/inhere/kite-go/pkg/xenv/models"
 )
@@ -17,7 +16,6 @@ type StateManager struct {
 	init bool
 	// batch mode
 	batchMode bool
-	debugMode bool
 	// all merged state data.
 	//  - 数据按 global, direnv, session 的顺序合并进来
 	merged *models.ActivityState
@@ -60,9 +58,6 @@ func (m *StateManager) GlobalFile() string { return m.global.File }
 // SetBatchMode sets the batch mode flag
 func (m *StateManager) SetBatchMode(enabled bool) { m.batchMode = enabled }
 
-// SetDebugMode sets the debug mode flag
-func (m *StateManager) SetDebugMode(enabled bool) { m.debugMode = enabled }
-
 // endregion
 // region SDK state management
 //
@@ -74,7 +69,7 @@ func (m *StateManager) UseSDKsWithParams(ps *models.ActivateSDKsParams) error {
 	}
 
 	// update 合并数据
-	m.merged.AddSDKs(ps.AddSdks).AddEnvs(ps.AddEnvs).RemovePaths(ps.RemPaths).AddPaths(ps.AddPaths)
+	m.merged.AddSDKs(ps.AddSdks).AddEnvs(ps.AddEnvs).DelPaths(ps.RemPaths).AddPaths(ps.AddPaths)
 
 	switch ps.OpFlag {
 	case models.OpFlagGlobal:
@@ -146,28 +141,6 @@ func (m *StateManager) DelSDKsWithEnvsPaths(names, envs, paths []string, opFlag 
 		return m.SaveStateFile()
 	}
 	return nil
-}
-
-// DeactivateTool deactivates a specific tool version
-func (m *StateManager) DeactivateTool(name string, global bool) error {
-	if err := m.requireInit(); err != nil {
-		return err
-	}
-
-	if global {
-		if m.global.RemoveTool(name) {
-			// Save the global state
-			if !m.batchMode {
-				return m.SaveStateFile()
-			}
-		}
-		return fmt.Errorf("tool %q was never activated in global", name)
-	}
-
-	if m.session.RemoveTool(name) {
-		return nil
-	}
-	return fmt.Errorf("tool %q was never activated in session", name)
 }
 
 // endregion
@@ -256,7 +229,7 @@ func (m *StateManager) AddPaths(paths []string, global bool) (err error) {
 
 	if global {
 		for _, path := range paths {
-			m.global.AddActivePath(path)
+			m.global.AddPath(path)
 		}
 		// Save the global state
 		if !m.batchMode {
@@ -266,7 +239,7 @@ func (m *StateManager) AddPaths(paths []string, global bool) (err error) {
 	}
 
 	for _, path := range paths {
-		m.session.AddActivePath(path)
+		m.session.AddPath(path)
 	}
 	return
 }
@@ -279,7 +252,7 @@ func (m *StateManager) AddPath(path string, global bool) error {
 
 	// Add to global
 	if global {
-		m.global.AddActivePath(path)
+		m.global.AddPath(path)
 		// Save the global state
 		if !m.batchMode {
 			return m.SaveStateFile()
@@ -288,7 +261,7 @@ func (m *StateManager) AddPath(path string, global bool) error {
 	}
 
 	// Add to session
-	m.session.AddActivePath(path)
+	m.session.AddPath(path)
 	return nil
 }
 
@@ -345,6 +318,9 @@ func (m *StateManager) LoadStateFiles() (err error) {
 	m.session.Shell = util.HookShell()
 	if util.InHookShell() && fsutil.IsFile(m.session.File) {
 		err = m.loadStateFile(m.session)
+		if err == nil {
+			m.merged.Merge(m.session)
+		}
 	}
 
 	return
@@ -360,7 +336,7 @@ func (m *StateManager) LoadDirEnvState() error {
 	// Check for .xenv.toml file in the current directory and parent directories up to the root
 	xenvTomlPath := fsutil.FindOneInParentDirs(wd, models.LocalStateFile)
 	if xenvTomlPath != "" {
-		m.debugf("Found .xenv.toml at: %s\n", xenvTomlPath)
+		models.Debugf("Found .xenv.toml at: %s\n", xenvTomlPath)
 		// Process the .xenv.toml file
 		if err1 := m.processDirenvToml(xenvTomlPath); err1 != nil {
 			return fmt.Errorf("failed to process .xenv.toml: %w", err1)
@@ -371,18 +347,11 @@ func (m *StateManager) LoadDirEnvState() error {
 	fileName := strutil.OrCond(util.IsHookBash(), ".envrc", ".envrc.ps1")
 	envrcPath := fsutil.FindOneInParentDirs(wd, fileName)
 	if envrcPath != "" {
-		m.debugf("Found envrc at: %s\n", envrcPath)
+		models.Debugf("Found envrc at: %s\n", envrcPath)
 		m.envrcFiles = append(m.envrcFiles, envrcPath)
 	}
 
 	return nil
-}
-
-// debugf prints debug messages
-func (m *StateManager) debugf(format string, args ...any) {
-	if m.debugMode {
-		ccolor.Printf("<cyan>DEBUG</>: "+format+"\n", args...)
-	}
 }
 
 // processDirenvToml processes an .xenv.toml file
@@ -393,7 +362,7 @@ func (m *StateManager) processDirenvToml(filePath string) error {
 		return fmt.Errorf("failed to load dir state: %w", err)
 	}
 
-	m.session.Merge(dirState)
+	m.merged.Merge(dirState)
 	m.dirStates = append(m.dirStates, dirState)
 	return nil
 }
@@ -440,7 +409,7 @@ func (m *StateManager) SaveStateFile() error {
 }
 
 func (m *StateManager) saveStateFile(state *models.ActivityState) error {
-	m.debugf("Saving state file: %s", state.File)
+	models.Debugf("Saving state file: %s\n", state.File)
 	return NewTomlUpdater().Update(state)
 }
 
@@ -455,9 +424,7 @@ func (m *StateManager) requireInit() error {
 	return nil
 }
 
-func (m *StateManager) Merged() *models.ActivityState {
-	return m.merged
-}
+func (m *StateManager) Merged() *models.ActivityState { return m.merged }
 
 // Global returns the global activity state
 func (m *StateManager) Global() *models.ActivityState { return m.global }

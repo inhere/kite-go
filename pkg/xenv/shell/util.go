@@ -12,6 +12,11 @@ import (
 // OutputScript outputs shell scripts to stdout
 func OutputScript(script string) {
 	if script != "" {
+		// fix: Windows Pwsh, CMD 换行符是 \r\n
+		if util.IsHookPwshOrCmd() {
+			fmt.Printf("%s\r\n%s\r\n", ScriptMark, script)
+			return
+		}
 		fmt.Printf("%s\n%s\n", ScriptMark, script)
 	}
 }

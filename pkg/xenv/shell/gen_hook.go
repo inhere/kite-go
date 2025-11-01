@@ -69,11 +69,20 @@ func (sg *XenvScriptGenerator) installScriptsToProfile(script, profile string) e
 
 // GenSetEnvs 批量生成环境变量设置脚本代码
 func (sg *XenvScriptGenerator) GenSetEnvs(envs map[string]string) string {
-	var sb strings.Builder
+	var ss []string
 	for name, value := range envs {
-		sb.WriteString(sg.GenSetEnv(name, value))
+		ss = append(ss, sg.GenSetEnv(name, value))
 	}
-	return sb.String()
+	return strings.Join(ss, "\n")
+}
+
+// GenUnsetEnvs 批量生成环境变量删除脚本代码
+func (sg *XenvScriptGenerator) GenUnsetEnvs(names []string) string {
+	var ss []string
+	for _, name := range names {
+		ss = append(ss, sg.GenUnsetEnv(name))
+	}
+	return strings.Join(ss, "\n")
 }
 
 // GenSetEnv 生成环境变量设置脚本代码
@@ -83,19 +92,10 @@ func (sg *XenvScriptGenerator) GenSetEnv(name, value string) string {
 	case Bash, Zsh:
 		return fmt.Sprintf("export %s='%s'\n", name, value)
 	case Pwsh:
-		return fmt.Sprintf("$Env:%s = '%s'\n", name, value)
+		return fmt.Sprintf("$Env:%s='%s';\n", name, value)
 	default:
-		return fmt.Sprintf("os.setenv('%s', '%s')\n", name, value)
+		return fmt.Sprintf("os.setenv('%s', '%s')\n\n", name, value)
 	}
-}
-
-// GenUnsetEnvs 批量生成环境变量删除脚本代码
-func (sg *XenvScriptGenerator) GenUnsetEnvs(names []string) string {
-	var sb strings.Builder
-	for _, name := range names {
-		sb.WriteString(sg.GenUnsetEnv(name))
-	}
-	return sb.String()
 }
 
 // GenUnsetEnv 删除环境变量的脚本代码
@@ -117,7 +117,7 @@ func (sg *XenvScriptGenerator) GenAddPath(path string) string {
 	case Bash, Zsh:
 		return fmt.Sprintf("export PATH=%s:$PATH\n", path)
 	case Pwsh:
-		return fmt.Sprintf("$Env:PATH = \"%s;$Env:PATH\"\n", path)
+		return fmt.Sprintf("$Env:PATH=\"%s;$Env:PATH\"\n", path)
 	default:
 		return fmt.Sprintf("os.setenv('PATH', '%s;%%PATH%%')\n", path)
 	}
@@ -131,9 +131,22 @@ func (sg *XenvScriptGenerator) GenAddPaths(paths []string) string {
 		return fmt.Sprintf("export PATH=%s:$PATH\n", newPath)
 	case Pwsh:
 		// pwsh "" 支持变量插值和表达式求值
-		return fmt.Sprintf("$Env:PATH = \"%s;$Env:PATH\"\n", newPath)
+		return fmt.Sprintf("$Env:PATH=\"%s;$Env:PATH\"\n", newPath)
 	default:
 		return fmt.Sprintf("os.setenv('PATH', '%s;%%PATH%%')\n", newPath)
+	}
+}
+
+// GenSetPath 设置 PATH 脚本代码
+func (sg *XenvScriptGenerator) GenSetPath(paths []string) string {
+	newPath := util.JoinPaths(paths)
+	switch sg.shell {
+	case Bash, Zsh:
+		return fmt.Sprintf("export PATH=%s\n", newPath)
+	case Pwsh:
+		return fmt.Sprintf("$Env:PATH='%s';\n", newPath)
+	default:
+		return fmt.Sprintf("os.setenv('PATH', '%s')\n\n", newPath)
 	}
 }
 
@@ -166,18 +179,6 @@ func (sg *XenvScriptGenerator) GenRemThenAddPaths(rmPaths, addPaths []string) (s
 	return
 }
 
-// GenSetPath 设置 PATH 脚本代码
-func (sg *XenvScriptGenerator) GenSetPath(paths []string) string {
-	newPath := util.JoinPaths(paths)
-	switch sg.shell {
-	case Bash, Zsh:
-		return fmt.Sprintf("export PATH=%s\n", newPath)
-	case Pwsh:
-		return fmt.Sprintf("$Env:PATH = '%s'\n", newPath)
-	default:
-		return fmt.Sprintf("os.setenv('PATH', '%s')\n", newPath)
-	}
-}
 
 // endregion
 // region Helper methods
