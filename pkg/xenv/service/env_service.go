@@ -70,7 +70,7 @@ func (s *EnvService) GenHookScripts(st shell.ShellType) (string, error) {
 //
 
 // SetEnv sets an environment variable
-func (s *EnvService) SetEnv(name, value string, global bool) (script string, err error) {
+func (s *EnvService) SetEnv(name, value string, opFlag models.OpFlag) (script string, err error) {
 	// Generate shell eval scripts
 	gen, err1 := getShellGenerator(s.config)
 	if err1 != nil {
@@ -95,12 +95,12 @@ func (s *EnvService) SetEnv(name, value string, global bool) (script string, err
 	// }
 
 	// Add to activity state data
-	err = s.state.SetEnv(name, value, global)
+	err = s.state.SetEnv(name, value, opFlag)
 	return
 }
 
 // UnsetEnvs unsets multi environment variables
-func (s *EnvService) UnsetEnvs(names []string, global bool) (script string, err error) {
+func (s *EnvService) UnsetEnvs(names []string, opFlag models.OpFlag) (script string, err error) {
 	var sb strings.Builder
 	// Generate shell eval scripts
 	gen, err1 := getShellGenerator(s.config)
@@ -124,15 +124,13 @@ func (s *EnvService) UnsetEnvs(names []string, global bool) (script string, err 
 			sb.WriteString(gen.GenUnsetEnv(name))
 		}
 
-		err = s.state.UnsetEnv(name, global)
+		err = s.state.UnsetEnv(name, opFlag)
 		if err != nil {
 			return "", err
 		}
 	}
 
-	if global {
-		err = s.state.SaveStateFile()
-	}
+	err = s.state.SaveStateFile()
 	return sb.String(), err
 }
 
@@ -152,7 +150,7 @@ func (s *EnvService) SessionEnv() map[string]string {
 //
 
 // AddPath adds a path to the PATH environment variable
-func (s *EnvService) AddPath(path string, global bool) (script string, err error) {
+func (s *EnvService) AddPath(path string, opFlag models.OpFlag) (script string, err error) {
 	normalizedPath := util.NormalizePath(path)
 
 	// Check if path exists
@@ -188,12 +186,12 @@ func (s *EnvService) AddPath(path string, global bool) (script string, err error
 	}
 
 	// Add to activity state
-	err = s.state.AddPath(normalizedPath, global)
+	err = s.state.AddPath(normalizedPath, opFlag)
 	return
 }
 
 // RemovePath removes a path from the PATH environment variable
-func (s *EnvService) RemovePath(path string, global bool) (script string, err error) {
+func (s *EnvService) RemovePath(path string, opFlag models.OpFlag) (script string, err error) {
 	// Normalize the path
 	normalizedPath := util.NormalizePath(path)
 	pathList := util.SplitPath(os.Getenv("PATH"))
@@ -211,9 +209,7 @@ func (s *EnvService) RemovePath(path string, global bool) (script string, err er
 	}
 	if !found {
 		ccolor.Warnf("path not found in PATH: %s", normalizedPath)
-		// Remove from activity state
-		err = s.state.RemovePath(normalizedPath, global)
-		return "", err
+		return "", fmt.Errorf("path not found in PATH: %s", normalizedPath)
 	}
 
 	// Generate shell eval scripts
@@ -230,7 +226,7 @@ func (s *EnvService) RemovePath(path string, global bool) (script string, err er
 	}
 
 	// Remove from activity state
-	err = s.state.RemovePath(normalizedPath, global)
+	err = s.state.DelPath(normalizedPath, opFlag)
 	return
 }
 

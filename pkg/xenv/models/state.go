@@ -121,6 +121,7 @@ func (as *ActivityState) AddSDKs(sdks map[string]string) *ActivityState {
 	for name, version := range sdks {
 		as.SDKs[name] = version
 	}
+	as.HasUpdate = true
 	return as
 }
 
@@ -129,6 +130,7 @@ func (as *ActivityState) AddEnvs(envs map[string]string) *ActivityState {
 	for name, value := range envs {
 		as.Envs[name] = value
 	}
+	as.HasUpdate = true
 	return as
 }
 
@@ -137,6 +139,7 @@ func (as *ActivityState) AddTools(tools map[string]string) *ActivityState {
 	for name, version := range tools {
 		as.Tools[name] = version
 	}
+	as.HasUpdate = true
 	return as
 }
 
@@ -159,17 +162,11 @@ func (as *ActivityState) Merge(other *ActivityState) {
 // DelSDKsEnvsPaths 删除激活工具和相关的 ENV, PATH
 func (as *ActivityState) DelSDKsEnvsPaths(sdkNames, envNames, paths []string) {
 	if len(sdkNames) > 0 {
-		for _, name := range sdkNames {
-			delete(as.SDKs, name)
-		}
+		as.DelSDKs(sdkNames)
 	}
-
 	if len(envNames) > 0 {
-		for _, name := range envNames {
-			delete(as.Envs, name)
-		}
+		as.DelEnvs(envNames)
 	}
-
 	if len(paths) > 0 {
 		as.DelPaths(paths)
 	}
@@ -178,6 +175,7 @@ func (as *ActivityState) DelSDKsEnvsPaths(sdkNames, envNames, paths []string) {
 // DelSDKs 删除多个SDK工具
 func (as *ActivityState) DelSDKs(names []string) {
 	for _, name := range names {
+		as.HasUpdate = true
 		delete(as.SDKs, name)
 	}
 }
@@ -186,15 +184,25 @@ func (as *ActivityState) DelSDKs(names []string) {
 func (as *ActivityState) RemoveSDK(name string) bool {
 	_, exists := as.SDKs[name]
 	if exists {
+		as.HasUpdate = true
 		delete(as.SDKs, name)
 	}
 	return exists
+}
+
+// DelEnvs 删除多个环境变量
+func (as *ActivityState) DelEnvs(names []string) {
+	for _, name := range names {
+		as.HasUpdate = true
+		delete(as.Envs, name)
+	}
 }
 
 // DelTool 删除激活的工具
 func (as *ActivityState) DelTool(name string) bool {
 	_, exists := as.Tools[name]
 	if exists {
+		as.HasUpdate = true
 		delete(as.Tools, name)
 	}
 	return exists
@@ -216,21 +224,29 @@ func (as *ActivityState) DelPaths(paths []string) *ActivityState {
 		if arrutil.StringsContains(paths, path) {
 			continue
 		}
+		as.HasUpdate = true
 		newPaths = append(newPaths, path)
 	}
 	as.Paths = newPaths
 	return as
 }
 
+// DelPath 删除激活路径
+func (as *ActivityState) DelPath(path string) {
+	as.DelPaths([]string{path})
+}
+
 // AddPath 添加激活路径, 会先检测是否已存在
-func (as *ActivityState) AddPath(path string) {
+func (as *ActivityState) AddPath(path string) bool {
 	// 检查路径是否已存在
 	for _, p := range as.Paths {
 		if p == path {
-			return
+			return false
 		}
 	}
+	as.HasUpdate = true
 	as.Paths = append(as.Paths, path)
+	return true
 }
 
 // ExistsPath 检查路径是否已存在

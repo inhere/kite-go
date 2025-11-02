@@ -75,9 +75,7 @@ func (m *StateManager) UseSDKsWithParams(ps *models.ActivateSDKsParams) error {
 	case models.OpFlagGlobal:
 		m.global.AddSDKs(ps.AddSdks)
 	case models.OpFlagDirenv:
-		if ds := m.Nearest(); ds != nil {
-			ds.AddSDKs(ps.AddSdks)
-		}
+		m.DirenvOrNew().AddSDKs(ps.AddSdks)
 	default:
 		m.session.AddSDKs(ps.AddSdks)
 	}
@@ -102,9 +100,7 @@ func (m *StateManager) ActivateSDK(name, version string, opFlag models.OpFlag) e
 	case models.OpFlagGlobal:
 		m.global.SDKs[name] = version
 	case models.OpFlagDirenv:
-		if ds := m.Nearest(); ds != nil {
-			ds.SDKs[name] = version
-		}
+		m.DirenvOrNew().SDKs[name] = version
 	default:
 		m.session.SDKs[name] = version
 	}
@@ -148,71 +144,80 @@ func (m *StateManager) DelSDKsWithEnvsPaths(names, envs, paths []string, opFlag 
 //
 
 // AddEnvs sets multiple environment variables
-func (m *StateManager) AddEnvs(envs map[string]string, global bool) error {
+func (m *StateManager) AddEnvs(envs map[string]string, opFlag models.OpFlag) error {
 	if err := m.requireInit(); err != nil {
 		return err
 	}
 
-	if global {
-		for name, value := range envs {
-			m.global.Envs[name] = value
-		}
-		// Save the global state
-		if !m.batchMode {
-			return m.SaveStateFile()
-		}
-		return nil
+	// update 合并数据
+	m.merged.AddEnvs(envs)
+
+	switch opFlag {
+	case models.OpFlagGlobal:
+		m.global.AddEnvs(envs)
+	case models.OpFlagDirenv:
+		m.DirenvOrNew().AddEnvs(envs)
+	default:
+		m.session.AddEnvs(envs)
 	}
 
-	for name, value := range envs {
-		m.session.Envs[name] = value
+	// Save the state file
+	if !m.batchMode {
+		return m.SaveStateFile()
 	}
 	return nil
 }
 
 // SetEnv sets an environment variable
-func (m *StateManager) SetEnv(name, value string, global bool) error {
+func (m *StateManager) SetEnv(name, value string, opFlag models.OpFlag) error {
 	if err := m.requireInit(); err != nil {
 		return err
 	}
 
-	// Set global env
-	if global {
+	m.merged.Envs[name] = value
+
+	switch opFlag {
+	case models.OpFlagGlobal:
 		m.global.Envs[name] = value
-		// Save the global state
-		if !m.batchMode {
-			return m.SaveStateFile()
-		}
-	} else {
-		// Set session env
+	case models.OpFlagDirenv:
+		m.DirenvOrNew().Envs[name] = value
+	default:
 		m.session.Envs[name] = value
+	}
+
+	if !m.batchMode {
+		return m.SaveStateFile()
 	}
 	return nil
 }
 
 // UnsetEnv unsets an environment variable
-func (m *StateManager) UnsetEnv(name string, global bool) error {
+func (m *StateManager) UnsetEnv(name string, opFlag models.OpFlag) error {
 	if err := m.requireInit(); err != nil {
 		return err
 	}
 
-	// Unset global env
-	if global {
-		// check exists
-		if _, exists := m.global.Envs[name]; exists {
-			// return fmt.Errorf("environment variable %s is not currently set", name)
-			delete(m.global.Envs, name)
-			// Save the global state
-			if !m.batchMode {
-				return m.SaveStateFile()
-			}
-		}
+	// update 删除合并数据
+	// check exists
+	if _, exists := m.merged.Envs[name]; exists {
+		delete(m.merged.Envs, name)
 	} else {
-		// check exists
-		if _, exists := m.session.Envs[name]; exists {
-			// return fmt.Errorf("environment variable %s is not currently set", name)
-			delete(m.session.Envs, name)
+		return fmt.Errorf("environment variable %s is not exists", name)
+	}
+
+	switch opFlag {
+	case models.OpFlagGlobal:
+		delete(m.global.Envs, name)
+	case models.OpFlagDirenv:
+		if ds := m.Nearest(); ds != nil {
+			delete(ds.Envs, name)
 		}
+	default:
+		delete(m.session.Envs, name)
+	}
+
+	if !m.batchMode {
+		return m.SaveStateFile()
 	}
 	return nil
 }
@@ -222,76 +227,74 @@ func (m *StateManager) UnsetEnv(name string, global bool) error {
 //
 
 // AddPaths adds multiple paths to the PATH environment variable
-func (m *StateManager) AddPaths(paths []string, global bool) (err error) {
+func (m *StateManager) AddPaths(paths []string, opFlag models.OpFlag) (err error) {
 	if err = m.requireInit(); err != nil {
 		return err
 	}
 
-	if global {
-		for _, path := range paths {
-			m.global.AddPath(path)
-		}
-		// Save the global state
-		if !m.batchMode {
-			return m.SaveStateFile()
-		}
-		return
+	m.merged.AddPaths(paths)
+
+	switch opFlag {
+	case models.OpFlagGlobal:
+		m.global.AddPaths(paths)
+	case models.OpFlagDirenv:
+		m.DirenvOrNew().AddPaths(paths)
+	default:
+		m.session.AddPaths(paths)
 	}
 
-	for _, path := range paths {
-		m.session.AddPath(path)
+	if !m.batchMode {
+		return m.SaveStateFile()
 	}
 	return
 }
 
 // AddPath adds a path to the PATH environment variable
-func (m *StateManager) AddPath(path string, global bool) error {
+func (m *StateManager) AddPath(path string, opFlag models.OpFlag) error {
 	if err := m.requireInit(); err != nil {
 		return err
 	}
 
-	// Add to global
-	if global {
+	// update 添加合并数据
+	m.merged.AddPath(path)
+
+	switch opFlag {
+	case models.OpFlagGlobal:
 		m.global.AddPath(path)
-		// Save the global state
-		if !m.batchMode {
-			return m.SaveStateFile()
-		}
-		return nil
+	case models.OpFlagDirenv:
+		m.DirenvOrNew().AddPath(path)
+	default:
+		m.session.AddPath(path)
 	}
 
-	// Add to session
-	m.session.AddPath(path)
+	if !m.batchMode {
+		return m.SaveStateFile()
+	}
 	return nil
 }
 
-// RemovePath removes a path from the PATH environment variable
-func (m *StateManager) RemovePath(path string, global bool) error {
+// DelPath removes a path from the PATH environment variable
+func (m *StateManager) DelPath(path string, opFlag models.OpFlag) error {
 	if err := m.requireInit(); err != nil {
 		return err
 	}
 
-	if global {
-		newPaths := make([]string, 0, len(m.global.Paths))
-		for _, p := range m.global.Paths {
-			if p != path {
-				newPaths = append(newPaths, p)
-			}
+	m.merged.DelPath(path)
+
+	switch opFlag {
+	case models.OpFlagGlobal:
+		m.global.DelPath(path)
+	case models.OpFlagDirenv:
+		if ds := m.Nearest(); ds != nil {
+			ds.DelPath(path)
 		}
-		m.global.Paths = newPaths
-		// Save the global state
-		if !m.batchMode {
-			return m.SaveStateFile()
-		}
+	default:
+		m.session.DelPath(path)
 	}
 
-	newPaths := make([]string, 0, len(m.session.Paths))
-	for _, p := range m.session.Paths {
-		if p != path {
-			newPaths = append(newPaths, p)
-		}
+	if !m.batchMode {
+		return m.SaveStateFile()
 	}
-	m.session.Paths = newPaths
 	return nil
 }
 
@@ -390,6 +393,7 @@ func (m *StateManager) SaveStateFile() error {
 		if err := m.saveStateFile(m.global); err != nil {
 			return err
 		}
+		m.global.HasUpdate = false
 	}
 
 	// direnv states
@@ -398,11 +402,13 @@ func (m *StateManager) SaveStateFile() error {
 			if err := m.saveStateFile(state); err != nil {
 				return err
 			}
+			state.HasUpdate = false
 		}
 	}
 
 	// 会话数据: 只有在 HOOK SHELL 中才会生效
 	if util.InHookShell() && m.session.HasUpdate {
+		m.session.HasUpdate = false
 		return m.saveStateFile(m.session)
 	}
 	return nil
@@ -441,4 +447,13 @@ func (m *StateManager) Nearest() *models.ActivityState {
 		return m.dirStates[len(m.dirStates)-1]
 	}
 	return nil
+}
+
+// DirenvOrNew returns the nearest direnv activity state or a new one at workdir
+func (m *StateManager) DirenvOrNew() *models.ActivityState {
+	if len(m.dirStates) > 0 {
+		return m.dirStates[len(m.dirStates)-1]
+	}
+	// TODO 输出提示，确认是否创建 .xenv.toml 文件
+	return models.NewActivityState(models.LocalStateFile)
 }

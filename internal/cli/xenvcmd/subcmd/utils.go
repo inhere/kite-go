@@ -7,11 +7,11 @@ import (
 )
 
 // GetOpFlag 根据参数获取操作标识
-func GetOpFlag(saveDirenv, global bool) models.OpFlag {
-	if global {
+func GetOpFlag() models.OpFlag {
+	if GlobalFlag {
 		return models.OpFlagGlobal
 	}
-	if saveDirenv {
+	if SaveDirenv {
 		return models.OpFlagDirenv
 	}
 	return models.OpFlagSession

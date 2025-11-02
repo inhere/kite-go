@@ -58,7 +58,7 @@ func EnvSetCmd() *gcli.Command {
 			}
 
 			// Set the environment variable
-			script, err := envSvc.SetEnv(name, value, GlobalFlag)
+			script, err := envSvc.SetEnv(name, value, GetOpFlag())
 			if err != nil {
 				return fmt.Errorf("failed to set environment variable: %w", err)
 			}
@@ -99,7 +99,7 @@ func EnvUnsetCmd() *gcli.Command {
 			names := c.Arg("names").Strings()
 
 			// Unset the environment variables
-			script, err1 := envSvc.UnsetEnvs(names, GlobalFlag)
+			script, err1 := envSvc.UnsetEnvs(names, GetOpFlag())
 			if err1 != nil {
 				return fmt.Errorf("failed to set environment variable: %w", err1)
 			}

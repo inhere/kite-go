@@ -25,6 +25,14 @@ func IsHookBash() bool {
 	return false
 }
 
+// IsHookPwshOrCmd checks if the current hook shell is Windows PowerShell or CMD
+func IsHookPwshOrCmd() bool {
+	if runtime.GOOS == "windows" {
+		return xenvHookShell == "pwsh" || xenvHookShell == "cmd"
+	}
+	return false
+}
+
 // ClinkIsInstalled checks if Clink is installed on Windows
 func ClinkIsInstalled() bool {
 	if runtime.GOOS != "windows" {

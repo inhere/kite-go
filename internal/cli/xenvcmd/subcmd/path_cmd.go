@@ -43,7 +43,7 @@ func PathAddCmd() *gcli.Command {
 
 			// Add the path
 			path := c.Arg("path").String()
-			script, err1 := envSvc.AddPath(path, GlobalFlag)
+			script, err1 := envSvc.AddPath(path, GetOpFlag())
 			if err1 != nil {
 				return fmt.Errorf("failed to add path: %w", err1)
 			}
@@ -89,7 +89,7 @@ func PathRemoveCmd() *gcli.Command {
 
 			// Remove the path
 			path := c.Arg("path").String()
-			script, err1 := envSvc.RemovePath(path, GlobalFlag)
+			script, err1 := envSvc.RemovePath(path, GetOpFlag())
 			if err1 != nil {
 				return fmt.Errorf("failed to remove path: %w", err1)
 			}

@@ -26,7 +26,7 @@ func NewUseCmd() *gcli.Command {
 			}
 
 			useTools := c.Arg("tools").Strings()
-			script, err1 := toolSvc.ActivateSDKs(useTools, GetOpFlag(SaveDirenv, GlobalFlag))
+			script, err1 := toolSvc.ActivateSDKs(useTools, GetOpFlag())
 			if err1 == nil {
 				shell.OutputScript(script)
 			}
@@ -54,7 +54,7 @@ func NewUnuseCmd() *gcli.Command {
 			}
 
 			unTools := c.Arg("tools").Strings()
-			script, err1 := toolSvc.DeactivateSDKs(unTools, GetOpFlag(SaveDirenv, GlobalFlag))
+			script, err1 := toolSvc.DeactivateSDKs(unTools, GetOpFlag())
 			if err1 == nil {
 				shell.OutputScript(script)
 			}
