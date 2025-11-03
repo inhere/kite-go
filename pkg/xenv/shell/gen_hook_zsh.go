@@ -27,6 +27,10 @@ func (sg *XenvScriptGenerator) generateZshScripts(ps *models.GenInitScriptParams
 //	eval "$(kite xenv shell --type bash)"
 var ZshHookTemplate = `# xenv zsh hook
 # This script enables xenv to work in zsh shells
+#
+# Usage, .bashrc or .bash_profile add:
+#   eval "$(kite xenv shell --type bash)"
+#
 
 # Helper function to evaluate xenv command results
 eval_xenv_result() {
@@ -97,7 +101,7 @@ setup_xenv() {
                 ;;
             *)
                 # For other commands, just pass through to xenv
-                command kenv "$command" "$@"
+                command xenv "$command" "$@"
                 ;;
         esac
     }

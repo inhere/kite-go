@@ -24,10 +24,14 @@ func (sg *XenvScriptGenerator) generateBashScripts(ps *models.GenInitScriptParam
 
 // BashHookTemplate 生成 Bash Hook 的模板
 //
-// Usage, .bashrc or .bash_profile 新增：
+// Usage, .bashrc or .bash_profile add：
 //   eval "$(kite xenv shell --type bash)"
 var BashHookTemplate = `# kite xenv bash hook
 # This script enables xenv to work in bash shells
+#
+# Usage, .bashrc or .bash_profile add:
+#   eval "$(kite xenv shell --type bash)"
+#
 # Start to set up xenv in the current shell
 
 # Helper function to evaluate xenv command results
@@ -98,7 +102,7 @@ setup_xenv() {
                 ;;
             *)
                 # For other commands, just pass through to xenv
-                command kenv "$command" "$@"
+                command xenv "$command" "$@"
                 ;;
         esac
     }

@@ -11,6 +11,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/byteutil"
+	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/strutil"
 	"github.com/inhere/kite-go/pkg/xenv/models"
 )
@@ -73,7 +74,7 @@ func (u *StateTomlUpdater) WriteNewState(state *models.ActivityState) error {
 		return fmt.Errorf("failed to marshal state: %w", err)
 	}
 
-	return os.WriteFile(state.File, contents, 0644)
+	return fsutil.WriteFile(state.File, contents, 0644)
 }
 
 // Build the updated state file contents

@@ -7,7 +7,7 @@ import (
 )
 
 // getShellGenerator 获取当前shell的脚本生成器. 注意：不在shell hook环境，会返回nil
-func getShellGenerator(cfg *models.Configuration) (*shell.XenvScriptGenerator, error) {
+func getShellGenerator(_ *models.Configuration) (*shell.XenvScriptGenerator, error) {
 	// hookShell 不为空表明在shell hook环境中
 	hookShell := util.HookShell()
 	if hookShell == "" {
@@ -19,6 +19,6 @@ func getShellGenerator(cfg *models.Configuration) (*shell.XenvScriptGenerator, e
 		return nil, err
 	}
 
-	return shell.NewScriptGenerator(shellType, cfg), nil
+	return shell.NewScriptGenerator(shellType), nil
 }
 

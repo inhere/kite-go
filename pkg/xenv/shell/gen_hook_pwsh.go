@@ -64,6 +64,17 @@ func (sg *XenvScriptGenerator) generatePwshScripts(ps *models.GenInitScriptParam
 //	kite xenv shell --type pwsh | Out-String | Invoke-Expression
 var PwshHookTemplate = `# xenv PowerShell hook
 # This script enables xenv to work in PowerShell shells
+#
+# Config for pwsh:
+#
+#	# Write to profile.
+#	 find by: echo $PROFILE.CurrentUserAllHosts
+#
+#	# Method 1:
+#	Invoke-Expression (&kite xenv shell --type pwsh)
+#
+#	# Method 2:
+#	kite xenv shell --type pwsh | Out-String | Invoke-Expression
 
 # Helper function to evaluate xenv command results
 function Eval-XenvResult {

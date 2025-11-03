@@ -70,16 +70,16 @@ function Setup-Xenv()
     function xenv(command)
         if command == "use" then
             -- Implementation for switching tool versions
-            os.execute("kenv use " .. table.concat(arg, " "))
+            os.execute("xenv use " .. table.concat(arg, " "))
         elseif command == "unuse" then
             -- Implementation for unusing tool versions
-            os.execute("kenv unuse " .. table.concat(arg, " "))
+            os.execute("xenv unuse " .. table.concat(arg, " "))
         elseif command == "shell" then
             -- Output the shell commands needed to set up xenv
-            os.execute("kenv shell cmd")
+            os.execute("xenv shell cmd")
         else
             -- For other commands, just pass through to xenv
-            os.execute("kenv " .. command .. " " .. table.concat(arg, " "))
+            os.execute("xenv " .. command .. " " .. table.concat(arg, " "))
         end
     end
 }

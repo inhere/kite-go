@@ -354,7 +354,7 @@ func (ts *ToolService) DeactivateSDKs(deTools []string, opFlag models.OpFlag) (s
 		}
 
 		if opFlag == models.OpFlagGlobal {
-			ccolor.Infof("Deactivate %s for global stae\n", spec)
+			ccolor.Infof("Deactivate %s for global default\n", spec)
 		} else if opFlag == models.OpFlagDirenv {
 			ccolor.Infof("Deactivate %s for direnv state\n", spec)
 		} else {
