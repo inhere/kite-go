@@ -11,7 +11,6 @@ import (
 	"github.com/inhere/kite-go/pkg/util"
 	"github.com/inhere/kite-go/pkg/xenv/manager"
 	"github.com/inhere/kite-go/pkg/xenv/models"
-	"github.com/inhere/kite-go/pkg/xenv/shell"
 )
 
 // EnvService handles environment variable and PATH management
@@ -41,28 +40,6 @@ func (s *EnvService) GlobalState() *models.ActivityState {
 
 func (s *EnvService) SessionState() *models.ActivityState {
 	return s.state.Session()
-}
-
-// endregion
-// region Shell Hook Init
-//
-
-// WriteHookToProfile installs the hook script to the user's profile
-func (s *EnvService) WriteHookToProfile(st shell.ShellType, pwshProfile string) error {
-	gen := shell.NewScriptGenerator(st, s.config)
-	if util.InHookShell() {
-		ccolor.Infoln("The hook script is already installed in the current shell")
-		return nil
-	}
-
-	return gen.InstallToProfile(pwshProfile)
-}
-
-// GenHookScripts generates Shell hook init scripts
-func (s *EnvService) GenHookScripts(st shell.ShellType) (string, error) {
-	gen := shell.NewScriptGenerator(st, s.config)
-
-	return gen.GenHookScripts(s.state.Global())
 }
 
 // endregion

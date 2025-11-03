@@ -4,10 +4,13 @@ import (
 	"fmt"
 
 	"github.com/gookit/goutil/errorx"
+	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/x/ccolor"
+	"github.com/inhere/kite-go/pkg/util"
 	"github.com/inhere/kite-go/pkg/xenv/manager"
 	"github.com/inhere/kite-go/pkg/xenv/models"
+	"github.com/inhere/kite-go/pkg/xenv/shell"
 	"github.com/inhere/kite-go/pkg/xenv/tools"
 )
 
@@ -209,7 +212,7 @@ func (ts *ToolService) ActivateSDKs(useTools []string, opFlag models.OpFlag) (sc
 		}
 
 		if opFlag == models.OpFlagGlobal {
-			ccolor.Infof("Activate %s as global default\n", localSdk.ID)
+			ccolor.Infof("Activate %s for global default\n", localSdk.ID)
 		} else if opFlag == models.OpFlagDirenv {
 			ccolor.Infof("Activate %s for direnv state\n", localSdk.ID)
 		} else {
@@ -261,6 +264,56 @@ func (ts *ToolService) checkActivateSDK(spec *tools.VersionSpec) (*models.Instal
 	// 绑定配置信息
 	localSdk.Config = toolCfg
 	return localSdk, nil
+}
+
+// endregion
+// region Shell Hook Init
+//
+
+// WriteHookToProfile installs the hook script to the user's profile
+func (ts *ToolService) WriteHookToProfile(st shell.ShellType, pwshProfile string) error {
+	gen := shell.NewScriptGenerator(st)
+	if util.InHookShell() {
+		ccolor.Infoln("The hook script is already installed in the current shell")
+		return nil
+	}
+
+	return gen.InstallToProfile(pwshProfile)
+}
+
+// GenHookScripts generates Shell hook init scripts
+func (ts *ToolService) GenHookScripts(st shell.ShellType) (string, error) {
+	gen := shell.NewScriptGenerator(st)
+
+	toolMgr := manager.NewToolManager()
+	if err := toolMgr.InitLoad1(ts.config); err != nil {
+		return "", err
+	}
+
+	state := ts.state.Merged()
+	params := &models.GenInitScriptParams{
+		Envs:  ts.config.GlobalEnv,
+		Paths: ts.config.GlobalPaths,
+	}
+	params.AddPaths(state.Paths)
+	params.Envs = maputil.AppendSMap(params.Envs, state.Envs)
+	params.ShellAliases = ts.config.ShellAliases
+	params.ShellHooksDir = ts.config.ShellHooksDir
+
+	// sdk 需要先找到本地安装的sdk
+	if len(state.SDKs) > 0 {
+		for name, version := range state.SDKs {
+			tvs := &tools.VersionSpec{Name: name, Version: version}
+			tool, err := ts.checkActivateSDK(tvs)
+			if err != nil {
+				// ccolor.Warnf("WARN: failed to activate tool %q: %w", name, err)
+				continue
+			}
+			params.AddPath(tool.BinDirPath())
+		}
+	}
+
+	return gen.GenHookScripts(params)
 }
 
 // endregion

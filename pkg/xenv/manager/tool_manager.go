@@ -50,6 +50,12 @@ func (m *ToolManager) InitLoad() error {
 	return m.ensureLocalLoad(false)
 }
 
+// InitLoad1 loads the local indexes
+func (m *ToolManager) InitLoad1(cfg *models.Configuration) error {
+	_ = m.Init(cfg)
+	return m.ensureLocalLoad(false)
+}
+
 // ensureLocalLoad ensure local data file loaded
 func (m *ToolManager) ensureLocalLoad(must bool) error {
 	if m.localLoad {

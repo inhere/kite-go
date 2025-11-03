@@ -1,6 +1,9 @@
 package models
 
-import "github.com/gookit/goutil/maputil"
+import (
+	"github.com/gookit/goutil/maputil"
+	"github.com/inhere/kite-go/pkg/util"
+)
 
 type ActivateSDKsParams struct {
 	OpFlag OpFlag // 是否需要保存 direnv, global 文件
@@ -15,7 +18,7 @@ type ActivateSDKsParams struct {
 // NewActivateSDKsParams creates a new ActivateSDKsParams instance
 func NewActivateSDKsParams() *ActivateSDKsParams {
 	return &ActivateSDKsParams{
-		AddEnvs:  make(map[string]string),
+		AddEnvs: make(map[string]string),
 		AddSdks: make(map[string]string),
 		// AddTools: make(map[string]string),
 	}
@@ -58,4 +61,28 @@ func (p *ActivateSDKsParams) AddRemPath(path string) {
 		}
 	}
 	p.RemPaths = append(p.RemPaths, path)
+}
+
+// GenInitScriptParams 生成初始化脚本参数
+type GenInitScriptParams struct {
+	// OpFlag OpFlag // 是否需要保存 direnv, global 文件
+	// for  activate
+	Paths []string
+	Envs  map[string]string
+	// add shell aliases
+	ShellAliases map[string]string
+	// ShellHooksDir shell hooks directory path
+	ShellHooksDir string
+}
+
+// AddPath 添加环境PATH
+func (p *GenInitScriptParams) AddPath(path string) {
+	p.Paths = append(p.Paths, util.NormalizePath(path))
+}
+
+// AddPaths 添加环境PATH
+func (p *GenInitScriptParams) AddPaths(paths []string) {
+	for _, path := range paths {
+		p.AddPath(path)
+	}
 }

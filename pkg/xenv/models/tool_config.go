@@ -72,7 +72,7 @@ type SimpleTool struct {
 // VersionSpec 版本规格
 type VersionSpec struct {
 	Name    string // SDK名称
-	Version string // 输入的版本 可以是 lts, latest
+	Version string // 输入的版本 可以是 1.21, lts, latest
 	// 实际的版本号 eg: 1.21.1
 	RealVersion string
 	// Global bool    // scope: global

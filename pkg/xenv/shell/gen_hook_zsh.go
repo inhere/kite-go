@@ -8,13 +8,13 @@ import (
 )
 
 // generateBashScripts generates the zsh shell hook script
-func (sg *XenvScriptGenerator) generateZshScripts() string {
+func (sg *XenvScriptGenerator) generateZshScripts(ps *models.GenInitScriptParams) string {
 	// 添加全局环境, PATH, 别名
 	var sb strings.Builder
-	sg.addCommonForLinuxShell(&sb)
+	sg.addCommonForLinuxShell(&sb, ps)
 
 	return strutil.Replaces(ZshHookTemplate, map[string]string{
-		"{{HooksDir}}":  sg.cfg.ShellHooksDir,
+		"{{HooksDir}}": ps.ShellHooksDir,
 		"{{SessionId}}": models.SessionID(),
 		"{{EnvAliases}}": sb.String(),
 	})

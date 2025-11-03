@@ -63,18 +63,18 @@ var ShellCmd = &gcli.Command{
 		}
 
 		// Create env service
-		envSvc, err := xenv.EnvService()
+		toolSvc, err := xenv.ToolService()
 		if err != nil {
 			return err
 		}
 
 		// 自动安装钩子脚本到 user shell 配置文件
 		if shellCmdOpts.Install {
-			return envSvc.WriteHookToProfile(shellType, shellCmdOpts.Profile)
+			return toolSvc.WriteHookToProfile(shellType, shellCmdOpts.Profile)
 		}
 
 		// 生成钩子脚本
-		hookScript, err := envSvc.GenHookScripts(shellType)
+		hookScript, err := toolSvc.GenHookScripts(shellType)
 		if err != nil {
 			return err
 		}

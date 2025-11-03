@@ -12,13 +12,13 @@ import (
 
 // XenvScriptGenerator xenv Shell脚本生成器实现
 type XenvScriptGenerator struct {
-	cfg *models.Configuration
+	// cfg *models.Configuration
 	shell ShellType
 }
 
 // NewScriptGenerator creates a new ShellGenerator
-func NewScriptGenerator(shellType ShellType, cfg *models.Configuration) *XenvScriptGenerator {
-	return &XenvScriptGenerator{cfg: cfg, shell: shellType}
+func NewScriptGenerator(shellType ShellType) *XenvScriptGenerator {
+	return &XenvScriptGenerator{shell: shellType}
 }
 
 // endregion
@@ -26,16 +26,16 @@ func NewScriptGenerator(shellType ShellType, cfg *models.Configuration) *XenvScr
 //
 
 // GenHookScripts 生成 Shell Hook 初始化脚本代码
-func (sg *XenvScriptGenerator) GenHookScripts(merged *models.ActivityState) (string, error) {
+func (sg *XenvScriptGenerator) GenHookScripts(ps *models.GenInitScriptParams) (string, error) {
 	switch sg.shell {
 	case Bash:
-		return sg.generateBashScripts(), nil
+		return sg.generateBashScripts(ps), nil
 	case Zsh:
-		return sg.generateZshScripts(), nil
+		return sg.generateZshScripts(ps), nil
 	case Pwsh:
-		return sg.generatePwshScripts(), nil
+		return sg.generatePwshScripts(ps), nil
 	default:
-		return sg.generateCmdScripts(), nil
+		return sg.generateCmdScripts(ps), nil
 	}
 }
 
@@ -184,20 +184,20 @@ func (sg *XenvScriptGenerator) GenRemThenAddPaths(rmPaths, addPaths []string) (s
 // region Helper methods
 //
 
-func (sg *XenvScriptGenerator) addCommonForLinuxShell(sb *strings.Builder) {
+func (sg *XenvScriptGenerator) addCommonForLinuxShell(sb *strings.Builder, ps *models.GenInitScriptParams) {
 	// 添加全局环境变量
-	if len(sg.cfg.GlobalEnv) > 0 {
+	if len(ps.Envs) > 0 {
 		sb.WriteString("  # Add global ENV variables from kite xenv\n")
-		maputil.EachTypedMap(sg.cfg.GlobalEnv, func(key, value string) {
+		maputil.EachTypedMap(ps.Envs, func(key, value string) {
 			sb.WriteString(fmt.Sprintf("  export %s=%s\n", strings.ToUpper(key), value))
 		})
 	}
 
 	// 添加全局PATH条目
-	if len(sg.cfg.GlobalPaths) > 0 {
+	if len(ps.Paths) > 0 {
 		sb.WriteString("  # Add global PATH from kite xenv\n")
 		var fmtPaths []string
-		for _, path := range sg.cfg.GlobalPaths {
+		for _, path := range ps.Paths {
 			// TODO Windows git-bash 将盘符 D:/ 转换成 /d/
 			fmtPaths = append(fmtPaths, path)
 		}
@@ -205,9 +205,9 @@ func (sg *XenvScriptGenerator) addCommonForLinuxShell(sb *strings.Builder) {
 	}
 
 	// 添加全局别名
-	if len(sg.cfg.ShellAliases) > 0 {
+	if len(ps.ShellAliases) > 0 {
 		sb.WriteString("  # Add global aliases from kite xenv\n")
-		maputil.EachTypedMap(sg.cfg.ShellAliases, func(key, value string) {
+		maputil.EachTypedMap(ps.ShellAliases, func(key, value string) {
 			sb.WriteString(fmt.Sprintf("  alias %s='%s'\n", key, value))
 		})
 	}
