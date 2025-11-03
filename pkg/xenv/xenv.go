@@ -12,11 +12,8 @@ import (
 // ScriptMark 输出的脚本必须添加标记，前面部分为message, 后面部分为脚本
 const ScriptMark = "--Expression--"
 
-var debugMode bool
-
 // SetDebugMode sets the debug mode
 func SetDebugMode(debug bool) {
-	debugMode = debug
 	models.DebugMode = debug
 }
 

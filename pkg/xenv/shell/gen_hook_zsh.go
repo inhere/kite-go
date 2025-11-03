@@ -101,7 +101,7 @@ setup_xenv() {
                 ;;
             *)
                 # For other commands, just pass through to xenv
-                command xenv "$command" "$@"
+                command kite xenv "$command" "$@"
                 ;;
         esac
     }

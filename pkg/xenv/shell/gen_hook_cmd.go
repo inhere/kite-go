@@ -40,6 +40,8 @@ func (sg *XenvScriptGenerator) generateCmdScripts(ps *models.GenInitScriptParams
 
 // CmdLuaHookTemplate CMD 需要基于 clink lua 脚本实现自定义 hooks
 //
+//  clink info # 可以看到可以加载脚本的目录
+//
 // 使用:
 //
 // 在 C:\Users\{username}\AppData\Local\clink 创建 profile.lua 文件。
@@ -48,6 +50,12 @@ func (sg *XenvScriptGenerator) generateCmdScripts(ps *models.GenInitScriptParams
 //	load(io.popen('kite xenv shell --type cmd'):read("*a"))()
 var CmdLuaHookTemplate = `-- xenv CMD hook
 -- This script enables xenv to work in CMD shells
+-- Usage:
+--  1. Ensure clink is installed for CMD.
+--  2. Create profile.lua in %USERPROFILE%\AppData\Local\clink
+--  3. Add contents:
+--     load(io.popen('kite xenv shell --type cmd'):read("*a"))()
+--  4. Close and reopen CMD
 
 -- Function to set up xenv in the current shell
 function Setup-Xenv()
@@ -70,16 +78,13 @@ function Setup-Xenv()
     function xenv(command)
         if command == "use" then
             -- Implementation for switching tool versions
-            os.execute("xenv use " .. table.concat(arg, " "))
+            os.execute("kite xenv use " .. table.concat(arg, " "))
         elseif command == "unuse" then
             -- Implementation for unusing tool versions
-            os.execute("xenv unuse " .. table.concat(arg, " "))
-        elseif command == "shell" then
-            -- Output the shell commands needed to set up xenv
-            os.execute("xenv shell cmd")
+            os.execute("kite xenv unuse " .. table.concat(arg, " "))
         else
             -- For other commands, just pass through to xenv
-            os.execute("xenv " .. command .. " " .. table.concat(arg, " "))
+            os.execute("kite xenv " .. command .. " " .. table.concat(arg, " "))
         end
     end
 }

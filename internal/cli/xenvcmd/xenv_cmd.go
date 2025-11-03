@@ -38,7 +38,9 @@ Quick commands:
 		// Add global options for xenv command if needed
 		c.BoolOpt(&subcmd.GlobalFlag, "global", "g", false, "Operate for global config")
 		c.BoolOpt(&subcmd.DebugMode, "debug", "d", false, "Enable debug mode", gflag.WithHandler(func(val string) error {
-			xenv.SetDebugMode(val == "true")
+			if val == "true" {
+				xenv.SetDebugMode(true)
+			}
 			return nil
 		}))
 

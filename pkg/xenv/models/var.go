@@ -3,12 +3,11 @@ package models
 import (
 	"fmt"
 
+	"github.com/gookit/goutil/envutil"
 	"github.com/gookit/goutil/x/ccolor"
 )
 
-var (
-	DebugMode bool
-)
+var DebugMode = envutil.GetBool("XENV_DEBUG_MODE", false)
 
 // Debugf prints debug messages
 func Debugf(format string, args ...any) {
