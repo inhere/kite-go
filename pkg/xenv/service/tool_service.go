@@ -192,10 +192,11 @@ func (ts *ToolService) ActivateSDKs(useTools []string, opFlag models.OpFlag) (sc
 		// 如果sdk已经激活过，先要删除之前的激活版本设置的 ENV, PATH
 		oldActiveVer := ts.state.Merged().SDKs[spec.Name]
 		if oldActiveVer != "" {
-			if oldActiveVer == localSdk.Version {
-				ccolor.Warnf("The tool %s is already activated, please deactivate it first.\n", localSdk.ID)
-				continue
-			}
+			// TODO 可能在不同级别的 state 里
+			// if oldActiveVer == localSdk.Version {
+			// 	ccolor.Warnf("The tool %s is already activated, please deactivate it first.\n", localSdk.ID)
+			// 	continue
+			// }
 
 			oldSdk := ts.toolMgr.FindSdkByID(spec.Name + ":" + oldActiveVer)
 			if oldSdk != nil {
@@ -229,7 +230,8 @@ func (ts *ToolService) ActivateSDKs(useTools []string, opFlag models.OpFlag) (sc
 		if len(actParams.AddEnvs) > 0 {
 			sb.WriteString(gen.GenSetEnvs(actParams.AddEnvs))
 		}
-	} else {
+	}
+	if gen == nil {
 		ccolor.Warnln("TIP: The operation will not take effect, please setup the SHELL HOOK first.")
 	}
 

@@ -49,7 +49,7 @@ type ActivityState struct {
 	// 是否有更新 - 内部使用，用于标识状态数据是否需要更新
 	HasUpdate bool `json:"-" toml:"-"`
 	// Shell 当前使用的shell - 仅在 session 下有效
-	Shell string `json:"shell" toml:"-"`
+	Shell string `json:"shell,omitempty" toml:"-"`
 
 	// EnableGlobal 是否启用全局环境配置
 	// EnableGlobal bool `json:"enable_global"`

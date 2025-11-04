@@ -5,10 +5,10 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strings"
 
 	"github.com/gookit/goutil/fsutil"
+	"github.com/inhere/kite-go/pkg/xenv/xenvcom"
 )
 
 var winDiskPrefix = regexp.MustCompile(`^[a-zA-Z]:`)
@@ -17,7 +17,7 @@ var winDiskPrefix = regexp.MustCompile(`^[a-zA-Z]:`)
 func NormalizePath(path string) string {
 	fmtPath := filepath.Clean(fsutil.ExpandPath(path))
 
-	if IsHookBash() {
+	if xenvcom.IsHookBash() {
 		// Windows Git-Bash: 需要转换为 Unix 路径，同时需要处理盘符 eg: D:/ 转换为 /d/
 		fmtPath = winDiskPrefix.ReplaceAllStringFunc(fsutil.UnixPath(fmtPath), func(sub string) string {
 			return "/" + strings.ToLower(string(sub[0]))
@@ -26,25 +26,15 @@ func NormalizePath(path string) string {
 	return fmtPath
 }
 
-// PathSeparator returns the appropriate path separator for the current OS
-func PathSeparator() string {
-	if runtime.GOOS == "windows" {
-		if xenvHookShell == "bash" {
-			return ":"
-		}
-		return ";"
-	}
-	return ":"
-}
-
 // SplitPath splits a PATH string into individual paths
 func SplitPath(envPath string) []string {
-	return strings.Split(envPath, PathSeparator())
+	// NOTE: 分割是需要使用 os.PathListSeparator
+	return strings.Split(envPath, string(os.PathListSeparator))
 }
 
 // JoinPaths joins multiple path entries into a single PATH string
 func JoinPaths(paths []string) string {
-	return strings.Join(paths, PathSeparator())
+	return strings.Join(paths, xenvcom.PathSep())
 }
 
 // EnsureDir creates a directory if it doesn't exist
@@ -62,18 +52,6 @@ func FileExists(path string) (bool, error) {
 		return false, err
 	}
 	return !info.IsDir(), nil
-}
-
-// DirExists checks if a directory exists
-func DirExists(path string) (bool, error) {
-	info, err := os.Stat(path)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return false, nil
-		}
-		return false, err
-	}
-	return info.IsDir(), nil
 }
 
 // CopyFile copies a file from src to dst
@@ -96,7 +74,7 @@ func CreateSymlink(target, linkPath string) error {
 
 	if exists {
 		// Remove existing link/file
-		if err := os.Remove(linkPath); err != nil {
+		if err1 := os.Remove(linkPath); err1 != nil {
 			return fmt.Errorf("failed to remove existing file: %w", err)
 		}
 	}

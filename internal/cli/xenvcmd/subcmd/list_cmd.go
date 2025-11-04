@@ -117,7 +117,11 @@ func ListActivityCmd() *gcli.Command {
 				sess := xenv.State().Session()
 				tl.ShowNew("Session State")
 				fmt.Println(" - session ID:", sess.SessionID())
-				listActivity(sess)
+				if global.IsEmpty() {
+					ccolor.Infoln("No session state found")
+				} else {
+					listActivity(sess)
+				}
 			}
 			return nil
 		},
@@ -125,7 +129,7 @@ func ListActivityCmd() *gcli.Command {
 }
 
 func listActivity(state *models.ActivityState) {
-	ccolor.Cyanln("Active Development SDKs:")
+	ccolor.Cyanln("Active Develop SDKs:")
 	for name, version := range state.SDKs {
 		ccolor.Printf("  <green>%s</> => %s\n", name, version)
 	}

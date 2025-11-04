@@ -320,12 +320,13 @@ func (m *StateManager) LoadStateFiles() (err error) {
 	}
 
 	// Load the session state
-	m.session.Shell = xenvcom.HookShell()
-	if xenvcom.InHookShell() && fsutil.IsFile(m.session.File) {
-		err = m.loadJsonStateFile(m.session)
-		if err == nil {
-			m.merged.Merge(m.session)
+	if xenvcom.InHookShell() {
+		if fsutil.IsFile(m.session.File) {
+			if err = m.loadJsonStateFile(m.session); err == nil {
+				m.merged.Merge(m.session)
+			}
 		}
+		m.session.Shell = xenvcom.HookShell()
 	}
 
 	return
@@ -393,6 +394,7 @@ func (m *StateManager) loadJsonStateFile(ptr *models.ActivityState) error {
 	if _, err := os.Stat(ptr.File); os.IsNotExist(err) {
 		return nil
 	}
+	xenvcom.Debugf("Loading session file: %s\n", ptr.File)
 
 	// Read the JSON file
 	data, err := os.ReadFile(ptr.File)
@@ -476,6 +478,9 @@ func (m *StateManager) DirenvOrNew() *models.ActivityState {
 	if len(m.dirStates) > 0 {
 		return m.dirStates[len(m.dirStates)-1]
 	}
+
 	// TODO 输出提示，确认是否创建 .xenv.toml 文件
-	return models.NewActivityState(xenvcom.LocalStateFile)
+	de := models.NewActivityState(xenvcom.LocalStateFile)
+	m.dirStates = append(m.dirStates, de)
+	return de
 }
