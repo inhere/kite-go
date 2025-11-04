@@ -30,7 +30,7 @@ type ToolChain struct {
 	// 激活时设置的额外环境变量
 	//  - value 可用使用一些内部变量，如 {version}，{install_dir}
 	ActiveEnv map[string]string `json:"active_env"`
-	// 该工具的 bin 文件目录名称，不设置就是 install_dir/bin 目录
+	// 该工具的 bin 文件目录名称，不设置就是真实的 install_dir 目录
 	BinDir   string   `json:"bin_dir"`
 	BinPaths []string `json:"bin_paths"` // 该工具提供的二进制文件路径列表
 	// 安装完成后执行的shell hook脚本

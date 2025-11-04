@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -118,13 +119,18 @@ func (m *ToolManager) IndexLocalTools() error {
 			return err
 		}
 
-		ccolor.Cyanf("Found installed %q from %s\n", sdkCfg.Name, sdkCfg.InstallDir)
+		baseDir := filepath.Dir(sdkCfg.InstallDir)
+		ccolor.Cyanf("Found installed %q from %s\n", sdkCfg.Name, baseDir)
 		for version, installPath := range ver2dirMap {
 			ccolor.Infof("  Found %s %s\n", sdkCfg.Name, version)
+
 			// build local installed tool info
 			m.localTools.SDKs = append(m.localTools.SDKs, models.InstalledTool{
-				ID:   fmt.Sprintf("%s:%s", sdkCfg.Name, version),
-				Name: sdkCfg.Name,
+				ID:     fmt.Sprintf("%s:%s", sdkCfg.Name, version),
+				Name:   sdkCfg.Name,
+				IsSDK:  true,
+				BinDir: sdkCfg.BinDir,
+				// version, install path
 				Version:    version,
 				InstallDir: installPath,
 				CreatedAt:  currentTime,

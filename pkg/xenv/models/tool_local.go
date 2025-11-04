@@ -74,7 +74,7 @@ type InstalledTool struct {
 	// InstallDir 当前版本的工具安装目录路径
 	InstallDir string `json:"install_dir"`
 	// BinDir 可执行文件目录, 相对于 InstallDir
-	//  - 为空时，默认为 install_dir/bin
+	//  - 为空时，默认为 InstallDir
 	BinDir    string    `json:"bin_dir,omitempty"`
 	Source    string    `json:"source"`
 	IsSDK     bool      `json:"is_sdk"`
@@ -93,7 +93,7 @@ func (t *InstalledTool) BinDirPath() string {
 // 返回可执行文件目录的绝对路径
 func (t *InstalledTool) binDirPath() string {
 	if t.BinDir == "" {
-		return t.InstallDir + "/bin"
+		return t.InstallDir
 	}
 	return t.InstallDir + "/" + t.BinDir
 }

@@ -16,14 +16,22 @@ var winDiskPrefix = regexp.MustCompile(`^[a-zA-Z]:`)
 // NormalizePath normalizes a path by expanding home directory and cleaning it
 func NormalizePath(path string) string {
 	fmtPath := filepath.Clean(fsutil.ExpandPath(path))
-
 	if xenvcom.IsHookBash() {
+		fmtPath = fsutil.UnixPath(fmtPath)
+	}
+	return fmtPath
+}
+
+// FmtEnvPath formats an environment path for use in the current shell
+func FmtEnvPath(envPath string) string {
+	if xenvcom.IsHookBash() {
+		envPath = fsutil.UnixPath(envPath)
 		// Windows Git-Bash: 需要转换为 Unix 路径，同时需要处理盘符 eg: D:/ 转换为 /d/
-		fmtPath = winDiskPrefix.ReplaceAllStringFunc(fsutil.UnixPath(fmtPath), func(sub string) string {
+		envPath = winDiskPrefix.ReplaceAllStringFunc(envPath, func(sub string) string {
 			return "/" + strings.ToLower(string(sub[0]))
 		})
 	}
-	return fmtPath
+	return envPath
 }
 
 // SplitPath splits a PATH string into individual paths

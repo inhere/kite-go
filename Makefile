@@ -98,7 +98,7 @@ install2: $(GO_DEPENDENCIES) ## Install the kite to gopath/bin, without upx comp
 
 install3: install win linux cp-build-to-win ## Build for local and Linux and Windows then copy to Windows(Local dev)
 
-install-dev: win ## Install the kite binary to C:\tools\bin
+install-win: win ## Install the kite binary to C:\tools\bin
 	cp -f build/kite-windows-amd64-upx.exe C:/tools/bin/kite.exe
 
 install-dev: win-no-upx ## Install the kite binary to C:\tools\bin
