@@ -56,7 +56,7 @@ func addCommands(cli *gcli.App) {
 		glabcmd.GitLabCmd,
 		httpcmd.HttpCmd,
 		syscmd.SysCmd,
-		appcmd.ManageCmd,
+		appcmd.SelfManageCmd,
 		// extcmd.UserExtCmd,
 		textcmd.TextToolCmd,
 		jsoncmd.JSONToolCmd,
@@ -101,12 +101,13 @@ func addListener(cli *gcli.App) {
 
 	cli.On(events.OnAppHelpBefore, func(ctx *gcli.HookCtx) (stop bool) {
 		var sb strutil.Builder
-		sb.WriteString("\n\n<mga>Extensions:</>\n")
+		sb.WriteString("\n\n<mga>Command Aliases:</>\n  ")
+		sb.WriteString(strutil.JoinList(", ", app.Kas.AliasesNames()))
+
+		sb.WriteString("\n\n<mga>External Tools:</>\n")
 		app.Exts.Each(func(ext *kiteext.KiteExt) {
 			sb.Writef("  %-16s  %s\n", ext.Name, ext.Desc)
 		})
-		sb.WriteString("\n<mga>Command Aliases:</>\n  ")
-		sb.WriteString(strutil.JoinList(", ", app.Kas.AliasesNames()))
 
 		cli.HelpConfig = gcli.HelpConfig{
 			// AfterCmdText: sb.String(),

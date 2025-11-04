@@ -101,6 +101,9 @@ install3: install win linux cp-build-to-win ## Build for local and Linux and Win
 install-dev: win ## Install the kite binary to C:\tools\bin
 	cp -f build/kite-windows-amd64-upx.exe C:/tools/bin/kite.exe
 
+install-dev: win-no-upx ## Install the kite binary to C:\tools\bin
+	cp -f build/kite-windows-amd64.exe C:/tools/bin/kite.exe
+
 cp-build-to-win: ## Cleans up dependencies
 	cp -f build/kite-windows-amd64.exe /Volumes/inhere-win/tools/bin/kite.exe
 	cp -f build/kite-linux-amd64 /Volumes/inhere-win/tools/bin/kite
@@ -127,6 +130,12 @@ win: ## Build for Windows
 	GOOS=windows GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-windows-amd64.exe $(MAIN_SRC_FILE)
 	#ls -alh build/$(NAME)*
 	upx -6 -f --no-progress -o build/$(NAME)-windows-amd64-upx.exe build/$(NAME)-windows-amd64.exe
+	ls -alh build/$(NAME)*
+
+win-no-upx: ## Build for Windows not compress
+	GOOS=windows GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-windows-amd64.exe $(MAIN_SRC_FILE)
+	#ls -alh build/$(NAME)*
+	#upx -6 -f --no-progress -o build/$(NAME)-windows-amd64-upx.exe build/$(NAME)-windows-amd64.exe
 	ls -alh build/$(NAME)*
 
 win-arm: ## Build for Windows arm64

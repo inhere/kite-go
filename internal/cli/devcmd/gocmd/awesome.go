@@ -73,7 +73,7 @@ var AwesomeGoCmd = &gcli.Command{
 		}
 
 		if agOpts.update || !fsutil.FileExists(cacheFile) {
-			err := greq.MustDo("GET", mkdownUrl).SaveFile(cacheFile)
+			_, err := greq.MustDo("GET", mkdownUrl).SaveFile(cacheFile)
 			if err != nil {
 				return err
 			}

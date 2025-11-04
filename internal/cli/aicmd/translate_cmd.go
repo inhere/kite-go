@@ -45,7 +45,7 @@ func NewTranslateCmd() *gcli.Command {
 			c.StrOpt2(&transOpts.target, "target,t", "target language, default is Chinese. eg: en, zh")
 			c.StrOpt2(&transOpts.model, "model", "the model name, default is gpt-3.5-turbo\n allow set by TRANSLATE_MODEL_NAME")
 
-			c.AddArg("text", "input text to translate", true)
+			c.AddArg("text", "input text to translate. use '@c' refer clipboard", true)
 		},
 		Func: func(c *gcli.Command, args []string) error {
 			text, err := apputil.ReadSource(c.Arg("text").String())

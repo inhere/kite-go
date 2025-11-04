@@ -31,6 +31,11 @@ func NewQuestionCmd() *gcli.Command {
 			c.AddArg("question", "The question to ask", true)
 		},
 		Func: func(c *gcli.Command, args []string) error {
+			question, err := apputil.ReadSource(c.Arg("question").String())
+			if err != nil {
+				return err
+			}
+
 			client := apputil.NewOpenaiClient()
 			modelName := envutil.GetOne([]string{"QUESTION_MODEL", "DEFAULT_LLM_MODEL"}, "gpt-3.5-turbo")
 			messages := []openai.ChatCompletionMessage{
@@ -42,7 +47,7 @@ func NewQuestionCmd() *gcli.Command {
 				// user message
 				{
 					Role:    openai.ChatMessageRoleUser,
-					Content: c.Arg("question").String(),
+					Content: question,
 				},
 			}
 

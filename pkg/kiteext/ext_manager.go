@@ -2,6 +2,7 @@ package kiteext
 
 import (
 	"fmt"
+	"os"
 	"sort"
 
 	"github.com/gookit/goutil/arrutil"
@@ -165,7 +166,7 @@ func (m *ExtManager) Init() error {
 	// 加载 metafile 文件
 	ms := &MetaSchema{}
 	err := jsonutil.DecodeFile(m.Metafile, ms)
-	if err != nil {
+	if err != nil && !os.IsNotExist(err) {
 		return errorx.Rf("extMgr: load metafile error：%w", err)
 	}
 

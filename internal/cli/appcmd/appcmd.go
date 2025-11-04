@@ -4,10 +4,10 @@ import (
 	"github.com/gookit/gcli/v3"
 )
 
-// ManageCmd manage kite self
-var ManageCmd = &gcli.Command{
-	Name:    "app",
-	Aliases: []string{"self", "mgr"},
+// SelfManageCmd manage kite self
+var SelfManageCmd = &gcli.Command{
+	Name:    "self",
+	Aliases: []string{"app", "mgr"},
 	Desc:    "provide commands for manage kite self",
 	Subs: []*gcli.Command{
 		AppCheckCmd,
