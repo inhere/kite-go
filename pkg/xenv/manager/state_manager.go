@@ -5,10 +5,12 @@ import (
 	"os"
 
 	"github.com/BurntSushi/toml"
+	"github.com/goccy/go-json"
 	"github.com/gookit/goutil/fsutil"
+	"github.com/gookit/goutil/jsonutil"
 	"github.com/gookit/goutil/strutil"
-	"github.com/inhere/kite-go/pkg/util"
 	"github.com/inhere/kite-go/pkg/xenv/models"
+	"github.com/inhere/kite-go/pkg/xenv/xenvcom"
 )
 
 // StateManager manages the state data of the environment
@@ -21,7 +23,7 @@ type StateManager struct {
 	merged *models.ActivityState
 	// session current session state data. NOTE: 只有在 HOOK SHELL 中才会生效
 	session *models.ActivityState
-	// global state data from global state file models.GlobalStateFile
+	// global state data from global state file xenvcom.GlobalStateFile
 	global *models.ActivityState
 	// directory states. 从当前目录开始，会向上级目录递归查找 .xenv.toml
 	//  - index 越大的优先级越高，距离当前目录越近
@@ -32,8 +34,8 @@ type StateManager struct {
 
 // NewStateManager creates a new StateManager
 func NewStateManager() *StateManager {
-	globalFile := fsutil.ExpandHome(models.GlobalStateFile)
-	sessionFile := fsutil.ExpandHome(models.SessionStateFile())
+	globalFile := fsutil.ExpandHome(xenvcom.GlobalStateFile)
+	sessionFile := fsutil.ExpandHome(xenvcom.SessionFile())
 
 	return &StateManager{
 		merged: models.NewActivityState("MERGED"),
@@ -305,7 +307,7 @@ func (m *StateManager) DelPath(path string, opFlag models.OpFlag) error {
 // LoadStateFiles loads the global and dir state from file
 func (m *StateManager) LoadStateFiles() (err error) {
 	// Load the global state
-	if err = m.loadStateFile(m.global); err != nil {
+	if err = m.loadTomlStateFile(m.global); err != nil {
 		return fmt.Errorf("failed to load global state: %w", err)
 	}
 
@@ -318,9 +320,9 @@ func (m *StateManager) LoadStateFiles() (err error) {
 	}
 
 	// Load the session state
-	m.session.Shell = util.HookShell()
-	if util.InHookShell() && fsutil.IsFile(m.session.File) {
-		err = m.loadStateFile(m.session)
+	m.session.Shell = xenvcom.HookShell()
+	if xenvcom.InHookShell() && fsutil.IsFile(m.session.File) {
+		err = m.loadJsonStateFile(m.session)
 		if err == nil {
 			m.merged.Merge(m.session)
 		}
@@ -337,9 +339,9 @@ func (m *StateManager) LoadDirEnvState() error {
 	}
 
 	// Check for .xenv.toml file in the current directory and parent directories up to the root
-	xenvTomlPath := fsutil.FindOneInParentDirs(wd, models.LocalStateFile)
+	xenvTomlPath := fsutil.FindOneInParentDirs(wd, xenvcom.LocalStateFile)
 	if xenvTomlPath != "" {
-		models.Debugf("Found .xenv.toml at: %s\n", xenvTomlPath)
+		xenvcom.Debugf("Found .xenv.toml at: %s\n", xenvTomlPath)
 		// Process the .xenv.toml file
 		if err1 := m.processDirenvToml(xenvTomlPath); err1 != nil {
 			return fmt.Errorf("failed to process .xenv.toml: %w", err1)
@@ -347,10 +349,10 @@ func (m *StateManager) LoadDirEnvState() error {
 	}
 
 	// Check for .envrc file in the current directory and parent directories up to the root
-	fileName := strutil.OrCond(util.IsHookBash(), ".envrc", ".envrc.ps1")
+	fileName := strutil.OrCond(xenvcom.IsHookBash(), ".envrc", ".envrc.ps1")
 	envrcPath := fsutil.FindOneInParentDirs(wd, fileName)
 	if envrcPath != "" {
-		models.Debugf("Found envrc at: %s\n", envrcPath)
+		xenvcom.Debugf("Found envrc at: %s\n", envrcPath)
 		m.envrcFiles = append(m.envrcFiles, envrcPath)
 	}
 
@@ -360,7 +362,7 @@ func (m *StateManager) LoadDirEnvState() error {
 // processDirenvToml processes an .xenv.toml file
 func (m *StateManager) processDirenvToml(filePath string) error {
 	dirState := models.NewActivityState(filePath)
-	err := m.loadStateFile(dirState)
+	err := m.loadTomlStateFile(dirState)
 	if err != nil {
 		return fmt.Errorf("failed to load dir state: %w", err)
 	}
@@ -371,20 +373,33 @@ func (m *StateManager) processDirenvToml(filePath string) error {
 }
 
 // loads the xenv state from TOML file
-func (m *StateManager) loadStateFile(ptr *models.ActivityState) error {
+func (m *StateManager) loadTomlStateFile(ptr *models.ActivityState) error {
 	// Check if file exists
 	if _, err := os.Stat(ptr.File); os.IsNotExist(err) {
 		return nil
 	}
 
-	// Read the file
+	// Read the TOML file
 	data, err := os.ReadFile(ptr.File)
 	if err != nil {
 		return err
 	}
-
-	// Unmarshal the TOML
 	return toml.Unmarshal(data, ptr)
+}
+
+// loads the xenv state from TOML file
+func (m *StateManager) loadJsonStateFile(ptr *models.ActivityState) error {
+	// Check if file exists
+	if _, err := os.Stat(ptr.File); os.IsNotExist(err) {
+		return nil
+	}
+
+	// Read the JSON file
+	data, err := os.ReadFile(ptr.File)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(data, ptr)
 }
 
 // SaveStateFile saves the global state to file
@@ -407,7 +422,7 @@ func (m *StateManager) SaveStateFile() error {
 	}
 
 	// 会话数据: 只有在 HOOK SHELL 中才会生效
-	if util.InHookShell() && m.session.HasUpdate {
+	if xenvcom.InHookShell() && m.session.HasUpdate {
 		m.session.HasUpdate = false
 		return m.saveStateFile(m.session)
 	}
@@ -415,7 +430,14 @@ func (m *StateManager) SaveStateFile() error {
 }
 
 func (m *StateManager) saveStateFile(state *models.ActivityState) error {
-	models.Debugf("Saving state file: %s\n", state.File)
+	xenvcom.Debugf("Saving state file: %s\n", state.File)
+	// is session state file. save as json
+	if state.IsSession() {
+		if err := fsutil.MkParentDir(state.File); err != nil {
+			return err
+		}
+		return jsonutil.WritePretty(state.File, state)
+	}
 	return NewTomlUpdater().Update(state)
 }
 
@@ -455,5 +477,5 @@ func (m *StateManager) DirenvOrNew() *models.ActivityState {
 		return m.dirStates[len(m.dirStates)-1]
 	}
 	// TODO 输出提示，确认是否创建 .xenv.toml 文件
-	return models.NewActivityState(models.LocalStateFile)
+	return models.NewActivityState(xenvcom.LocalStateFile)
 }

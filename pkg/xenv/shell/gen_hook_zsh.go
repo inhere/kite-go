@@ -5,6 +5,7 @@ import (
 
 	"github.com/gookit/goutil/strutil"
 	"github.com/inhere/kite-go/pkg/xenv/models"
+	"github.com/inhere/kite-go/pkg/xenv/xenvcom"
 )
 
 // generateBashScripts generates the zsh shell hook script
@@ -15,7 +16,7 @@ func (sg *XenvScriptGenerator) generateZshScripts(ps *models.GenInitScriptParams
 
 	return strutil.Replaces(ZshHookTemplate, map[string]string{
 		"{{HooksDir}}": ps.ShellHooksDir,
-		"{{SessionId}}": models.SessionID(),
+		"{{SessionId}}": xenvcom.SessionID(),
 		"{{EnvAliases}}": sb.String(),
 	})
 }

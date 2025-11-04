@@ -7,6 +7,7 @@ import (
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
 	"github.com/inhere/kite-go/pkg/xenv/models"
+	"github.com/inhere/kite-go/pkg/xenv/xenvcom"
 )
 
 func (sg *XenvScriptGenerator) generateCmdScripts(ps *models.GenInitScriptParams) string {
@@ -33,7 +34,7 @@ func (sg *XenvScriptGenerator) generateCmdScripts(ps *models.GenInitScriptParams
 
 	return strutil.Replaces(CmdLuaHookTemplate, map[string]string{
 		"{{HooksDir}}": ps.ShellHooksDir,
-		"{{SessionId}}": models.SessionID(),
+		"{{SessionId}}": xenvcom.SessionID(),
 		"{{EnvAliases}}": sb.String(),
 	})
 }

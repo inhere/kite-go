@@ -7,10 +7,6 @@ import (
 	"github.com/inhere/kite-go/pkg/util"
 )
 
-const (
-	InstalledMetaFile = "~/.xenv/tools.local.json"
-)
-
 // ToolsLocal 代表本地已安装的工具链信息. 会保存到 ~/.xenv/tools.local.json
 type ToolsLocal struct {
 	Version   string    `json:"version"`

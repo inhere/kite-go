@@ -5,6 +5,7 @@ import (
 
 	"github.com/gookit/goutil/arrutil"
 	"github.com/inhere/kite-go/pkg/util"
+	"github.com/inhere/kite-go/pkg/xenv/xenvcom"
 )
 
 // This file contains shell integration utilities
@@ -13,7 +14,7 @@ import (
 func OutputScript(script string) {
 	if script != "" {
 		// fix: Windows Pwsh, CMD 换行符是 \r\n
-		if util.IsHookPwshOrCmd() {
+		if xenvcom.IsHookPwshOrCmd() {
 			fmt.Printf("%s\r\n%s\r\n", ScriptMark, script)
 			return
 		}
@@ -23,6 +24,10 @@ func OutputScript(script string) {
 
 // DiffRemovePaths diffs and removes paths from the PATH
 func DiffRemovePaths(osPaths, rmPaths []string) (fmtRmPaths, newPaths, notFounds []string) {
+	if len(rmPaths) == 0 {
+		return nil, osPaths, nil
+	}
+
 	// format input paths
 	for _, p := range rmPaths {
 		fmtRmPaths = append(fmtRmPaths, util.NormalizePath(p))

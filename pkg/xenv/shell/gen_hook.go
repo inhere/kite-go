@@ -13,11 +13,11 @@ import (
 // XenvScriptGenerator xenv Shell脚本生成器实现
 type XenvScriptGenerator struct {
 	// cfg *models.Configuration
-	shell ShellType
+	shell ShType
 }
 
 // NewScriptGenerator creates a new ShellGenerator
-func NewScriptGenerator(shellType ShellType) *XenvScriptGenerator {
+func NewScriptGenerator(shellType ShType) *XenvScriptGenerator {
 	return &XenvScriptGenerator{shell: shellType}
 }
 
@@ -142,7 +142,7 @@ func (sg *XenvScriptGenerator) GenSetPath(paths []string) string {
 	newPath := util.JoinPaths(paths)
 	switch sg.shell {
 	case Bash, Zsh:
-		return fmt.Sprintf("export PATH=%s\n", newPath)
+		return fmt.Sprintf("export PATH='%s'\n", newPath)
 	case Pwsh:
 		return fmt.Sprintf("$Env:PATH='%s';\n", newPath)
 	default:

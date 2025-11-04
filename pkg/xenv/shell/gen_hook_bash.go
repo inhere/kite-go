@@ -5,6 +5,7 @@ import (
 
 	"github.com/gookit/goutil/strutil"
 	"github.com/inhere/kite-go/pkg/xenv/models"
+	"github.com/inhere/kite-go/pkg/xenv/xenvcom"
 )
 
 // generate bash script contents
@@ -15,7 +16,7 @@ func (sg *XenvScriptGenerator) generateBashScripts(ps *models.GenInitScriptParam
 
 	return strutil.Replaces(BashHookTemplate, map[string]string{
 		"{{HooksDir}}": ps.ShellHooksDir,
-		"{{SessionId}}": models.SessionID(),
+		"{{SessionId}}": xenvcom.SessionID(),
 		"{{EnvAliases}}": sb.String(),
 	})
 }

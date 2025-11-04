@@ -5,11 +5,11 @@ import (
 	"strings"
 )
 
-// ShellType shell类型枚举 bash, zsh, pwsh, cmd
-type ShellType string
+// ShType shell类型枚举 bash, zsh, pwsh, cmd
+type ShType string
 
 // ProfilePath get shell profile path
-func (st ShellType) ProfilePath() string {
+func (st ShType) ProfilePath() string {
 	switch st {
 	case Bash:
 		return "~/.bashrc"
@@ -31,13 +31,13 @@ func (st ShellType) ProfilePath() string {
 }
 
 const (
-	Bash ShellType = "bash"
-	Zsh  ShellType = "zsh"
-	Pwsh ShellType = "pwsh"
-	Cmd  ShellType = "cmd"
+	Bash ShType = "bash"
+	Zsh  ShType = "zsh"
+	Pwsh ShType = "pwsh"
+	Cmd  ShType = "cmd"
 
 	// Unknown shell type
-	Unknown ShellType = "unknown"
+	Unknown ShType = "unknown"
 )
 
 // ScriptMark 输出的脚本必须添加标记，前面部分为message, 后面部分为脚本
@@ -45,11 +45,11 @@ const ScriptMark = "--Expression--"
 
 var (
 	// AllShellTypes 所有支持的shell类型
-	AllShellTypes = []ShellType{Bash, Zsh, Pwsh, Cmd}
+	AllShellTypes = []ShType{Bash, Zsh, Pwsh, Cmd}
 )
 
 // TypeFromString returns the shell type from a string
-func TypeFromString(shellType string) (ShellType, error) {
+func TypeFromString(shellType string) (ShType, error) {
 	shellType = strings.ToLower(shellType)
 	switch shellType {
 	case "bash":

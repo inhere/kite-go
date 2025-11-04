@@ -6,6 +6,7 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/x/ccolor"
 	"github.com/inhere/kite-go/pkg/xenv"
+	"github.com/inhere/kite-go/pkg/xenv/xenvcom"
 )
 
 var (
@@ -145,7 +146,7 @@ func listEnvs() error {
 		fmt.Printf("  %s=%s\n", name, envVar)
 	}
 
-	if envSvc.IsSessionEnv() {
+	if xenvcom.InHookShell() {
 		sessVars := envSvc.SessionEnv()
 		ccolor.Infoln("Session Environment Variables:")
 		for name, envVar := range sessVars {

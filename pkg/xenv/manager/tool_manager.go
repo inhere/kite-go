@@ -13,6 +13,7 @@ import (
 	"github.com/gookit/goutil/x/ccolor"
 	"github.com/inhere/kite-go/pkg/xenv/models"
 	"github.com/inhere/kite-go/pkg/xenv/tools"
+	"github.com/inhere/kite-go/pkg/xenv/xenvcom"
 )
 
 type ToolManager struct {
@@ -74,7 +75,7 @@ func (m *ToolManager) ensureLocalLoad(must bool) error {
 func (m *ToolManager) LoadLocalIndexes() error {
 	m.localFile = fsutil.ExpandHome("~/.xenv/tools.local.json")
 	fileExist := fsutil.IsFile(m.localFile)
-	models.Debugf("Load local index file: %s(exist=%v)\n", m.localFile, fileExist)
+	xenvcom.Debugf("Load local index file: %s(exist=%v)\n", m.localFile, fileExist)
 
 	if fileExist {
 		err := jsonutil.DecodeFile(m.localFile, m.localTools)

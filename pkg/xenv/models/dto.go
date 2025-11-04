@@ -34,6 +34,13 @@ func (p *ActivateSDKsParams) IsDirenv() bool {
 	return p.OpFlag == OpFlagDirenv
 }
 
+// IsEmpty 检测是否为空
+func (p *ActivateSDKsParams) IsEmpty() bool {
+	return len(p.AddPaths) == 0 &&
+		len(p.AddEnvs) == 0 &&
+		len(p.AddSdks) == 0
+}
+
 // AddSdk 添加激活工具链
 func (p *ActivateSDKsParams) AddSdk(name, version string) {
 	p.AddSdks[name] = version

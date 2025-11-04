@@ -29,11 +29,6 @@ func NewEnvService(config *models.Configuration, state *manager.StateManager) *E
 	}
 }
 
-// IsSessionEnv 判断当前是否在shell hook环境
-func (s *EnvService) IsSessionEnv() bool {
-	return util.InHookShell()
-}
-
 func (s *EnvService) GlobalState() *models.ActivityState {
 	return s.state.Global()
 }

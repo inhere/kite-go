@@ -7,11 +7,11 @@ import (
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/x/ccolor"
-	"github.com/inhere/kite-go/pkg/util"
 	"github.com/inhere/kite-go/pkg/xenv/manager"
 	"github.com/inhere/kite-go/pkg/xenv/models"
 	"github.com/inhere/kite-go/pkg/xenv/shell"
 	"github.com/inhere/kite-go/pkg/xenv/tools"
+	"github.com/inhere/kite-go/pkg/xenv/xenvcom"
 )
 
 // ToolService handles tool chain management operations
@@ -222,24 +222,27 @@ func (ts *ToolService) ActivateSDKs(useTools []string, opFlag models.OpFlag) (sc
 
 	// 在shell hook环境中, 生成ENV set脚本
 	var sb strutil.Builder
-	if gen != nil {
+	isEmpty := actParams.IsEmpty()
+	if gen != nil && !isEmpty {
 		script1 := gen.GenRemThenAddPaths(actParams.RemPaths, actParams.AddPaths)
-		sb.Writeln(script1)
+		sb.WriteString(script1)
 		if len(actParams.AddEnvs) > 0 {
-			sb.Writeln(gen.GenSetEnvs(actParams.AddEnvs))
+			sb.WriteString(gen.GenSetEnvs(actParams.AddEnvs))
 		}
 	} else {
 		ccolor.Warnln("TIP: The operation will not take effect, please setup the SHELL HOOK first.")
 	}
 
-	// Update the activity state
-	err = ts.state.UseSDKsWithParams(actParams)
-	if err != nil {
-		return "", err
+	if !isEmpty {
+		// Update the activity state
+		err = ts.state.UseSDKsWithParams(actParams)
+		if err != nil {
+			return "", err
+		}
+		err = ts.state.SaveStateFile()
+		return sb.String(), err
 	}
-
-	err = ts.state.SaveStateFile()
-	return sb.String(), err
+	return "", nil
 }
 
 // check for activates a specific tool version
@@ -271,9 +274,9 @@ func (ts *ToolService) checkActivateSDK(spec *tools.VersionSpec) (*models.Instal
 //
 
 // WriteHookToProfile installs the hook script to the user's profile
-func (ts *ToolService) WriteHookToProfile(st shell.ShellType, pwshProfile string) error {
+func (ts *ToolService) WriteHookToProfile(st shell.ShType, pwshProfile string) error {
 	gen := shell.NewScriptGenerator(st)
-	if util.InHookShell() {
+	if xenvcom.InHookShell() {
 		ccolor.Infoln("The hook script is already installed in the current shell")
 		return nil
 	}
@@ -282,7 +285,7 @@ func (ts *ToolService) WriteHookToProfile(st shell.ShellType, pwshProfile string
 }
 
 // GenHookScripts generates Shell hook init scripts
-func (ts *ToolService) GenHookScripts(st shell.ShellType) (string, error) {
+func (ts *ToolService) GenHookScripts(st shell.ShType) (string, error) {
 	gen := shell.NewScriptGenerator(st)
 
 	toolMgr := manager.NewToolManager()

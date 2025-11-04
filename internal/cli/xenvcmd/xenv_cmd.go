@@ -5,10 +5,9 @@ import (
 
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/events"
-	"github.com/gookit/gcli/v3/gflag"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/internal/cli/xenvcmd/subcmd"
-	"github.com/inhere/kite-go/pkg/xenv"
+	"github.com/inhere/kite-go/pkg/xenv/xenvcom"
 )
 
 // XEnvCmd the main xenv command
@@ -37,12 +36,7 @@ Quick commands:
 	Config: func(c *gcli.Command) {
 		// Add global options for xenv command if needed
 		c.BoolOpt(&subcmd.GlobalFlag, "global", "g", false, "Operate for global config")
-		c.BoolOpt(&subcmd.DebugMode, "debug", "d", false, "Enable debug mode", gflag.WithHandler(func(val string) error {
-			if val == "true" {
-				xenv.SetDebugMode(true)
-			}
-			return nil
-		}))
+		c.BoolOpt(&xenvcom.DebugMode, "debug", "d", false, "Enable debug mode. can be XENV_DEBUG_MODE=true")
 
 		// Add any configuration here if needed
 		c.On(events.OnCmdNotFound, func(ctx *gcli.HookCtx) (stop bool) {

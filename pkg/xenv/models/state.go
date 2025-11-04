@@ -1,9 +1,6 @@
 package models
 
 import (
-	"os"
-	"time"
-
 	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/fsutil"
 )
@@ -26,43 +23,6 @@ func (of OpFlag) String() string {
 		return "global"
 	}
 	return "unknown"
-}
-
-// GetOpFlag 根据参数获取操作标识
-func GetOpFlag(saveDirenv, global bool) OpFlag {
-	if global {
-		return OpFlagGlobal
-	}
-	if saveDirenv {
-		return OpFlagDirenv
-	}
-	return OpFlagSession
-}
-
-const (
-	// GlobalStateFile global state file path
-	GlobalStateFile = "~/.config/xenv/global.toml"
-	// LocalStateFile local state file path
-	LocalStateFile = ".xenv.toml"
-	// SessIdEnvName 当前会话ID环境变量名称
-	SessIdEnvName = "XENV_SESSION_ID"
-	// SessionStateDir 当前SHELL会话状态文件目录 eg: ~/.xenv/session/<session_id>.json
-	SessionStateDir = "~/.xenv/session"
-)
-
-var sessionID = os.Getenv(SessIdEnvName)
-
-// SessionID 获取当前会话ID
-func SessionID() string {
-	if sessionID == "" {
-		sessionID = time.Now().Format("20060102_150405")
-	}
-	return sessionID
-}
-
-// SessionStateFile 生成当前会话状态文件
-func SessionStateFile() string {
-	return SessionStateDir + "/" + SessionID() + ".json"
 }
 
 // ActivityState 代表用户当前激活的工具链和环境状态.
@@ -111,8 +71,16 @@ func NewActivityState(filePath string) *ActivityState {
 	}
 }
 
+// IsSession 检查当前状态数据是否为会话状态
+func (as *ActivityState) IsSession() bool {
+	return as.Shell != ""
+}
+
 // SessionID 从 as.File 获取当前会话ID. NOTE: 必须在 session 下使用
 func (as *ActivityState) SessionID() string {
+	if as.Shell == "" {
+		panic("state: session shell can not be empty")
+	}
 	return fsutil.NameNoExt(as.File)
 }
 
