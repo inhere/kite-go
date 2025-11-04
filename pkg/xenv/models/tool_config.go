@@ -35,8 +35,9 @@ type ToolChain struct {
 	BinPaths []string `json:"bin_paths"` // 该工具提供的二进制文件路径列表
 	// 安装完成后执行的shell hook脚本
 	PostInstall []string `json:"post_install"`
-	// 自定义版本安装目录,不在统一目录下的版本 key: version, value: install_dir
-	LocalVersions map[string]string `json:"local_versions"`
+	// 自定义版本安装目录,不在统一目录下 InstallDir 的版本
+	//  - key: version, value: install_dir
+	OtherVersions map[string]string `json:"other_versions"`
 }
 
 // ActiveEnvNames 返回激活环境变量列表

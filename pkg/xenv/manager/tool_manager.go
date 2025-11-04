@@ -136,6 +136,28 @@ func (m *ToolManager) IndexLocalTools() error {
 				CreatedAt:  currentTime,
 			})
 		}
+
+		// 不在统一目录下 InstallDir 的版本
+		if sdkCfg.OtherVersions != nil {
+			for version, dirPath := range sdkCfg.OtherVersions {
+				if !fsutil.IsDir(dirPath) {
+					ccolor.Warnf("W Custum version %s path %q is not exists", version, dirPath)
+					continue
+				}
+
+				ccolor.Infof("  Found %s %s(at %s)\n", sdkCfg.Name, version, dirPath)
+				// 添加到本地索引
+				m.localTools.SDKs = append(m.localTools.SDKs, models.InstalledTool{
+					ID:    fmt.Sprintf("%s:%s", sdkCfg.Name, version),
+					Name:  sdkCfg.Name,
+					IsSDK: true,
+					// version, install path
+					Version:    version,
+					InstallDir: dirPath,
+					CreatedAt:  currentTime,
+				})
+			}
+		}
 	}
 
 	// TODO Simple tools
