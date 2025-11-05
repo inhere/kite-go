@@ -27,6 +27,7 @@ var DevToolsCmd = &gcli.Command{
 		sqlcmd.SQLToolCmd,
 		jsoncmd.YamlToolCmd,
 		netcmd.NewNMapCmd(),
+		netcmd.NewNetcatCmd(),
 		netcmd.NewTelnetClientCmd(),
 		netcmd.NewTelnetServerCmd(),
 	},

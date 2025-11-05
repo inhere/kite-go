@@ -17,17 +17,22 @@ type nmapCmdOpts struct {
 	timeout  int
 	threads  int
 	host     string
+	protocol string
+	scanType string
+	verbose  bool
+	// 常用的服务版本探测
+	serviceDetect bool
 	// internal fields
 	portList []int
 }
 
-// NewNMapCmd 实现nmap扫描工具命令
+// NewNMapCmd 实现nmap扫描 tcp 工具命令
 func NewNMapCmd() *gcli.Command {
 	var nmapOpts = nmapCmdOpts{}
 
 	return &gcli.Command{
 		Name:    "nmap",
-		Desc:    "nmap port scan tool",
+		Desc: "nmap port scan tool (support tcp/udp)",
 		Aliases: []string{"scan"},
 		Config: func(c *gcli.Command) {
 			c.StrOpt(&nmapOpts.ports, "ports", "p", "80,443,22,21,23,25,53,110,143,993,995,3306,5432,6379,27017",
@@ -37,6 +42,10 @@ Both: 1000-2000,8080,4000-5000
 `)
 			c.IntOpt(&nmapOpts.timeout, "timeout", "t", 3, "connection timeout in milliseconds")
 			c.IntOpt(&nmapOpts.threads, "threads", "c,T", 100, "number of concurrent threads")
+			c.StrOpt(&nmapOpts.protocol, "protocol", "P", "tcp", "scan protocol: tcp or udp")
+			c.StrOpt(&nmapOpts.scanType, "scan-type", "s", "connect", "scan type: connect, null")
+			c.BoolOpt(&nmapOpts.serviceDetect, "service-detect", "sv", false, "detect service versions")
+			c.BoolOpt(&nmapOpts.verbose, "verbose", "v", false, "verbose output")
 			c.AddArg("host", "target host/IP to scan", true)
 		},
 		Func: func(c *gcli.Command, args []string) error {
@@ -47,6 +56,11 @@ Both: 1000-2000,8080,4000-5000
 				return err
 			}
 
+			// 验证协议
+			if nmapOpts.protocol != "tcp" && nmapOpts.protocol != "udp" {
+				return fmt.Errorf("unsupported protocol: %s (only tcp/udp supported)", nmapOpts.protocol)
+			}
+
 			// 执行端口扫描
 			return scanPorts(&nmapOpts)
 		},
@@ -54,6 +68,8 @@ Both: 1000-2000,8080,4000-5000
   {$binWithCmd} 192.168.1.1
   {$binWithCmd} -p 80,443,8080 example.com
   {$binWithCmd} -p 1-1000 -t 5 -T 50 192.168.1.1
+  {$binWithCmd} -P udp -p 53,123 8.8.8.8
+  {$binWithCmd} --sv -p 22,80,443 example.com
 `,
 	}
 }
@@ -106,7 +122,6 @@ func parsePorts(opts *nmapCmdOpts) error {
 
 	// 去重端口
 	opts.portList = removeDuplicatePorts(opts.portList)
-
 	return nil
 }
 
@@ -125,12 +140,23 @@ func removeDuplicatePorts(ports []int) []int {
 	return result
 }
 
+// PortScanResult 端口扫描结果
+type PortScanResult struct {
+	Port    int
+	State   string
+	Service string
+	Reason  string
+}
+
 // scanPorts 执行端口扫描
 func scanPorts(opts *nmapCmdOpts) (err error) {
 	start := time.Now()
-	ccolor.Infof("Starting scan on host: %s, start time: %s\n", opts.host, start.Format("2006-01-02 15:04:05"))
-	ccolor.Infof("Scanning [%d] ports with %d threads and %dms timeout\n\n",
-		len(opts.portList), opts.threads, opts.timeout)
+	ccolor.Infof("Starting Nmap scan on host: %s, start time: %s\n", opts.host, start.Format("2006-01-02 15:04:05"))
+
+	// 根据协议确定显示名称
+	protoDisplay := strings.ToUpper(opts.protocol)
+	ccolor.Infof("Scanning [%d] ports with %d threads and %dms timeout (%s)\n\n",
+		len(opts.portList), opts.threads, opts.timeout, protoDisplay)
 
 	var ipAddr *net.IPAddr
 	// 解析主机地址 - 已经是IP地址则跳过解析
@@ -144,19 +170,26 @@ func scanPorts(opts *nmapCmdOpts) (err error) {
 		fmt.Printf("Resolved %s to %s\n\n", opts.host, ipAddr.IP.String())
 	}
 
-	// 创建通道用于控制并发数量
-	semaphore := make(chan struct{}, opts.threads)
-
 	// 创建等待组
 	var wg sync.WaitGroup
 
-	// 存储开放端口的通道
-	openPorts := make(chan int, len(opts.portList))
+	// 存储扫描结果的通道
+	// 创建通道用于控制并发数量
+	semaphore := make(chan struct{}, opts.threads)
+	results := make(chan PortScanResult, len(opts.portList))
 
-	// 启动接收开放端口的goroutine
+	// 启动接收扫描结果的goroutine
 	go func() {
-		for port := range openPorts {
-			fmt.Printf("Port %d/tcp is open\n", port)
+		for result := range results {
+			if result.State == "open" {
+				if opts.serviceDetect {
+					fmt.Printf("%d/%s\t%s\t%s\n", result.Port, strings.ToLower(protoDisplay), result.State, result.Service)
+				} else {
+					fmt.Printf("%d/%s\t%s\n", result.Port, strings.ToLower(protoDisplay), result.State)
+				}
+			} else if opts.verbose {
+				fmt.Printf("%d/%s\t%s\t%s\n", result.Port, strings.ToLower(protoDisplay), result.State, result.Reason)
+			}
 		}
 	}()
 
@@ -170,27 +203,170 @@ func scanPorts(opts *nmapCmdOpts) (err error) {
 			defer wg.Done()
 			defer func() { <-semaphore }() // 释放信号量
 
-			if isPortOpen(ipAddr.IP.String(), p, timeout) {
-				openPorts <- p
+			state, reason, service := probePort(ipAddr.IP.String(), p, opts.protocol, opts.serviceDetect, timeout)
+			results <- PortScanResult{
+				Port:    p,
+				State:   state,
+				Service: service,
+				Reason:  reason,
 			}
 		}(port)
 	}
 
 	// 等待所有扫描完成
 	wg.Wait()
-	close(openPorts)
+	close(results)
 
-	ccolor.Successln("\nScan completed. Cost time:", time.Since(start))
+	ccolor.Successln("\nNmap scan completed. Cost time:", time.Since(start))
 	return nil
 }
 
-// isPortOpen 检查端口是否开放
-func isPortOpen(host string, port int, timeout time.Duration) bool {
+// probePort 探测端口状态
+func probePort(host string, port int, protocol string, detectService bool, timeout time.Duration) (state, reason, service string) {
+	switch strings.ToLower(protocol) {
+	case "t", "tcp":
+		return probeTCPPort(host, port, detectService, timeout)
+	case "u", "udp":
+		return probeUDPPort(host, port, detectService, timeout)
+	default:
+		return "unknown", "unsupported_protocol", "unknown"
+	}
+}
+
+// probeTCPPort 探测TCP端口
+func probeTCPPort(host string, port int, detectService bool, timeout time.Duration) (state, reason, service string) {
 	target := fmt.Sprintf("%s:%d", host, port)
 	conn, err := net.DialTimeout("tcp", target, timeout)
 	if err != nil {
-		return false
+		return "closed", err.Error(), ""
 	}
 	defer conn.Close()
-	return true
+
+	service = detectServiceName(port, "tcp")
+
+	// 如果需要服务检测 - 尝试获取更多服务信息
+	if detectService {
+		serviceDetail := probeService(conn, port, "tcp", timeout)
+		if serviceDetail != "" {
+			service = serviceDetail
+		}
+	}
+
+	return "open", "syn-ack", service
+}
+
+// probeUDPPort 探测UDP端口
+func probeUDPPort(host string, port int, detectService bool, timeout time.Duration) (state, reason, service string) {
+	target := fmt.Sprintf("%s:%d", host, port)
+	conn, err := net.DialTimeout("udp", target, timeout)
+	if err != nil {
+		return "closed", err.Error(), ""
+	}
+	defer conn.Close()
+
+	// 对于UDP，我们发送一个简单的数据包来测试
+	_, err = conn.Write([]byte(""))
+	if err != nil {
+		return "closed", "write_failed", ""
+	}
+
+	// 如果需要服务检测
+	if detectService {
+		service = detectServiceName(port, "udp")
+	} else {
+		service = detectServiceName(port, "udp")
+	}
+
+	return "open|filtered", "no_response", service
+}
+
+// detectServiceName 检测服务名称
+func detectServiceName(port int, protocol string) string {
+	// 常见端口对应的服务名称
+	serviceMap := map[string]string{
+		"tcp:21":    "ftp",
+		"tcp:22":    "ssh",
+		"tcp:23":    "telnet",
+		"tcp:25":    "smtp",
+		"tcp:53":    "domain",
+		"tcp:80":    "http",
+		"tcp:110":   "pop3",
+		"tcp:143":   "imap",
+		"tcp:443":   "https",
+		"tcp:502":   "modbus",
+		"tcp:993":   "imaps",
+		"tcp:995":   "pop3s",
+		"tcp:3306":  "mysql",
+		"tcp:5432":  "postgresql",
+		"tcp:6379":  "redis",
+		"tcp:11740": "codesys",
+		"tcp:27017": "mongodb",
+
+		"udp:53":  "domain",
+		"udp:67":  "dhcp",
+		"udp:68":  "dhcp",
+		"udp:123": "ntp",
+		"udp:161": "snmp",
+		"udp:514": "syslog",
+	}
+
+	key := fmt.Sprintf("%s:%d", protocol, port)
+	if service, ok := serviceMap[key]; ok {
+		return service
+	}
+
+	return "unknown"
+}
+
+// probeService 探测服务详情
+func probeService(conn net.Conn, port int, protocol string, timeout time.Duration) string {
+	// 设置读取超时
+	err1 := conn.SetReadDeadline(time.Now().Add(timeout))
+	if err1 != nil {
+		ccolor.Warnln("Failed to set read deadline:", err1)
+	}
+
+	// 根据端口发送特定的探测请求
+	switch port {
+	case 80, 8080:
+		// HTTP 请求
+		_, _ = fmt.Fprintf(conn, "GET / HTTP/1.0\r\n\r\n")
+		buffer := make([]byte, 1024)
+		n, err := conn.Read(buffer)
+		if err == nil && n > 0 {
+			response := string(buffer[:n])
+			// 简单解析HTTP响应头
+			lines := strings.Split(response, "\n")
+			if len(lines) > 0 {
+				return strings.TrimSpace(lines[0]) // 返回HTTP状态行
+			}
+		}
+	case 443:
+		// HTTPS 连接不会返回明文，但可以检测连接是否成功
+		return "https"
+	case 22:
+		// SSH 服务检测
+		buffer := make([]byte, 1024)
+		n, err := conn.Read(buffer)
+		if err == nil && n > 0 {
+			response := string(buffer[:n])
+			if strings.HasPrefix(response, "SSH-") {
+				return strings.TrimSpace(response)
+			}
+		}
+		return "ssh"
+	case 21:
+		// FTP 服务检测
+		buffer := make([]byte, 1024)
+		n, err := conn.Read(buffer)
+		if err == nil && n > 0 {
+			response := string(buffer[:n])
+			if strings.HasPrefix(response, "220") {
+				return strings.TrimSpace(response)
+			}
+		}
+		return "ftp"
+	}
+
+	return ""
 }
