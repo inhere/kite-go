@@ -1,33 +1,4 @@
-package shell
-
-import (
-	"strings"
-
-	"github.com/gookit/goutil/strutil"
-	"github.com/inhere/kite-go/pkg/xenv/models"
-	"github.com/inhere/kite-go/pkg/xenv/xenvcom"
-)
-
-// generate bash script contents
-func (sg *XenvScriptGenerator) generateBashScripts(ps *models.GenInitScriptParams) string {
-	// 添加全局环境, PATH, 别名
-	var sb strings.Builder
-	sg.addCommonForLinuxShell(&sb, ps)
-
-	return strutil.Replaces(BashHookTemplate, map[string]string{
-		"{{HooksDir}}": ps.ShellHooksDir,
-		"{{SessionId}}": xenvcom.SessionID(),
-		"{{EnvAliases}}": sb.String(),
-	})
-}
-
-// GenerateBashHook generates the bash shell hook script
-
-// BashHookTemplate 生成 Bash Hook 的模板
-//
-// Usage, .bashrc or .bash_profile add：
-//   eval "$(kite xenv shell --type bash)"
-var BashHookTemplate = `
+#!/usr/bin/env bash
 #
 # kite xenv bash hook
 # This script enables xenv to work in bash shells
@@ -145,6 +116,5 @@ setup_xenv
 
 # Enable command completion for xenv
 if command -v complete >/dev/null 2>&1; then
-	complete -W "use unuse env set unset path list help" xenv
+    complete -W "use unuse env set unset path list help" xenv
 fi
-`

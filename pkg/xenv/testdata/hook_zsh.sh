@@ -1,49 +1,17 @@
-package shell
-
-import (
-	"strings"
-
-	"github.com/gookit/goutil/strutil"
-	"github.com/inhere/kite-go/pkg/xenv/models"
-	"github.com/inhere/kite-go/pkg/xenv/xenvcom"
-)
-
-// generate bash script contents
-func (sg *XenvScriptGenerator) generateBashScripts(ps *models.GenInitScriptParams) string {
-	// 添加全局环境, PATH, 别名
-	var sb strings.Builder
-	sg.addCommonForLinuxShell(&sb, ps)
-
-	return strutil.Replaces(BashHookTemplate, map[string]string{
-		"{{HooksDir}}": ps.ShellHooksDir,
-		"{{SessionId}}": xenvcom.SessionID(),
-		"{{EnvAliases}}": sb.String(),
-	})
-}
-
-// GenerateBashHook generates the bash shell hook script
-
-// BashHookTemplate 生成 Bash Hook 的模板
-//
-// Usage, .bashrc or .bash_profile add：
-//   eval "$(kite xenv shell --type bash)"
-var BashHookTemplate = `
+#!/usr/bin/env zsh
 #
-# kite xenv bash hook
-# This script enables xenv to work in bash shells
+# xenv zsh hook
+# This script enables xenv to work in zsh shells
 #
 # Usage, .bashrc or .bash_profile add:
 #   eval "$(kite xenv shell --type bash)"
 #
-# Start to set up xenv in the current shell
 
-# 重写 cd 内建命令来实现监听
-cd() {
-    builtin cd "$@" && {
-        if command -v kite >/dev/null 2>&1; then
-            kite xenv init-direnv >/dev/null 2>&1
-        fi
-    }
+# 使用 chpwd 钩子函数监听cd执行后
+chpwd() {
+    if (( $+commands[kite] )); then
+        kite xenv init-direnv >/dev/null 2>&1
+    fi
 }
 
 # Helper function to evaluate xenv command results
@@ -56,8 +24,8 @@ invoke_xenv_result() {
             # 检查结果是否包含 '--Expression--' 分隔符
             if [[ "$result" == *"--Expression--"* ]]; then
                 # 使用 '--Expression--' 分割内容
-                local msg_part="$(echo "$result" | cut -d'-' -f1)"
-                local expr_part="$(echo "$result" | cut -d'-' -f4-)"
+                local msg_part="${result%%--Expression--*}"
+                local expr_part="${result##*--Expression--}"
 
                 # 后面部分当做代码执行
                 if [ -n "$expr_part" ]; then
@@ -79,9 +47,10 @@ invoke_xenv_result() {
     fi
 }
 
+# Function to set up xenv in the current shell
 setup_xenv() {
     # Mark hook enabled
-    export XENV_HOOK_SHELL=bash
+    export XENV_HOOK_SHELL=zsh
     export XENV_SESSION_ID="{{SessionId}}"
     # Set up the xenv shims directory in PATH
     local xenv_shims_dir="${XENV_ROOT:-$HOME/.xenv}/shims"
@@ -119,8 +88,8 @@ setup_xenv() {
         esac
     }
 
-    # fire xenv hooks to kite, use for generate code to exec TODO
-    local result_init = "$(kite xenv hook-init --type bash)"
+    # XENV: fire xenv hooks to kite, use for generate code to exec TODO
+    local result_init = "$(kite xenv hook-init --type zsh)"
     local exit_code=$?
     invoke_xenv_result "$result_init" $exit_code
 
@@ -130,11 +99,10 @@ setup_xenv() {
         export XENV_AUTO_INITIALIZED=1
     fi
 
-    # Load custom hooks script files
-	# 使用 glob 获取匹配的文件, 加载所有匹配的脚本
-	hook_files=({{HooksDir}}/*.sh)
+	# Load custom hooks script files
+	hook_files={{HooksDir}}/*.sh
 	for file in "${hook_files[@]}"; do
-		if [[ -f "$file" ]] && [[ -r "$file" ]]; then
+		if [[ -f "$file" && -r "$file" ]]; then
 			source "$file"
 		fi
 	done
@@ -144,7 +112,6 @@ setup_xenv() {
 setup_xenv
 
 # Enable command completion for xenv
-if command -v complete >/dev/null 2>&1; then
-	complete -W "use unuse env set unset path list help" xenv
+if command -v compctl >/dev/null 2>&1; then
+    compctl -k "use unuse env set unset path list help" xenv
 fi
-`

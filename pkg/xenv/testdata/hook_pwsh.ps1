@@ -1,69 +1,4 @@
-package shell
-
-import (
-	"fmt"
-	"strings"
-
-	"github.com/gookit/goutil/maputil"
-	"github.com/gookit/goutil/strutil"
-	"github.com/inhere/kite-go/pkg/xenv/models"
-	"github.com/inhere/kite-go/pkg/xenv/xenvcom"
-)
-
-func (sg *XenvScriptGenerator) generatePwshScripts(ps *models.GenInitScriptParams) string {
-	var sb strings.Builder
-	// 添加全局环境变量
-	if len(ps.Envs) > 0 {
-		sb.WriteString("  # Add session ENV variables from kite xenv\n")
-		maputil.EachTypedMap(ps.Envs, func(key, value string) {
-			sb.WriteString(fmt.Sprintf("  $env:%s='%s'\n", strings.ToUpper(key), value))
-		})
-	}
-
-	// 添加全局PATH
-	if len(ps.Paths) > 0 {
-		sb.WriteString("  # Add session PATH variables from kite xenv\n")
-		paths := strings.Join(ps.Paths, ";")
-		sb.WriteString(fmt.Sprintf("  $env:PATH='%s;' + $env:PATH\n", paths))
-	}
-
-	// 添加全局别名
-	if len(ps.ShellAliases) > 0 {
-		sb.WriteString("  # Add global aliases from kite xenv\n")
-		maputil.EachTypedMap(ps.ShellAliases, func(key, value string) {
-			// 复杂 value, 封装为简易方法 eg: function ll { ls.exe -alh $args }
-			if strutil.ContainsByte(value, ' ') {
-				sb.WriteString(fmt.Sprintf("  function %s() { %s $args }\n", key, value))
-			} else {
-				// 简单 value, 直接使用 Set-Alias
-				sb.WriteString(fmt.Sprintf("  Set-Alias -name %s -value %s\n", key, value))
-			}
-		})
-	}
-
-	return strutil.Replaces(PwshHookTemplate, map[string]string{
-		"{{HooksDir}}": ps.ShellHooksDir,
-		"{{SessionId}}": xenvcom.SessionID(),
-		"{{EnvAliases}}": sb.String(),
-	})
-}
-
-// PwshHookTemplate PowerShell hook模板
-//
-// PS version:
-//  echo $PSVersionTable.PSVersion.ToString()
-//
-// Config on pwsh:
-//
-//	# Write to profile.
-//	 find by: echo $PROFILE.CurrentUserAllHosts
-//
-//	# Method 1:
-//	Invoke-Expression (&kite xenv shell --type pwsh)
-//
-//	# Method 2:
-//	kite xenv shell --type pwsh | Out-String | Invoke-Expression
-var PwshHookTemplate = `# xenv PowerShell hook
+# xenv PowerShell hook
 # This script enables xenv to work in PowerShell shells
 #
 # Config for pwsh:
@@ -211,4 +146,3 @@ Register-ArgumentCompleter -CommandName xenv -ParameterName Command -ScriptBlock
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
     @('use', 'unuse', 'env', 'set', 'unset', 'path', 'list', '--help') | Where-Object { $_ -like "$wordToComplete*" }
 }
-`

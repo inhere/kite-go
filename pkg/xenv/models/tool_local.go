@@ -40,7 +40,7 @@ func (lt *ToolsLocal) FindSdkByNameAndVersion(name string, version string) *Inst
 	return nil
 }
 
-// ListSdkByName 根据名称返回所有已安装的SDK工具链版本
+// ListSdkByName 根据名称返回所有已安装的SDK工具链版本. 按版本降序排序
 func (lt *ToolsLocal) ListSdkByName(name string) []InstalledTool {
 	var tools []InstalledTool
 	for i, tool := range lt.SDKs {
@@ -50,6 +50,7 @@ func (lt *ToolsLocal) ListSdkByName(name string) []InstalledTool {
 		}
 	}
 
+	// TODO use strutil.VersionCompare()
 	sort.Slice(tools, func(i, j int) bool {
 		return tools[i].Version > tools[j].Version
 	})

@@ -28,12 +28,15 @@ type ToolManager struct {
 	// tools register data - 从 config 配置中初始化 tools/config.json TODO
 	configFile string
 	configLoad bool
+	// caches TODO
+	groupSdks map[string][]models.InstalledTool
 }
 
 // NewToolManager creates a new ToolManager instance
 func NewToolManager() *ToolManager {
 	return &ToolManager{
 		localTools: &models.ToolsLocal{Version: "v1"},
+		groupSdks: make(map[string][]models.InstalledTool),
 	}
 }
 
@@ -53,10 +56,10 @@ func (m *ToolManager) InitLoad() error {
 }
 
 // InitLoad1 loads the local indexes
-func (m *ToolManager) InitLoad1(cfg *models.Configuration) error {
-	_ = m.Init(cfg)
-	return m.ensureLocalLoad(false)
-}
+// func (m *ToolManager) InitLoad1(cfg *models.Configuration) error {
+// 	_ = m.Init(cfg)
+// 	return m.ensureLocalLoad(false)
+// }
 
 // ensureLocalLoad ensure local data file loaded
 func (m *ToolManager) ensureLocalLoad(must bool) error {
@@ -222,11 +225,33 @@ func (m *ToolManager) FindSdkByID(id string) *models.InstalledTool {
 
 // ListSDKVersions 根据名称列出本地安装的SDK版本列表
 func (m *ToolManager) ListSDKVersions(name string) []models.InstalledTool {
+	// check caches
+	if ls, ok := m.groupSdks[name]; ok {
+		return ls
+	}
+
 	_ = m.ensureLocalLoad(true)
-	return m.localTools.ListSdkByName(name)
+	ls := m.localTools.ListSdkByName(name)
+
+	// cache for the sdk name
+	if len(ls) > 0 {
+		m.groupSdks[name] = ls
+	}
+	return ls
 }
 
-// MatchSdkByVersion 根据版本匹配本地可用的sdk
+// MatchSdkByNameAndVersion 根据名称和版本匹配本地可用的一个sdk.
+//
+// 快捷方法，合并了 ListSDKVersions 和 MatchSdkByVersion
+func (m *ToolManager) MatchSdkByNameAndVersion(name, version string) *models.InstalledTool {
+	list := m.ListSDKVersions(name)
+	if len(list) == 0 {
+		return nil
+	}
+	return m.MatchSdkByVersion(list, version)
+}
+
+// MatchSdkByVersion 根据版本匹配本地可用的一个sdk
 //
 // 规则和优先级：
 //   - 先完全匹配版本

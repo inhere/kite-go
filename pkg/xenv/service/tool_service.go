@@ -164,8 +164,15 @@ func (ts *ToolService) Uninstall(name, version string) error {
 
 // ActivateSDKs activates multiple SDK tools
 func (ts *ToolService) ActivateSDKs(useTools []string, opFlag models.OpFlag) (script string, err error) {
-	ts.state.SetBatchMode(true)
-	defer ts.state.SetBatchMode(false)
+	var sdkSpecs []*models.VersionSpec
+	for _, arg := range useTools {
+		// Parse name:version
+		spec, err2 := tools.ParseVersionSpec(arg)
+		if err2 != nil {
+			return "", err2
+		}
+		sdkSpecs = append(sdkSpecs, spec)
+	}
 
 	// Generate shell eval scripts
 	gen, err1 := getShellGenerator(ts.config)
@@ -173,16 +180,15 @@ func (ts *ToolService) ActivateSDKs(useTools []string, opFlag models.OpFlag) (sc
 		return "", err1
 	}
 
+	return ts.activateSDKs(gen, sdkSpecs, opFlag)
+}
+
+// ActivateSDKs activates multiple SDK tools
+func (ts *ToolService) activateSDKs(gen *shell.XenvScriptGenerator, sdkSpecs []*models.VersionSpec, opFlag models.OpFlag) (script string, err error) {
 	actParams := models.NewActivateSDKsParams()
 	actParams.OpFlag = opFlag
 
-	for _, arg := range useTools {
-		// Parse name:version
-		spec, err2 := tools.ParseVersionSpec(arg)
-		if err2 != nil {
-			return "", err2
-		}
-
+	for _, spec := range sdkSpecs {
 		// check activate the tool
 		localSdk, err3 := ts.checkActivateSDK(spec)
 		if err3 != nil {
@@ -198,14 +204,14 @@ func (ts *ToolService) ActivateSDKs(useTools []string, opFlag models.OpFlag) (sc
 			// 	continue
 			// }
 
-			oldSdk := ts.toolMgr.FindSdkByID(spec.Name + ":" + oldActiveVer)
+			oldSdk := ts.toolMgr.MatchSdkByNameAndVersion(spec.Name, oldActiveVer)
 			if oldSdk != nil {
 				actParams.AddRemPath(oldSdk.BinDirPath())
 			}
 		}
 
-		// 存储激活的真实版本
-		actParams.AddSdk(spec.Name, localSdk.Version)
+		// 存储激活的版本，不使用真实版本号
+		actParams.AddSdk(spec.Name, spec.Version)
 		// Add to PATH and ENVs
 		actParams.AddPath(localSdk.BinDirPath())
 		if len(localSdk.Config.ActiveEnv) > 0 {
@@ -236,6 +242,9 @@ func (ts *ToolService) ActivateSDKs(useTools []string, opFlag models.OpFlag) (sc
 	}
 
 	if !isEmpty {
+		ts.state.SetBatchMode(true)
+		defer ts.state.SetBatchMode(false)
+
 		// Update the activity state
 		err = ts.state.UseSDKsWithParams(actParams)
 		if err != nil {
@@ -268,7 +277,40 @@ func (ts *ToolService) checkActivateSDK(spec *tools.VersionSpec) (*models.Instal
 
 	// 绑定配置信息
 	localSdk.Config = toolCfg
+	spec.RealVersion = localSdk.Version
 	return localSdk, nil
+}
+
+// SetupDirenv sets up the direnv environment from .xenv.toml
+func (ts *ToolService) SetupDirenv() (string, error) {
+	gen, err := getShellGenerator(ts.config)
+	if err != nil {
+		return "", err
+	}
+	if gen == nil {
+		ccolor.Warnf("TIP: The operation will not take effect, please setup the SHELL HOOK first.")
+		return "", nil
+	}
+
+	actParams := models.NewActivateSDKsParams()
+	actParams.OpFlag = models.OpFlagDirenv
+
+	// TODO 支持识别常用的工具配置 eg: go.mod, .tool-versions, .nvmrc, .python-version
+
+	deState := ts.state.Nearest()
+	if deState == nil || deState.IsEmpty() {
+		return "", nil // no state file found OR empty
+	}
+
+	var sdkSpecs []*models.VersionSpec
+	for name, ver := range deState.SDKs {
+		sdkSpecs = append(sdkSpecs, &models.VersionSpec{
+			Name:    name,
+			Version: ver,
+		})
+	}
+
+	return ts.activateSDKs(gen, sdkSpecs, models.OpFlagDirenv)
 }
 
 // endregion
@@ -286,16 +328,17 @@ func (ts *ToolService) WriteHookToProfile(st shell.ShType, pwshProfile string) e
 	return gen.InstallToProfile(pwshProfile)
 }
 
-// GenHookScripts generates Shell hook init scripts
+// GenHookScripts generates shell hook init scripts
 func (ts *ToolService) GenHookScripts(st shell.ShType) (string, error) {
 	gen := shell.NewScriptGenerator(st)
-
-	toolMgr := manager.NewToolManager()
-	if err := toolMgr.InitLoad1(ts.config); err != nil {
+	if err := ts.toolMgr.InitLoad(); err != nil {
 		return "", err
 	}
 
-	state := ts.state.Merged()
+	// UP: 只加载 global state, dir和sess等进入目录时加载
+	// state := ts.state.Merged()
+	state := ts.state.Global()
+
 	params := &models.GenInitScriptParams{
 		Envs:  ts.config.GlobalEnv,
 		Paths: ts.config.GlobalPaths,

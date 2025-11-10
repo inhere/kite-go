@@ -85,6 +85,14 @@ func (vs *VersionSpec) ID() string { return vs.String() }
 // RealID 返回版本规格的ID name:real_version
 func (vs *VersionSpec) RealID() string { return vs.Name + ":" + vs.RealVersion }
 
+// RealVer 本地真实安装的版本号, 为空时返回输入的版本号
+func (vs *VersionSpec) RealVer() string {
+	if vs.RealVersion != "" {
+		return vs.RealVersion
+	}
+	return vs.Version
+}
+
 // String 返回版本规格的字符串表示
 func (vs *VersionSpec) String() string {
 	return vs.Name + ":" + vs.Version

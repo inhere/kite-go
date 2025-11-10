@@ -26,15 +26,23 @@ func (sg *XenvScriptGenerator) generateZshScripts(ps *models.GenInitScriptParams
 // Usage, .zshrc or .zsh_profile 新增：
 //
 //	eval "$(kite xenv shell --type bash)"
-var ZshHookTemplate = `# xenv zsh hook
+var ZshHookTemplate = `#
+# xenv zsh hook
 # This script enables xenv to work in zsh shells
 #
 # Usage, .bashrc or .bash_profile add:
 #   eval "$(kite xenv shell --type bash)"
 #
 
+# 使用 chpwd 钩子函数监听cd执行后
+chpwd() {
+    if (( $+commands[kite] )); then
+        kite xenv init-direnv >/dev/null 2>&1
+    fi
+}
+
 # Helper function to evaluate xenv command results
-eval_xenv_result() {
+invoke_xenv_result() {
     local result="$1"
     local exit_code="$2"
 
@@ -92,13 +100,13 @@ setup_xenv() {
                 # 对于这些命令，获取结果并评估
                 local result="$(kite xenv "$command" "$@")"
                 local exit_code=$?
-                eval_xenv_result "$result" $exit_code
+                invoke_xenv_result "$result" $exit_code
                 ;;
             set|unset)
                 # 对于环境变量设置/取消设置命令
                 local result="$(kite xenv env "$command" "$@")"
                 local exit_code=$?
-                eval_xenv_result "$result" $exit_code
+                invoke_xenv_result "$result" $exit_code
                 ;;
             *)
                 # For other commands, just pass through to xenv
@@ -107,15 +115,15 @@ setup_xenv() {
         esac
     }
 
+    # XENV: fire xenv hooks to kite, use for generate code to exec TODO
+    local result_init = "$(kite xenv hook-init --type zsh)"
+    local exit_code=$?
+    invoke_xenv_result "$result_init" $exit_code
+
     # Auto-initialize xenv if needed
     if [ -f "$HOME/.xenvrc" ] && [ -z "$XENV_AUTO_INITIALIZED" ]; then
         source "$HOME/.xenvrc"
         export XENV_AUTO_INITIALIZED=1
-    fi
-
-    # Enable command completion for xenv
-    if command -v compctl >/dev/null 2>&1; then
-        compctl -k "use unuse env set unset path list help" xenv
     fi
 
 	# Load custom hooks script files
@@ -129,4 +137,9 @@ setup_xenv() {
 
 # Call setup function to initialize xenv
 setup_xenv
+
+# Enable command completion for xenv
+if command -v compctl >/dev/null 2>&1; then
+	compctl -k "use unuse env set unset path list help" xenv
+fi
 `

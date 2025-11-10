@@ -58,8 +58,28 @@ var CmdLuaHookTemplate = `-- xenv CMD hook
 --     load(io.popen('kite xenv shell --type cmd'):read("*a"))()
 --  4. Close and reopen CMD
 
+-- 重写 cd 命令
+local function xenv_cd_processor()
+    clink.arg.register_parser("cd", {
+        -- 注册 cd 命令参数
+    })
+end
+clink.register_commands({
+    {
+        name = "cd",
+        func = function (dir)
+            local result = io.popen("cd "..dir.." 2>&1"):read("*all")
+            -- 执行 xenv init-direnv
+            os.execute("kite xenv init-direnv >nul 2>&1")
+            print(result)
+            return true
+        end,
+        description = "Change directory and auto-run xenv init-direnv"
+    }
+})
+
 -- Function to set up xenv in the current shell
-function Setup-Xenv()
+function setup_xenv()
 {
     -- Mark hook enabled
     os.setenv("XENV_HOOK_SHELL", "cmd")
@@ -91,5 +111,5 @@ function Setup-Xenv()
 }
 
 -- Call setup function to initialize xenv
-Setup-Xenv()
+setup_xenv()
 `

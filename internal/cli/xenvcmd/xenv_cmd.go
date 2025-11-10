@@ -31,6 +31,7 @@ Quick commands:
 		subcmd.ShellCmd,
 		subcmd.InitCmd,
 		subcmd.HookInitCmd,
+		subcmd.InitDirenvCmd,
 	},
 	// Configure the command
 	Config: func(c *gcli.Command) {

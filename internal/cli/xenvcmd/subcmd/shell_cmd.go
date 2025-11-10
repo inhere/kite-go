@@ -105,15 +105,3 @@ func getShellType() (st shell.ShType, err error) {
 	}
 	return shellType, nil
 }
-
-// HookInitCmd the xenv hook init command
-//   - 通过配置上面的 shell 命令到 user 配置文件后，会自动执行该命令
-//   - 调用当前命令，可以返回脚本内容自动执行
-var HookInitCmd = &gcli.Command{
-	Hidden: true, // This is an internal command
-	Name:   "hook-init",
-	Desc:   "Initialize the xenv hook script",
-	Func: func(c *gcli.Command, args []string) error {
-		return nil // TODO
-	},
-}
