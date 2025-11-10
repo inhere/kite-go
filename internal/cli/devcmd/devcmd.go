@@ -26,6 +26,8 @@ var DevToolsCmd = &gcli.Command{
 		phpcmd.PhpToolsCmd,
 		sqlcmd.SQLToolCmd,
 		jsoncmd.YamlToolCmd,
+		// net cmd
+		netcmd.NewPingCmd(),
 		netcmd.NewNMapCmd(),
 		netcmd.NewNetcatCmd(),
 		netcmd.NewTelnetClientCmd(),
