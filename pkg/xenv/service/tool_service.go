@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gookit/goutil/errorx"
+	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/x/ccolor"
@@ -295,22 +296,32 @@ func (ts *ToolService) SetupDirenv() (string, error) {
 	actParams := models.NewActivateSDKsParams()
 	actParams.OpFlag = models.OpFlagDirenv
 
+	var sdkSpecs []*models.VersionSpec
 	// TODO 支持识别常用的工具配置 eg: go.mod, .tool-versions, .nvmrc, .python-version
+	if fsutil.IsFile("go.mod") {
+		goVer, err1 := parseGoVersion("go.mod")
+		if err1 == nil {
+			sdkSpecs = append(sdkSpecs, &models.VersionSpec{
+				Name:    "go",
+				Version: goVer,
+			})
+		}
+	}
 
 	deState := ts.state.Nearest()
-	if deState == nil || deState.IsEmpty() {
-		return "", nil // no state file found OR empty
+	if deState != nil && deState.IsEmpty() {
+		for name, ver := range deState.SDKs {
+			sdkSpecs = append(sdkSpecs, &models.VersionSpec{
+				Name:    name,
+				Version: ver,
+			})
+		}
 	}
 
-	var sdkSpecs []*models.VersionSpec
-	for name, ver := range deState.SDKs {
-		sdkSpecs = append(sdkSpecs, &models.VersionSpec{
-			Name:    name,
-			Version: ver,
-		})
+	if len(sdkSpecs) > 0 {
+		return ts.activateSDKs(gen, sdkSpecs, models.OpFlagDirenv)
 	}
-
-	return ts.activateSDKs(gen, sdkSpecs, models.OpFlagDirenv)
+	return "", nil // no state file found OR empty
 }
 
 // endregion
