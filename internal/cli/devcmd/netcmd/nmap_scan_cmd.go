@@ -270,51 +270,75 @@ func probeUDPPort(host string, port int, detectService bool, timeout time.Durati
 		return "closed", "write_failed", ""
 	}
 
-	// 如果需要服务检测
-	if detectService {
-		service = detectServiceName(port, "udp")
-	} else {
-		service = detectServiceName(port, "udp")
-	}
-
+	// 如果需要服务检测 TODO
+	service = detectServiceName(port, "udp")
 	return "open|filtered", "no_response", service
 }
 
+var (
+	serviceDescMap = map[string]string{
+		"ftp":    "File Transfer Protocol",
+		"ssh":    "Secure Shell",
+		"telnet": "Telnet",
+		"smtp":   "Simple Mail Transfer Protocol",
+		"domain": "Domain Name System",
+		"http":   "Hypertext Transfer Protocol",
+		"pop3":   "Post Office Protocol",
+		"imap":   "Internet Message Access Protocol",
+		"https":  "Hypertext Transfer Protocol Secure",
+		"imaps":  "Internet Message Access Protocol Secure",
+	}
+
+	// 常见端口对应的服务名称
+	tcpServiceMap = map[int]string{
+		21: "ftp",
+		22: "ssh",
+		23: "telnet",
+		25: "smtp",
+		53: "domain",
+		80: "http",
+
+		110: "pop3",
+		143: "imap",
+		443: "https",
+		502: "modbus",
+		993: "imaps",
+		995: "pop3s",
+
+		3306: "mysql",
+		5432: "postgresql",
+		5555: "adb",
+		6379: "redis",
+
+		11740: "codesys",
+		27017: "mongodb",
+	}
+
+	// 常见端口对应的服务名称
+	udpServiceMap = map[int]string{
+		53: "domain",
+		67: "dhcp",
+		68: "dhcp",
+
+		123: "ntp",
+		161: "snmp",
+		514: "syslog",
+	}
+)
+
 // detectServiceName 检测服务名称
 func detectServiceName(port int, protocol string) string {
-	// 常见端口对应的服务名称
-	serviceMap := map[string]string{
-		"tcp:21":    "ftp",
-		"tcp:22":    "ssh",
-		"tcp:23":    "telnet",
-		"tcp:25":    "smtp",
-		"tcp:53":    "domain",
-		"tcp:80":    "http",
-		"tcp:110":   "pop3",
-		"tcp:143":   "imap",
-		"tcp:443":   "https",
-		"tcp:502":   "modbus",
-		"tcp:993":   "imaps",
-		"tcp:995":   "pop3s",
-		"tcp:3306":  "mysql",
-		"tcp:5432":  "postgresql",
-		"tcp:6379":  "redis",
-		"tcp:11740": "codesys",
-		"tcp:27017": "mongodb",
-
-		"udp:53":  "domain",
-		"udp:67":  "dhcp",
-		"udp:68":  "dhcp",
-		"udp:123": "ntp",
-		"udp:161": "snmp",
-		"udp:514": "syslog",
+	if protocol == "tcp" {
+		if service, ok := tcpServiceMap[port]; ok {
+			return service
+		}
 	}
 
-	key := fmt.Sprintf("%s:%d", protocol, port)
-	if service, ok := serviceMap[key]; ok {
-		return service
+	if protocol == "udp" {
+		if service, ok := udpServiceMap[port]; ok {
+			return service
+		}
 	}
-
 	return "unknown"
 }
 
