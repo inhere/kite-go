@@ -24,7 +24,17 @@ type Configuration struct {
 	// 	  linux: tar.gz
 	// 	  darwin: tar.gz
 	DownloadExt map[string]string `json:"download_ext"`
-	DownloadDir   string            `json:"download_dir"` // 临时下载目录
+	// 临时下载目录
+	DownloadDir string `json:"download_dir"`
+	// 设置了完整版本号，是否允许向上匹配版本 eg: 1.23.1
+	//
+	// default: 1 see xenvcom.UpMatchOne
+	//
+	//  0: 不允许，严格完全匹配 eg: 1.23.1
+	//  1: 向上一位匹配  eg: 1.23.1, 1.23.2, 1.23.3, ...
+	//  2: 向上两位匹配  eg: 1.24.x, 1.25.x, 1.26.x, ...
+	//  9: 允许所有高版本(只要比需要的版本高就可以) eg: 1.23.1, 1.24.x
+	AllowUpMatch uint8 `json:"allow_up_match"`
 	// 可管理的工具链列表
 	//  - sdks 和 tools 差异是：sdk 允许本地同时存在多个版本，tools 只允许一个版本
 	SDKs []ToolChain `json:"sdks"`

@@ -296,29 +296,36 @@ func (ts *ToolService) SetupDirenv() (string, error) {
 	actParams := models.NewActivateSDKsParams()
 	actParams.OpFlag = models.OpFlagDirenv
 
-	var sdkSpecs []*models.VersionSpec
+	// 使用 map 可以避免配置重复的SDK
+	var specMap = make(map[string]*models.VersionSpec)
 	// TODO 支持识别常用的工具配置 eg: go.mod, .tool-versions, .nvmrc, .python-version
 	if fsutil.IsFile("go.mod") {
 		goVer, err1 := parseGoVersion("go.mod")
 		if err1 == nil {
-			sdkSpecs = append(sdkSpecs, &models.VersionSpec{
+			ccolor.Infof("Detect go version from go.mod: %s\n", goVer)
+			specMap["go"] = &models.VersionSpec{
 				Name:    "go",
 				Version: goVer,
-			})
+			}
 		}
 	}
 
 	deState := ts.state.Nearest()
-	if deState != nil && deState.IsEmpty() {
+	if deState != nil && !deState.IsEmpty() {
+		ccolor.Infof("Detect xenv state file: %s\n", deState.File)
 		for name, ver := range deState.SDKs {
-			sdkSpecs = append(sdkSpecs, &models.VersionSpec{
+			specMap[name] = &models.VersionSpec{
 				Name:    name,
 				Version: ver,
-			})
+			}
 		}
 	}
 
-	if len(sdkSpecs) > 0 {
+	if len(specMap) > 0 {
+		sdkSpecs := make([]*models.VersionSpec, 0, len(specMap))
+		for _, spec := range specMap {
+			sdkSpecs = append(sdkSpecs, spec)
+		}
 		return ts.activateSDKs(gen, sdkSpecs, models.OpFlagDirenv)
 	}
 	return "", nil // no state file found OR empty

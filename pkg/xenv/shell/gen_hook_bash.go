@@ -17,7 +17,7 @@ func (sg *XenvScriptGenerator) generateBashScripts(ps *models.GenInitScriptParam
 	return strutil.Replaces(BashHookTemplate, map[string]string{
 		"{{HooksDir}}": ps.ShellHooksDir,
 		"{{SessionId}}": xenvcom.SessionID(),
-		"{{EnvAliases}}": sb.String(),
+		"#{{EnvAliases}}": sb.String(),
 	})
 }
 
@@ -92,7 +92,7 @@ setup_xenv() {
         *) export PATH="$xenv_shims_dir:$PATH" ;;
     esac
 
-{{EnvAliases}}
+#{{EnvAliases}}
 
     # Define the xenv function to activate tools
     xenv() {
@@ -120,7 +120,7 @@ setup_xenv() {
     }
 
     # fire xenv hooks to kite, use for generate code to exec TODO
-    local result_init = "$(kite xenv hook-init --type bash)"
+    local result_init = "$(kite xenv shell-init-hook --type bash)"
     local exit_code=$?
     invoke_xenv_result "$result_init" $exit_code
 

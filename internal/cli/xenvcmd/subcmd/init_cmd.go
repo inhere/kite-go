@@ -7,9 +7,7 @@ import (
 
 	"github.com/gookit/gcli/v3"
 	"github.com/inhere/kite-go/pkg/util"
-	"github.com/inhere/kite-go/pkg/xenv"
 	"github.com/inhere/kite-go/pkg/xenv/config"
-	"github.com/inhere/kite-go/pkg/xenv/shell"
 )
 
 // InitCmd the xenv init command
@@ -67,38 +65,5 @@ var InitCmd = &gcli.Command{
 		fmt.Printf("Shell scripts directory: %s\n", cfgMgr.Config.ShellHooksDir)
 
 		return nil
-	},
-}
-
-// HookInitCmd the xenv hook init command
-//   - 配置了 xenv shell 命令到 user 配置文件后，会自动执行该命令
-//   - 调用当前命令，可以返回脚本内容自动执行
-var HookInitCmd = &gcli.Command{
-	Hidden: true, // This is an internal command
-	Name:   "hook-init",
-	Desc:   "Initialize the xenv hook script",
-	Func: func(c *gcli.Command, args []string) error {
-		return nil // TODO
-	},
-}
-
-// InitDirenvCmd the xenv init direnv command
-//  - 仅在配置了 xenv shell 命令时，cd 到新目录会自动调用当前命令
-//  - 监听进入目录时，自动检测 .xenv.toml 文件，并加载里面的配置
-var InitDirenvCmd = &gcli.Command{
-	Name:   "init-direnv",
-	Desc:   "Initialize direnv state on current workdir",
-	Hidden: true, // This is an internal command
-	Func: func(c *gcli.Command, args []string) error {
-		// Create tool service
-		toolSvc, err := xenv.ToolService()
-		if err != nil {
-			return err
-		}
-		script, err1 := toolSvc.SetupDirenv()
-		if err1 == nil {
-			shell.OutputScript(script)
-		}
-		return err1
 	},
 }

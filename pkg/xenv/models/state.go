@@ -48,8 +48,16 @@ type ActivityState struct {
 	File string `json:"-" toml:"-"`
 	// 是否有更新 - 内部使用，用于标识状态数据是否需要更新
 	HasUpdate bool `json:"-" toml:"-"`
-	// Shell 当前使用的shell - 仅在 session 下有效
+
+	//
+	// 下面的字段 仅在 session 下有效
+	//
+
+	// Shell 当前使用的shell type
 	Shell string `json:"shell,omitempty" toml:"-"`
+	// 当前会话关联的所有目录状态数据. 用于跳转目录时，销毁之前的目录state
+	//  - key: state file path, value: state data
+	DirStates map[string]*ActivityState `json:"dir_states,omitempty" toml:"-"`
 
 	// EnableGlobal 是否启用全局环境配置
 	// EnableGlobal bool `json:"enable_global"`

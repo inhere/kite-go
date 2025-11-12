@@ -61,7 +61,7 @@ setup_xenv() {
         *) export PATH="$xenv_shims_dir:$PATH" ;;
     esac
 
-{{EnvAliases}}
+#{{EnvAliases}}
 
     # Define the xenv function to activate tools
     xenv() {
@@ -89,7 +89,7 @@ setup_xenv() {
     }
 
     # XENV: fire xenv hooks to kite, use for generate code to exec TODO
-    local result_init = "$(kite xenv hook-init --type zsh)"
+    local result_init = "$(kite xenv shell-init-hook --type zsh)"
     local exit_code=$?
     invoke_xenv_result "$result_init" $exit_code
 

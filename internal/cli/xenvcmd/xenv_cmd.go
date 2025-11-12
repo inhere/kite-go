@@ -28,10 +28,10 @@ Quick commands:
 		subcmd.PathCmd,
 		subcmd.ConfigCmd,
 		subcmd.ListCmd,
-		subcmd.ShellCmd,
 		subcmd.InitCmd,
-		subcmd.HookInitCmd,
-		subcmd.InitDirenvCmd,
+		subcmd.NewShellCmd(),
+		subcmd.ShellHookInitCmd(),
+		subcmd.ShellDirenvCmd(),
 	},
 	// Configure the command
 	Config: func(c *gcli.Command) {

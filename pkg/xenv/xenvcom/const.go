@@ -21,3 +21,11 @@ const (
 const (
 	InstalledMetaFile = "~/.xenv/tools.local.json"
 )
+
+// 升级匹配级别 see config#AllowUpMatch
+const (
+	UpMatchNone uint8 = iota
+	UpMatchOne
+	UpMatchTwo
+	UpMatchAll uint8 = 9
+)

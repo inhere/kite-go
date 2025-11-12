@@ -15,16 +15,32 @@
 # Helper function to evaluate xenv command results
 function Invoke-XenvResult {
     param(
+        [string]$CallFrom,
         [string]$Result,
         [int]$ExitCode
     )
 
     if ($ExitCode -eq 0) {
-        # debug
-        Write-Output "----------------in Invoke-XenvResult--------------"
-        Write-Output $result
-
         if ($Result) {
+            # debug
+            Write-Host "----------------in Invoke-XenvResult($CallFrom)--------------" -ForegroundColor Green
+            Write-Output $Result
+
+            # TODO 使用 '--Expression--' 分割结果
+            #  $parts = $Result -split '--Expression--', 2
+            # if ($parts.Count -eq 2) {# 前面部分直接输出
+            #     Write-Host $parts[0].Trim()
+            #     # 后面部分动态执行
+            #     $script = $parts[1].Trim()
+            #     Write-Host ">>> 动态执行脚本：" -Fore Magenta
+            #     Write-Host $script -Fore Cyan
+            #     # Invoke-Expression $script
+            #     [scriptblock]::Create($script).Invoke()
+            # } else {
+            #     # 没发现分隔符，原样输出
+            #     Write-Host $parts[0]
+            # }
+
             # 检查结果是否包含 '--Expression--' 分隔符
             if ($Result.Contains('--Expression--')) {
                 # 使用 '--Expression--' 分割内容
@@ -35,6 +51,7 @@ function Invoke-XenvResult {
                 # 后面部分当做代码执行
                 if ($exprPart) {
                     Invoke-Expression $exprPart
+                    # [scriptblock]::Create($script).Invoke()
                 }
                 # 前面部分直接输出
                 if ($msgPart) {
@@ -51,28 +68,56 @@ function Invoke-XenvResult {
     }
 }
 
-# Override cd command to automatically run: kite xenv init-direnv
-function global:cd {
+# 创建一个全局变量来保存上一次的目录
+#$global:lastPath = $null
+
+# 保存原始的 Set-Location
+$originalSetLocation = Get-Command Set-Location -CommandType Cmdlet
+#$originalSetLocation = $function:Set-Location
+
+# 重写 cd 命令
+function Set-Location {
     param(
-        [Parameter(Position=0)]
+        [Parameter(Mandatory=$false, Position=0)]
         [string]$Path = $HOME,
         [switch]$PassThru
     )
 
-    # Call original Set-Location
+    # 如果 Path=-, 回到最近的 lastPath 目录
+#    if ($Path -eq "-") {  }
+
+    # 保存最近的目录到ENV
+    $currentPath = $PWD.Path
+#    if ($currentPath -ne $Path) {
+#        # TODO 处理离开目录时的逻辑，删除之前配置的ENV,PATH
+#    }
+
+#    $global:lastPath = $currentPath
+    $env:PREV_PWD = $currentPath
+    # 调用原始命令
+    Write-Host "🔧 Goto $Path" -ForegroundColor Cyan
+    # & $originalSetLocation @args
     if ($PassThru) {
-        Set-Location $Path -PassThru
+        & $originalSetLocation $Path -PassThru
     } else {
-        Set-Location $Path
+        & $originalSetLocation $Path
     }
+
+    # 获取当前目录
+    # $currentPath = (Get-Location).Path
+    $currentPath = $PWD.Path
+    Write-Host "- PWD: $currentPath" -ForegroundColor Cyan
 
     # Check if xenv is available and run init-direnv
     if (Get-Command kite -ErrorAction SilentlyContinue) {
         # Run kite xenv init-direnv, eval result scripts
-        $result = & kite xenv init-direnv
-        Invoke-XenvResult -Result $result -ExitCode $LASTEXITCODE
+        $result = (& kite xenv init-direnv | Out-String)
+        # Write-Output "DEBUG: \n$result"
+        Invoke-XenvResult -CallFrom "Set-Location.init-direnv" -Result $result -ExitCode $LASTEXITCODE
     }
 }
+
+#Set-Alias -Name cd -Value Set-Location -Force -Option AllScope
 
 # Function to set up xenv in the current shell
 function Setup-Xenv {
@@ -87,7 +132,7 @@ function Setup-Xenv {
         $env:PATH = "$xenvShimsDir;$env:PATH"
     }
 
-    {{EnvAliases}}
+#{{EnvAliases}}
 
     # Define the xenv function to activate tools
     function global:xenv {
@@ -102,13 +147,13 @@ function Setup-Xenv {
         switch ($Command) {
             { $_ -in @('use', 'unuse', 'env', 'path') } {
                 # Call kite command and evaluate the result
-                $result = & kite xenv $Command @Arguments
+                $result = (& kite xenv $Command @Arguments | Out-String)
                 # Write-Output $result # DEBUG
-                Invoke-XenvResult -Result $result -ExitCode $LASTEXITCODE
+                Invoke-XenvResult -CallFrom "xenv.$Command" -Result $result -ExitCode $LASTEXITCODE
             }
             { $_ -in @('set', 'unset') } {
-                $result = & kite xenv env $Command @Arguments
-                Invoke-XenvResult -Result $result -ExitCode $LASTEXITCODE
+                $result = (& kite xenv env $Command @Arguments | Out-String)
+                Invoke-XenvResult -CallFrom "xenv.$Command" -Result $result -ExitCode $LASTEXITCODE
             }
             default {
                 # For other commands, just pass through to xenv
@@ -118,9 +163,8 @@ function Setup-Xenv {
     }
 
     # fire xenv hooks to kite, use for generate code to exec TODO
-    $result1 = & kite xenv hook-init --type pwsh
-    # TODO exec output result
-    Invoke-XenvResult -Result $result1 -ExitCode $LASTEXITCODE
+    $result_init_hook = & kite xenv shell-init-hook --type pwsh
+    Invoke-XenvResult -CallFrom "Setup-Xenv.shell-init-hook" -Result $result_init_hook -ExitCode $LASTEXITCODE
 
     # Auto-initialize xenv if needed
     $xenvrcPath = "$HOME\.xenvrc.ps1"

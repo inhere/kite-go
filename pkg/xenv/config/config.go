@@ -10,6 +10,7 @@ import (
 	"github.com/gookit/config/v2/toml"
 	"github.com/gookit/config/v2/yaml"
 	"github.com/inhere/kite-go/pkg/xenv/models"
+	"github.com/inhere/kite-go/pkg/xenv/xenvcom"
 )
 
 const (
@@ -50,6 +51,8 @@ func NewConfigManager() *Manager {
 			// tools
 			SDKs:  []models.ToolChain{},
 			Tools: []models.SimpleTool{},
+			// other
+			AllowUpMatch: xenvcom.UpMatchOne,
 			DownloadDir: DefaultInstallDir + "/cache",
 			DownloadExt: map[string]string{
 				"windows": "zip",

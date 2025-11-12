@@ -10,7 +10,6 @@ import (
 
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/jsonutil"
-	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/x/ccolor"
 	"github.com/inhere/kite-go/pkg/xenv/models"
 	"github.com/inhere/kite-go/pkg/xenv/tools"
@@ -260,8 +259,10 @@ func (m *ToolManager) MatchSdkByNameAndVersion(name, version string) *models.Ins
 //   - 1.19 可以匹配 1.19.x
 //   - 1.19.x 可以匹配 1.19.x.x
 func (m *ToolManager) MatchSdkByVersion(localSdks []models.InstalledTool, version string) *models.InstalledTool {
+	dotNum := strings.Count(version, ".")
+
 	// 完全匹配版本
-	if strutil.ContainsByte(version, '.') {
+	if dotNum > 1 {
 		for _, localSdk := range localSdks {
 			if localSdk.Version == version {
 				return &localSdk
@@ -281,6 +282,22 @@ func (m *ToolManager) MatchSdkByVersion(localSdks []models.InstalledTool, versio
 		if strings.HasPrefix(locVersion, version) {
 			if len(locVersion) == len(version) || locVersion[len(version)] == '.' {
 				return &localSdk
+			}
+		}
+	}
+
+	// 设置了完整版本号，是否允许向上匹配版本
+	if dotNum > 1 && m.config.AllowUpMatch > 0 {
+		parts := strings.Split(version, ".")
+
+		// 允许去除最后一位匹配 eg: 1.19.1 可以匹配 1.19.x
+		if m.config.AllowUpMatch == xenvcom.UpMatchOne {
+			matchVer := strings.Join(parts[:len(parts)-1], ".") + "."
+			for _, localSdk := range localSdks {
+				locVersion := localSdk.Version
+				if strings.HasPrefix(locVersion, matchVer) {
+					return &localSdk
+				}
 			}
 		}
 	}
