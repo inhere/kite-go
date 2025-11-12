@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
-	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/byteutil"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/strutil"
@@ -77,6 +76,12 @@ func (u *StateTomlUpdater) WriteNewState(state *models.ActivityState) error {
 	return fsutil.WriteFile(state.File, contents, 0644)
 }
 
+// SetContents set old state contents. for testing
+func (u *StateTomlUpdater) SetContents(contents []byte) *StateTomlUpdater {
+	u.contents = contents
+	return u
+}
+
 // Build the updated state file contents
 func (u *StateTomlUpdater) Build(state *models.ActivityState) *StateTomlUpdater {
 	if len(u.contents) == 0 {
@@ -84,18 +89,21 @@ func (u *StateTomlUpdater) Build(state *models.ActivityState) *StateTomlUpdater 
 		return u
 	}
 
-	var inPathsValues bool
-	var pathsValues []string
 	u.Reset()
+	var inPathsValues bool
 
 	// 按行处理 state 数据对比更新
 	scanner := bufio.NewScanner(bytes.NewReader(u.contents))
+	u.newBuf.PrintByte('\n')
 
 	// 遍历每一行
 	for scanner.Scan() {
 		line := scanner.Text()
 		trimmed := strings.TrimSpace(line)
-		if trimmed == "" || strings.HasPrefix(trimmed, "#") {
+		if trimmed == "" {
+			continue
+		}
+		if strings.HasPrefix(trimmed, "#") {
 			u.newBuf.WriteStr1Nl(line)
 			continue
 		}
@@ -105,11 +113,18 @@ func (u *StateTomlUpdater) Build(state *models.ActivityState) *StateTomlUpdater 
 			inlineComment = " " + trimmed[idx:]
 			trimmed = strings.TrimSpace(trimmed[:idx])
 		}
+		lastChar := trimmed[len(trimmed)-1]
 
 		// paths array start: "paths = [" 使用 regex 匹配
 		if pathsRegex.MatchString(trimmed) {
-			inPathsValues = true
-			u.newBuf.WriteStr1Nl(line)
+			// paths = [] - 空数组
+			if lastChar == ']' {
+				inPathsValues = false
+				u.addNewPaths(state)
+			} else {
+				inPathsValues = true
+				u.newBuf.WriteStr1Nl(line)
+			}
 			continue
 		}
 
@@ -120,37 +135,42 @@ func (u *StateTomlUpdater) Build(state *models.ActivityState) *StateTomlUpdater 
 			}
 
 			// paths array 结束
-			if strings.HasSuffix(trimmed, "]") {
+			if trimmed[0] != '[' && lastChar == ']' {
+				inPathsValues = false
 				// 对比检查是否还有未保存的path
 				for _, newPath := range state.Paths {
-					if !arrutil.StringsContains(pathsValues, newPath) {
-						u.newBuf.Writef("  %q,%s\n", newPath)
+					if _, ok := u.processedPaths[pathVal]; !ok {
+						u.newBuf.Writef("  %q,\n", newPath)
 					}
 				}
 
-				inPathsValues = false
-				u.newBuf.WriteStr1Nl(line)
+				u.newBuf.WriteStr1Nl(line + "\n")
 				u.processedSecs["paths"] = true
 			} else if state.ExistsPath(pathVal) {
-				// paths value
+				// add paths value
 				u.newBuf.Writef("  %q,%s\n", pathVal, inlineComment)
+				u.processedPaths[pathVal] = true
 			}
 			continue
 		}
 
 		// 处理节标题 [section]: envs, tools, sdks
-		if strings.HasPrefix(trimmed, "[") && strings.HasSuffix(trimmed, "]") {
-			// 之前没有添加过 paths
+		if trimmed[0] == '[' && lastChar == ']' {
+			// if 之前没有添加过 paths
 			if u.processedSecs["paths"] == false {
 				inPathsValues = false
-				for _, newPath := range state.Paths {
-					u.newBuf.Writef("  %q,%s\n", newPath)
-				}
+				u.addNewPaths(state)
 			}
 
-			u.currentSection = line[1 : len(line)-1] // 去掉方括号
+			currentSection := line[1 : len(line)-1] // 去掉方括号
+			// end of prev section
+			if len(u.currentSection) > 0 && u.currentSection != currentSection {
+				u.sectionAddNewKeys(state)
+			}
+
+			u.currentSection = currentSection
 			u.newBuf.WriteStr1Nl(line)
-			u.processedSecs[u.currentSection] = true
+			u.processedSecs[currentSection] = true
 			continue
 		}
 
@@ -178,9 +198,49 @@ func (u *StateTomlUpdater) Build(state *models.ActivityState) *StateTomlUpdater 
 		}
 	}
 
+	// 处理最后一个 section 缺少的键值对
+	u.sectionAddNewKeys(state)
+
 	// 最后，检查添加未处理的 section
 	u.addNewSections(state)
 	return u
+}
+
+func (u *StateTomlUpdater) addNewPaths(state *models.ActivityState) {
+	u.processedSecs["paths"] = true
+	u.newBuf.WriteStr1Nl("paths = [")
+
+	for _, newPath := range state.Paths {
+		u.newBuf.Writef("  %q,\n", newPath)
+	}
+
+	u.newBuf.WriteStr1Nl("]\n")
+}
+
+func (u *StateTomlUpdater) sectionAddNewKeys(state *models.ActivityState) {
+	if len(u.currentSection) == 0 {
+		return
+	}
+
+	var kvMap = make(map[string]string)
+	switch u.currentSection {
+	case "envs":
+		kvMap = state.Envs
+	case "tools":
+		kvMap = state.Tools
+	case "sdks":
+		kvMap = state.SDKs
+	}
+
+	if len(kvMap) > 0 {
+		for key, val := range kvMap {
+			fullKey := u.currentSection + "." + key
+			if _, ok := u.processedKeys[fullKey]; !ok {
+				u.newBuf.Writef("%s = %q\n", key, val)
+			}
+		}
+		u.newBuf.PrintByte('\n')
+	}
 }
 
 func (u *StateTomlUpdater) addNewSections(state *models.ActivityState) {
@@ -209,7 +269,7 @@ func (u *StateTomlUpdater) addNewSections(state *models.ActivityState) {
 	}
 }
 
-// NewBufBytes get new contents bytes
-func (u *StateTomlUpdater) NewBufBytes() []byte {
+// LastContents get new contents bytes
+func (u *StateTomlUpdater) LastContents() []byte {
 	return u.newBuf.Bytes()
 }
