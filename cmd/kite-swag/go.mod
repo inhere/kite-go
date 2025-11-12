@@ -1,4 +1,4 @@
-module github.com/inhere/kite-go/cmd/swagx
+module github.com/inhere/kite-go/cmd/kite-swag
 
 go 1.24
 

@@ -3,7 +3,7 @@
 ## 安装
 
 ```bash
-go install github.com/inhere/kite-go/cmd/swagx@latest
+go install github.com/inhere/kite-go/cmd/kite-swag@latest
 ```
 
 ## 相关库
