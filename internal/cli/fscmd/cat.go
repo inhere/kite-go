@@ -4,7 +4,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/alecthomas/chroma/styles"
+	"github.com/alecthomas/chroma/v2/styles"
 	"github.com/charmbracelet/glamour"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/fsutil"
