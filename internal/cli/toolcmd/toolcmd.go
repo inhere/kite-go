@@ -12,7 +12,6 @@ import (
 	"github.com/inhere/kite-go/internal/cli/toolcmd/convcmd"
 	"github.com/inhere/kite-go/internal/cli/toolcmd/doccmd"
 	"github.com/inhere/kite-go/internal/cli/toolcmd/mdcmd"
-	"github.com/inhere/kite-go/internal/cli/toolcmd/swagcmd"
 )
 
 // ToolsCmd command
@@ -21,7 +20,6 @@ var ToolsCmd = &gcli.Command{
 	Aliases: []string{"tools"},
 	Desc:    "provide some useful help tools commands",
 	Subs: []*gcli.Command{
-		swagcmd.SwaggerCmd,
 		syscmd.NewBatchRunCmd(),
 		syscmd.NewEnvInfoCmd(),
 		appcmd.NewPathMapCmd(),

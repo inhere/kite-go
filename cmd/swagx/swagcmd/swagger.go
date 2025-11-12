@@ -15,19 +15,6 @@ import (
 	"github.com/gookit/goutil/fsutil"
 )
 
-// SwaggerCmd instance
-var SwaggerCmd = &gcli.Command{
-	Name: "swag",
-	Desc: "some tool for use swagger",
-	Subs: []*gcli.Command{
-		DocBrowse,
-		DocGen,
-		Doc2MkDown,
-		GenCode,
-		InstallSwagGo,
-	},
-}
-
 // SwagDoc struct
 type SwagDoc struct {
 	spec.Swagger
