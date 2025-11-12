@@ -1,14 +1,12 @@
 package service
 
 import (
-	"bufio"
-	"fmt"
-	"os"
-	"strings"
-
+	"github.com/gookit/goutil/fsutil"
+	"github.com/gookit/goutil/x/ccolor"
 	"github.com/inhere/kite-go/pkg/xenv/models"
 	"github.com/inhere/kite-go/pkg/xenv/shell"
 	"github.com/inhere/kite-go/pkg/xenv/xenvcom"
+	"github.com/inhere/kite-go/pkg/xenv/xenvutil"
 )
 
 // getShellGenerator 获取当前shell的脚本生成器. 注意：不在shell hook环境，会返回nil
@@ -27,104 +25,66 @@ func getShellGenerator(_ *models.Configuration) (*shell.XenvScriptGenerator, err
 	return shell.NewScriptGenerator(shellType), nil
 }
 
-// parseGoVersion 实现简单的从 go.mod 文件解析go版本
-//  - 按行读取文件 找到 go {version} 所在行即停止，最多读取 10 行，找不到就返回
-//
-// eg: goVer, err := parseGoVersion("go.mod")
-func parseGoVersion(modFile string) (string, error) {
-	file, err := os.Open(modFile)
-	if err != nil {
-		return "", err
-	}
-	defer file.Close()
+func sdkVersionsFromSpecifiedFiles(specMap map[string]*models.VersionSpec) {
+	// 支持识别常用的工具配置 eg: go.mod, .tool-versions, .nvmrc, .python-version
+	toolsCfgFiles := []string{"go.mod", ".tool-versions", ".nvmrc", ".python-version"}
+	for _, filename := range toolsCfgFiles {
+		if !fsutil.IsFile(filename) {
+			continue
+		}
 
-	scanner := bufio.NewScanner(file)
-	lineCount := 0
-	goPrefix := "go "
+		switch filename {
+		case ".tool-versions":
+			// 识别 .tool-versions 文件
+			verMap, err := xenvutil.ParseToolVersions(filename)
+			if err != nil {
+				ccolor.Warnf("Failed to parse .tool-versions file: %v\n", err)
+				continue
+			}
 
-	for scanner.Scan() && lineCount < 10 {
-		line := strings.TrimSpace(scanner.Text())
-		lineCount++
-
-		// eg: go 1.19
-		if strings.HasPrefix(line, goPrefix) {
-			version := strings.TrimSpace(line[len(goPrefix):])
-			if version != "" {
-				return version, nil
+			ccolor.Infof("Detect tool versions from .tool-versions: %v\n", verMap)
+			for name, ver := range verMap {
+				specMap[name] = &models.VersionSpec{
+					Name:    name,
+					Version: ver,
+				}
+			}
+		case "go.mod":
+			goVer, err := xenvutil.ParseGoVersion(filename)
+			if err != nil {
+				ccolor.Warnf("Failed to parse go.mod file: %v\n", err)
+				continue
+			}
+			ccolor.Infof("Detect go version from go.mod: %s\n", goVer)
+			specMap["go"] = &models.VersionSpec{
+				Name:    "go",
+				Version: goVer,
+			}
+		case ".nvmrc":
+			// 识别 .nvmrc 文件
+			nodeVer, err := xenvutil.ParseNvmrcFile(filename)
+			if err != nil {
+				ccolor.Warnf("Failed to parse .nvmrc file: %v\n", err)
+				continue
+			}
+			ccolor.Infof("Detect node version from .nvmrc: %s\n", nodeVer)
+			specMap["node"] = &models.VersionSpec{
+				Name:    "node",
+				Version: nodeVer,
+			}
+		case ".python-version":
+			// 识别 .python-version 文件
+			pyVer, err := xenvutil.ParsePythonVersion(filename)
+			if err != nil {
+				ccolor.Warnf("Failed to parse .python-version file: %v\n", err)
+				continue
+			}
+			ccolor.Infof("Detect python version from .python-version: %s\n", pyVer)
+			specMap["python"] = &models.VersionSpec{
+				Name:    "python",
+				Version: pyVer,
 			}
 		}
 	}
-
-	if err := scanner.Err(); err != nil {
-		return "", err
-	}
-	return "", fmt.Errorf("go version not found in first 10 lines")
 }
 
-// parseToolVersions 实现从 .tool-versions 文件解析工具版本
-func parseToolVersions(toolFile string) (map[string]string, error) {
-	contents, err := os.ReadFile(toolFile)
-	if err != nil {
-		return nil, err
-	}
-
-	// 解析 .tool-versions 文件内容
-	lines := strings.Split(string(contents), "\n")
-	versions := make(map[string]string)
-
-	for _, line := range lines {
-		parts := strings.SplitN(line, " ", 2)
-		if len(parts) != 2 {
-			continue
-		}
-		toolName := strings.TrimSpace(parts[0])
-		toolVersion := strings.TrimSpace(parts[1])
-		if toolName == "" || toolVersion == "" {
-			continue
-		}
-		versions[toolName] = toolVersion
-	}
-
-	return versions, nil
-}
-
-// parseNvmrcFile 实现从 .nvmrc 文件解析工具版本
-//
-//  - 纯文本，只包含一个 Node.js 版本号
-//  - 内容可能为：18.17.0, v14.18.1, lts/*, node(最新稳定版: node)
-func parseNvmrcFile(nvmrcFile string) (string, error) {
-	contents, err := os.ReadFile(nvmrcFile)
-	if err != nil {
-		return "", err
-	}
-
-	version := strings.TrimSpace(string(contents))
-	if version == "" {
-		return "", fmt.Errorf("invalid .nvmrc file: %s", nvmrcFile)
-	}
-
-	version = strings.Trim(version, "v/*")
-	// TODO 暂时不支持检查 node 最新稳定版
-	if version == "node" {
-		version = "latest"
-	}
-	return version, nil
-}
-
-// parsePythonVersion 实现从 .python-version 文件解析 Python 版本
-//  - 纯文本，只包含一个 Python
-//  - 内容可能为：3.11.4,
-func parsePythonVersion(versionFile string) (string, error) {
-	contents, err := os.ReadFile(versionFile)
-	if err != nil {
-		return "", err
-	}
-
-	version := strings.TrimSpace(string(contents))
-	if version == "" {
-		return "", fmt.Errorf("invalid .python-version file: %s", versionFile)
-	}
-
-	version = strings.Trim(version, "v*")
-	return version, nil
-}

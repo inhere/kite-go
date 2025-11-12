@@ -12,8 +12,8 @@ import (
 	"github.com/gookit/goutil/jsonutil"
 	"github.com/gookit/goutil/x/ccolor"
 	"github.com/inhere/kite-go/pkg/xenv/models"
-	"github.com/inhere/kite-go/pkg/xenv/tools"
 	"github.com/inhere/kite-go/pkg/xenv/xenvcom"
+	"github.com/inhere/kite-go/pkg/xenv/xenvutil"
 )
 
 type ToolManager struct {
@@ -116,7 +116,7 @@ func (m *ToolManager) IndexLocalTools() error {
 
 	// SDK tools
 	for _, sdkCfg := range m.config.SDKs {
-		ver2dirMap, err := tools.ListVersionDirs(sdkCfg.InstallDir)
+		ver2dirMap, err := xenvutil.ListVersionDirs(sdkCfg.InstallDir)
 		if err != nil {
 			return err
 		}
