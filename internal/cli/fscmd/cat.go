@@ -67,7 +67,10 @@ func fileCat(c *gcli.Command, _ []string) error {
 	if ln := len(files); ln > 1 {
 		for _, fpath := range files {
 			str := fsutil.ReadString(fpath)
-			return apputil.RenderContents(str, fcOpts.format, fcOpts.style)
+			if format == "" {
+				format = fsutil.Extname(fpath)
+			}
+			return apputil.RenderContents(str, format, fcOpts.style)
 		}
 	} else if ln == 1 {
 		fpath := files[0]

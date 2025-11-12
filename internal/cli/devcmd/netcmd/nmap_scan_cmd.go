@@ -305,8 +305,9 @@ var (
 		993: "imaps",
 		995: "pop3s",
 
+		1433: "mssql",
 		3306: "mysql",
-		5432: "postgresql",
+		5432: "postgres",
 		5555: "adb",
 		6379: "redis",
 

@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/fsutil"
 )
@@ -58,12 +60,9 @@ type ActivityState struct {
 	// 当前会话关联的所有目录状态数据. 用于跳转目录时，销毁之前的目录state
 	//  - key: state file path, value: state data
 	DirStates map[string]*ActivityState `json:"dir_states,omitempty" toml:"-"`
-
-	// EnableGlobal 是否启用全局环境配置
-	// EnableGlobal bool `json:"enable_global"`
 	// 创建时间
-	// CreatedAt time.Time `json:"created_at"`
-	// UpdatedAt time.Time `json:"updated_at"`
+	CreatedAt time.Time `json:"created_at" toml:"-"`
+	UpdatedAt time.Time `json:"updated_at" toml:"-"`
 }
 
 // NewActivityState creates a new ActivityState
@@ -236,4 +235,16 @@ func (as *ActivityState) IsEmpty() bool {
 		len(as.Envs) == 0 &&
 		len(as.Paths) == 0 &&
 		len(as.Tools) == 0
+}
+
+// AddDirState 添加目录状态数据
+func (as *ActivityState) AddDirState(ds *ActivityState) {
+	if ds == nil {
+		return
+	}
+	if as.DirStates == nil {
+		as.DirStates = make(map[string]*ActivityState)
+	}
+	as.HasUpdate = true
+	as.DirStates[ds.File] = ds
 }

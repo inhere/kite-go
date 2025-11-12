@@ -3,6 +3,7 @@ package manager
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/BurntSushi/toml"
 	"github.com/goccy/go-json"
@@ -77,7 +78,9 @@ func (m *StateManager) UseSDKsWithParams(ps *models.ActivateSDKsParams) error {
 	case models.OpFlagGlobal:
 		m.global.AddSDKs(ps.AddSdks)
 	case models.OpFlagDirenv:
-		m.DirenvOrNew().AddSDKs(ps.AddSdks)
+		ds := m.DirenvOrNew()
+		ds.AddSDKs(ps.AddSdks)
+		m.session.AddDirState(ds)
 	default:
 		m.session.AddSDKs(ps.AddSdks)
 	}
@@ -433,10 +436,16 @@ func (m *StateManager) SaveStateFile() error {
 
 func (m *StateManager) saveStateFile(state *models.ActivityState) error {
 	xenvcom.Debugf("Saving state file: %s\n", state.File)
+
 	// is session state file. save as json
 	if state.IsSession() {
 		if err := fsutil.MkParentDir(state.File); err != nil {
 			return err
+		}
+
+		state.UpdatedAt = time.Now()
+		if state.CreatedAt.IsZero() {
+			state.CreatedAt = state.UpdatedAt
 		}
 		return jsonutil.WritePretty(state.File, state)
 	}
