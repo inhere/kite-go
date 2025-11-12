@@ -23,23 +23,8 @@ function Invoke-XenvResult {
     if ($ExitCode -eq 0) {
         if ($Result) {
             # debug
-            Write-Host "----------------in Invoke-XenvResult($CallFrom)--------------" -ForegroundColor Green
-            Write-Output $Result
-
-            # TODO 使用 '--Expression--' 分割结果
-            #  $parts = $Result -split '--Expression--', 2
-            # if ($parts.Count -eq 2) {# 前面部分直接输出
-            #     Write-Host $parts[0].Trim()
-            #     # 后面部分动态执行
-            #     $script = $parts[1].Trim()
-            #     Write-Host ">>> 动态执行脚本：" -Fore Magenta
-            #     Write-Host $script -Fore Cyan
-            #     # Invoke-Expression $script
-            #     [scriptblock]::Create($script).Invoke()
-            # } else {
-            #     # 没发现分隔符，原样输出
-            #     Write-Host $parts[0]
-            # }
+            #Write-Host "----------------in Invoke-XenvResult($CallFrom)--------------" -ForegroundColor Green
+            #Write-Output $Result
 
             # 检查结果是否包含 '--Expression--' 分隔符
             if ($Result.Contains('--Expression--')) {
@@ -68,9 +53,6 @@ function Invoke-XenvResult {
     }
 }
 
-# 创建一个全局变量来保存上一次的目录
-#$global:lastPath = $null
-
 # 保存原始的 Set-Location
 $originalSetLocation = Get-Command Set-Location -CommandType Cmdlet
 #$originalSetLocation = $function:Set-Location
@@ -92,10 +74,9 @@ function Set-Location {
 #        # TODO 处理离开目录时的逻辑，删除之前配置的ENV,PATH
 #    }
 
-#    $global:lastPath = $currentPath
     $env:PREV_PWD = $currentPath
     # 调用原始命令
-    Write-Host "🔧 Goto $Path" -ForegroundColor Cyan
+    Write-Host "At $currentPath" -ForegroundColor Green
     # & $originalSetLocation @args
     if ($PassThru) {
         & $originalSetLocation $Path -PassThru
@@ -104,9 +85,8 @@ function Set-Location {
     }
 
     # 获取当前目录
-    # $currentPath = (Get-Location).Path
     $currentPath = $PWD.Path
-    Write-Host "- PWD: $currentPath" -ForegroundColor Cyan
+    Write-Host "- Into: $currentPath" -ForegroundColor Cyan
 
     # Check if xenv is available and run init-direnv
     if (Get-Command kite -ErrorAction SilentlyContinue) {

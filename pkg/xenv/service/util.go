@@ -60,3 +60,71 @@ func parseGoVersion(modFile string) (string, error) {
 	}
 	return "", fmt.Errorf("go version not found in first 10 lines")
 }
+
+// parseToolVersions 实现从 .tool-versions 文件解析工具版本
+func parseToolVersions(toolFile string) (map[string]string, error) {
+	contents, err := os.ReadFile(toolFile)
+	if err != nil {
+		return nil, err
+	}
+
+	// 解析 .tool-versions 文件内容
+	lines := strings.Split(string(contents), "\n")
+	versions := make(map[string]string)
+
+	for _, line := range lines {
+		parts := strings.SplitN(line, " ", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		toolName := strings.TrimSpace(parts[0])
+		toolVersion := strings.TrimSpace(parts[1])
+		if toolName == "" || toolVersion == "" {
+			continue
+		}
+		versions[toolName] = toolVersion
+	}
+
+	return versions, nil
+}
+
+// parseNvmrcFile 实现从 .nvmrc 文件解析工具版本
+//
+//  - 纯文本，只包含一个 Node.js 版本号
+//  - 内容可能为：18.17.0, v14.18.1, lts/*, node(最新稳定版: node)
+func parseNvmrcFile(nvmrcFile string) (string, error) {
+	contents, err := os.ReadFile(nvmrcFile)
+	if err != nil {
+		return "", err
+	}
+
+	version := strings.TrimSpace(string(contents))
+	if version == "" {
+		return "", fmt.Errorf("invalid .nvmrc file: %s", nvmrcFile)
+	}
+
+	version = strings.Trim(version, "v/*")
+	// TODO 暂时不支持检查 node 最新稳定版
+	if version == "node" {
+		version = "latest"
+	}
+	return version, nil
+}
+
+// parsePythonVersion 实现从 .python-version 文件解析 Python 版本
+//  - 纯文本，只包含一个 Python
+//  - 内容可能为：3.11.4,
+func parsePythonVersion(versionFile string) (string, error) {
+	contents, err := os.ReadFile(versionFile)
+	if err != nil {
+		return "", err
+	}
+
+	version := strings.TrimSpace(string(contents))
+	if version == "" {
+		return "", fmt.Errorf("invalid .python-version file: %s", versionFile)
+	}
+
+	version = strings.Trim(version, "v*")
+	return version, nil
+}
