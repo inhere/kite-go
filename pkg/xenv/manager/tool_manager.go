@@ -134,7 +134,6 @@ func (m *ToolManager) IndexLocalTools() error {
 					ID:     fmt.Sprintf("%s:%s", sdkCfg.Name, version),
 					Name:   sdkCfg.Name,
 					IsSDK:  true,
-					BinDir: sdkCfg.BinDir,
 					// version, install path
 					Version:    version,
 					InstallDir: installPath,

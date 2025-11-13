@@ -58,9 +58,6 @@ func (ts *ToolService) ListAll(showAll bool) error {
 			fmt.Println(" SDK:")
 		}
 		fmt.Printf("  - InstallDir: %s\n", toolCfg.InstallDir)
-		if len(toolCfg.BinPaths) > 0 {
-			fmt.Printf("  - BinPaths: %v\n", toolCfg.BinPaths)
-		}
 
 		locals := ts.toolMgr.ListSDKVersions(toolCfg.Name)
 		fmt.Print("  - Installed: ")
@@ -148,6 +145,7 @@ func (ts *ToolService) Uninstall(name, version string) error {
 		return fmt.Errorf("tool %s:%s is not installed", name, version)
 	}
 
+	localTool.Config = toolConfig
 	uninstaller := tools.NewUninstaller(ts.config)
 	err := uninstaller.Uninstall(toolConfig, localTool, false)
 	if err != nil {
@@ -206,6 +204,7 @@ func (ts *ToolService) activateSDKs(gen *shell.XenvScriptGenerator, sdkSpecs []*
 
 			oldSdk := ts.toolMgr.MatchSdkByNameAndVersion(spec.Name, oldActiveVer)
 			if oldSdk != nil {
+				oldSdk.Config = localSdk.Config
 				actParams.AddRemPath(oldSdk.BinDirPath())
 			}
 		}

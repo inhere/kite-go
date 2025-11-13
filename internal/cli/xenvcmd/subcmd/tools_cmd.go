@@ -220,10 +220,6 @@ func ToolsShowCmd() *gcli.Command {
 			if len(tool.Alias) > 0 {
 				c.Infoln(fmt.Sprintf("  Aliases: %v", tool.Alias))
 			}
-			if len(tool.BinPaths) > 0 {
-				c.Infof("  BinPaths: %v\n", tool.BinPaths)
-			}
-
 			return nil
 		},
 	}

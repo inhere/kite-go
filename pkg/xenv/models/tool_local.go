@@ -74,9 +74,6 @@ type InstalledTool struct {
 	Version    string `json:"version"`
 	// InstallDir 当前版本的工具安装目录路径
 	InstallDir string `json:"install_dir"`
-	// BinDir 可执行文件目录, 相对于 InstallDir
-	//  - 为空时，默认为 InstallDir
-	BinDir    string    `json:"bin_dir,omitempty"`
 	Source    string    `json:"source"`
 	IsSDK     bool      `json:"is_sdk"`
 	CreatedAt time.Time `json:"created_at"`
@@ -88,15 +85,10 @@ type InstalledTool struct {
 
 // BinDirPath 返回可执行文件目录的绝对路径
 func (t *InstalledTool) BinDirPath() string {
-	return util.NormalizePath(t.binDirPath())
-}
-
-// 返回可执行文件目录的绝对路径
-func (t *InstalledTool) binDirPath() string {
-	if t.BinDir == "" {
-		return t.InstallDir
+	if t.Config == nil {
+		return util.NormalizePath(t.InstallDir)
 	}
-	return t.InstallDir + "/" + t.BinDir
+	return t.Config.FullBinPath(t.InstallDir)
 }
 
 // RenderActiveEnv 渲染工具链的激活环境变量

@@ -5,6 +5,7 @@ import (
 
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
+	"github.com/inhere/kite-go/pkg/util"
 )
 
 // ToolChain SDK 开发工具（如Go、Node.js等）配置，包含安装路径、别名等属性。
@@ -32,12 +33,21 @@ type ToolChain struct {
 	ActiveEnv map[string]string `json:"active_env"`
 	// 该工具的 bin 文件目录名称，不设置就是真实的 install_dir 目录
 	BinDir   string   `json:"bin_dir"`
-	BinPaths []string `json:"bin_paths"` // 该工具提供的二进制文件路径列表
 	// 安装完成后执行的shell hook脚本
 	PostInstall []string `json:"post_install"`
 	// 自定义版本安装目录,不在统一目录下 InstallDir 的版本
 	//  - key: version, value: install_dir
 	OtherVersions map[string]string `json:"other_versions"`
+	// BinPaths []string `json:"bin_paths"` // 该工具提供的二进制文件路径列表
+}
+
+// FullBinPath 根据真实安装目录，返回可执行文件路径
+func (t *ToolChain) FullBinPath(installDir string) string {
+	fullPath := installDir
+	if t.BinDir != "" {
+		fullPath = installDir + "/" + t.BinDir
+	}
+	return util.NormalizePath(fullPath)
 }
 
 // ActiveEnvNames 返回激活环境变量列表

@@ -11,20 +11,20 @@ import (
 
 // Uninstaller handles uninstalling tools
 type Uninstaller struct {
-	config  *models.Configuration
+	config *models.Configuration
 }
 
 // NewUninstaller creates a new Uninstaller
 func NewUninstaller(config *models.Configuration) *Uninstaller {
 	return &Uninstaller{
-		config:  config,
+		config: config,
 	}
 }
 
 // Uninstall removes a tool with the specified name and version
 func (u *Uninstaller) Uninstall(toolConfig *models.ToolChain, installed *models.InstalledTool, keepConfig bool) error {
 	// Remove the tool from the bin directory (remove shims)
-	if err := u.removeShims(toolConfig); err != nil {
+	if err := u.removeShims(installed); err != nil {
 		// Continue execution even if removing shims fails
 	}
 
@@ -39,30 +39,30 @@ func (u *Uninstaller) Uninstall(toolConfig *models.ToolChain, installed *models.
 }
 
 // removeShims removes the symlinks (shims) for the tool executables
-func (u *Uninstaller) removeShims(tool *models.ToolChain) error {
+func (u *Uninstaller) removeShims(installed *models.InstalledTool) error {
 	binDir := fsutil.ExpandHome(u.config.BinDir)
 
 	// For each binary path of the tool, remove the shim
-	for _, binPath := range tool.BinPaths {
-		// Get all executable files in the bin path
-		entries, err := os.ReadDir(binPath)
-		if err != nil {
-			continue // Skip if directory doesn't exist
-		}
+	// for _, binPath := range tool.BinPaths {
+	// Get all executable files in the bin path
+	entries, err := os.ReadDir(installed.BinDirPath())
+	if err != nil {
+		return nil // Skip if directory doesn't exist
+	}
 
-		for _, entry := range entries {
-			if !entry.IsDir() && isUninstallExecutable(entry.Name()) {
-				// Construct the expected shim path
-				shimPath := filepath.Join(binDir, entry.Name())
+	for _, entry := range entries {
+		if !entry.IsDir() && isUninstallExecutable(entry.Name()) {
+			// Construct the expected shim path
+			shimPath := filepath.Join(binDir, entry.Name())
 
-				// Check if the shim exists and remove it
-				if _, err := os.Stat(shimPath); err == nil {
-					if err := os.Remove(shimPath); err != nil {
-						return fmt.Errorf("failed to remove shim %s: %w", shimPath, err)
-					}
+			// Check if the shim exists and remove it
+			if _, err = os.Stat(shimPath); err == nil {
+				if err = os.Remove(shimPath); err != nil {
+					return fmt.Errorf("failed to remove shim %s: %w", shimPath, err)
 				}
 			}
 		}
+		// }
 	}
 
 	return nil

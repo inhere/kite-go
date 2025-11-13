@@ -18,7 +18,7 @@ import (
 // Installer handles the actual installation of tools
 type Installer struct {
 	config     *models.Configuration
-	InstallDir string
+	InstallDir string // real install directory
 }
 
 // NewInstaller creates a new Installer
@@ -154,31 +154,30 @@ func (i *Installer) copyExecutable(srcPath, destDir string) error {
 // createShims creates symlinks (shims) for the tool executables
 func (i *Installer) createShims(toolChain *models.ToolChain) error {
 	binDir := fsutil.ExpandHome(i.config.BinDir)
-
 	// For each binary path of the tool, create a shim
-	for _, binPath := range toolChain.BinPaths {
-		// Get all executable files in the bin path
-		entries, err := os.ReadDir(binPath)
-		if err != nil {
-			continue // Skip if directory doesn't exist
-		}
+	srcBinDir := toolChain.FullBinPath(i.InstallDir)
 
-		for _, entry := range entries {
-			if !entry.IsDir() && isExecutable(entry.Name()) {
-				// Create a symlink in the bin directory
-				srcPath := filepath.Join(binPath, entry.Name())
-				dstPath := filepath.Join(binDir, entry.Name())
+	// Get all executable files in the bin path
+	entries, err := os.ReadDir(srcBinDir)
+	if err != nil {
+		return err
+	}
 
-				// Create the shim (symbolic link)
-				if err := util.CreateSymlink(srcPath, dstPath); err != nil {
-					// If symlinks aren't supported (e.g., on Windows without admin), copy instead
-					if runtime.GOOS == "windows" {
-						if copyErr := util.CopyFile(srcPath, dstPath); copyErr != nil {
-							fmt.Printf("Warning: Failed to copy or link %s: %v\n", entry.Name(), err)
-						}
-					} else {
-						fmt.Printf("Warning: Failed to create symlink for %s: %v\n", entry.Name(), err)
+	for _, entry := range entries {
+		if !entry.IsDir() && isExecutable(entry.Name()) {
+			// Create a symlink in the bin directory
+			srcPath := filepath.Join(srcBinDir, entry.Name())
+			dstPath := filepath.Join(binDir, entry.Name())
+
+			// Create the shim (symbolic link)
+			if err := util.CreateSymlink(srcPath, dstPath); err != nil {
+				// If symlinks aren't supported (e.g., on Windows without admin), copy instead
+				if runtime.GOOS == "windows" {
+					if copyErr := util.CopyFile(srcPath, dstPath); copyErr != nil {
+						fmt.Printf("Warning: Failed to copy or link %s: %v\n", entry.Name(), err)
 					}
+				} else {
+					fmt.Printf("Warning: Failed to create symlink for %s: %v\n", entry.Name(), err)
 				}
 			}
 		}
