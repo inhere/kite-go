@@ -140,8 +140,8 @@ function Set-Location {
 #    }
 
     $env:PREV_PWD = $currentPath
+    # Write-Host "At $currentPath" -ForegroundColor Green
     # 调用原始命令
-    Write-Host "At $currentPath" -ForegroundColor Green
     # & $originalSetLocation @args
     if ($PassThru) {
         & $originalSetLocation $Path -PassThru
@@ -151,7 +151,7 @@ function Set-Location {
 
     # 获取当前目录
     $currentPath = $PWD.Path
-    Write-Host "- Into: $currentPath" -ForegroundColor Cyan
+    #Write-Host "- Into: $currentPath" -ForegroundColor Cyan
 
     # Check if xenv is available and run init-direnv
     if (Get-Command kite -ErrorAction SilentlyContinue) {
@@ -225,6 +225,7 @@ function Setup-Xenv {
             . $file.FullName
         }
     }
+    Write-Host "✅ kite xenv script initialize completed" -ForegroundColor Cyan
 }
 
 # Call setup function to initialize xenv

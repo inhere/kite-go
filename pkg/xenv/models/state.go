@@ -61,8 +61,21 @@ type ActivityState struct {
 	//  - key: state file path, value: state data
 	DirStates map[string]*ActivityState `json:"dir_states,omitempty" toml:"-"`
 	// 创建时间
-	CreatedAt time.Time `json:"created_at" toml:"-"`
-	UpdatedAt time.Time `json:"updated_at" toml:"-"`
+	CreatedAt time.Time `json:"created_at,omitempty" toml:"-"`
+	UpdatedAt time.Time `json:"updated_at,omitempty" toml:"-"`
+}
+
+// SessionState represents a session state TODO
+type SessionState struct {
+	ActivityState
+	// Shell 当前使用的shell type
+	Shell string `json:"shell,omitempty" toml:"-"`
+	// 当前会话关联的所有目录状态数据. 用于跳转目录时，销毁之前的目录state
+	//  - key: state file path, value: state data
+	DirStates map[string]*ActivityState `json:"dir_states,omitempty" toml:"-"`
+	// 创建时间
+	CreatedAt time.Time `json:"created_at,omitempty" toml:"-"`
+	UpdatedAt time.Time `json:"updated_at,omitempty" toml:"-"`
 }
 
 // NewActivityState creates a new ActivityState
@@ -245,6 +258,8 @@ func (as *ActivityState) AddDirState(ds *ActivityState) {
 	if as.DirStates == nil {
 		as.DirStates = make(map[string]*ActivityState)
 	}
+
 	as.HasUpdate = true
-	as.DirStates[ds.File] = ds
+	filePath := fsutil.ToAbsPath(ds.File)
+	as.DirStates[filePath] = ds
 }

@@ -27,7 +27,9 @@ func (sg *XenvScriptGenerator) generateBashScripts(ps *models.GenInitScriptParam
 //
 // Usage, .bashrc or .bash_profile add：
 //   eval "$(kite xenv shell --type bash)"
-var BashHookTemplate = `
+//
+// Test: . pkg/xenv/testdata/hook_bash.sh
+var BashHookTemplate = `#!/usr/bin/env bash
 #
 # kite xenv bash hook
 # This script enables xenv to work in bash shells
@@ -36,12 +38,20 @@ var BashHookTemplate = `
 #   eval "$(kite xenv shell --type bash)"
 #
 # Start to set up xenv in the current shell
+set -e
 
 # 重写 cd 内建命令来实现监听
 cd() {
+    # echo "cd $@"
+    # echo "current path: $PWD"
+    export PREV_PWD=$PWD
     builtin cd "$@" && {
         if command -v kite >/dev/null 2>&1; then
-            kite xenv init-direnv >/dev/null 2>&1
+            echo "current path: $PWD"
+            local result="$(kite xenv init-direnv)"
+            local exit_code=$?
+            # echo "result: $result"
+            invoke_xenv_result "$result" $exit_code
         fi
     }
 }
@@ -53,20 +63,23 @@ invoke_xenv_result() {
 
     if [ "$exit_code" -eq 0 ]; then
         if [ -n "$result" ]; then
+            local sep="--Expression--"
+            # echo "$result"
             # 检查结果是否包含 '--Expression--' 分隔符
             if [[ "$result" == *"--Expression--"* ]]; then
                 # 使用 '--Expression--' 分割内容
-                local msg_part="$(echo "$result" | cut -d'-' -f1)"
-                local expr_part="$(echo "$result" | cut -d'-' -f4-)"
+                local msg_part="$(kite str split --first -s $sep "$result")"
+                local expr_part="$(kite str split --last -s $sep "$result")"
 
                 # 后面部分当做代码执行
                 if [ -n "$expr_part" ]; then
+                    echo "expr_part: $expr_part"
                     eval "$expr_part"
                 fi
                 # 前面部分直接输出
                 if [ -n "$msg_part" ]; then
+                    # echo "msg_part: $msg_part"
                     echo "$msg_part"
-                    # echo "$result"  # 输出完整结果用于调试
                 fi
             else
                 # 否则直接输出内容
@@ -120,7 +133,7 @@ setup_xenv() {
     }
 
     # fire xenv hooks to kite, use for generate code to exec TODO
-    local result_init = "$(kite xenv shell-init-hook --type bash)"
+    local result_init="$(kite xenv shell-init-hook --type bash)"
     local exit_code=$?
     invoke_xenv_result "$result_init" $exit_code
 
@@ -138,6 +151,7 @@ setup_xenv() {
 			source "$file"
 		fi
 	done
+	echo "✅ kite xenv bash script initialize completed"
 }
 
 # Call setup function to initialize xenv
@@ -145,6 +159,6 @@ setup_xenv
 
 # Enable command completion for xenv
 if command -v complete >/dev/null 2>&1; then
-	complete -W "use unuse env set unset path list help" xenv
+    complete -W "use unuse env set unset path list help" xenv
 fi
 `

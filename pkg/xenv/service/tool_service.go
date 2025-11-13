@@ -343,10 +343,8 @@ func (ts *ToolService) GenHookScripts(st shell.ShType) (string, error) {
 		return "", err
 	}
 
-	// UP: 只加载 global state, dir和sess等进入目录时加载
-	// state := ts.state.Merged()
-	state := ts.state.Global()
-
+	// TODO 读取常用工具(eg go.mod)的版本配置文件
+	state := ts.state.Merged()
 	params := &models.GenInitScriptParams{
 		Envs:  ts.config.GlobalEnv,
 		Paths: ts.config.GlobalPaths,

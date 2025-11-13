@@ -116,34 +116,39 @@ func (m *ToolManager) IndexLocalTools() error {
 
 	// SDK tools
 	for _, sdkCfg := range m.config.SDKs {
-		ver2dirMap, err := xenvutil.ListVersionDirs(sdkCfg.InstallDir)
-		if err != nil {
-			return err
-		}
+		ccolor.Cyanf("Starting find installed %q SDK\n", sdkCfg.Name)
 
-		baseDir := filepath.Dir(sdkCfg.InstallDir)
-		ccolor.Cyanf("Found installed %q from %s\n", sdkCfg.Name, baseDir)
-		for version, installPath := range ver2dirMap {
-			ccolor.Infof("  Found %s %s\n", sdkCfg.Name, version)
+		if sdkCfg.InstallDir != "" {
+			ver2dirMap, err := xenvutil.ListVersionDirs(sdkCfg.InstallDir)
+			if err != nil {
+				return err
+			}
 
-			// build local installed tool info
-			m.localTools.SDKs = append(m.localTools.SDKs, models.InstalledTool{
-				ID:     fmt.Sprintf("%s:%s", sdkCfg.Name, version),
-				Name:   sdkCfg.Name,
-				IsSDK:  true,
-				BinDir: sdkCfg.BinDir,
-				// version, install path
-				Version:    version,
-				InstallDir: installPath,
-				CreatedAt:  currentTime,
-			})
+			baseDir := filepath.Dir(sdkCfg.InstallDir)
+			ccolor.Cyanf(" - from dir: %s\n", baseDir)
+			for version, installPath := range ver2dirMap {
+				ccolor.Infof("  Found %s %s\n", sdkCfg.Name, version)
+
+				// build local installed tool info
+				m.localTools.SDKs = append(m.localTools.SDKs, models.InstalledTool{
+					ID:     fmt.Sprintf("%s:%s", sdkCfg.Name, version),
+					Name:   sdkCfg.Name,
+					IsSDK:  true,
+					BinDir: sdkCfg.BinDir,
+					// version, install path
+					Version:    version,
+					InstallDir: installPath,
+					CreatedAt:  currentTime,
+				})
+			}
 		}
 
 		// 不在统一目录下 InstallDir 的版本
 		if sdkCfg.OtherVersions != nil {
 			for version, dirPath := range sdkCfg.OtherVersions {
+				dirPath = fsutil.ExpandHome(dirPath)
 				if !fsutil.IsDir(dirPath) {
-					ccolor.Warnf("W Custum version %s path %q is not exists", version, dirPath)
+					ccolor.Warnf("[W] Custum version %s path %q is not exists\n", version, dirPath)
 					continue
 				}
 

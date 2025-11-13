@@ -29,12 +29,13 @@ invoke_xenv_result() {
 
                 # 后面部分当做代码执行
                 if [ -n "$expr_part" ]; then
+                    # echo "expr_part: $expr_part"
                     eval "$expr_part"
                 fi
                 # 前面部分直接输出
                 if [ -n "$msg_part" ]; then
+                    # echo "msg_part: $msg_part"
                     echo "$msg_part"
-                    # echo "$result"  # 输出完整结果用于调试
                 fi
             else
                 # 否则直接输出内容

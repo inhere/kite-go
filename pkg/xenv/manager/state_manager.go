@@ -80,6 +80,7 @@ func (m *StateManager) UseSDKsWithParams(ps *models.ActivateSDKsParams) error {
 	case models.OpFlagDirenv:
 		ds := m.DirenvOrNew()
 		ds.AddSDKs(ps.AddSdks)
+		// save to session dirStates
 		m.session.AddDirState(ds)
 	default:
 		m.session.AddSDKs(ps.AddSdks)

@@ -116,8 +116,8 @@ func ListActivityCmd() *gcli.Command {
 
 				sess := xenv.State().Session()
 				tl.ShowNew("Session State")
-				fmt.Println(" - session ID:", sess.SessionID())
-				if global.IsEmpty() {
+				fmt.Println(" - from:", sess.File)
+				if sess.IsEmpty() {
 					ccolor.Infoln("No session state found")
 				} else {
 					listActivity(sess)
