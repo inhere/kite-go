@@ -1,4 +1,4 @@
-package bootstrap
+package boot
 
 import (
 	"github.com/inhere/kite-go/internal/app"

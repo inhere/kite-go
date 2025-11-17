@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/inhere/kite-go/internal/app"
-	"github.com/inhere/kite-go/internal/bootstrap"
+	"github.com/inhere/kite-go/internal/boot"
 )
 
 // Dev run:
@@ -20,5 +20,5 @@ import (
 //	make install-dev
 func main() {
 	// boot and run app
-	bootstrap.MustRun(app.App())
+	boot.MustRun(app.App())
 }

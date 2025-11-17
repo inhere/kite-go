@@ -1,4 +1,4 @@
-package bootstrap
+package boot
 
 import (
 	"github.com/gookit/slog"

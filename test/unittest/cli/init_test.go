@@ -10,7 +10,7 @@ import (
 	"github.com/gookit/goutil/testutil/assert"
 	"github.com/gookit/slog"
 	"github.com/inhere/kite-go/internal/app"
-	"github.com/inhere/kite-go/internal/bootstrap"
+	"github.com/inhere/kite-go/internal/boot"
 	"github.com/inhere/kite-go/internal/initlog"
 )
 
@@ -22,7 +22,7 @@ func TestMain(m *testing.M) {
 		return nil
 	}
 
-	bootstrap.MustBoot(app.App())
+	boot.MustBoot(app.App())
 
 	wkDir := sysutil.Workdir()
 	tdataDir = fsutil.Realpath("../../testdata")
