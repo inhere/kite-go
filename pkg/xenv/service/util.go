@@ -27,7 +27,7 @@ func getShellGenerator(_ *models.Configuration) (*shell.XenvScriptGenerator, err
 
 func sdkVersionsFromSpecifiedFiles(specMap map[string]*models.VersionSpec) {
 	// 支持识别常用的工具配置 eg: go.mod, .tool-versions, .nvmrc, .python-version
-	toolsCfgFiles := []string{"go.mod", ".tool-versions", ".nvmrc", ".python-version"}
+	toolsCfgFiles := []string{"go.work", "go.mod", ".tool-versions", ".nvmrc", ".python-version"}
 	for _, filename := range toolsCfgFiles {
 		if !fsutil.IsFile(filename) {
 			continue
@@ -49,7 +49,7 @@ func sdkVersionsFromSpecifiedFiles(specMap map[string]*models.VersionSpec) {
 					Version: ver,
 				}
 			}
-		case "go.mod":
+		case "go.work", "go.mod":
 			goVer, err := xenvutil.ParseGoVersion(filename)
 			if err != nil {
 				ccolor.Warnf("Failed to parse go.mod file: %v\n", err)

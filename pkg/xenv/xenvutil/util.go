@@ -40,7 +40,7 @@ func ListVersionDirs(installDir string) (map[string]string, error) {
 	return sdkDirMap, nil
 }
 
-// ParseGoVersion 实现简单的从 go.mod 文件解析go版本
+// ParseGoVersion 实现简单的从 go.work/go.mod 文件解析go版本
 //  - 按行读取文件 找到 go {version} 所在行即停止，最多读取 10 行，找不到就返回
 //
 // eg: goVer, err := ParseGoVersion("go.mod")

@@ -13,8 +13,15 @@ var sessionID = os.Getenv(SessIdEnvName)
 
 // SessionID 获取当前会话ID
 func SessionID() string {
+	// 为空时,将当前目录路径hash值作为sessionID
 	if sessionID == "" {
+		// 用时间会导致产生很多文件
 		sessionID = time.Now().Format("20060102_150405")
+		// TIP: 用目录也有问题，会按首次打开时生成。。。后续又会切换目录
+		// workdir := sysutil.Workdir()
+		// // 取出目录名的前4个字符作为前缀
+		// prefix := strutil.Substr(fsutil.Name(workdir), 0, 4)
+		// sessionID = prefix + "_" + strutil.ShortMd5(workdir)
 	}
 	return sessionID
 }
