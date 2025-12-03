@@ -28,6 +28,7 @@ import (
 	"github.com/inhere/kite-go/internal/cli/gitcmd/ghubcmd"
 	"github.com/inhere/kite-go/internal/cli/gitcmd/glabcmd"
 	"github.com/inhere/kite-go/internal/cli/httpcmd"
+	"github.com/inhere/kite-go/internal/cli/netcmd"
 	"github.com/inhere/kite-go/internal/cli/syscmd"
 	"github.com/inhere/kite-go/internal/cli/textcmd"
 	"github.com/inhere/kite-go/internal/cli/toolcmd"
@@ -57,6 +58,7 @@ func addCommands(cli *gcli.App) {
 		httpcmd.HttpCmd,
 		syscmd.SysCmd,
 		appcmd.SelfManageCmd,
+		netcmd.NetCmd,
 		// extcmd.UserExtCmd,
 		textcmd.TextToolCmd,
 		jsoncmd.JSONToolCmd,

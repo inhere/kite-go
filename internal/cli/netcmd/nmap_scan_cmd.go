@@ -12,12 +12,52 @@ import (
 	"github.com/gookit/goutil/x/ccolor"
 )
 
+/*
+-s 与 -P 的区别
+容易混淆的两个选项：
+
+-sS    # 端口扫描技术（TCP SYN）
+-PS    # 主机发现技术（TCP SYN Ping）
+*/
 type nmapCmdOpts struct {
 	ports    string
 	timeout  int
 	threads  int
 	host     string
+	// -P 是 主机发现（Host Discovery） 选项，用于指定如何检测主机是否在线。
+	//  NOTE: -P 选项主要影响主机发现阶段，不直接用于端口扫描。
+	// 支持多种探测类型：
 	protocol string
+	// -s 表示"扫描类型"（Scan Type），用于指定 Nmap 使用哪种底层技术进行扫描。
+	//
+	// 主机发现扫描
+	//
+	// -sL    # 列表扫描（List Scan）- 只列出目标，不实际扫描
+	// -sn    # Ping扫描 - 只发现主机，不扫描端口
+	//
+	// TCP扫描类型
+	//
+	//  -sS    # TCP SYN扫描（半开放扫描）- 默认扫描方式
+	//  -sT    # TCP连接扫描（完整连接）
+	//  -sA    # TCP ACK扫描（防火墙规则探测）
+	//  -sW    # TCP Window扫描
+	//  -sM    # TCP Maimon扫描
+	//  -sN    # TCP NULL扫描
+	//  -sF    # TCP FIN扫描
+	//  -sX    # TCP Xmas扫描
+	//
+	// UDP和特殊扫描
+	//
+	//  -sU    # UDP扫描
+	//  -sI    # 空闲扫描（Idle Scan）- 使用僵尸主机
+	//  -sO    # IP协议扫描
+	//  -sY    # SCTP INIT扫描
+	//  -sZ    # SCTP COOKIE ECHO扫描
+	//
+	// 版本和脚本扫描
+	//
+	// -sV    # 版本探测（Version detection）
+	// -sC    # 脚本扫描（使用默认NSE脚本） - 等价于 --script=default
 	scanType string
 	verbose  bool
 	// 常用的服务版本探测
@@ -42,7 +82,7 @@ Both: 1000-2000,8080,4000-5000
 `)
 			c.IntOpt(&nmapOpts.timeout, "timeout", "t", 3, "connection timeout in milliseconds")
 			c.IntOpt(&nmapOpts.threads, "threads", "c,T", 100, "number of concurrent threads")
-			c.StrOpt(&nmapOpts.protocol, "protocol", "P", "tcp", "scan protocol: tcp or udp")
+			c.StrOpt(&nmapOpts.protocol, "protocol", "P", "tcp", "scan protocol: tcp, udp")
 			c.StrOpt(&nmapOpts.scanType, "scan-type", "s", "connect", "scan type: connect, null")
 			c.BoolOpt(&nmapOpts.serviceDetect, "service-detect", "sv", false, "detect service versions")
 			c.BoolOpt(&nmapOpts.verbose, "verbose", "v", false, "verbose output")
@@ -76,7 +116,11 @@ Both: 1000-2000,8080,4000-5000
 
 // parsePorts 解析端口参数
 func parsePorts(opts *nmapCmdOpts) error {
+	if strings.EqualFold(opts.ports, "all") || opts.ports == "*" {
+		opts.ports = "1-65535"
+	}
 	ports := strings.Split(opts.ports, ",")
+	// dump.P(ports)
 
 	for _, portStr := range ports {
 		portStr = strings.TrimSpace(portStr)
@@ -122,7 +166,60 @@ func parsePorts(opts *nmapCmdOpts) error {
 
 	// 去重端口
 	opts.portList = removeDuplicatePorts(opts.portList)
+
+	var protocol = formatProtocol(opts.protocol)
+	if protocol == "" {
+		return fmt.Errorf("unsupported protocol: %s (only: syn,tcp,udp)", opts.protocol)
+	}
 	return nil
+}
+
+func formatScanType(scanType string) string {
+	switch strings.ToLower(scanType) {
+	case "connect", "c":
+		return "connect"
+	case "null", "n":
+		return "null"
+	default:
+		return ""
+	}
+}
+
+/*
+# Ping scan only: -sP
+# Don't ping:     -PN <- Useful if a host doesn't reply to a ping.
+# TCP SYN ping:   -PS
+# TCP ACK ping:   -PA
+# UDP ping:       -PU
+# ARP ping:       -PR
+*/
+func formatProtocol(protocol string) string {
+	switch strings.ToLower(protocol) {
+	case "tcp", "t":
+		return "tcp"
+	case "udp", "u":
+		return "udp"
+	case "icmp", "i":
+		return "icmp"
+	case "syn", "s":
+		return "syn"
+	case "ack", "a":
+		return "ack"
+	case "arp", "r":
+		return "arp"
+	case "xmas", "x":
+		return "xmas"
+	case "fin", "f":
+		return "fin"
+	case "null", "n":
+		return "null"
+	case "window", "w":
+		return "window"
+	case "maimon", "m":
+		return "maimon"
+	default:
+		return ""
+	}
 }
 
 // removeDuplicatePorts 去除重复端口
