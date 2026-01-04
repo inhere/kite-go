@@ -38,7 +38,7 @@ var GithubCmd = &gcli.Command{
 		GhOpts.BindChdirFlags(c)
 
 		c.On(events.OnCmdRunBefore, func(ctx *gcli.HookCtx) (stop bool) {
-			c.Infoln("[kite.GHab] Workdir:", c.WorkDir())
+			c.Infoln("[kite.GHub] Workdir:", c.WorkDir())
 			return false
 		})
 

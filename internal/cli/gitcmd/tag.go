@@ -1,8 +1,6 @@
 package gitcmd
 
 import (
-	"errors"
-
 	"github.com/gookit/color/colorp"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
@@ -29,7 +27,28 @@ var TagListCmd = &gcli.Command{
 	Aliases: []string{"ls"},
 	Desc:    "list tags for the git repository",
 	Func: func(c *gcli.Command, args []string) error {
-		return errors.New("TODO")
+		lp := gitw.NewRepo(GitOpts.Workdir).
+			PrintCmdOnExec().
+			SetDryRun(GitOpts.DryRun)
+
+		// 获取标签列表
+		tags := lp.Tags()
+		if lp.Err() != nil {
+			return lp.Err()
+		}
+
+		if len(tags) == 0 {
+			colorp.Infof("No tags found in the repository.\n")
+			return nil
+		}
+
+		// 打印标签列表
+		colorp.Infof("Tags in the repository:\n")
+		for _, tag := range tags {
+			colorp.Cyanf("  %s\n", tag)
+		}
+
+		return nil
 	},
 }
 
@@ -53,7 +72,7 @@ var TagCreateCmd = &gcli.Command{
 	Config: func(c *gcli.Command) {
 		c.MustFromStruct(&tcOpts, gflag.TagRuleSimple)
 	},
-	Func: func(c *gcli.Command, args []string) error {
+	Func: func(c *gcli.Command, _ []string) error {
 		lp := gitw.NewRepo(GitOpts.Workdir).
 			PrintCmdOnExec().
 			SetDryRun(GitOpts.DryRun)
@@ -120,7 +139,51 @@ var TagDeleteCmd = &gcli.Command{
 	Name:    "delete",
 	Aliases: []string{"del", "rm", "remove"},
 	Desc:    "delete exists tags by `git tag`",
-	Func: func(c *gcli.Command, args []string) error {
-		return errors.New("TODO")
+	Config: func(c *gcli.Command) {
+		c.AddArg("tags", "tags name to delete", true, true)
+	},
+	Func: func(c *gcli.Command, _ []string) error {
+		tagNames := c.Arg("tags").Strings()
+		if len(tagNames) == 0 {
+			return c.NewErr("please provide at least one tag name to delete")
+		}
+
+		repo := gitw.NewRepo(GitOpts.Workdir).
+			PrintCmdOnExec().
+			SetDryRun(GitOpts.DryRun)
+
+		// 确认删除操作
+		colorp.Infof("Tags to delete: %v\n", tagNames)
+		if interact.Unconfirmed("Are you sure you want to delete these tags?", true) {
+			colorp.Infoln("Operation cancelled.")
+			return nil
+		}
+
+		// 删除本地标签
+		colorp.Cyanf("Deleting local tags...\n")
+		for _, tag := range tagNames {
+			err := repo.Cmd("tag", "-d", tag).Run()
+			if err != nil {
+				return err
+			}
+			colorp.Successf("Deleted local tag: %s\n", tag)
+		}
+
+		// 删除远程标签
+		colorp.Cyanf("Deleting remote tags...\n")
+		argsWithPrefix := make([]string, len(tagNames))
+		for i, tag := range tagNames {
+			argsWithPrefix[i] = ":" + tag
+		}
+
+		// RUN: git push origin :tag1 :tag2
+		pushArgs := append([]string{"origin"}, argsWithPrefix...)
+		err := repo.Cmd("push", pushArgs...).Run()
+		if err != nil {
+			return err
+		}
+
+		colorp.Successf("Successfully deleted tags: %v\n", tagNames)
+		return nil
 	},
 }
