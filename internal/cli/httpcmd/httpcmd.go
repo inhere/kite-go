@@ -20,6 +20,7 @@ var HttpCmd = &gcli.Command{
 		NewHookServerCmd(),
 		NewOAPIServeCmd(),
 		NewJSONServerCmd(),
+		NewAccessCheckCmd(),
 		// TODO convert to CURL command. refer: https://github.com/moul/http2curl/blob/master/http2curl.go
 	},
 	Config: func(c *gcli.Command) {
