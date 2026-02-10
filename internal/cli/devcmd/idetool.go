@@ -5,7 +5,7 @@ import (
 
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/show"
-	"github.com/inhere/kite-go/pkg/idetool"
+	"github.com/inhere/kite-go/pkg/tools/idetool"
 )
 
 // IDEAToolCmd instance

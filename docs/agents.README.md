@@ -277,6 +277,55 @@ func addCommands(cli *gcli.App) {
 4. 用户自定义配置
 5. 环境变量覆盖
 
+## 代码风格指南
+
+### Import 排序和组织
+```go
+import (
+    "fmt"
+    "os"
+    "strings"
+
+    "github.com/gookit/goutil/fsutil"
+    "github.com/inhere/kite-go/pkg/xenv/xenvcom"
+)
+```
+- 标准库导入在前
+- 第三方库和内部库在后
+- 使用空行分隔不同的导入块
+- 使用 `goimports` 工具自动排序和整理导入
+
+### 函数注释
+```go
+// NormalizePath normalizes a path by expanding home directory and cleaning it
+func NormalizePath(path string) string {
+    // ...
+}
+
+// SetHostPort set host and port
+func (s *HttpServer) SetHostPort(host string, port uint) {
+    s.Host = host
+    s.Port = port
+}
+```
+
+- 函数注释放在函数定义前
+- 简洁明了，描述函数的功能
+- 使用动词短语开头
+
+### 错误处理模式
+```go
+func Init() error {
+    if err := config.Mgr.Init(); err != nil {
+        return fmt.Errorf("failed to initialize configuration: %w", err)
+    }
+    return nil
+}
+```
+- 使用 `fmt.Errorf` 包装错误
+- 使用 `%w` 保留原始错误信息
+- 错误消息清晰描述失败原因
+
 ### 5. 测试
 
 运行测试：
@@ -290,6 +339,69 @@ go test ./internal/cli/...
 # 运行单个测试文件
 go test ./test/unittest/cli/
 ```
+
+### 测试结构
+```go
+func TestParseVersionSpec(t *testing.T) {
+    testCases := []struct {
+        input    string
+        expected *VersionSpec
+        hasError bool
+    }{
+        {
+            input: "go:1.21.5",
+            expected: &VersionSpec{
+                Name:    "go",
+                Version: "1.21.5",
+            },
+            hasError: false,
+        },
+    }
+
+    for _, tc := range testCases {
+        t.Run(tc.input, func(t *testing.T) {
+            result, err := ParseVersionSpec(tc.input)
+
+            if tc.hasError {
+                if err == nil {
+                    t.Errorf("Expected error for input %q, but got none", tc.input)
+                }
+                return
+            }
+
+            if err != nil {
+                t.Errorf("Unexpected error for input %q: %v", tc.input, err)
+                return
+            }
+
+            // assertions...
+        })
+    }
+}
+```
+
+- 使用表格驱动测试（testCases）
+- 每个测试用例使用 `t.Run()` 运行
+- 测试文件命名：`{filename}_test.go`
+- 使用 `github.com/gookit/goutil/testutil/assert` 进行断言
+
+### 测试初始化
+
+```go
+func TestMain(m *testing.M) {
+    // 设置日志级别
+    initlog.SetLevel(slog.DebugLevel)
+
+    // 初始化应用
+    boot.MustBoot(app.App())
+
+    m.Run()
+}
+```
+
+- 使用 `TestMain` 进行测试前初始化
+- 初始化应用配置和依赖
+- 调用 `m.Run()` 运行所有测试
 
 ## 构建和部署
 
