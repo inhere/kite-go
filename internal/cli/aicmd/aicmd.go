@@ -1,8 +1,15 @@
 package aicmd
 
 import (
+	"fmt"
+
 	"github.com/gookit/gcli/v3"
+	"github.com/inhere/kite-go/internal/service"
 )
+
+var aiOpts = struct {
+	showConfig bool
+}{}
 
 var AICommand = &gcli.Command{
 	Name: "ai",
@@ -12,6 +19,20 @@ var AICommand = &gcli.Command{
 		NewQuestionCmd(),
 		NewTranslateCmd(),
 		NewAIToolCmd(),
+		ClaudeCommand,
+	},
+	Config: func(c *gcli.Command) {
+		c.BoolOpt2(&aiOpts.showConfig, "show", "Show config info")
+	},
+	Func: func(c *gcli.Command, args []string) error {
+		if aiOpts.showConfig {
+			aisrv, err := service.AI().Init()
+			if err != nil {
+				return fmt.Errorf("failed to initialize AI service: %w", err)
+			}
+			aisrv.ShowConfig()
+		}
+		return nil
 	},
 }
 
