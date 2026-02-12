@@ -45,7 +45,8 @@ func (s *AIService) Init() (*AIService, error) {
 	}
 
 	cfg.ClearAll()
-	return s, s.Config.Init()
+	err := s.Config.Init()
+	return s, err
 }
 
 // SetClaudeCodeParam 参数
@@ -107,25 +108,29 @@ func (s *AIService) printCCShellEnv(name, shell string, envs map[string]string) 
 	isPwsh := shell == "pwsh" || shell == "powershell"
 	for k, v := range envs {
 		if isPwsh {
-			sb.Writef("\n$env:%s=%s", k, v)
+			sb.Writef("\n$env:%s=%q", k, v)
 		} else {
-			sb.Writef("\n%s=%s", k, v)
+			sb.Writef("\n%s=%q", k, v)
 		}
 	}
 
 	if isPwsh {
-		sb.WriteString(`
-# active in pwsh shell
-# kite ai cc set --shell pwsh --use kimi | Out-String | Invoke-Expression
-`)
+		sb.Writef(`
+echo "Claude code ENV settings updated! (use %s)"
+
+# 📌 Active in pwsh shell
+# kite ai cc set --shell pwsh --use %s | Out-String | Invoke-Expression
+`, name, name)
 	} else {
-		sb.WriteString(`
-# active in bash, zsh shell
-# eval "$(kite ai cc set --shell $SHELL --use kimi)"
-`)
+		sb.Writef(`
+echo "Claude code ENV settings updated! (use %s)"
+
+# 📌 Active in bash, zsh shell
+# eval "$(kite ai cc set --shell $SHELL --use %s)"
+`, name, name)
 	}
 
-	fmt.Println(sb.String())
+	fmt.Print(sb.String())
 }
 
 func (s *AIService) ShowConfig() {

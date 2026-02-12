@@ -20,7 +20,7 @@ type ProviderConfig struct {
 
 // CCProviderConfig holds the configuration for a single CC provider
 type CCProviderConfig struct {
-	ProviderConfig
+	ProviderConfig `yaml:",squash"`
 	// 配置到 cc config 的模型代码
 	ModelCode string `json:"model_code" yaml:"model_code"`
 	// api key map. key 是自定义名称，value 是 api key
@@ -33,7 +33,7 @@ type CCProviderConfig struct {
 func (p *CCProviderConfig) GetEnvMaps(keyName string) map[string]string {
 	envs := make(map[string]string, len(p.Envs)+2)
 	for k, v := range p.Envs {
-		envs[strings.ToUpper(k)] = v
+		envs[strings.ToUpper(k)] = strings.Replace(v, "{model_code}", p.ModelCode, -1)
 	}
 
 	envs["ANTHROPIC_BASE_URL"] = p.BaseURL
@@ -53,7 +53,7 @@ type Config struct {
 	// 默认的模型名称
 	DefaultModel    string `json:"default_model" yaml:"default_model"`
 	// 支持的模型提供者列表(API场景使用)
-	Providers map[string]ProviderConfig `json:"providers" yaml:"providers"`
+	Providers map[string]*ProviderConfig `json:"providers" yaml:"providers"`
 	// 提供者别名映射
 	ProviderAliases map[string]string `json:"provider_aliases" yaml:"provider_aliases"`
 	// 模型别名映射
@@ -61,7 +61,7 @@ type Config struct {
 	// 不同场景使用的模型映射
 	SceneModels map[string]string `json:"scene_models" yaml:"scene_models"`
 	// Claude-code 专用的提供者列表
-	CcProviders map[string]CCProviderConfig `json:"cc_providers" yaml:"cc_providers"`
+	CcProviders map[string]*CCProviderConfig `json:"cc_providers" yaml:"cc_providers"`
 }
 
 // Init 初始化 config 部分信息
@@ -130,7 +130,7 @@ func (c *Config) ProviderConfig(name string) (*ProviderConfig, error) {
 	if !ok {
 		return nil, fmt.Errorf("provider %s not found", name)
 	}
-	return &config, nil
+	return config, nil
 }
 
 // IsCCProvider checks if a given name is a valid CC provider
@@ -157,5 +157,5 @@ func (c *Config) CCProviderConfig(name string) (*CCProviderConfig, error) {
 		return nil, fmt.Errorf("cc-provider %s not found", name)
 	}
 	config.Name = name
-	return &config, nil
+	return config, nil
 }
