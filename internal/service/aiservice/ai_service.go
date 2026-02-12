@@ -8,6 +8,7 @@ import (
 	"github.com/gookit/config/v2/yaml"
 	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/dump"
+	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/x/ccolor"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/internal/service/aiservice/aiclaude"
@@ -36,26 +37,28 @@ func (s *AIService) Init() (*AIService, error) {
 	cfg.AddDriver(yaml.Driver)
 
 	if err := cfg.LoadFiles(s.cfgFile); err != nil {
-		return nil, fmt.Errorf("failed to load config file: %w", err)
+		return nil, fmt.Errorf("failed to load config file %s: %w", s.cfgFile, err)
 	}
 
 	if err := cfg.Decode(&s.Config); err != nil {
-		return nil, fmt.Errorf("failed to decode config: %w", err)
+		return nil, fmt.Errorf("failed to decode AI config: %w", err)
 	}
 
 	cfg.ClearAll()
 	return s, s.Config.Init()
 }
 
-type SetAuthInfoParam struct {
+// SetClaudeCodeParam 参数
+type SetClaudeCodeParam struct {
 	Provider string
+	KeyName string // api key name
 	Shell string
 	Write bool
 	Show bool
 }
 
-// SetAuthInfo 设置 API url 和令牌信息
-func (s *AIService) SetAuthInfo(opts SetAuthInfoParam) error {
+// SetClaudeCode 设置 cc 的 API url 和令牌信息
+func (s *AIService) SetClaudeCode(opts SetClaudeCodeParam) error {
 	runCfg, err1 := aiclaude.ReadUserConfig()
 	if err1 != nil {
 		return fmt.Errorf("failed to read config: %w", err1)
@@ -70,20 +73,20 @@ func (s *AIService) SetAuthInfo(opts SetAuthInfoParam) error {
 	if useName == "" {
 		return fmt.Errorf("used provider name is required, by --use <name>")
 	}
-	if !s.IsProvider(useName) {
+	if !s.IsCCProvider(useName) {
 		return fmt.Errorf("invalid provider %q, allowed values: %s", useName, strings.Join(s.ProviderNames(), ","))
 	}
 
 	// Get provider configuration
-	provider, err := s.ProviderConfig(useName)
+	provider, err := s.CCProviderConfig(useName)
 	if err != nil {
 		return fmt.Errorf("failed to get provider config: %w", err)
 	}
+	envs := provider.GetEnvMaps(opts.KeyName)
 
 	// Handle --write flag
 	if opts.Write {
-		runCfg.Env["ANTHROPIC_BASE_URL"] = provider.BaseURL
-		runCfg.Env["ANTHROPIC_AUTH_TOKEN"] = provider.APIKey
+		runCfg.Env = envs
 		if err = runCfg.Save(); err != nil {
 			return fmt.Errorf("failed to write config: %w", err)
 		}
@@ -93,9 +96,36 @@ func (s *AIService) SetAuthInfo(opts SetAuthInfoParam) error {
 	}
 
 	// Generate output based on shell type
-	shellEnv := provider.GenShellEnv(opts.Shell)
-	fmt.Println(shellEnv)
+	s.printCCShellEnv(provider.Name, opts.Shell, envs)
 	return nil
+}
+
+func (s *AIService) printCCShellEnv(name, shell string, envs map[string]string) {
+	var sb strutil.Builder
+	sb.Writef("# Claude Code Configuration (use %s)", name)
+
+	isPwsh := shell == "pwsh" || shell == "powershell"
+	for k, v := range envs {
+		if isPwsh {
+			sb.Writef("\n$env:%s=%s", k, v)
+		} else {
+			sb.Writef("\n%s=%s", k, v)
+		}
+	}
+
+	if isPwsh {
+		sb.WriteString(`
+# active in pwsh shell
+# kite ai cc set --shell pwsh --use kimi | Out-String | Invoke-Expression
+`)
+	} else {
+		sb.WriteString(`
+# active in bash, zsh shell
+# eval "$(kite ai cc set --shell $SHELL --use kimi)"
+`)
+	}
+
+	fmt.Println(sb.String())
 }
 
 func (s *AIService) ShowConfig() {

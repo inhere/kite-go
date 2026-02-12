@@ -14,25 +14,27 @@ var ClaudeCommand = &gcli.Command{
 	Desc: "Claude code managment commands",
 	Aliases: []string{"cc"},
 	Subs: []*gcli.Command{
-		NewClaudeApiCmd(),
+		NewClaudeSetCmd(),
 	},
 }
 
-// NewClaudeApiCmd creates the Claude API info manage command
-func NewClaudeApiCmd() *gcli.Command {
-	var opts = aiservice.SetAuthInfoParam{}
+// NewClaudeSetCmd creates the Claude Code info manage command
+func NewClaudeSetCmd() *gcli.Command {
+	var opts = aiservice.SetClaudeCodeParam{}
 
 	return &gcli.Command{
-		Name: "api",
-		Desc: "Claude API config manage operations",
+		Name:    "set",
+		Aliases: []string{"api"},
+		Desc:    "Claude code config manage operations",
 		Config: func(c *gcli.Command) {
 			c.StrOpt2(&opts.Provider, "use", "use the model provider, allowed: glm,minimax,kimi,claude")
+			c.StrOpt(&opts.KeyName, "key", "", "default", "the api key name in api_keys")
 			c.StrOpt2(&opts.Shell, "shell", "the shell type, allowed: bash,pwsh")
 			c.BoolOpt2(&opts.Write, "write,w", "whether to write the config to file")
 			c.BoolOpt2(&opts.Show, "show,i", "show the config information")
 		},
 		Help: `
-# active in bash, pwsh shell
+# active in bash, zsh shell
 eval "$({$binWithCmd} --shell bash --use kimi)"
 # active in pwsh shell
 {$binWithCmd} --shell pwsh --use kimi | Out-String | Invoke-Expression
@@ -42,7 +44,7 @@ eval "$({$binWithCmd} --shell bash --use kimi)"
 			if err != nil {
 				return fmt.Errorf("failed to initialize AI service: %w", err)
 			}
-			return aisrv.SetAuthInfo(opts)
+			return aisrv.SetClaudeCode(opts)
 		},
 	}
 }

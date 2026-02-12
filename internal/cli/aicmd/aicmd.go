@@ -31,8 +31,9 @@ var AICommand = &gcli.Command{
 				return fmt.Errorf("failed to initialize AI service: %w", err)
 			}
 			aisrv.ShowConfig()
+			return nil
 		}
-		return nil
+		return c.ShowHelp()
 	},
 }
 
