@@ -23,6 +23,7 @@ var SysCmd = &gcli.Command{
 		NewBatchRunCmd(),
 		NewEnvInfoCmd(),
 		NewClipboardCmd(),
+		NewSysCleanCmd(),
 	},
 }
 
