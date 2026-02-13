@@ -30,10 +30,14 @@ type CCProviderConfig struct {
 }
 
 // GetEnvMaps returns the environment variables for the provider
-func (p *CCProviderConfig) GetEnvMaps(keyName string) map[string]string {
+func (p *CCProviderConfig) GetEnvMaps(keyName, model string) map[string]string {
+	if model == "" {
+		model = p.ModelCode
+	}
+
 	envs := make(map[string]string, len(p.Envs)+2)
 	for k, v := range p.Envs {
-		envs[strings.ToUpper(k)] = strings.Replace(v, "{model_code}", p.ModelCode, -1)
+		envs[strings.ToUpper(k)] = strings.Replace(v, "{model_code}", model, -1)
 	}
 
 	envs["ANTHROPIC_BASE_URL"] = p.BaseURL

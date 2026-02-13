@@ -29,6 +29,8 @@ func NewClaudeSetCmd() *gcli.Command {
 		Config: func(c *gcli.Command) {
 			c.StrOpt2(&opts.Provider, "use", "use the model provider, allowed: glm,minimax,kimi,claude")
 			c.StrOpt(&opts.KeyName, "key", "", "default", "the api key name in api_keys")
+			c.StrOpt(&opts.Model, "model", "m", "", "model name for use, default from config")
+			c.StrOpt(&opts.Scope, "scope", "s", "user", "scope on write config, allow: user, project")
 			c.StrOpt2(&opts.Shell, "shell", "the shell type, allowed: bash,pwsh")
 			c.BoolOpt2(&opts.Write, "write,w", "whether to write the config to file")
 			c.BoolOpt2(&opts.Show, "show,i", "show the config information")

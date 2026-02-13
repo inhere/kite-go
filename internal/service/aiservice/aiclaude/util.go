@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 
 	"github.com/gookit/goutil/fsutil"
-	"github.com/gookit/goutil/sysutil"
 )
 
 var userConfigFile = ""
@@ -17,13 +16,28 @@ var userConfigFile = ""
 //   - Windows: %USERPROFILE%\.claude\settings.json
 func UserConfigFile() string {
 	if userConfigFile == "" {
-		filename := "config.json"
-		if sysutil.IsWin() {
-			filename = "settings.json"
-		}
-		userConfigFile = filepath.Join(fsutil.HomeDir(), ".claude", filename)
+		userConfigFile = filepath.Join(fsutil.HomeDir(), ".claude", "settings.json")
 	}
 	return userConfigFile
+}
+
+// findConfigFile finds the path to the Claude configuration file
+//
+//  - user: ~/.claude/settings.json
+//  - project:
+//     - .claudue/settings.json
+//     - .claudue/settings.local.json
+func findConfigFile(scope string) string {
+	if scope == "user" {
+		return UserConfigFile()
+	}
+
+	// scope == "project"
+	localFile := ".claude/settings.local.json"
+	if fsutil.IsFile(localFile) {
+		return localFile
+	}
+	return ".claude/settings.json"
 }
 
 // UserClaudePath returns the path to the user's Claude directory
@@ -31,18 +45,17 @@ func UserClaudePath(subPath ...string) string {
 	return fsutil.JoinPaths3(fsutil.HomeDir(), ".claude", subPath...)
 }
 
-// ReadUserConfig reads the Claude configuration from ~/.claude/config.json
-func ReadUserConfig() (*ClaudeRuntimeConfig, error) {
-	configPath := UserConfigFile()
+// LoadConfig reads the Claude configuration by scope
+func LoadConfig(scope string) (*ClaudeRuntimeConfig, error) {
+	configFile := findConfigFile(scope)
 
 	// If file doesn't exist, return empty config
-	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		return &ClaudeRuntimeConfig{Env: make(map[string]string)}, nil
-	}
-
-	data, err := os.ReadFile(configPath)
+	data, err := os.ReadFile(configFile)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read config file: %w", err)
+		return &ClaudeRuntimeConfig{
+			Env:        make(map[string]string),
+			configFile: configFile,
+		}, nil
 	}
 
 	var config ClaudeRuntimeConfig
@@ -50,38 +63,11 @@ func ReadUserConfig() (*ClaudeRuntimeConfig, error) {
 		return nil, fmt.Errorf("failed to parse config file: %w", err)
 	}
 
+	config.fileExists = true
+	config.configFile = configFile
 	if config.Env == nil {
 		config.Env = make(map[string]string)
 	}
 	return &config, nil
 }
 
-// WriteUserConfig writes the Claude configuration to ~/.claude/config.json with backup
-func WriteUserConfig(config *ClaudeRuntimeConfig) error {
-	configPath := UserConfigFile()
-
-	// Ensure the directory exists
-	dir := filepath.Dir(configPath)
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		return fmt.Errorf("failed to create config directory: %w", err)
-	}
-
-	// Backup existing file if it exists
-	if _, err := os.Stat(configPath); err == nil {
-		backupPath := configPath + ".bak"
-		if err := os.Rename(configPath, backupPath); err != nil {
-			return fmt.Errorf("failed to backup config file: %w", err)
-		}
-	}
-
-	// Write the config file
-	data, err := json.MarshalIndent(config, "", "  ")
-	if err != nil {
-		return fmt.Errorf("failed to marshal config: %w", err)
-	}
-
-	if err = os.WriteFile(configPath, data, 0644); err != nil {
-		return fmt.Errorf("failed to write config file: %w", err)
-	}
-	return nil
-}

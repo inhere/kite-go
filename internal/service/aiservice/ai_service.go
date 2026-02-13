@@ -39,7 +39,6 @@ func (s *AIService) Init() (*AIService, error) {
 	if err := cfg.LoadFiles(s.cfgFile); err != nil {
 		return nil, fmt.Errorf("failed to load config file %s: %w", s.cfgFile, err)
 	}
-
 	if err := cfg.Decode(&s.Config); err != nil {
 		return nil, fmt.Errorf("failed to decode AI config: %w", err)
 	}
@@ -53,6 +52,8 @@ func (s *AIService) Init() (*AIService, error) {
 type SetClaudeCodeParam struct {
 	Provider string
 	KeyName string // api key name
+	Model string   // 指定模型名称
+	Scope string   // 作用域 user, project
 	Shell string
 	Write bool
 	Show bool
@@ -60,7 +61,7 @@ type SetClaudeCodeParam struct {
 
 // SetClaudeCode 设置 cc 的 API url 和令牌信息
 func (s *AIService) SetClaudeCode(opts SetClaudeCodeParam) error {
-	runCfg, err1 := aiclaude.ReadUserConfig()
+	runCfg, err1 := aiclaude.LoadConfig(opts.Scope)
 	if err1 != nil {
 		return fmt.Errorf("failed to read config: %w", err1)
 	}
@@ -83,7 +84,7 @@ func (s *AIService) SetClaudeCode(opts SetClaudeCodeParam) error {
 	if err != nil {
 		return fmt.Errorf("failed to get provider config: %w", err)
 	}
-	envs := provider.GetEnvMaps(opts.KeyName)
+	envs := provider.GetEnvMaps(opts.KeyName, opts.Model)
 
 	// Handle --write flag
 	if opts.Write {
@@ -92,7 +93,7 @@ func (s *AIService) SetClaudeCode(opts SetClaudeCodeParam) error {
 			return fmt.Errorf("failed to write config: %w", err)
 		}
 
-		ccolor.Infof("Configuration written to %s, please open new terminal for user.\n", aiclaude.UserConfigFile())
+		ccolor.Infof("Configuration written to %s, please reopen cc for use.\n", runCfg.ConfigFile())
 		return nil
 	}
 
@@ -114,26 +115,43 @@ func (s *AIService) printCCShellEnv(name, shell string, envs map[string]string) 
 		}
 	}
 
+	sb.Writef(`echo "Claude code ENV variables updated! (provider:%s. can use 'env | grep ANT' check)"`, name)
+	sb.Writef(`echo "📢 请确认 claude settings.json 中的 env 没有任何模型设置!"`, name)
+	sb.Writef(`echo "    不然当前 ENV 的设置可能不会生效"`, name)
 	if isPwsh {
 		sb.Writef(`
-echo "Claude code ENV settings updated! (use %s)"
-
 # 📌 Active in pwsh shell
 # kite ai cc set --shell pwsh --use %s | Out-String | Invoke-Expression
-`, name, name)
+`, name)
 	} else {
 		sb.Writef(`
-echo "Claude code ENV settings updated! (use %s)"
-
 # 📌 Active in bash, zsh shell
 # eval "$(kite ai cc set --shell $SHELL --use %s)"
-`, name, name)
+`, name)
 	}
 
 	fmt.Print(sb.String())
 }
 
-func (s *AIService) ShowConfig() {
-	show.ATitle("Current AI Config:")
-	dump.NoLoc(s.Config)
+func (s *AIService) ShowConfig(keyName string) {
+	show.ATitle("Current AI Config: " + s.cfgFile)
+	var data any
+	switch strings.ToLower(keyName) {
+	case "ps", "providers":
+		data = s.Config.Providers
+	case "pa", "p-alias", "p-aliaes":
+		data = s.Config.ProviderAliases
+	case "ma", "m-alias", "m-aliaes":
+		data = s.Config.ModelAliases
+	case "cc-ps", "cc-providers":
+		data = s.Config.CcProviders
+	default:
+		if keyName != "" {
+			ccolor.Warnf("Invalid key name: %s", keyName)
+			return
+		}
+		data = s.Config
+	}
+
+	dump.NoLoc(data)
 }

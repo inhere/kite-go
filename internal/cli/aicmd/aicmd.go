@@ -9,6 +9,7 @@ import (
 
 var aiOpts = struct {
 	showConfig bool
+	configKey string
 }{}
 
 var AICommand = &gcli.Command{
@@ -23,6 +24,7 @@ var AICommand = &gcli.Command{
 	},
 	Config: func(c *gcli.Command) {
 		c.BoolOpt2(&aiOpts.showConfig, "show", "Show config info")
+		c.StrOpt2(&aiOpts.configKey, "key", "Show config info by key, with --show")
 	},
 	Func: func(c *gcli.Command, args []string) error {
 		if aiOpts.showConfig {
@@ -30,7 +32,7 @@ var AICommand = &gcli.Command{
 			if err != nil {
 				return fmt.Errorf("failed to initialize AI service: %w", err)
 			}
-			aisrv.ShowConfig()
+			aisrv.ShowConfig(aiOpts.configKey)
 			return nil
 		}
 		return c.ShowHelp()

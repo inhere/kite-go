@@ -110,3 +110,23 @@ name: `dev env`
   - 配置 sdk 下载地址和安装路径
 - [ ] 配置各种环境变量
 - [ ] 切换环境，sdk版本等(需要依赖 `kite app shell` 支持)
+
+### sys clean 系统清理 ✅
+
+> 2026.02.12 by glm-5
+
+完成 internal/cli/syscmd/clean_cmd.go 系统清理功能 
+
+- 支持并发查找目录，文件 清理日志，无用的app数据等
+- 需要统计清理了多少文件，目录，清理大小等信息报告
+- 支持预览模式，只显示不执行清理 但是需要将找到的信息记录下拉，3分钟有效，确认后可以直接使用加快速度
+- 定义了部分选项和配置，请仔细思考，有需要再增加
+- 主逻辑编写到 internal/service/sys_clean_service.go
+- 有任何不明确的地方请直接提问，让我回复
+
+> 完成报告 [devtasks/20260213-sys-clean-feature.md](devtasks/20260213-sys-clean-feature.md)
+
+### dev clean 开发清理
+
+专用于清理开发工具的缓存，例如 node modules, go mod cache, scoop cache, winget cache 等
+
