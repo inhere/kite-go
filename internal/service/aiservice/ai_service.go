@@ -114,10 +114,13 @@ func (s *AIService) printCCShellEnv(name, shell string, envs map[string]string) 
 			sb.Writef("\n%s=%q", k, v)
 		}
 	}
+	_ = sb.WriteByte('\n')
 
-	sb.Writef(`echo "Claude code ENV variables updated! (provider:%s. can use 'env | grep ANT' check)"`, name)
-	sb.Writef(`echo "📢 请确认 claude settings.json 中的 env 没有任何模型设置!"`)
-	sb.Writef(`echo "    不然当前 ENV 的设置可能不会生效"`)
+	sb.Writef(`
+echo "Claude code ENV variables updated! (provider:%s. can use 'env | grep ANT' check)"
+`, name)
+	sb.Writeln(`echo "📢 请确认 claude settings.json 中的 env 没有任何模型设置!"`)
+	sb.Writeln(`echo "    不然当前 ENV 的设置可能不会生效"`)
 	if isPwsh {
 		sb.Writef(`
 # 📌 Active in pwsh shell

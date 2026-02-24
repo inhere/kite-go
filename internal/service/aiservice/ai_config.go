@@ -53,7 +53,7 @@ func (p *CCProviderConfig) GetEnvMaps(keyName, model string) map[string]string {
 			apiKey = apiPvd.APIKey
 		}
 		if apiPvd.BaseURL != "" {
-			apiKey = apiPvd.BaseURL
+			baseURL = apiPvd.BaseURL
 		}
 	}
 
