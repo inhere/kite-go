@@ -17,7 +17,17 @@ kite.yml
 .kite.script.yaml
 
 # dirs
-/build/kite-*
+/build/kit*
 /build/dist
 /tmp
 /test/testdata/
+openspec/
+specs/
+.qoder/
+.iflow/
+.claude/
+.opencode/
+.sisyphus/
+.omc/
+IFLOW.md
+AGENTS.md

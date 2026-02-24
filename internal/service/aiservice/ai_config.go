@@ -7,10 +7,10 @@ import (
 
 // ProviderConfig holds the configuration for a single AI provider
 type ProviderConfig struct {
-	Name        string `json:"name" yaml:"name"`
-	BaseURL     string `json:"base_url" yaml:"base_url"`
-	APIKey      string `json:"api_key" yaml:"api_key"` // api key, api token
-	Description string `json:"description" yaml:"description"`
+	Name        string   `json:"name" yaml:"name"`
+	BaseURL     string   `json:"base_url" yaml:"base_url"`
+	APIKey      string   `json:"api_key" yaml:"api_key"` // api key, api token
+	Description string   `json:"description" yaml:"description"`
 	Aliases     []string `json:"aliases" yaml:"aliases"`
 	// 可用模型列表
 	Models   []string `json:"models" yaml:"models"`
@@ -18,15 +18,20 @@ type ProviderConfig struct {
 	Homepage string   `json:"homepage" yaml:"homepage"`
 }
 
+type APIProvider struct {
+	BaseURL string `json:"base_url" yaml:"base_url"`
+	APIKey  string `json:"api_key" yaml:"api_key"`
+}
+
 // CCProviderConfig holds the configuration for a single CC provider
 type CCProviderConfig struct {
 	ProviderConfig `yaml:",squash"`
 	// 配置到 cc config 的模型代码
 	ModelCode string `json:"model_code" yaml:"model_code"`
-	// api key map. key 是自定义名称，value 是 api key
-	APIKeys map[string]string `yaml:"api_keys"`
 	// 环境变量 需要设置到 cc config
 	Envs map[string]string `yaml:"envs"`
+	// API 提供者 key 是提供者名称
+	APIProviders map[string]*APIProvider `yaml:"api_providers"`
 }
 
 // GetEnvMaps returns the environment variables for the provider
@@ -37,15 +42,22 @@ func (p *CCProviderConfig) GetEnvMaps(keyName, model string) map[string]string {
 
 	envs := make(map[string]string, len(p.Envs)+2)
 	for k, v := range p.Envs {
-		envs[strings.ToUpper(k)] = strings.Replace(v, "{model_code}", model, -1)
+		envs[strings.ToUpper(k)] = strings.ReplaceAll(v, "{model_code}", model)
 	}
 
-	envs["ANTHROPIC_BASE_URL"] = p.BaseURL
-	apiKey := p.APIKeys[keyName]
-	if apiKey == "" {
-		apiKey = p.APIKey
+	apiKey := p.APIKey
+	baseURL := p.BaseURL
+
+	if apiPvd := p.APIProviders[keyName]; apiPvd != nil {
+		if apiPvd.APIKey != "" {
+			apiKey = apiPvd.APIKey
+		}
+		if apiPvd.BaseURL != "" {
+			apiKey = apiPvd.BaseURL
+		}
 	}
 
+	envs["ANTHROPIC_BASE_URL"] = baseURL
 	envs["ANTHROPIC_AUTH_TOKEN"] = apiKey
 	return envs
 }
@@ -55,7 +67,7 @@ type Config struct {
 	// 默认的模型提供者
 	DefaultProvider string `json:"default_provider" yaml:"default_provider"`
 	// 默认的模型名称
-	DefaultModel    string `json:"default_model" yaml:"default_model"`
+	DefaultModel string `json:"default_model" yaml:"default_model"`
 	// 支持的模型提供者列表(API场景使用)
 	Providers map[string]*ProviderConfig `json:"providers" yaml:"providers"`
 	// 提供者别名映射

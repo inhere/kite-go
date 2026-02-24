@@ -30,7 +30,7 @@ GOTEST := $(GO) test
 
 # set dev version unless VERSION is explicitly set via environment
 # manual set: make VERSION=1.2.3
-VERSION ?= $(shell echo "$$(git for-each-ref refs/tags/ --count=1 --sort=-version:refname --format='%(refname:short)' | echo 'main' 2>/dev/null)-dev+$(REV)" | sed 's/^v//')
+VERSION ?= $(shell echo "$$(git for-each-ref refs/tags/ --count=1 --sort=-version:refname --format='%(refname:short)' | echo 'dev' 2>/dev/null)-$(REV)" | sed 's/^v//')
 
 # Build flags for setting build-specific configuration at build time - defaults to empty
 #BUILD_TIME_CONFIG_FLAGS ?= ""
@@ -122,7 +122,7 @@ linux: ## Build for Linux
 	chmod +x build/$(NAME)-linux-amd64
 
 linux-arm: ## Build for Linux ARM64
-	GOOS=linux GOARCH=arm $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-linux-arm $(MAIN_SRC_FILE)
+	GOOS=linux GOARCH=arm64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-linux-arm $(MAIN_SRC_FILE)
 	upx -6 --no-progress build/$(NAME)-linux-arm
 	chmod +x build/$(NAME)-linux-arm
 

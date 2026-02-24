@@ -16,7 +16,7 @@ import (
 
 type AIService struct {
 	Config
-	inited bool
+	inited  bool
 	cfgFile string
 	// 提供者别名映射
 	providerAliases map[string]string
@@ -51,12 +51,12 @@ func (s *AIService) Init() (*AIService, error) {
 // SetClaudeCodeParam 参数
 type SetClaudeCodeParam struct {
 	Provider string
-	KeyName string // api key name
-	Model string   // 指定模型名称
-	Scope string   // 作用域 user, project
-	Shell string
-	Write bool
-	Show bool
+	KeyName  string // api key name
+	Model    string // 指定模型名称
+	Scope    string // 作用域 user, project
+	Shell    string
+	Write    bool
+	Show     bool
 }
 
 // SetClaudeCode 设置 cc 的 API url 和令牌信息
@@ -116,8 +116,8 @@ func (s *AIService) printCCShellEnv(name, shell string, envs map[string]string) 
 	}
 
 	sb.Writef(`echo "Claude code ENV variables updated! (provider:%s. can use 'env | grep ANT' check)"`, name)
-	sb.Writef(`echo "📢 请确认 claude settings.json 中的 env 没有任何模型设置!"`, name)
-	sb.Writef(`echo "    不然当前 ENV 的设置可能不会生效"`, name)
+	sb.Writef(`echo "📢 请确认 claude settings.json 中的 env 没有任何模型设置!"`)
+	sb.Writef(`echo "    不然当前 ENV 的设置可能不会生效"`)
 	if isPwsh {
 		sb.Writef(`
 # 📌 Active in pwsh shell

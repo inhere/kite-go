@@ -23,7 +23,7 @@ require (
 	github.com/gookit/event v1.1.2
 	github.com/gookit/gcli/v3 v3.2.3
 	github.com/gookit/gitw v0.3.5
-	github.com/gookit/goutil v0.7.2
+	github.com/gookit/goutil v0.7.3
 	github.com/gookit/greq v0.4.1
 	github.com/gookit/i18n v1.2.2
 	github.com/gookit/ini/v2 v2.3.2
