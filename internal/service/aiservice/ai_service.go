@@ -9,6 +9,7 @@ import (
 	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/strutil"
+	"github.com/gookit/goutil/sysutil"
 	"github.com/gookit/goutil/x/ccolor"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/internal/service/aiservice/aiclaude"
@@ -57,10 +58,17 @@ type SetClaudeCodeParam struct {
 	Shell    string
 	Write    bool
 	Show     bool
+	List     bool
 }
 
 // SetClaudeCode 设置 cc 的 API url 和令牌信息
 func (s *AIService) SetClaudeCode(opts SetClaudeCodeParam) error {
+	if opts.List {
+		ccolor.Magentaln("📄  CC providers configuration:")
+		show.MList(s.CcProviders)
+		return nil
+	}
+
 	runCfg, err1 := aiclaude.LoadConfig(opts.Scope)
 	if err1 != nil {
 		return fmt.Errorf("failed to read config: %w", err1)
@@ -69,6 +77,15 @@ func (s *AIService) SetClaudeCode(opts SetClaudeCodeParam) error {
 		ccolor.Magentaln("📄  User Claude configuration:")
 		show.MList(runCfg)
 		return nil
+	}
+
+	if opts.Shell == "" {
+		shellName := sysutil.CurrentShell(true)
+		if shellName == "" && sysutil.IsWindows() {
+			shellName = "pwsh"
+		}
+		opts.Shell = shellName
+		ccolor.Infof("")
 	}
 
 	useName := opts.Provider

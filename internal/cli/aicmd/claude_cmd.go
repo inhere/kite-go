@@ -10,8 +10,8 @@ import (
 
 // ClaudeCommand is the AI Claude command group
 var ClaudeCommand = &gcli.Command{
-	Name: "claude",
-	Desc: "Claude code managment commands",
+	Name:    "claude",
+	Desc:    "Claude code managment commands",
 	Aliases: []string{"cc"},
 	Subs: []*gcli.Command{
 		NewClaudeSetCmd(),
@@ -34,6 +34,7 @@ func NewClaudeSetCmd() *gcli.Command {
 			c.StrOpt2(&opts.Shell, "shell", "the shell type, allowed: bash,pwsh")
 			c.BoolOpt2(&opts.Write, "write,w", "whether to write the config to file")
 			c.BoolOpt2(&opts.Show, "show,i", "show the config information")
+			c.BoolOpt2(&opts.List, "list,l", "list all api config information")
 		},
 		Help: `
 # active in bash, zsh shell
