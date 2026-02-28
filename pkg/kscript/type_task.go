@@ -136,6 +136,10 @@ type ScriptTask struct {
 
 	// Type shell wrap for run the task. allow: sh, bash, zsh
 	Type string
+	// Scope of the task. allow: global, project (default: project)
+	//  - global: 全局任务，来自 DefineFiles 配置
+	//  - project: 项目任务，来自当前目录自动发现的文件
+	Scope string `json:"scope"`
 	// Alias names for the script task
 	Alias []string
 	// Silent mode, dont print exec command line and output.
@@ -206,6 +210,7 @@ var (
 func (st *ScriptTask) LoadFromMap(mp map[string]any) error {
 	data := maputil.Data(mp)
 	st.Type = data.Str("type")
+	st.Scope = data.Str("scope")
 	st.Workdir = data.StrOne("dir", "workdir")
 	st.Desc = data.StrOne("desc", "description")
 	// task alias

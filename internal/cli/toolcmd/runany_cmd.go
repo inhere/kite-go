@@ -26,6 +26,8 @@ type runAnyHandle struct {
 	// auto find and chdir
 	chdir string
 
+	// global: 是否显示全局 task 信息（来自 DefineFiles 的任务）
+	global bool
 	listAll, showInfo, search, verbose bool
 }
 
@@ -45,6 +47,7 @@ var RunAnyCmd = &gcli.Command{
 		runOpts.wrapType.SetEnum(kscript.AllowTypes)
 		runOpts.runType.SetEnum([]string{"alias", "script", "ext", "plugin", "system"})
 
+		c.BoolOpt2(&runOpts.global, "global, g", "Show global script tasks (loaded from DefineFiles config)")
 		c.BoolOpt2(&runOpts.listAll, "list, l", "List information for all scripts or one script")
 		c.BoolOpt2(&runOpts.showInfo, "show, info, i", "Show information for input alias/script/plugin name")
 		c.BoolOpt2(&runOpts.search, "search, s", "Display all matched scripts by the input name")
@@ -89,7 +92,8 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 
 	name := c.Arg("command").String()
 	if strutil.IsBlank(name) {
-		return c.NewErr("please input a command name for run")
+		// 没有输入名称时，默认显示当前项目的 task 列表
+		return listInfos()
 	}
 
 	if runOpts.showInfo {
@@ -194,25 +198,38 @@ func showInfo(name string) (err error) {
 }
 
 func listInfos() (err error) {
+	// --type=alias: 显示命令别名
 	if runOpts.IsType("alias") {
 		show.AList("command aliases", app.Kas)
 		return
 	}
-
-	// todo list plugins
 
 	err = app.Scripts.InitLoad()
 	if err != nil {
 		return err
 	}
 
-	if !runOpts.IsType("script") {
-		show.AList("command aliases", app.Kas)
+	// --global/-g: 显示全局任务（来自 DefineFiles 配置文件）
+	if runOpts.global {
+		tasks := app.Scripts.GlobalScriptTasks()
+		show.AList("global script tasks", app.Scripts.TaskNameDescs(tasks))
 		return
 	}
 
-	show.AList("loaded script tasks", app.Scripts.RawScriptTasks())
-	show.AList("loaded script files", app.Scripts.ScriptFiles())
+	// --type=script: 显示原始全量信息（含脚本文件）
+	if runOpts.IsType("script") {
+		show.AList("loaded script tasks", app.Scripts.RawScriptTasks())
+		show.AList("loaded script files", app.Scripts.ScriptFiles())
+		return
+	}
+
+	// 默认：显示当前项目的 task 列表（name + desc）
+	tasks := app.Scripts.ProjectScriptTasks()
+	if len(tasks) == 0 {
+		colorp.Warnf("TIP: no project script tasks found in current directory\n")
+		tasks = app.Scripts.RawScriptTasks()
+	}
+	show.AList("project script tasks", app.Scripts.TaskNameDescs(tasks))
 	return
 }
 

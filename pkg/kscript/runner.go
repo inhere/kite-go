@@ -77,6 +77,11 @@ type Runner struct {
 	//  - special settings key: __settings, will read and merge to Settings
 	Scripts map[string]any `json:"scripts"`
 
+	// globalScripts: 从 DefineFiles 全局配置文件加载的任务
+	globalScripts map[string]any
+	// projectScripts: 从当前目录自动发现的项目任务文件加载的任务
+	projectScripts map[string]any
+
 	// ParseEnv var on script command expr. eg: $SHELL
 	ParseEnv bool `json:"parse_env"`
 	// TypeShell wrapper for run each script.
@@ -173,7 +178,9 @@ func (r *Runner) LoadScriptTasks() (err error) {
 			return errorx.Errorf("load task file %q error: %s", fPath, err)
 		}
 
-		r.Scripts = maputil.SimpleMerge(loader.Data(), r.Scripts)
+		loaded := loader.Data()
+		r.globalScripts = maputil.SimpleMerge(loaded, r.globalScripts)
+		r.Scripts = maputil.SimpleMerge(loaded, r.Scripts)
 		loader.ClearData()
 	}
 
@@ -185,7 +192,9 @@ func (r *Runner) LoadScriptTasks() (err error) {
 				return errorx.Wrapf(err, "load auto task file %q error: %s", fPath, err)
 			}
 
-			r.Scripts = maputil.SimpleMerge(loader.Data(), r.Scripts)
+			loaded := loader.Data()
+			r.projectScripts = maputil.SimpleMerge(loaded, r.projectScripts)
+			r.Scripts = maputil.SimpleMerge(loaded, r.Scripts)
 			loader.ClearData()
 		}
 	}
@@ -193,6 +202,8 @@ func (r *Runner) LoadScriptTasks() (err error) {
 	// load custom settings
 	if setData, ok := r.Scripts[settingsKey]; ok {
 		delete(r.Scripts, settingsKey)
+		delete(r.globalScripts, settingsKey)
+		delete(r.projectScripts, settingsKey)
 		if setMap, ok1 := setData.(map[string]any); ok1 {
 			r.taskSettings.loadData(setMap)
 		}
@@ -433,4 +444,43 @@ func (r *Runner) RawScriptTasks() map[string]any {
 // ScriptFiles file map
 func (r *Runner) ScriptFiles() map[string]string {
 	return r.scriptFiles
+}
+
+// GlobalScriptTasks returns tasks loaded from DefineFiles (全局配置文件中的任务)
+func (r *Runner) GlobalScriptTasks() map[string]any {
+	return r.globalScripts
+}
+
+// ProjectScriptTasks returns tasks loaded from auto-discovered project files (当前目录自动发现的项目任务)
+func (r *Runner) ProjectScriptTasks() map[string]any {
+	return r.projectScripts
+}
+
+// TaskNameDescs extracts a name->desc map from raw script task data for display.
+func (r *Runner) TaskNameDescs(scripts map[string]any) map[string]string {
+	result := make(map[string]string, len(scripts))
+	for name, info := range scripts {
+		result[name] = extractTaskDesc(info)
+	}
+	return result
+}
+
+// extractTaskDesc extracts description from raw script task info.
+func extractTaskDesc(info any) string {
+	switch v := info.(type) {
+	case map[string]any:
+		d := maputil.Data(v)
+		return d.StrOne("desc", "description")
+	case string:
+		return strutil.Truncate(v, 68, "...")
+	case []string:
+		if len(v) > 0 {
+			return strutil.Truncate(v[0], 68, "...")
+		}
+	case []any:
+		if len(v) > 0 {
+			return strutil.Truncate(strutil.SafeString(v[0]), 68, "...")
+		}
+	}
+	return ""
 }
