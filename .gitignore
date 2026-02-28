@@ -8,6 +8,7 @@
 #build exe files
 /kit
 /kite
+*.exe
 
 # files
 /changelog.md
@@ -31,3 +32,4 @@ specs/
 .omc/
 IFLOW.md
 AGENTS.md
+.gitnexus

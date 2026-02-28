@@ -146,8 +146,8 @@ function Kite-Jump {
    # 尝试跳转目录
    try {
        Set-Location -Path $output -ErrorAction Stop
-       # Write-Host "Dest: $output"
-       Invoke-Expression "kite.exe tool jump chdir '$output'"
+       # Write-Host "Dest: $output" call kite 记录日志
+       & "kite.exe" tool jump chdir "$output"
    } catch {
        Write-Host "Error: $output is not a valid directory."
    }

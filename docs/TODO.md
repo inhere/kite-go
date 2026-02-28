@@ -1,9 +1,16 @@
 # TODO
 
+使用 emoji 表示任务状态
+
+- 进行中emoji: 🚧 / 🔄 
+- 已实现emoji: ✅
+- 待实现emoji: ⏳
+
 ## kite app
 
 - [ ] generate metadata file for kite
-- [ ] 将所有命令和参数生成 json 文件, 用于搜索匹配
+- [ ] 将所有命令和参数导出生成 json/yaml 文件, 用于智能搜索和智能匹配执行
+  - 树形 还是 扁平化结构
 - [ ] 使用统一的 app shell 命令生成不同shell环境的脚本
   - 内置支持 bash, zsh, fish, pwsh, cmd(clink) 等
   - 内置支持常用别名设置
@@ -130,3 +137,11 @@ name: `dev env`
 
 专用于清理开发工具的缓存，例如 node modules, go mod cache, scoop cache, winget cache 等
 
+## kite ai skills 管理命令 ⏳
+
+提供命令：
+
+```bash
+kite ai skills list
+kite ai skills list --keyword xxx
+```
