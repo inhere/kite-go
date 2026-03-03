@@ -9,7 +9,7 @@ import (
 
 var aiOpts = struct {
 	showConfig bool
-	configKey string
+	configKey  string
 }{}
 
 var AICommand = &gcli.Command{
@@ -21,6 +21,7 @@ var AICommand = &gcli.Command{
 		NewTranslateCmd(),
 		NewAIToolCmd(),
 		ClaudeCommand,
+		SkillsCmd,
 	},
 	Config: func(c *gcli.Command) {
 		c.BoolOpt2(&aiOpts.showConfig, "show", "Show config info")
@@ -43,7 +44,7 @@ type AICommonOptions struct {
 	// custom set llm model name
 	Model string
 	// custom set llm provider name. eg: openai, deepseek, aliyun/bailian, siliconflow
-	Provider string
+	Provider  string
 	SystemMsg string
 }
 
