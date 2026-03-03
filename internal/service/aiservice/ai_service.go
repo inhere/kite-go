@@ -8,6 +8,7 @@ import (
 	"github.com/gookit/config/v2/yaml"
 	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/dump"
+	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/gookit/goutil/x/ccolor"
@@ -102,6 +103,9 @@ func (s *AIService) SetClaudeCode(opts SetClaudeCodeParam) error {
 		return fmt.Errorf("failed to get provider config: %w", err)
 	}
 	envs := provider.GetEnvMaps(opts.KeyName, opts.Model)
+	if ati := s.AgentTools["claude_code"]; ati != nil {
+		envs = maputil.MergeStrMap(envs, ati.Envs)
+	}
 
 	// Handle --write flag
 	if opts.Write {

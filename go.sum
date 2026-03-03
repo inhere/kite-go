@@ -66,14 +66,12 @@ github.com/gookit/config/v2 v2.2.5 h1:RECbYYbtherywmzn3LNeu9NA5ZqhD7MSKEMsJ7l+Mp
 github.com/gookit/config/v2 v2.2.5/go.mod h1:NeX+yiNYn6Ei10eJvCQFXuHEPIE/IPS8bqaFIsszzaM=
 github.com/gookit/easytpl v1.1.1 h1:3eECOaJMmbbNRmH51HiKlwm01uVWXPyFZfzH0OiptS0=
 github.com/gookit/easytpl v1.1.1/go.mod h1:EO9yMzhvpHTpU4CVkKsqM6TQ3Z0bsO+PaGECKjShPWs=
-github.com/gookit/event v1.1.2 h1:cYZWKJeoJWnP1ZxW1G+36GViV+hH9ksEorLqVw901Nw=
-github.com/gookit/event v1.1.2/go.mod h1:YIYR3fXnwEq1tey3JfepMt19Mzm2uxmqlpc7Dj6Ekng=
 github.com/gookit/filter v1.2.3 h1:Zo7cBOtsVzAoa/jtf+Ury6zlsbJXqInFdUpbbnB2vMM=
 github.com/gookit/filter v1.2.3/go.mod h1:nFLJcOV8dRgS1iiX23gUQgmHUhpuS40qCvAGgIvA1pM=
 github.com/gookit/gitw v0.3.5 h1:nvjjAuxB+0WuZULOv5Lla1V+1GnJv7B1FgSOxB7cBog=
 github.com/gookit/gitw v0.3.5/go.mod h1:Wjn607YPeYtXawO+4tQ1/mRKhoSsBPwygTjveGv8eJk=
-github.com/gookit/goutil v0.7.1 h1:AaFJPN9mrdeYBv8HOybri26EHGCC34WJVT7jUStGJsI=
-github.com/gookit/goutil v0.7.1/go.mod h1:vJS9HXctYTCLtCsZot5L5xF+O1oR17cDYO9R0HxBmnU=
+github.com/gookit/goutil v0.7.3 h1:nXDd/AB17nEjqVCNDGioDhVL/gVqdlqRMfFergKDjHE=
+github.com/gookit/goutil v0.7.3/go.mod h1:vJS9HXctYTCLtCsZot5L5xF+O1oR17cDYO9R0HxBmnU=
 github.com/gookit/greq v0.4.1 h1:4aAZZi5PBcj2pD5jyaaQCb4nTUNrZnr9yEC2bpbosxI=
 github.com/gookit/greq v0.4.1/go.mod h1:qXNGpqRfThaLyDuOsf03OvFHeXKsWEMsrINvqYNTHzY=
 github.com/gookit/gsr v0.1.1 h1:TaHD3M7qa6lcAf9D2J4mGNg+QjgDtD1bw7uctF8RXOM=

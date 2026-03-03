@@ -8,9 +8,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/goccy/go-yaml"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/strutil"
-	"gopkg.in/yaml.v3"
 )
 
 // Skill represents a single skill with its metadata and content.
@@ -158,7 +158,7 @@ func (m *Manager) loadSkill(path, scope string) (*Skill, error) {
 		lines := strings.Split(strings.TrimSpace(body), "\n")
 		if len(lines) > 0 {
 			skill.Description = strutil.Truncate(strings.TrimSpace(lines[0]), 80, "...")
-	}
+		}
 	}
 	return skill, nil
 }

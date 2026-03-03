@@ -20,7 +20,6 @@ require (
 	github.com/gookit/color v1.6.0
 	github.com/gookit/config/v2 v2.2.5
 	github.com/gookit/easytpl v1.1.1
-	github.com/gookit/event v1.1.2
 	github.com/gookit/gcli/v3 v3.2.3
 	github.com/gookit/gitw v0.3.5
 	github.com/gookit/goutil v0.7.3

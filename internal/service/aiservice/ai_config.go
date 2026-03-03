@@ -62,6 +62,12 @@ func (p *CCProviderConfig) GetEnvMaps(keyName, model string) map[string]string {
 	return envs
 }
 
+// AgentToolInfo agent tool config
+type AgentToolInfo struct {
+	// 环境变量 需要设置到 cc config
+	Envs map[string]string `yaml:"envs"`
+}
+
 // Config holds the configuration for the AI service
 type Config struct {
 	// 默认的模型提供者
@@ -76,6 +82,8 @@ type Config struct {
 	ModelAliases map[string]string `json:"model_aliases" yaml:"model_aliases"`
 	// 不同场景使用的模型映射
 	SceneModels map[string]string `json:"scene_models" yaml:"scene_models"`
+	// key is tool name, eg: claude_code, codex, gemini
+	AgentTools map[string]*AgentToolInfo `json:"agent_tools" yaml:"agent_tools"`
 	// Claude-code 专用的提供者列表
 	CcProviders map[string]*CCProviderConfig `json:"cc_providers" yaml:"cc_providers"`
 }
