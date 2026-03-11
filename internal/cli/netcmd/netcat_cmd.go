@@ -41,7 +41,7 @@ func NewNetcatCmd() *gcli.Command {
 
 	return &gcli.Command{
 		Name:    "nc",
-		Desc: "Netcat utility for network connections",
+		Desc: "Netcat utility for network connections(tcp,udp server and client)",
 		Aliases: []string{"netcat"},
 		Config: func(c *gcli.Command) {
 			c.BoolOpt(&ncOpts.listen, "listen", "l", false, "Listen mode, start server")

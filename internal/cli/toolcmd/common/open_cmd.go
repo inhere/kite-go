@@ -5,6 +5,7 @@ import (
 
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gitw"
+	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/inhere/kite-go/internal/app"
 )
@@ -34,6 +35,7 @@ func NewQuickOpenCmd() *gcli.Command {
 				dstFile = app.OpenMap.ResolveAlias(name)
 			}
 
+			dstFile = fsutil.ExpandHome(dstFile)
 			c.Infoln("Will Open the:", dstFile)
 			return sysutil.Open(dstFile)
 		},

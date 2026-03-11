@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/goutil/netutil"
 	"github.com/gookit/goutil/x/ccolor"
 )
@@ -120,7 +121,7 @@ func (hac *httpAccessCheck) parseHostPatterns() error {
 			strVal := parts[len(parts)-2]
 			if strings.Contains(strVal, "-") || strings.Contains(strVal, ",") {
 				// 倒数第二段: "1-3" OR "1,3"
-				ints, err := parseIntRangeOrEnum(strVal)
+				ints, err := mathutil.Expand(strVal)
 				if err != nil {
 					return err
 				}
@@ -150,41 +151,6 @@ func (hac *httpAccessCheck) parseHostPatterns() error {
 	}
 
 	return nil
-}
-
-// 将 "1-3" OR "1,3" 转换为 int 列表
-func parseIntRangeOrEnum(value string) ([]int, error) {
-	var ints []int
-	// 处理范围格式 eg: 1-23
-	if strings.Contains(value, "-") {
-		parts := strings.Split(value, "-")
-		if len(parts) != 2 {
-			return nil, fmt.Errorf("invalid range format")
-		}
-
-		start, err := strconv.Atoi(parts[0])
-		if err != nil {
-			return nil, fmt.Errorf("invalid range start value")
-		}
-
-		end, err := strconv.Atoi(parts[1])
-		if err != nil {
-			return nil, fmt.Errorf("invalid range end value")
-		}
-		for i := start; i <= end; i++ {
-			ints = append(ints, i)
-		}
-	} else {
-		// 处理枚举格式 eg: 1,2,3
-		for _, part := range strings.Split(value, ",") {
-			iVal, err := strconv.Atoi(part)
-			if err != nil {
-				return nil, fmt.Errorf("invalid integer value: %s", part)
-			}
-			ints = append(ints, iVal)
-		}
-	}
-	return ints, nil
 }
 
 // parseHostPattern 解析主机模式并返回IP地址列表

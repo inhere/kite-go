@@ -194,6 +194,11 @@ func (m *Metadata) CheckOrMatch(keywords []string) string {
 			return m.PrevPath
 		}
 
+		// return last path
+		if first == "+" || first == "last" || first == "latest" {
+			return m.LastPath
+		}
+
 		if fsutil.IsDir(first) {
 			return fsutil.Realpath(first)
 		}
