@@ -1,6 +1,9 @@
 package netcmd
 
-import "github.com/gookit/gcli/v3"
+import (
+	"github.com/gookit/gcli/v3"
+	"github.com/inhere/kite-go/internal/cli/netcmd/sshcmd"
+)
 
 // NetCmd 网络工具命令
 var NetCmd = &gcli.Command{
@@ -12,5 +15,6 @@ var NetCmd = &gcli.Command{
 		NewNetcatCmd(),
 		NewTelnetClientCmd(),
 		NewTelnetServerCmd(),
+		sshcmd.NewSshExecCmd(),
 	},
 }

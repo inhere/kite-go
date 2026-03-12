@@ -2,9 +2,24 @@
 
 使用 emoji 表示任务状态
 
-- 进行中emoji: 🚧 / 🔄 
+- 进行中emoji: 🚧 / 🔄
 - 已实现emoji: ✅
 - 待实现emoji: ⏳
+
+## TODO List
+
+- [ ] 使用 Golang + HTML/JS 实现一个简单的服务端页面，可以让多台机器通过浏览器打开此页面
+- [ ] 实现一个简单的 HTTP API, 支持简单的集合数据操作
+  - 本地存储为 JSON 文件
+  - 支持 CRUD 操作
+  - 支持查询参数过滤、排序、分页等
+- [ ] kite agent
+- [x] 新增命令 kite net sshexec, 用于在多台机器上执行 ssh 命令
+- [ ] 新增命令 kite net sshsend 发送文件到远程机器
+  - 支持发送本地文件到远程机器
+  - 支持发送 stdin 到远程机器
+- [ ] 新增命令 kite net sshdown 从远程机器下载文件
+- [ ] 新增命令 kite net sshc 连接到远程机器的 ssh 会话
 
 ## kite app
 
@@ -32,7 +47,7 @@
 
 ### run anything
 
-- [x] scripts manage, search, load, parse and run 
+- [x] scripts manage, search, load, parse and run
 - [x] script-task 功能增强
   - [x] 支持扫描工作目录和父级目录的 task 定义文件
   - [x] 运行时支持解析 全局，定义，上下文等变量
@@ -118,11 +133,11 @@ name: `dev env`
 - [ ] 配置各种环境变量
 - [ ] 切换环境，sdk版本等(需要依赖 `kite app shell` 支持)
 
-### sys clean 系统清理 ✅
+## sys clean 系统清理 ✅
 
 > 2026.02.12 by glm-5
 
-完成 internal/cli/syscmd/clean_cmd.go 系统清理功能 
+完成 internal/cli/syscmd/clean_cmd.go 系统清理功能
 
 - 支持并发查找目录，文件 清理日志，无用的app数据等
 - 需要统计清理了多少文件，目录，清理大小等信息报告
@@ -133,7 +148,7 @@ name: `dev env`
 
 > 完成报告 [devtasks/20260213-sys-clean-feature.md](devtasks/20260213-sys-clean-feature.md)
 
-### dev clean 开发清理
+## dev clean 开发清理
 
 专用于清理开发工具的缓存，例如 node modules, go mod cache, scoop cache, winget cache 等
 
@@ -145,3 +160,20 @@ name: `dev env`
 kite ai skills list
 kite ai skills list --keyword xxx
 ```
+
+### 继续完善 kite ai skills 命令组功能
+
+- 新增 skills repo 管理 github/gitlab skills 仓库，clone 到本地 .kite-go/tmp/skills-repo-caches
+- 新增 install  命令默认 从 skills-repo-caches 查找并安装到用户指定的一个或多个 agent 工具
+  - 支持指定安装到全局，或指定 agent 工具
+  - 支持指定安装到指定目录，默认安装到 ~/.agents/skills 目录
+
+## kite mcp server 功能 ⏳
+
+kite 可以启动 mcp server 提供内置的 gitlab 等工具的功能。
+
+## kite agent 功能
+
+## proxy server
+
+参考 proxy-server.md 文档
