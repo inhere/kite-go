@@ -16,5 +16,6 @@ var NetCmd = &gcli.Command{
 		NewTelnetClientCmd(),
 		NewTelnetServerCmd(),
 		sshcmd.NewSshExecCmd(),
+		sshcmd.NewSshClientCmd(),
 	},
 }

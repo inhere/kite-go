@@ -19,7 +19,7 @@
   - 支持发送本地文件到远程机器
   - 支持发送 stdin 到远程机器
 - [ ] 新增命令 kite net sshdown 从远程机器下载文件
-- [ ] 新增命令 kite net sshc 连接到远程机器的 ssh 会话
+- [x] 新增命令 kite net sshc 连接到远程机器的 ssh 会话
 
 ## kite app
 
