@@ -2,7 +2,6 @@ package sshcmd
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -14,7 +13,7 @@ import (
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/gcli/v3/interact"
 	"github.com/gookit/goutil/envutil"
-	"golang.org/x/crypto/ssh"
+	"github.com/inhere/kite-go/internal/pkg/sshc"
 )
 
 type sshExecOptions struct {
@@ -240,18 +239,11 @@ func executeOnHost(c *gcli.Command, ip, script string, envMap map[string]string,
 
 	c.Printf("\n[%s] Connecting...\n", ip)
 
-	config := &ssh.ClientConfig{
-		User: opts.username,
-		Auth: []ssh.AuthMethod{
-			ssh.Password(password),
-		},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-		Timeout:         time.Duration(opts.timeout) * time.Second,
-	}
+	client := sshc.NewClient(opts.username, password)
+	client.Port = opts.sshPort
+	client.Timeout = time.Duration(opts.timeout) * time.Second
 
-	addr := fmt.Sprintf("%s:%d", ip, opts.sshPort)
-	client, err := ssh.Dial("tcp", addr, config)
-	if err != nil {
+	if err := client.Connect(ip); err != nil {
 		result.errMessage = fmt.Sprintf("failed to connect: %v", err)
 		result.duration = time.Since(start)
 		c.Errorf("[%s] Connection failed: %v\n", ip, err)
@@ -261,32 +253,8 @@ func executeOnHost(c *gcli.Command, ip, script string, envMap map[string]string,
 
 	c.Printf("[%s] Connected, executing script...\n", ip)
 
-	session, err := client.NewSession()
-	if err != nil {
-		result.errMessage = fmt.Sprintf("failed to create session: %v", err)
-		result.duration = time.Since(start)
-		c.Errorf("[%s] Failed to create session: %v\n", ip, err)
-		return result
-	}
-	defer session.Close()
-
-	for k, v := range envMap {
-		if err := session.Setenv(k, v); err != nil {
-			c.Warnf("[%s] Failed to set env %s: %v\n", ip, k, err)
-		}
-	}
-
-	var stdout, stderr bytes.Buffer
-	session.Stdout = &stdout
-	session.Stderr = &stderr
-
-	err = session.Run(script)
+	output, err := client.Execute(script)
 	result.duration = time.Since(start)
-
-	output := stdout.String()
-	if stderr.Len() > 0 {
-		output += "\n[STDERR]\n" + stderr.String()
-	}
 	result.output = strings.TrimSpace(output)
 
 	if err != nil {
@@ -332,73 +300,35 @@ func printSummary(c *gcli.Command, results []sshExecResult) {
 }
 
 type SshExecutor struct {
-	Username    string
-	Password    string
-	Port        int
-	Timeout     time.Duration
-	EnvVars     map[string]string
+	*sshc.Client
 	AutoConfirm bool
+	EnvVars     map[string]string
 }
 
+// NewSshExecutor creates a new SSH executor with the given username and password.
+// Default values: Port=22, Timeout=30s, Keepalive=30s, StrictHost=false.
+//
+// Example:
+//
+//	executor := sshc.NewSshExecutor("root", "password")
+//	executor.Port = 2222
+//	executor.Timeout = 60 * time.Second
 func NewSshExecutor(username, password string) *SshExecutor {
 	return &SshExecutor{
-		Username: username,
-		Password: password,
-		Port:     22,
-		Timeout:  30 * time.Second,
-		EnvVars:  make(map[string]string),
+		Client:  sshc.NewClient(username, password),
+		EnvVars: make(map[string]string),
 	}
-}
-
-func (e *SshExecutor) Connect(ip string) (*ssh.Client, error) {
-	config := &ssh.ClientConfig{
-		User: e.Username,
-		Auth: []ssh.AuthMethod{
-			ssh.Password(e.Password),
-		},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-		Timeout:         e.Timeout,
-	}
-
-	addr := fmt.Sprintf("%s:%d", ip, e.Port)
-	return ssh.Dial("tcp", addr, config)
-}
-
-func (e *SshExecutor) Execute(client *ssh.Client, script string) (string, error) {
-	session, err := client.NewSession()
-	if err != nil {
-		return "", fmt.Errorf("failed to create session: %w", err)
-	}
-	defer session.Close()
-
-	for k, v := range e.EnvVars {
-		if err := session.Setenv(k, v); err != nil {
-		}
-	}
-
-	var stdout, stderr bytes.Buffer
-	session.Stdout = &stdout
-	session.Stderr = &stderr
-
-	err = session.Run(script)
-	output := stdout.String()
-	if stderr.Len() > 0 {
-		output += "\n[STDERR]\n" + stderr.String()
-	}
-
-	return strings.TrimSpace(output), err
 }
 
 func (e *SshExecutor) ExecuteOnHost(ip, script string) (string, time.Duration, error) {
 	start := time.Now()
 
-	client, err := e.Connect(ip)
-	if err != nil {
+	if err := e.Connect(ip); err != nil {
 		return "", time.Since(start), fmt.Errorf("connection failed: %w", err)
 	}
-	defer client.Close()
+	defer e.Close()
 
-	output, err := e.Execute(client, script)
+	output, err := e.Execute(script)
 	return output, time.Since(start), err
 }
 

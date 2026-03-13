@@ -32,6 +32,8 @@ type Client struct {
 	client *ssh.Client
 }
 
+type ClientOptionFn func(*Client)
+
 // NewClient creates a new SSH client with the given username and password.
 // Default values: Port=22, Timeout=30s, Keepalive=30s, StrictHost=false.
 //
@@ -44,8 +46,8 @@ type Client struct {
 //	    log.Fatal(err)
 //	}
 //	defer client.Close()
-func NewClient(username, password string) *Client {
-	return &Client{
+func NewClient(username, password string, opts ...ClientOptionFn) *Client {
+	c := &Client{
 		Username:   username,
 		Password:   password,
 		Port:       22,
@@ -53,6 +55,11 @@ func NewClient(username, password string) *Client {
 		Keepalive:  30 * time.Second,
 		StrictHost: false,
 	}
+
+	for _, opt := range opts {
+		opt(c)
+	}
+	return c
 }
 
 // Connect establishes a TCP connection to the SSH server at the given host.
