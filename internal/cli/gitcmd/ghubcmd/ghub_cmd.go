@@ -22,6 +22,7 @@ var GithubCmd = &gcli.Command{
 	Aliases: []string{"gh", "hub", "ghub"},
 	Desc:    "useful tools for use github",
 	Subs: []*gcli.Command{
+		ApiCmd,
 		DownloadAssetCmd,
 		gitcmd.NewPullRequestCmd(),
 		gitcmd.BatchCmd,
