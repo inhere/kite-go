@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/gookit/gcli/v3"
-	"github.com/inhere/kite-go/cmd/swagx/swagcmd"
+	"github.com/inhere/kite-go/cmd/kite-swag/swagcmd"
 )
 
 // https://github.com/go-openapi

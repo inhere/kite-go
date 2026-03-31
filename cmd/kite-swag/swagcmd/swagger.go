@@ -11,7 +11,6 @@ import (
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/fsutil"
 )
 
