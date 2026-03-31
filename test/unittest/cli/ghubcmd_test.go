@@ -40,7 +40,7 @@ func TestCmd_gh_api_tag_add_require_repo(t *testing.T) {
 	assert.Contains(t, err.Error(), "repository path")
 }
 
-func TestCmd_gh_api_tag_add_require_sha(t *testing.T) {
+func TestCmd_gh_api_tag_add_allow_empty_sha(t *testing.T) {
 	opts := &ghubcmd.ApiTagAddOptionsForTest
 	*opts = ghubcmd.ApiTagAddOptionsForTestType{
 		RepoPath: "owner/repo",
@@ -48,9 +48,9 @@ func TestCmd_gh_api_tag_add_require_sha(t *testing.T) {
 		Message:  "test-message",
 	}
 
-	_, err := opts.ToCreateInputForTest()
-	assert.Err(t, err)
-	assert.Contains(t, err.Error(), "commit sha")
+	in, err := opts.ToCreateInputForTest()
+	assert.NoErr(t, err)
+	assert.Eq(t, "", in.Object)
 }
 
 func TestCmd_gh_api_tag_add_normalize_version(t *testing.T) {

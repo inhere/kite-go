@@ -64,11 +64,6 @@ func (o *apiTagAddOptions) toCreateInput() (ghapi.TagCreateInput, error) {
 		version = "v" + formatted
 	}
 
-	sha := strings.TrimSpace(o.SHA)
-	if sha == "" {
-		return ghapi.TagCreateInput{}, fmt.Errorf("the target commit sha is required")
-	}
-
 	msg := strings.TrimSpace(o.Message)
 	if msg == "" {
 		return ghapi.TagCreateInput{}, fmt.Errorf("the tag message is required")
@@ -78,7 +73,7 @@ func (o *apiTagAddOptions) toCreateInput() (ghapi.TagCreateInput, error) {
 		RepoPath: repoPath,
 		Version:  version,
 		Message:  msg,
-		Object:   sha,
+		Object:   strings.TrimSpace(o.SHA),
 	}
 
 	if o.TaggerName != "" || o.TaggerEmail != "" {
@@ -87,6 +82,25 @@ func (o *apiTagAddOptions) toCreateInput() (ghapi.TagCreateInput, error) {
 			Email: strings.TrimSpace(o.TaggerEmail),
 		}
 	}
+	return in, nil
+}
+
+func (o *apiTagAddOptions) resolveCreateInput(gh *ghapi.GitHub) (ghapi.TagCreateInput, error) {
+	in, err := o.toCreateInput()
+	if err != nil {
+		return ghapi.TagCreateInput{}, err
+	}
+
+	if strings.TrimSpace(in.Object) != "" {
+		return in, nil
+	}
+
+	info, err := gh.GetLatestCommit(in.RepoPath)
+	if err != nil {
+		return ghapi.TagCreateInput{}, err
+	}
+
+	in.Object = info.SHA
 	return in, nil
 }
 
@@ -123,14 +137,14 @@ var ApiTagAddCmd = &gcli.Command{
 		c.StrOpt(&apiTagAddOpts.TaggerEmail, "tagger-email", "", "tagger email for annotated tag")
 	},
 	Func: func(c *gcli.Command, _ []string) error {
-		in, err := apiTagAddOpts.toCreateInput()
-		if err != nil {
-			return err
-		}
-
 		gh := app.Ghub()
 		if strutil.IsBlank(gh.Token) {
 			return c.NewErr("github token is empty, please configure github.token or GITHUB_PA_TOKEN")
+		}
+
+		in, err := apiTagAddOpts.resolveCreateInput(gh)
+		if err != nil {
+			return err
 		}
 
 		show.AList("create github tag", map[string]any{
