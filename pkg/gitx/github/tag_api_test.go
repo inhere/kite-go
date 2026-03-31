@@ -104,3 +104,78 @@ func TestGitHub_CreateAnnotatedTag_requireToken(t *testing.T) {
 	assert.Err(t, err)
 	assert.True(t, strings.Contains(err.Error(), "token"))
 }
+
+func TestGitHub_GetLatestCommit(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Eq(t, http.MethodGet, r.Method)
+		assert.Eq(t, "/repos/owner/repo/commits", r.URL.Path)
+		assert.Eq(t, "1", r.URL.Query().Get("per_page"))
+		assert.Contains(t, r.Header.Get("Authorization"), "token test-token")
+
+		_ = json.NewEncoder(w).Encode([]map[string]any{
+			{
+				"sha":      "commit-sha-1",
+				"html_url": "https://github.com/owner/repo/commit/commit-sha-1",
+				"commit": map[string]any{
+					"message": "feat: latest commit",
+					"author": map[string]any{
+						"name":  "kite",
+						"email": "kite@example.com",
+						"date":  "2026-03-31T10:00:00Z",
+					},
+				},
+			},
+		})
+	}))
+	defer srv.Close()
+
+	gh := New(&gitx.Config{HostUrl: "https://github.com"})
+	gh.Token = "test-token"
+	gh.BaseApi = srv.URL
+
+	info, err := gh.GetLatestCommit("owner/repo")
+	assert.NoErr(t, err)
+	assert.Eq(t, "commit-sha-1", info.SHA)
+	assert.Eq(t, "feat: latest commit", info.Commit.Message)
+	assert.Eq(t, "kite", info.Commit.Author.Name)
+}
+
+func TestGitHub_ListTags(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Eq(t, http.MethodGet, r.Method)
+		assert.Eq(t, "/repos/owner/repo/tags", r.URL.Path)
+		assert.Eq(t, "5", r.URL.Query().Get("per_page"))
+		assert.Contains(t, r.Header.Get("Authorization"), "token test-token")
+
+		_ = json.NewEncoder(w).Encode([]map[string]any{
+			{
+				"name": "v1.2.3",
+				"commit": map[string]any{
+					"sha": "sha-123",
+					"url": "https://api.github.com/repos/owner/repo/commits/sha-123",
+				},
+			},
+			{
+				"name": "v1.2.2",
+				"commit": map[string]any{
+					"sha": "sha-122",
+					"url": "https://api.github.com/repos/owner/repo/commits/sha-122",
+				},
+			},
+		})
+	}))
+	defer srv.Close()
+
+	gh := New(&gitx.Config{HostUrl: "https://github.com"})
+	gh.Token = "test-token"
+	gh.BaseApi = srv.URL
+
+	items, err := gh.ListTags(TagListInput{
+		RepoPath: "owner/repo",
+		Limit:    5,
+	})
+	assert.NoErr(t, err)
+	assert.Len(t, items, 2)
+	assert.Eq(t, "v1.2.3", items[0].Name)
+	assert.Eq(t, "sha-123", items[0].Commit.SHA)
+}

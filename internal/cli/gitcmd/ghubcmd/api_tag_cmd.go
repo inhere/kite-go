@@ -19,6 +19,7 @@ var ApiCmd = &gcli.Command{
 	Name: "api",
 	Desc: "github api helper commands",
 	Subs: []*gcli.Command{
+		ApiCommitCmd,
 		ApiTagCmd,
 	},
 }
@@ -29,6 +30,7 @@ var ApiTagCmd = &gcli.Command{
 	Desc: "github tag api commands",
 	Subs: []*gcli.Command{
 		ApiTagAddCmd,
+		ApiTagListCmd,
 	},
 }
 

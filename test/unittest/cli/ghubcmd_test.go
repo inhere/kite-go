@@ -15,6 +15,18 @@ func TestCmd_gh_api_tag_add_registered(t *testing.T) {
 	assert.Eq(t, "add", cmd.Name)
 }
 
+func TestCmd_gh_api_commit_latest_registered(t *testing.T) {
+	cmd := app.Cli.MatchByPath("github:api:commit:latest")
+	assert.NotNil(t, cmd)
+	assert.Eq(t, "latest", cmd.Name)
+}
+
+func TestCmd_gh_api_tag_list_registered(t *testing.T) {
+	cmd := app.Cli.MatchByPath("github:api:tag:list")
+	assert.NotNil(t, cmd)
+	assert.Eq(t, "list", cmd.Name)
+}
+
 func TestCmd_gh_api_tag_add_require_repo(t *testing.T) {
 	opts := &ghubcmd.ApiTagAddOptionsForTest
 	*opts = ghubcmd.ApiTagAddOptionsForTestType{
