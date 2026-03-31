@@ -16,7 +16,7 @@ type HttpServer struct {
 
 func New(printReq bool) *HttpServer {
 	rux.Debug(printReq)
-	r := rux.New(rux.EnableCaching)
+	r := rux.New()
 	r.Use(handlers.PanicsHandler())
 	if printReq {
 		r.Use(handlers.RequestLogger())

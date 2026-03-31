@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/gookit/color"
-	"github.com/gookit/event"
 	"github.com/gookit/goutil/sysutil"
 )
 
@@ -50,32 +49,32 @@ func NewHTTPServer(address ...string) *HTTPServer {
 
 // Start server, begin handle HTTP request
 func (s *HTTPServer) Start() error {
-	app := nako.App()
-
-	s.srv = &http.Server{
-		Addr: s.realAddr,
-	}
-
-	s.srv.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer func() {
-			if err := recover(); err != nil {
-				w.WriteHeader(500)
-			}
-		}()
-
-		evtData := event.M{"w": w, "r": r}
-
-		// Fire before route
-		app.MustFire(OnBeforeRoute, evtData)
-
-		// Route and dispatch request
-		app.Router.ServeHTTP(w, r)
-
-		// Fire after route
-		app.MustFire(OnAfterRoute, evtData)
-	})
-
-	app.MustFire(OnServerStart, event.M{"addr": s.srv.Addr})
+	// app := nako.App()
+	//
+	// s.srv = &http.Server{
+	// 	Addr: s.realAddr,
+	// }
+	//
+	// s.srv.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	// 	defer func() {
+	// 		if err := recover(); err != nil {
+	// 			w.WriteHeader(500)
+	// 		}
+	// 	}()
+	//
+	// 	evtData := event.M{"w": w, "r": r}
+	//
+	// 	// Fire before route
+	// 	app.MustFire(OnBeforeRoute, evtData)
+	//
+	// 	// Route and dispatch request
+	// 	app.Router.ServeHTTP(w, r)
+	//
+	// 	// Fire after route
+	// 	app.MustFire(OnAfterRoute, evtData)
+	// })
+	//
+	// app.MustFire(OnServerStart, event.M{"addr": s.srv.Addr})
 
 	// Listen signal
 	s.handleSignal(s.srv)
@@ -197,7 +196,7 @@ func (s *HTTPServer) handleSignal(server *http.Server) {
 			fmt.Printf("Server close failed: %s", err.Error())
 		}
 
-		nako.App().MustFire(OnServerClose, event.M{"sig": s})
+		// nako.App().MustFire(OnServerClose, event.M{"sig": s})
 		// service.DisconnectDB()
 
 		color.Infoln("Server exited")
