@@ -9,7 +9,7 @@ import (
 
 // ProxyCmdConf struct
 type ProxyCmdConf struct {
-	// CommandIds eg: [git, git:clone, git:tag:*]
+	// CommandIds eg: [git, git:clone, git:tag:*, git:tag:**,]
 	CommandIds []string `json:"command_ids"`
 	// GroupLimits eg: {github: {acp, update}}
 	GroupLimits map[string][]string `json:"group_limits"`
