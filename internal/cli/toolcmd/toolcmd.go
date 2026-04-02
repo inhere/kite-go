@@ -5,7 +5,6 @@ import (
 	"github.com/inhere/kite-go/internal/cli/appcmd"
 	"github.com/inhere/kite-go/internal/cli/extcmd"
 	"github.com/inhere/kite-go/internal/cli/fscmd"
-	"github.com/inhere/kite-go/internal/cli/pkgcmd"
 	"github.com/inhere/kite-go/internal/cli/syscmd"
 	"github.com/inhere/kite-go/internal/cli/textcmd"
 	"github.com/inhere/kite-go/internal/cli/toolcmd/common"
@@ -36,7 +35,7 @@ var ToolsCmd = &gcli.Command{
 		convcmd.NewDate2tsCmd(),
 		convcmd.NewConvPathSepCmd(),
 		syscmd.NewClipboardCmd(),
-		pkgcmd.PkgManageCmd,
+		// pkgcmd.PkgManageCmd,
 		doccmd.DocumentCmd,
 		doccmd.NewCheatCmd(),
 		mdcmd.MkDownCmd,
