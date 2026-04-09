@@ -28,16 +28,17 @@ type MetaSchema struct {
 
 // KiteExt kite ext 基本信息
 type KiteExt struct {
+	// 命令文件名称, 没有扩展名。eg: kite-abc
+	binName string
+	osPath  string
+	// 扩展名称
 	Name string `json:"name"`
 	Desc string `json:"desc"`
 	// 别名列表
 	Aliases []string `json:"aliases,omitempty"`
-	// 命令文件名称, 没有扩展名。eg: kite-abc
-	binName string
 	// OsPaths 不同系统平台下的文件路径
 	//  - key: 系统平台 windows, darwin, linux. value: 扩展文件路径
 	OsPaths map[string]string `json:"os_paths"`
-	osPath  string
 
 	// Args 默认运行参数
 	Args []string `json:"args,omitempty"`
@@ -119,7 +120,7 @@ func (e *KiteExt) SetBinName(name string) {
 // BinName get the bin name, without an ext name.
 func (e *KiteExt) BinName() string {
 	if e.binName == "" {
-		e.binName = BinPrefix + e.Name
+		e.binName = e.Name
 	}
 	return e.binName
 }

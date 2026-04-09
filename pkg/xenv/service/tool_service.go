@@ -307,6 +307,7 @@ func (ts *ToolService) SetupDirenv() (string, error) {
 			}
 		}
 	} else {
+		// 支持识别常用的工具配置
 		sdkVersionsFromSpecifiedFiles(specMap)
 	}
 

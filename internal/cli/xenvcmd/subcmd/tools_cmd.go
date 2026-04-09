@@ -7,11 +7,11 @@ import (
 	"github.com/inhere/kite-go/pkg/xenv"
 )
 
-// ToolsCmd the xenv tools command
+// ToolsCmd the xenv tools command TODO rename to sdks
 var ToolsCmd = &gcli.Command{
 	Name:    "tools",
-	Desc: "Manage local development SDK, tools (install, list, etc.)",
-	Aliases: []string{"t", "tool"},
+	Desc:    "Manage local development SDK, tools (install, list, etc.)",
+	Aliases: []string{"t", "tool", "sdks", "sdk"},
 	Subs: []*gcli.Command{
 		ToolsInstallCmd(),
 		ToolsUninstallCmd(),
@@ -86,8 +86,8 @@ func ToolsRegisterCmd() *gcli.Command {
 func ToolsInstallCmd() *gcli.Command {
 	return &gcli.Command{
 		Name:    "install",
-		Help: "install <name:version>...",
-		Desc: "Install a tool with specific version",
+		Help:    "install <name:version>...",
+		Desc:    "Install a tool with specific version",
 		Aliases: []string{"i", "in"},
 		Config: func(c *gcli.Command) {
 			c.AddArg("tools", "Name of the tool to install, allow multi.", true, true)
@@ -124,8 +124,8 @@ func ToolsUninstallCmd() *gcli.Command {
 
 	return &gcli.Command{
 		Name:    "uninstall",
-		Help: "uninstall <name:version>",
-		Desc: "Uninstall a tool with specific version",
+		Help:    "uninstall <name:version>",
+		Desc:    "Uninstall a tool with specific version",
 		Aliases: []string{"un", "rm", "remove"},
 		Config: func(c *gcli.Command) {
 			// Add option to keep configuration files
@@ -159,8 +159,8 @@ func ToolsUninstallCmd() *gcli.Command {
 func ToolsUpdateCmd() *gcli.Command {
 	return &gcli.Command{
 		Name:    "update",
-		Help: "update <name>...",
-		Desc: "Update a tool to latest or specified version",
+		Help:    "update <name>...",
+		Desc:    "Update a tool to latest or specified version",
 		Aliases: []string{"up"},
 		Config: func(c *gcli.Command) {
 			c.AddArg("tools", "Name of the tool to update, allow multi.", true, true)
@@ -233,7 +233,7 @@ func ToolsListCmd() *gcli.Command {
 
 	return &gcli.Command{
 		Name:    "list",
-		Desc: "List all configuration tools",
+		Desc:    "List all configuration tools",
 		Aliases: []string{"ls"},
 		Config: func(c *gcli.Command) {
 			c.MustFromStruct(&toolsListOpts)

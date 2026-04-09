@@ -170,6 +170,7 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 				return errorx.Rawf("task %s: the dep task %q not found", st.Name, depTask)
 			}
 
+			// 递归执行依赖任务
 			if err2 := r.runScriptTask(dst, inArgs, ctx); err2 != nil {
 				return err2
 			}
@@ -197,6 +198,7 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 				return errorx.Rawf("task %q: reference script task %q not found", st.Name, name)
 			}
 
+			// 递归执行依赖任务
 			if err2 := r.runScriptTask(osi, inArgs, ctx); err2 != nil {
 				return err2
 			}
@@ -213,9 +215,11 @@ func (r *Runner) runScriptTask(st *ScriptTask, inArgs []string, ctx *RunCtx) err
 		cmdDir := strutil.OrElse(tc.Workdir, workdir)
 		if strutil.ContainsByte(cmdDir, '$') {
 			cmdDir = r.renderTaskVars(cmdDir, vars, ctx)
-			vars["workdir"] = cmdDir
-			vars["dirname"] = fsutil.Name(cmdDir)
+		} else {
+			cmdDir = sysutil.ExpandHome(cmdDir)
 		}
+		vars["workdir"] = cmdDir
+		vars["dirname"] = fsutil.Name(cmdDir)
 
 		var cmd *cmdr.Cmd
 		if shell != "" {
