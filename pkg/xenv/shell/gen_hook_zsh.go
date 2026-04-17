@@ -15,8 +15,8 @@ func (sg *XenvScriptGenerator) generateZshScripts(ps *models.GenInitScriptParams
 	sg.addCommonForLinuxShell(&sb, ps)
 
 	return strutil.Replaces(ZshHookTemplate, map[string]string{
-		"{{HooksDir}}": ps.ShellHooksDir,
-		"{{SessionId}}": xenvcom.SessionID(),
+		"{{HooksDir}}":    ps.ShellHooksDir,
+		"{{SessionId}}":   xenvcom.SessionID(),
 		"#{{EnvAliases}}": sb.String(),
 	})
 }
@@ -121,9 +121,9 @@ setup_xenv() {
     invoke_xenv_result "$result_init" $exit_code
 
     # Auto-initialize xenv if needed
-    if [ -f "$HOME/.xenvrc" ] && [ -z "$XENV_AUTO_INITIALIZED" ]; then
+    if [ -f "$HOME/.xenvrc" ] && [ -z "$XENV_AUTO_INIT" ]; then
         source "$HOME/.xenvrc"
-        export XENV_AUTO_INITIALIZED=1
+        export XENV_AUTO_INIT=1
     fi
 
 	# Load custom hooks script files
@@ -133,6 +133,9 @@ setup_xenv() {
 			source "$file"
 		fi
 	done
+	if [ "$XENV_DEBUG_MODE" = "true" ]; then
+		echo "✅ kite xenv zsh script initialize completed"
+	fi
 }
 
 # Call setup function to initialize xenv

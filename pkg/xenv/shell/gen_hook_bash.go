@@ -15,8 +15,8 @@ func (sg *XenvScriptGenerator) generateBashScripts(ps *models.GenInitScriptParam
 	sg.addCommonForLinuxShell(&sb, ps)
 
 	return strutil.Replaces(BashHookTemplate, map[string]string{
-		"{{HooksDir}}": ps.ShellHooksDir,
-		"{{SessionId}}": xenvcom.SessionID(),
+		"{{HooksDir}}":    ps.ShellHooksDir,
+		"{{SessionId}}":   xenvcom.SessionID(),
 		"#{{EnvAliases}}": sb.String(),
 	})
 }
@@ -26,7 +26,8 @@ func (sg *XenvScriptGenerator) generateBashScripts(ps *models.GenInitScriptParam
 // BashHookTemplate 生成 Bash Hook 的模板
 //
 // Usage, .bashrc or .bash_profile add：
-//   eval "$(kite xenv shell --type bash)"
+//
+//	eval "$(kite xenv shell --type bash)"
 //
 // Test: . pkg/xenv/testdata/hook_bash.sh
 var BashHookTemplate = `#!/usr/bin/env bash
@@ -138,20 +139,22 @@ setup_xenv() {
     invoke_xenv_result "$result_init" $exit_code
 
     # Auto-initialize xenv if needed
-    if [ -f "$HOME/.xenvrc" ] && [ -z "$XENV_AUTO_INITIALIZED" ]; then
+    if [ -f "$HOME/.xenvrc" ] && [ -z "$XENV_AUTO_INIT" ]; then
         source "$HOME/.xenvrc"
-        export XENV_AUTO_INITIALIZED=1
+        export XENV_AUTO_INIT=1
     fi
 
     # Load custom hooks script files
-	# 使用 glob 获取匹配的文件, 加载所有匹配的脚本
+	# 使用 glob 获取匹配的文件，加载所有匹配的脚本
 	hook_files=({{HooksDir}}/*.sh)
 	for file in "${hook_files[@]}"; do
 		if [[ -f "$file" ]] && [[ -r "$file" ]]; then
 			source "$file"
 		fi
 	done
-	echo "✅ kite xenv bash script initialize completed"
+	if [ "$XENV_DEBUG_MODE" = "true" ]; then
+		echo "✅ kite xenv bash script initialize completed"
+	fi
 }
 
 # Call setup function to initialize xenv

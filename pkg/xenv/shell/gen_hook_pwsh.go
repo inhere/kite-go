@@ -42,8 +42,8 @@ func (sg *XenvScriptGenerator) generatePwshScripts(ps *models.GenInitScriptParam
 	}
 
 	return strutil.Replaces(PwshHookTemplate, map[string]string{
-		"{{HooksDir}}": ps.ShellHooksDir,
-		"{{SessionId}}": xenvcom.SessionID(),
+		"{{HooksDir}}":    ps.ShellHooksDir,
+		"{{SessionId}}":   xenvcom.SessionID(),
 		"#{{EnvAliases}}": sb.String(),
 	})
 }
@@ -51,7 +51,8 @@ func (sg *XenvScriptGenerator) generatePwshScripts(ps *models.GenInitScriptParam
 // PwshHookTemplate PowerShell hook模板
 //
 // PS version:
-//  echo $PSVersionTable.PSVersion.ToString()
+//
+//	echo $PSVersionTable.PSVersion.ToString()
 //
 // Config on pwsh:
 //
@@ -225,7 +226,9 @@ function Setup-Xenv {
             . $file.FullName
         }
     }
-    Write-Host "✅ kite xenv script initialize completed" -ForegroundColor Cyan
+    if ($env:XENV_DEBUG_MODE -eq "true") {
+        Write-Host "✅ kite xenv script initialize completed" -ForegroundColor Cyan
+    }
 }
 
 # Call setup function to initialize xenv
