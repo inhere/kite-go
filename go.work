@@ -5,16 +5,16 @@ toolchain go1.24.6
 use (
 	.
 	./cmd/kite-swag
-	../color
+	../../gookit/color
 	../config
-	../easytpl
-	../event
+	../../gookit/easytpl
+	../../gookit/event
 	../gcli
-	../gitw
+	../../gookit/gitw
 	../goutil
-	../greq
-	../ini
-	../properties
+	../../gookit/greq
+	../../gookit/ini
+	../../gookit/properties
 	../rux
 	../slog
 	../validate

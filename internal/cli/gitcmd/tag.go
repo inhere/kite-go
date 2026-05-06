@@ -1,11 +1,11 @@
 package gitcmd
 
 import (
+	"github.com/gookit/cliui/interact"
+	"github.com/gookit/cliui/show"
 	"github.com/gookit/color/colorp"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
-	"github.com/gookit/gcli/v3/interact"
-	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/gitw"
 	"github.com/gookit/gitw/gitutil"
 )

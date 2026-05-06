@@ -1,8 +1,8 @@
 package glabcmd
 
 import (
+	"github.com/gookit/cliui/show"
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/gitw/gitutil"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"

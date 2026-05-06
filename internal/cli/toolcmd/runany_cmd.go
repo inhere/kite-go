@@ -1,10 +1,10 @@
 package toolcmd
 
 import (
+	"github.com/gookit/cliui/show"
 	"github.com/gookit/color/colorp"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
-	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
@@ -22,12 +22,12 @@ type runAnyHandle struct {
 	wrapType gflag.EnumString // shell type
 	// input vars
 	varMap gflag.KVString
-	envMap   gflag.KVString
+	envMap gflag.KVString
 	// auto find and chdir
 	chdir string
 
 	// global: 是否显示全局 task 信息（来自 DefineFiles 的任务）
-	global bool
+	global                             bool
 	listAll, showInfo, search, verbose bool
 }
 
@@ -40,7 +40,7 @@ var runOpts = runAnyHandle{}
 // RunAnyCmd instance
 var RunAnyCmd = &gcli.Command{
 	Name:    "run",
-	Desc: "Run any aliases, script task/file/apps, plugins and system commands",
+	Desc:    "Run any aliases, script task/file/apps, plugins and system commands",
 	Aliases: []string{"exec"},
 	Config: func(c *gcli.Command) {
 		runOpts.BindCommonFlags2(c)

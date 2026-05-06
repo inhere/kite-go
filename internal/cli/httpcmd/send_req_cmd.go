@@ -6,9 +6,9 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/gookit/cliui/show"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
-	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/netutil/httpreq"
@@ -20,7 +20,7 @@ import (
 
 var reqCmdOpts = struct {
 	cmdbiz.CommonOpts
-	url string
+	url  string
 	data string
 	json bool
 

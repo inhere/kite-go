@@ -3,8 +3,8 @@ package subcmd
 import (
 	"fmt"
 
+	"github.com/gookit/cliui/show/title"
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/gcli/v3/show/title"
 	"github.com/gookit/goutil/x/ccolor"
 	"github.com/inhere/kite-go/pkg/xenv"
 	"github.com/inhere/kite-go/pkg/xenv/models"
@@ -71,7 +71,7 @@ func ListActivityCmd() *gcli.Command {
 
 	return &gcli.Command{
 		Name:    "activity",
-		Desc: "List active SDKs, envs, paths and tools",
+		Desc:    "List active SDKs, envs, paths and tools",
 		Aliases: []string{"act", "active", "use"},
 		Config: func(c *gcli.Command) {
 			c.MustFromStruct(&listActOpts)

@@ -3,8 +3,8 @@ package syscmd
 import (
 	"path/filepath"
 
+	"github.com/gookit/cliui/show"
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/envutil"
 	"github.com/gookit/goutil/strutil"
 )

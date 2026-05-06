@@ -3,9 +3,9 @@ package appcmd
 import (
 	"fmt"
 
+	"github.com/gookit/cliui/show"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
-	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/errorx"

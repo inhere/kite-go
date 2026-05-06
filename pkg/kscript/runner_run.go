@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gookit/gcli/v3/show"
+	"github.com/gookit/cliui/show"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/maputil"
@@ -376,7 +376,7 @@ func (r *Runner) newScriptFileInfo(name, fPath, ext string) (*ScriptFile, error)
 			ScriptType: TypeFile,
 		},
 		Name:    name,
-		File: fPath,
+		File:    fPath,
 		FileExt: ext,
 		BinName: ext[1:],
 	}

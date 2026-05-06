@@ -3,10 +3,10 @@ package toolcmd
 import (
 	"strings"
 
+	"github.com/gookit/cliui/show"
 	"github.com/gookit/color/colorp"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
-	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/gookit/goutil/x/stdio"

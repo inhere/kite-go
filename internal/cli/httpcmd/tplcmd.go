@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/gookit/cliui/show"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
-	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/gitw"
 	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/cliutil"

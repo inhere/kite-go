@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"runtime"
 
+	"github.com/gookit/cliui/show"
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/sysutil"
 	"github.com/inhere/kite-go/internal/cli/toolcmd/common"
 )

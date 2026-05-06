@@ -1,8 +1,8 @@
 package gitcmd
 
 import (
+	"github.com/gookit/cliui/show"
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/gitw"
 	"github.com/inhere/kite-go/internal/biz/cmdbiz"
 )

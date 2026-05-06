@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	"github.com/alecthomas/chroma/v2/quick"
+	"github.com/gookit/cliui/show"
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/gitw"
 	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/fsutil"

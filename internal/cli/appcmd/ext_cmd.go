@@ -3,11 +3,11 @@ package appcmd
 import (
 	"fmt"
 
+	"github.com/gookit/cliui/interact"
+	"github.com/gookit/cliui/show"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/events"
 	"github.com/gookit/gcli/v3/gflag"
-	"github.com/gookit/gcli/v3/interact"
-	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/x/ccolor"
 	"github.com/gookit/slog"

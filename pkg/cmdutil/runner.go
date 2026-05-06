@@ -1,8 +1,8 @@
 package cmdutil
 
 import (
+	"github.com/gookit/cliui/interact"
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/v3/interact"
 	"github.com/gookit/goutil/sysutil/cmdr"
 	"github.com/gookit/goutil/timex"
 )

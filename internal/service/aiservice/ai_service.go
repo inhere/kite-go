@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gookit/cliui/show"
 	"github.com/gookit/config/v2"
 	"github.com/gookit/config/v2/yaml"
-	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"

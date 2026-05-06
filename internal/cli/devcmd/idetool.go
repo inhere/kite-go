@@ -3,8 +3,8 @@ package devcmd
 import (
 	"errors"
 
+	"github.com/gookit/cliui/show"
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/gcli/v3/show"
 	"github.com/inhere/kite-go/pkg/tools/idetool"
 )
 

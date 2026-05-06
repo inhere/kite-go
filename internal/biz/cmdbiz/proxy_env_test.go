@@ -3,7 +3,7 @@ package cmdbiz
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/gookit/goutil/testutil/assert"
 )
 
 func TestProxyEnv(t *testing.T) {

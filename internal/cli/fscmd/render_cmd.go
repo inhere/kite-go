@@ -3,10 +3,10 @@ package fscmd
 import (
 	"strings"
 
+	"github.com/gookit/cliui/show"
 	"github.com/gookit/config/v2"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
-	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/cliutil"

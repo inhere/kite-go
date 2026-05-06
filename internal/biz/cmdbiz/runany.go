@@ -1,7 +1,7 @@
 package cmdbiz
 
 import (
-	"github.com/gookit/gcli/v3/show"
+	"github.com/gookit/cliui/show"
 	"github.com/gookit/goutil/cliutil/cmdline"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/sysutil"

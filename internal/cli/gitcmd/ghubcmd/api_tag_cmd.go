@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gookit/cliui/show"
 	"github.com/gookit/color/colorp"
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/gitw/gitutil"
 	"github.com/gookit/goutil/strutil"
 	"github.com/inhere/kite-go/internal/app"

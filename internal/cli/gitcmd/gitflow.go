@@ -1,9 +1,9 @@
 package gitcmd
 
 import (
+	"github.com/gookit/cliui/interact"
+	"github.com/gookit/cliui/show"
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/gcli/v3/interact"
-	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/strutil"
 	"github.com/inhere/kite-go/internal/apputil"
 	"github.com/inhere/kite-go/internal/biz/cmdbiz"

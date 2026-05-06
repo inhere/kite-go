@@ -9,9 +9,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gookit/cliui/interact"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
-	"github.com/gookit/gcli/v3/interact"
 	"github.com/gookit/goutil/envutil"
 	"github.com/inhere/kite-go/internal/pkg/sshc"
 )
