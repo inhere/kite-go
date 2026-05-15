@@ -18,8 +18,7 @@ kite.yml
 .kite.script.yaml
 
 # dirs
-/build/kit*
-/build/dist
+/build/
 /tmp
 /test/testdata/
 openspec/

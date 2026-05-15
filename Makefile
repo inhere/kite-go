@@ -11,6 +11,8 @@ ORG := inhere
 REPO := kite-go
 # exe name
 NAME := kite
+GOEXE = $(shell go env GOEXE)
+BINARY := $(NAME)$(GOEXE)
 
 ORG_REPO := $(ORG)/$(REPO)
 RELEASE_ORG_REPO := $(ORG)/$(NAME)
@@ -83,11 +85,11 @@ print-version: ## Print version
 
 build: $(GO_DEPENDENCIES) clean ## Build jx-labs binary for current OS
 	go mod download
-	CGO_ENABLED=$(CGO_ENABLED) $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME) $(MAIN_SRC_FILE)
+	CGO_ENABLED=$(CGO_ENABLED) $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(BINARY) $(MAIN_SRC_FILE)
 
 build-xenv: $(GO_DEPENDENCIES) ## Build standalone xenv binary for current OS
 	go mod download
-	CGO_ENABLED=$(CGO_ENABLED) $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/xenv ./cmd/xenv
+	CGO_ENABLED=$(CGO_ENABLED) $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/xenv$(GOEXE) ./cmd/xenv
 
 install-xenv: $(GO_DEPENDENCIES) ## Install standalone xenv binary to gopath/bin
 	go install $(BUILDFLAGS) ./cmd/xenv
