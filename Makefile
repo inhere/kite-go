@@ -7,8 +7,6 @@ BUILD_TARGET = build
 MAIN_SRC_FILE=cmd/kite/main.go
 
 GO := go
-# short commit id
-REV := $(shell git rev-parse --short HEAD 2> /dev/null || echo 'unknown')
 ORG := inhere
 REPO := kite-go
 # exe name
@@ -28,9 +26,8 @@ REPORTS_DIR=$(BUILD_TARGET)/reports
 
 GOTEST := $(GO) test
 
-# set dev version unless VERSION is explicitly set via environment
-# manual set: make VERSION=1.2.3
-VERSION ?= $(shell echo "$$(git for-each-ref refs/tags/ --count=1 --sort=-version:refname --format='%(refname:short)' | echo 'dev' 2>/dev/null)-$(REV)" | sed 's/^v//')
+GIT_HASH  := $(shell git rev-parse --short=8 HEAD 2>/dev/null || echo "unknown")
+VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null | sed 's/^v//' || echo "dev-$(GIT_HASH)")
 
 # Build flags for setting build-specific configuration at build time - defaults to empty
 #BUILD_TIME_CONFIG_FLAGS ?= ""
@@ -39,7 +36,7 @@ VERSION ?= $(shell echo "$$(git for-each-ref refs/tags/ --count=1 --sort=-versio
 # Full build flags used when building binaries. Not used for test compilation/execution.
 BUILDFLAGS := -ldflags \
   " -s -w -X $(ROOT_PACKAGE).Version=$(VERSION)\
-		-X $(ROOT_PACKAGE).Revision=$(REV)\
+		-X $(ROOT_PACKAGE).Revision=$(GIT_HASH)\
 		-X $(ROOT_PACKAGE).Branch=$(BRANCH)\
 		-X $(ROOT_PACKAGE).BuildDate=$(BUILD_DATE)\
 		-X $(ROOT_PACKAGE).GoVersion=$(GO_VERSION)\
@@ -87,6 +84,14 @@ print-version: ## Print version
 build: $(GO_DEPENDENCIES) clean ## Build jx-labs binary for current OS
 	go mod download
 	CGO_ENABLED=$(CGO_ENABLED) $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME) $(MAIN_SRC_FILE)
+
+build-xenv: $(GO_DEPENDENCIES) ## Build standalone xenv binary for current OS
+	go mod download
+	CGO_ENABLED=$(CGO_ENABLED) $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/xenv ./cmd/xenv
+
+install-xenv: $(GO_DEPENDENCIES) ## Install standalone xenv binary to gopath/bin
+	go install $(BUILDFLAGS) ./cmd/xenv
+	@ls -alh $(GOPATH)/bin/xenv*
 
 install: $(GO_DEPENDENCIES) darwin ## Install the kite binary to gopath/bin
 	cp -f build/kite-darwin-amd64 ${GOPATH}/bin/kite
@@ -162,7 +167,7 @@ promoter:
 
 .PHONY: goreleaser
 goreleaser:
-	step-go-releaser --organisation=$(ORG) --revision=$(REV) --branch=$(BRANCH) --build-date=$(BUILD_DATE) --go-version=$(GO_VERSION) --root-package=$(ROOT_PACKAGE) --version=$(VERSION) --timeout 200m
+	step-go-releaser --organisation=$(ORG) --revision=$(GIT_HASH) --branch=$(BRANCH) --build-date=$(BUILD_DATE) --go-version=$(GO_VERSION) --root-package=$(ROOT_PACKAGE) --version=$(VERSION) --timeout 200m
 
 .PHONY: clean
 clean: ## Clean the generated artifacts

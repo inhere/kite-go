@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/inhere/kite-go/internal/cli/xenvcmd"
+	"github.com/inhere/kite-go/pkg/xenv/xenvcom"
 )
 
 // main xenv 程序入口
@@ -12,25 +13,30 @@ import (
 //	go run ./cmd/xenv <CMD>
 //
 // Debug run:
-//	KITE_VERBOSE=debug go run ./cmd/xenv <CMD>
-//  // Windows PowerShell
-//	$env:KITE_VERBOSE="debug" go run ./cmd/xenv <CMD>
 //
+//		KITE_VERBOSE=debug go run ./cmd/xenv <CMD>
+//	 // Windows PowerShell
+//		$env:KITE_VERBOSE="debug" go run ./cmd/xenv <CMD>
 func main() {
+	xenvcom.SetBinName("xenv")
+	xenvcom.SetBinCommand("xenv")
+
 	xe := xenvcmd.XEnvCmd
+	xe.Name = "xenv"
+	xe.Desc = "Manage local development environments and tools"
 	xe.Help = `
 Commands Usage:
   use <sdk:version>...     Activate Name versions
     -s, --save             Save configuration to project file
   unuse <sdk>...           Deactivate SDKs
-  add <sdk:version>...     Download and install Name versions
+  install <sdk:version>... Download and install Name versions
   list [sdk]               List installed SDKs
 
 Examples:
   xenv use node:18 go:1.21
   xenv use -s node:lts
   xenv unuse node
-  xenv add go:1.22
+  xenv tools install go:1.22
   xenv list
   xenv list go
 

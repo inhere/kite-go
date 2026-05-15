@@ -15,7 +15,7 @@ import (
 )
 
 type shellOptions = struct {
-	Type gflag.EnumString
+	Type    gflag.EnumString
 	Install bool
 	Reload  bool
 	// Profile for pwsh. 无法区分版本，需要手动设置
@@ -35,23 +35,29 @@ func NewShellCmd() *gcli.Command {
 <cyan>Auto Configure:</>
   # pwsh
   kite xenv shell --install -t pwsh --profile $PROFILE.CurrentUserAllHosts
+  xenv shell --install -t pwsh --profile $PROFILE.CurrentUserAllHosts
   # bash, zsh
   kite xenv shell --install -t $SHELL
+  xenv shell --install -t $SHELL
 
 <cyan>Config for Bash:</>
   // write to .bashrc OR .bash_profile
   eval "$(kite xenv shell --type bash)"
+  eval "$(xenv shell --type bash)"
 
 <cyan>Config for Zsh:</>
   // write to .zshrc OR .zsh_profile
   eval "$(kite xenv shell --type zsh)"
+  eval "$(xenv shell --type zsh)"
 
 <cyan>Config for Pwsh:</>
   # write expr to profile. (find by: echo $PROFILE.CurrentUserAllHosts)
   # Method 1:
   Invoke-Expression (&kite xenv shell --type pwsh)
+  Invoke-Expression (&xenv shell --type pwsh)
   # Method 2:
   kite xenv shell --type pwsh | Out-String | Invoke-Expression
+  xenv shell --type pwsh | Out-String | Invoke-Expression
 `,
 		Config: func(c *gcli.Command) {
 			c.BoolOpt(&shellOpts.Reload, "reload", "r", false, "Reload the xenv shell script codes")
@@ -134,8 +140,8 @@ func ShellHookInitCmd() *gcli.Command {
 }
 
 // ShellDirenvCmd the xenv init shell direnv command
-//  - 仅在配置了 xenv shell 命令时，cd 到新目录会自动调用当前命令
-//  - 监听进入目录时，自动检测 .xenv.toml 文件，并加载里面的配置
+//   - 仅在配置了 xenv shell 命令时，cd 到新目录会自动调用当前命令
+//   - 监听进入目录时，自动检测 .xenv.toml 文件，并加载里面的配置
 func ShellDirenvCmd() *gcli.Command {
 	var direnvOpts = struct {
 		Type gflag.EnumString

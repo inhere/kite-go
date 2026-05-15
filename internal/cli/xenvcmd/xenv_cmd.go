@@ -5,16 +5,15 @@ import (
 
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/events"
-	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/internal/cli/xenvcmd/subcmd"
 	"github.com/inhere/kite-go/pkg/xenv/xenvcom"
 )
 
 // XEnvCmd the main xenv command
 var XEnvCmd = &gcli.Command{
-	Name:    "xenv",
+	Name: "xenv",
 	// Aliases: []string{"xenv"},
-	Desc:   "Manage local development environments and tools, similar to mise and vfox",
+	Desc: "Manage local development environments and tools, similar to mise and vfox",
 	Help: `
 Quick commands:
   <info>set</>    Quick exec the 'env set' subcommand
@@ -46,7 +45,7 @@ Quick commands:
 			if name == "set" || name == "unset" {
 				newArgs := []string{"env", name}
 				newArgs = append(newArgs, ctx.Strings("args")...)
-				err := app.Cli.RunCmd("xenv", newArgs)
+				err := ctx.Cmd.Run(newArgs)
 				if err != nil {
 					fmt.Println(err)
 				}

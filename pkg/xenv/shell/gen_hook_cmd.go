@@ -33,15 +33,16 @@ func (sg *XenvScriptGenerator) generateCmdScripts(ps *models.GenInitScriptParams
 	})
 
 	return strutil.Replaces(CmdLuaHookTemplate, map[string]string{
-		"{{HooksDir}}": ps.ShellHooksDir,
-		"{{SessionId}}": xenvcom.SessionID(),
+		"{{HooksDir}}":   ps.ShellHooksDir,
+		"{{SessionId}}":  xenvcom.SessionID(),
+		"{{BinCommand}}": xenvcom.BinCommand,
 		"{{EnvAliases}}": sb.String(),
 	})
 }
 
 // CmdLuaHookTemplate CMD 需要基于 clink lua 脚本实现自定义 hooks
 //
-//  clink info # 可以看到可以加载脚本的目录
+//	clink info # 可以看到可以加载脚本的目录
 //
 // 使用:
 //
@@ -55,7 +56,7 @@ var CmdLuaHookTemplate = `-- xenv CMD hook
 --  1. Ensure clink is installed for CMD.
 --  2. Create profile.lua in %USERPROFILE%\AppData\Local\clink
 --  3. Add contents:
---     load(io.popen('kite xenv shell --type cmd'):read("*a"))()
+--     load(io.popen('{{BinCommand}} shell --type cmd'):read("*a"))()
 --  4. Close and reopen CMD
 
 -- 重写 cd 命令
@@ -70,7 +71,7 @@ clink.register_commands({
         func = function (dir)
             local result = io.popen("cd "..dir.." 2>&1"):read("*all")
             -- 执行 xenv init-direnv
-            os.execute("kite xenv init-direnv >nul 2>&1")
+            os.execute("{{BinCommand}} init-direnv >nul 2>&1")
             print(result)
             return true
         end,
@@ -99,13 +100,13 @@ function setup_xenv()
     function xenv(command)
         if command == "use" then
             -- Implementation for switching tool versions
-            os.execute("kite xenv use " .. table.concat(arg, " "))
+            os.execute("{{BinCommand}} use " .. table.concat(arg, " "))
         elseif command == "unuse" then
             -- Implementation for unusing tool versions
-            os.execute("kite xenv unuse " .. table.concat(arg, " "))
+            os.execute("{{BinCommand}} unuse " .. table.concat(arg, " "))
         else
             -- For other commands, just pass through to xenv
-            os.execute("kite xenv " .. command .. " " .. table.concat(arg, " "))
+            os.execute("{{BinCommand}} " .. command .. " " .. table.concat(arg, " "))
         end
     end
 }

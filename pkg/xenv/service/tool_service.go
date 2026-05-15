@@ -16,7 +16,7 @@ import (
 
 // ToolService handles tool chain management operations
 type ToolService struct {
-	config *models.Configuration
+	config  *models.Configuration
 	state   *manager.StateManager
 	toolMgr *manager.ToolManager
 	// envMgr *manager.EnvManager
@@ -25,7 +25,7 @@ type ToolService struct {
 // NewToolService creates a new ToolService
 func NewToolService(config *models.Configuration, state *manager.StateManager, toolMgr *manager.ToolManager) *ToolService {
 	return &ToolService{
-		config: config,
+		config:  config,
 		state:   state,
 		toolMgr: toolMgr,
 		// envMgr: manager.NewEnvManager(),
@@ -396,7 +396,7 @@ func (ts *ToolService) DeactivateSDKs(deTools []string, opFlag models.OpFlag) (s
 		// Deactivate the tool
 		localSdk, err3 := ts.checkDeactivateSDK(spec, opFlag)
 		if err3 != nil {
-			ccolor.Warnf("WARN: failed to deactivate tool %q: %w", spec, err3)
+			ccolor.Warnf("WARN: failed to deactivate tool %q: %v", spec, err3)
 			continue
 		}
 

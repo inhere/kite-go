@@ -17,6 +17,8 @@ func (sg *XenvScriptGenerator) generateZshScripts(ps *models.GenInitScriptParams
 	return strutil.Replaces(ZshHookTemplate, map[string]string{
 		"{{HooksDir}}":    ps.ShellHooksDir,
 		"{{SessionId}}":   xenvcom.SessionID(),
+		"{{BinCommand}}":  xenvcom.BinCommand,
+		"{{BinName}}":     xenvcom.BinName,
 		"#{{EnvAliases}}": sb.String(),
 	})
 }
@@ -36,8 +38,8 @@ var ZshHookTemplate = `#
 
 # 使用 chpwd 钩子函数监听cd执行后
 chpwd() {
-    if (( $+commands[kite] )); then
-        kite xenv init-direnv >/dev/null 2>&1
+    if (( $+commands[{{BinName}}] )); then
+        {{BinCommand}} init-direnv >/dev/null 2>&1
     fi
 }
 
@@ -98,25 +100,25 @@ setup_xenv() {
         case "$command" in
             use|unuse|env|path)
                 # 对于这些命令，获取结果并评估
-                local result="$(kite xenv "$command" "$@")"
+                local result="$({{BinCommand}} "$command" "$@")"
                 local exit_code=$?
                 invoke_xenv_result "$result" $exit_code
                 ;;
             set|unset)
                 # 对于环境变量设置/取消设置命令
-                local result="$(kite xenv env "$command" "$@")"
+                local result="$({{BinCommand}} env "$command" "$@")"
                 local exit_code=$?
                 invoke_xenv_result "$result" $exit_code
                 ;;
             *)
                 # For other commands, just pass through to xenv
-                command kite xenv "$command" "$@"
+                command {{BinCommand}} "$command" "$@"
                 ;;
         esac
     }
 
     # XENV: fire xenv hooks to kite, use for generate code to exec TODO
-    local result_init = "$(kite xenv shell-init-hook --type zsh)"
+    local result_init="$({{BinCommand}} shell-init-hook --type zsh)"
     local exit_code=$?
     invoke_xenv_result "$result_init" $exit_code
 
