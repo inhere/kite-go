@@ -86,8 +86,8 @@ var MyCmd = &gcli.Command{
 |------|------|
 | `internal/cli/boot.go` | 命令注册入口 |
 | `internal/cli/aicmd/aicmd.go` | AI 命令组 |
-| `internal/cli/xenvcmd/subcmd/tools_cmd.go` | 工具管理命令（install/list/show 等） |
-| `internal/cli/xenvcmd/subcmd/config_cmd.go` | 配置管理命令 |
+| `internal/cli/toolcmd/toolcmd.go` | 工具命令组注册 |
+| `internal/cli/appcmd/appcmd.go` | 应用管理命令组 |
 
 ---
 

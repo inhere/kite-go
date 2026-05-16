@@ -5,7 +5,6 @@ go 1.24
 toolchain go1.24.6
 
 require (
-	github.com/BurntSushi/toml v1.6.0
 	github.com/CloudyKit/jet/v6 v6.3.1
 	github.com/alecthomas/chroma/v2 v2.20.0
 	github.com/charmbracelet/glamour v0.10.0
@@ -42,6 +41,7 @@ replace github.com/gookit/gcli/v3 => ../gcli
 
 require (
 	dario.cat/mergo v1.0.2 // indirect
+	github.com/BurntSushi/toml v1.6.0 // indirect
 	github.com/CloudyKit/fastprinter v0.0.0-20200109182630-33d98a066a53 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect

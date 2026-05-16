@@ -287,7 +287,7 @@ import (
     "strings"
 
     "github.com/gookit/goutil/fsutil"
-    "github.com/inhere/kite-go/pkg/xenv/xenvcom"
+    "github.com/inhere/kite-go/pkg/common"
 )
 ```
 - 标准库导入在前

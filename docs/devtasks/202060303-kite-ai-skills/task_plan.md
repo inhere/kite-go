@@ -20,7 +20,7 @@
 - **框架**：`github.com/gookit/gcli/v3`
 - **命令注册**：`internal/cli/boot.go` 的 `addCommands()`
 - **现有 AI 命令**：`internal/cli/aicmd/aicmd.go`
-- **参考实现**：`internal/cli/xenvcmd/subcmd/tools_cmd.go`
+- **参考实现**：`internal/cli/toolcmd/toolcmd.go`
 
 ---
 

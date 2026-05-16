@@ -14,7 +14,7 @@
   - 支持的功能：list, show, create, edit, delete 等
 
 - [x] 确定参考实现
-  - `internal/cli/xenvcmd/subcmd/tools_cmd.go` - 工具管理命令
+  - `internal/cli/toolcmd/toolcmd.go` - 工具命令组注册
   - `internal/cli/aicmd/aicmd.go` - AI 命令组
 
 ### 下一步

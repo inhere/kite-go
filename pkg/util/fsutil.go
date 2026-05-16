@@ -5,10 +5,10 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 
 	"github.com/gookit/goutil/fsutil"
-	"github.com/inhere/kite-go/pkg/xenv/xenvcom"
 )
 
 var winDiskPrefix = regexp.MustCompile(`^[a-zA-Z]:`)
@@ -16,15 +16,15 @@ var winDiskPrefix = regexp.MustCompile(`^[a-zA-Z]:`)
 // NormalizePath normalizes a path by expanding home directory and cleaning it
 func NormalizePath(path string) string {
 	fmtPath := filepath.Clean(fsutil.ExpandPath(path))
-	if xenvcom.IsHookBash() {
-		fmtPath = fsutil.UnixPath(fmtPath)
+	if isWindowsBash() {
+		fmtPath = FmtEnvPath(fmtPath)
 	}
 	return fmtPath
 }
 
 // FmtEnvPath formats an environment path for use in the current shell
 func FmtEnvPath(envPath string) string {
-	if xenvcom.IsHookBash() {
+	if isWindowsBash() {
 		envPath = fsutil.UnixPath(envPath)
 		// Windows Git-Bash: 需要转换为 Unix 路径，同时需要处理盘符 eg: D:/ 转换为 /d/
 		envPath = winDiskPrefix.ReplaceAllStringFunc(envPath, func(sub string) string {
@@ -42,7 +42,11 @@ func SplitPath(envPath string) []string {
 
 // JoinPaths joins multiple path entries into a single PATH string
 func JoinPaths(paths []string) string {
-	return strings.Join(paths, xenvcom.PathSep())
+	return strings.Join(paths, string(os.PathListSeparator))
+}
+
+func isWindowsBash() bool {
+	return runtime.GOOS == "windows" && strings.Contains(strings.ToLower(os.Getenv("SHELL")), "bash")
 }
 
 // EnsureDir creates a directory if it doesn't exist
