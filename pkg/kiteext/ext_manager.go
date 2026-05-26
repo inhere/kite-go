@@ -375,7 +375,6 @@ func (m *ExtManager) Run(name string, ctx *RunCtx) error {
 
 	fmt.Printf("--------------------------- Run Ext %s, Args %v ---------------------------\n", name, cArgs)
 	cmd := cmdr.NewCmd(ext.OsPath(), cArgs...)
-
 	err := cmd.WorkDirOnNE(dir).WithDryRun(ctx.Dry).AppendEnv(ctx.Env).PrintCmdline2().FlushRun()
 	return err
 }

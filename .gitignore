@@ -19,6 +19,7 @@ kite.yml
 
 # dirs
 /build/
+/dist/
 /tmp
 /test/testdata/
 openspec/

@@ -21,7 +21,7 @@ require (
 	github.com/gookit/config/v2 v2.2.8
 	github.com/gookit/easytpl v1.1.1
 	github.com/gookit/gcli/v3 v3.3.1
-	github.com/gookit/gitw v0.3.5
+	github.com/gookit/gitw v0.3.6
 	github.com/gookit/goutil v0.7.5
 	github.com/gookit/greq v0.4.1
 	github.com/gookit/i18n v1.2.2

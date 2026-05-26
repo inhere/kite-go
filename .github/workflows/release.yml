@@ -35,26 +35,21 @@ jobs:
           go install github.com/gookit/gitw/cmd/chlog@latest
           chlog -config .github/changelog.yml -output changelog.md prev last
 
-      - uses: goreleaser/goreleaser-action@v5
-        with:
-          distribution: goreleaser
-          version: latest
-          args: release --release-notes changelog.md --clean --config .github/goreleaser.yml
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build bin package
+        run: |
+          make release
+          ls -alh dist release
+          ./dist/kite-linux-amd64 -h
 
       # https://github.com/softprops/action-gh-release
-#      - name: Create release and upload assets
-#        uses: softprops/action-gh-release@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        with:
-#          name: ${{ env.RELEASE_TAG }}
-#          tag_name: ${{ env.RELEASE_TAG }}
-#          body_path: changelog.md
-#          token: ${{ secrets.GITHUB_TOKEN }}
-#          files: |
-#            build/kite-darwin-amd64
-#            build/kite-linux-amd64
-#            build/kite-linux-arm
-#            build/kite-windows-amd64.exe
+      - name: Create release and upload assets
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          name: ${{ env.RELEASE_TAG }}
+          tag_name: ${{ env.RELEASE_TAG }}
+          body_path: changelog.md
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: |
+            release/*

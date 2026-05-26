@@ -65,8 +65,7 @@ var SendRequestCmd = &gcli.Command{
 				fmt.Println(httpreq.HeaderToString(r.Header))
 			}
 			if reqCmdOpts.data != "" {
-				fmt.Println("\n")
-				fmt.Println(reqCmdOpts.data)
+				fmt.Println("\n\n", reqCmdOpts.data)
 			}
 			return nil
 		}

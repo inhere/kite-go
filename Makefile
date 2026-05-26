@@ -1,192 +1,126 @@
-# Make does not offer a recursive wildcard function, so here's one:
-# from https://github.com/jenkins-x-plugins/jx-gitops/blob/main/Makefile
-rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
+## Kite — Makefile
 
-SHELL := /bin/bash
-BUILD_TARGET = build
-MAIN_SRC_FILE=cmd/kite/main.go
-
-GO := go
-ORG := inhere
-REPO := kite-go
-# exe name
-NAME := kite
+APP     := kite
+MAIN_DIR := ./cmd/kite
 GOEXE = $(shell go env GOEXE)
-BINARY := $(NAME)$(GOEXE)
+BINARY  := $(APP)$(GOEXE)
+GO_VERSION := $(shell go version | sed -e 's/^[^0-9.]*\([0-9.]*\).*/\1/')
+ROOT_PACKAGE := github.com/inhere/kite
 
-ORG_REPO := $(ORG)/$(REPO)
-RELEASE_ORG_REPO := $(ORG)/$(NAME)
-ROOT_PACKAGE := github.com/$(ORG_REPO)
-GO_VERSION := $(shell $(GO) version | sed -e 's/^[^0-9.]*\([0-9.]*\).*/\1/')
-GO_DEPENDENCIES := $(call rwildcard,pkg/,*.go) $(call rwildcard,cmd/,*.go)
-
-BRANCH     := $(shell git rev-parse --abbrev-ref HEAD 2> /dev/null  || echo 'unknown')
-BUILD_DATE := $(shell date +%Y/%m/%d-%H:%M:%S)
-CGO_ENABLED = 0
-
-REPORTS_DIR=$(BUILD_TARGET)/reports
-
-GOTEST := $(GO) test
-
+# Build metadata
+BUILD_TIME := $(shell date +%Y-%m-%dT%H:%M:%S)
 GIT_HASH  := $(shell git rev-parse --short=8 HEAD 2>/dev/null || echo "unknown")
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null | sed 's/^v//' || echo "dev-$(GIT_HASH)")
 
-# Build flags for setting build-specific configuration at build time - defaults to empty
-#BUILD_TIME_CONFIG_FLAGS ?= ""
+LDFLAGS := -s -w \
+	-X $(ROOT_PACKAGE).Version=$(VERSION)\
+	-X $(ROOT_PACKAGE).Revision=$(GIT_HASH)\
+	-X $(ROOT_PACKAGE).Branch=$(BRANCH)\
+	-X $(ROOT_PACKAGE).BuildDate=$(BUILD_DATE)\
+	-X $(ROOT_PACKAGE).GoVersion=$(GO_VERSION)
 
-# -trimpath 去除源码路径信息
-# Full build flags used when building binaries. Not used for test compilation/execution.
-BUILDFLAGS := -ldflags \
-  " -s -w -X $(ROOT_PACKAGE).Version=$(VERSION)\
-		-X $(ROOT_PACKAGE).Revision=$(GIT_HASH)\
-		-X $(ROOT_PACKAGE).Branch=$(BRANCH)\
-		-X $(ROOT_PACKAGE).BuildDate=$(BUILD_DATE)\
-		-X $(ROOT_PACKAGE).GoVersion=$(GO_VERSION)\
-		$(BUILD_TIME_CONFIG_FLAGS)"
+.PHONY: all build backend clean help latest
 
-# Some tests expect default values for version.*, so just use the config package values there.
-TEST_BUILDFLAGS :=  -ldflags "$(BUILD_TIME_CONFIG_FLAGS)"
+## all: build (default)
+all: build
 
-ifdef DEBUG
-BUILDFLAGS := -gcflags "all=-N -l" $(BUILDFLAGS)
-endif
+## build: build Go binary (current platform)
+build:
+	@echo "🐹 Building Go binary ($(VERSION) @ $(GIT_HASH))..."
+	go build -ldflags "$(LDFLAGS)" -o $(BINARY) $(MAIN_DIR)
+	@echo "📦 Compressing binary..."
+	@upx -6 --no-progress $(BINARY)
+	@echo "✅ Binary: $(BINARY) ($$(du -sh $(BINARY) | cut -f1))"
 
-ifdef PARALLEL_BUILDS
-BUILDFLAGS += -p $(PARALLEL_BUILDS)
-GOTEST += -p $(PARALLEL_BUILDS)
-else
-# -p 4 seems to work well for people
-GOTEST += -p 4
-endif
+## install: install Go binary to $GOPATH/bin
+install:
+	go install -ldflags "$(LDFLAGS)" $(MAIN_DIR)
+	upx -6 --no-progress $(GOPATH)/bin/$(BINARY)
+	@echo "✅ Installed to GOPATH/bin"
 
-ifdef DISABLE_TEST_CACHING
-GOTEST += -count=1
-endif
+## run: build and run with current directory
+run: build
+	./$(BINARY)
 
-TEST_PACKAGE ?= ./...
-COVER_OUT:=$(REPORTS_DIR)/cover.out
-COVERFLAGS=-coverprofile=$(COVER_OUT) --covermode=count --coverpkg=./...
+# ─── Cross Compilation ────────────────────────────────────────────────────────
 
-.PHONY: help
-.DEFAULT_GOAL := help
-help:
-	@echo -e "Provide some quick usage commands\n"
-	@echo "Commands:"
-	@grep -h -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m  %-20s\033[0m %s\n", $$1, $$2}' | sort
+DIST_DIR := dist
 
-full: check ## Build and run the tests
-check: build test ## Build and run the tests
-get-test-deps: ## Install test dependencies
-	get install github.com/axw/gocov/gocov
-	get install gopkg.in/matm/v1/gocov-html
+## build-all: cross-compile for all platforms
+build-all: build-linux build-linux-arm64 build-darwin build-darwin-arm64 build-windows latest-yaml
 
-print-version: ## Print version
-	@echo $(VERSION)
+## latest-yaml: generate latest.yaml release metadata
+latest-yaml:
+	@mkdir -p $(DIST_DIR)
+	@{ \
+		echo "name: $(APP)"; \
+		echo "version: $(VERSION)"; \
+		echo "released_at: $(BUILD_TIME)"; \
+	} > $(DIST_DIR)/latest.yaml
+	@echo "   → $(DIST_DIR)/latest.yaml"
 
-build: $(GO_DEPENDENCIES) clean ## Build jx-labs binary for current OS
-	go mod download
-	CGO_ENABLED=$(CGO_ENABLED) $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(BINARY) $(MAIN_SRC_FILE)
+## build-linux: compile for Linux amd64
+build-linux:
+	@echo "🐧 linux/amd64..."
+	@mkdir -p $(DIST_DIR)
+	@GOOS=linux GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -o $(DIST_DIR)/$(APP)-linux-amd64 $(MAIN_DIR)
+	upx -6 --no-progress $(DIST_DIR)/$(APP)-linux-amd64
+	chmod +x $(DIST_DIR)/$(APP)-linux-amd64
+	@echo "   → $(DIST_DIR)/$(APP)-linux-amd64"
 
-install: $(GO_DEPENDENCIES) darwin ## Install the kite binary to gopath/bin
-	cp -f build/kite-darwin-amd64 ${GOPATH}/bin/kite
-	@ls -alh ${GOPATH}/bin/kite
+## build-linux-arm64: compile for Linux arm64
+build-linux-arm64:
+	@echo "🐧 linux/arm64..."
+	@mkdir -p $(DIST_DIR)
+	@GOOS=linux GOARCH=arm64 go build -ldflags "$(LDFLAGS)" -o $(DIST_DIR)/$(APP)-linux-arm64 $(MAIN_DIR)
+	upx -6 --no-progress $(DIST_DIR)/$(APP)-linux-arm64
+	chmod +x $(DIST_DIR)/$(APP)-linux-arm64
+	@echo "   → $(DIST_DIR)/$(APP)-linux-arm64"
 
-install2: $(GO_DEPENDENCIES) ## Install the kite to gopath/bin, without upx compress
-	go build $(BUILDFLAGS) -o $(GOPATH)/bin/kite ./cmd/kite
-	@ls -alh ${GOPATH}/bin/kite
+## build-darwin: compile for macOS amd64
+build-darwin:
+	@echo "🍎 darwin/amd64..."
+	@mkdir -p $(DIST_DIR)
+	@GOOS=darwin GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -o $(DIST_DIR)/$(APP)-darwin-amd64 $(MAIN_DIR)
+	@echo "   → $(DIST_DIR)/$(APP)-darwin-amd64"
 
-install3: install win linux cp-build-to-win ## Build for local and Linux and Windows then copy to Windows(Local dev)
+## build-darwin-arm64: compile for macOS Apple Silicon
+build-darwin-arm64:
+	@echo "🍎 darwin/arm64..."
+	@mkdir -p $(DIST_DIR)
+	@GOOS=darwin GOARCH=arm64 go build -ldflags "$(LDFLAGS)" -o $(DIST_DIR)/$(APP)-darwin-arm64 $(MAIN_DIR)
+	# upx -6 --no-progress $(DIST_DIR)/$(APP)-darwin-arm64 # 压缩有问题在 macos 12+
+	@echo "   → $(DIST_DIR)/$(APP)-darwin-arm64"
 
-install-win: win ## Install the kite binary to C:\tools\bin
-	cp -f build/kite-windows-amd64-upx.exe C:/tools/bin/kite.exe
-
-install-dev: win-no-upx ## Install the kite binary to C:\tools\bin
-	cp -f build/kite-windows-amd64.exe C:/tools/bin/kite.exe
-
-cp-build-to-win: ## Cleans up dependencies
-	cp -f build/kite-windows-amd64.exe /Volumes/inhere-win/tools/bin/kite.exe
-	cp -f build/kite-linux-amd64 /Volumes/inhere-win/tools/bin/kite
-	cp -f build/kite-darwin-amd64 /Volumes/inhere-win/tools/bin/kite-darwin-amd64
-
-pprof-cli: ## generate pprof file and start an web-ui
-	go run ./_examples/pprof-cli.go
-	#go tool pprof rux_prof_data.prof
-	go tool pprof -http=:8080 rux_prof_data.prof
-
-build-all:linux linux-arm win win-arm darwin darwin-arm ## Build for Linux,OSX,Windows platform
-
-linux: ## Build for Linux
-	GOOS=linux GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-linux-amd64 $(MAIN_SRC_FILE)
-	upx -6 --no-progress build/$(NAME)-linux-amd64
-	chmod +x build/$(NAME)-linux-amd64
-
-linux-arm: ## Build for Linux ARM64
-	GOOS=linux GOARCH=arm64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-linux-arm $(MAIN_SRC_FILE)
-	upx -6 --no-progress build/$(NAME)-linux-arm
-	chmod +x build/$(NAME)-linux-arm
-
-win: ## Build for Windows
-	GOOS=windows GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-windows-amd64.exe $(MAIN_SRC_FILE)
-	#ls -alh build/$(NAME)*
-	upx -6 -f --no-progress -o build/$(NAME)-windows-amd64-upx.exe build/$(NAME)-windows-amd64.exe
-	ls -alh build/$(NAME)*
-
-win-no-upx: ## Build for Windows not compress
-	GOOS=windows GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-windows-amd64.exe $(MAIN_SRC_FILE)
-	#ls -alh build/$(NAME)*
-	#upx -6 -f --no-progress -o build/$(NAME)-windows-amd64-upx.exe build/$(NAME)-windows-amd64.exe
-	ls -alh build/$(NAME)*
-
-win-arm: ## Build for Windows arm64
-	GOOS=windows GOARCH=arm64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-windows-arm64.exe $(MAIN_SRC_FILE)
-	upx -6 --no-progress build/$(NAME)-windows-arm64.exe
-
-darwin: ## Build for OSX AMD
-	GOOS=darwin GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-darwin-amd64 $(MAIN_SRC_FILE)
-	#upx -6 --no-progress build/$(NAME)-darwin-amd64 # upx has bug for macos 12+
-	chmod +x build/$(NAME)-darwin-amd64
-
-darwin-arm: ## Build for OSX ARM64
-	GOOS=darwin GOARCH=arm64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-darwin-arm64 $(MAIN_SRC_FILE)
-	#upx -6 --no-progress build/$(NAME)-darwin-arm64
-	chmod +x build/$(NAME)-darwin-arm64
+## build-windows: compile for Windows amd64
+build-windows:
+	@echo "🪟 windows/amd64..."
+	@mkdir -p $(DIST_DIR)
+	@GOOS=windows GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -o $(DIST_DIR)/$(APP)-windows-amd64.exe $(MAIN_DIR)
+	upx -6 --no-progress $(DIST_DIR)/$(APP)-windows-amd64.exe
+	@echo "   → $(DIST_DIR)/$(APP)-windows-amd64.exe"
 
 .PHONY: release
-release: clean linux test
+release: build-all ## Create release archives for all platforms TODO 还未启用的
+	@echo "Creating release archives..."
+	@mkdir -p release
+	@cd $(DIST_DIR) && \
+	tar -czf ../release/$(APP)-linux-amd64.tar.gz $(APP)-linux-amd64; \
+	tar -czf ../release/$(APP)-linux-arm64.tar.gz $(APP)-linux-arm64; \
+	tar -czf ../release/$(APP)-darwin-amd64.tar.gz $(APP)-darwin-amd64; \
+	tar -czf ../release/$(APP)-darwin-arm64.tar.gz $(APP)-darwin-arm64; \
+	zip -czf ../release/$(APP)-windows-amd64.zip $(APP)-windows-amd64.exe; \
+	# zip ../release/$(APP)-windows-arm64.zip $(APP)-windows-arm64.exe; \
+	@echo "Release archives created in release/"
 
-release-all: release linux win darwin
+## clean: remove build artifacts
+clean:
+	@rm -f $(BINARY)
+	@rm -rf $(DIST_DIR)
+	@echo "🧹 Cleaned"
 
-promoter:
-	cd promote && go build main.go
-
-.PHONY: goreleaser
-goreleaser:
-	step-go-releaser --organisation=$(ORG) --revision=$(GIT_HASH) --branch=$(BRANCH) --build-date=$(BUILD_DATE) --go-version=$(GO_VERSION) --root-package=$(ROOT_PACKAGE) --version=$(VERSION) --timeout 200m
-
-.PHONY: clean
-clean: ## Clean the generated artifacts
-	rm -rf build release dist
-
-get-fmt-deps: ## Install test dependencies
-	get install golang.org/x/tools/cmd/goimports
-
-.PHONY: fmt
-fmt: importfmt ## Format the code
-	$(eval FORMATTED = $(shell $(GO) fmt ./...))
-	@if [ "$(FORMATTED)" == "" ]; \
-      	then \
-      	    echo "All Go files properly formatted"; \
-      	else \
-      		echo "Fixed formatting for: $(FORMATTED)"; \
-      	fi
-
-.PHONY: importfmt
-importfmt: get-fmt-deps
-	@echo "Formatting the imports..."
-	goimports -w $(GO_DEPENDENCIES)
-
-.PHONY: lint
-lint: ## Lint the code
-	./hack/gofmt.sh
-	./hack/linter.sh
-	./hack/generate.sh
+## help: show this help
+help:
+	@echo "Skillc Build System"
+	@echo ""
+	@grep -E '^## ' $(MAKEFILE_LIST) | sed 's/## /  /'
