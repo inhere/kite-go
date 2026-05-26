@@ -1,6 +1,8 @@
 package gitcmd
 
 import (
+	"strings"
+
 	"github.com/gookit/cliui/interact"
 	"github.com/gookit/cliui/show"
 	"github.com/gookit/color/colorp"
@@ -106,8 +108,9 @@ var TagCreateCmd = &gcli.Command{
 			message = ":bookmark: release the " + nextVer
 		}
 
+		tagHash := strings.TrimSpace(tcOpts.Hash)
 		show.AList("create tag", map[string]any{
-			"Hash ID":     tcOpts.Hash,
+			"Hash ID":     tagHash,
 			"Prev tag":    lastVer,
 			"New tag":     nextVer,
 			"Tag Message": message,
@@ -119,7 +122,7 @@ var TagCreateCmd = &gcli.Command{
 			return nil
 		}
 
-		err = lp.Cmd("tag", "-a", nextVer, "-m", message).Run()
+		err = lp.Cmd("tag", "-a", nextVer, "-m", message).ArgIf(tagHash, tagHash != "").Run()
 		if err != nil {
 			return err
 		}
