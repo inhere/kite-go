@@ -174,12 +174,19 @@ func NewOpenRemoteCmd(cfgGetter gitx.ConfigProviderFn) *gcli.Command {
 					repoUrl = hostUrl + "/" + repoPath
 				} else {
 					repo := gitw.NewRepo(c.WorkDir())
-					repoUrl = repo.RemoteInfo(remote).HTTPHost() + "/" + repoPath
+					rmt, err := repoRemoteInfo(c, repo, remote)
+					if err != nil {
+						return err
+					}
+					repoUrl = rmt.HTTPHost() + "/" + repoPath
 				}
 			} else {
 				// parse from git repo
 				repo := gitw.NewRepo(c.WorkDir())
-				rmt := repo.RemoteInfo(remote)
+				rmt, err := repoRemoteInfo(c, repo, remote)
+				if err != nil {
+					return err
+				}
 
 				if hostUrl != "" {
 					repoUrl = hostUrl + "/" + rmt.RepoPath()
@@ -192,4 +199,18 @@ func NewOpenRemoteCmd(cfgGetter gitx.ConfigProviderFn) *gcli.Command {
 			return sysutil.OpenBrowser(repoUrl)
 		},
 	}
+}
+
+func repoRemoteInfo(c *gcli.Command, repo *gitw.Repo, remote string) (*gitw.RemoteInfo, error) {
+	rmt := repo.RemoteInfo(remote)
+	if rmt != nil {
+		return rmt, nil
+	}
+
+	name := strutil.OrElse(remote, gitw.DefaultRemoteName)
+	if err := repo.Err(); err != nil {
+		return nil, c.NewErrf("git remote %q is invalid: %v", name, err)
+	}
+
+	return nil, c.NewErrf("git remote %q is not found in current repository, available remotes: %s", name, strings.Join(repo.RemoteNames(), ", "))
 }
