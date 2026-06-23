@@ -54,7 +54,19 @@ aliases:
   ac: git ac
   acp: git acp
   ext: app ext
+  env: tool env
+  brun: sys brun
+  find: fs find
+  find-exe: sys find-exe
+  info: app info
+  cht: tool cheat
+  cheat: tool cheat
+  clip: tool clipboard
+  jump: tool jump
+  alias: run --type=alias
   script: run --type=script
   updateself: self update
   update-self: self update
   self-update: self update
+  proxy-run: run --proxy
+  telnet: dev telnet

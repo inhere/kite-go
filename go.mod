@@ -16,17 +16,17 @@ require (
 	github.com/goccy/go-yaml v1.19.2
 	github.com/gofrs/uuid/v5 v5.4.0
 	github.com/gomarkdown/markdown v0.0.0-20250810172220-2e2c11897d1a
-	github.com/gookit/cliui v0.2.3
-	github.com/gookit/color v1.6.1
+	github.com/gookit/cliui v0.3.1
+	github.com/gookit/color v1.6.2-0.20260604125953-289d54c4470a
 	github.com/gookit/config/v2 v2.2.8
 	github.com/gookit/easytpl v1.1.1
-	github.com/gookit/gcli/v3 v3.3.1
-	github.com/gookit/gitw v0.3.6
-	github.com/gookit/goutil v0.7.5
-	github.com/gookit/greq v0.4.1
+	github.com/gookit/gcli/v3 v3.8.0
+	github.com/gookit/gitw v0.4.1-0.20260622133818-862395e0d79d
+	github.com/gookit/goutil v0.7.6
+	github.com/gookit/greq v0.6.0
 	github.com/gookit/i18n v1.2.2
 	github.com/gookit/ini/v2 v2.3.2
-	github.com/gookit/rux v1.4.1
+	github.com/gookit/rux/v2 v2.0.2
 	github.com/gookit/slog v0.6.0
 	github.com/sashabaranov/go-openai v1.41.2
 	github.com/titanous/json5 v1.0.0
@@ -36,8 +36,6 @@ require (
 	golang.org/x/net v0.33.0
 	golang.org/x/term v0.31.0
 )
-
-replace github.com/gookit/gcli/v3 => ../gcli
 
 require (
 	dario.cat/mergo v1.0.2 // indirect
@@ -53,9 +51,7 @@ require (
 	github.com/charmbracelet/x/term v0.2.1 // indirect
 	github.com/dlclark/regexp2 v1.11.5 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
-	github.com/gookit/filter v1.2.3 // indirect
 	github.com/gookit/gsr v0.1.1 // indirect
-	github.com/gookit/validate v1.5.5 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect

@@ -5,7 +5,7 @@ MAIN_DIR := ./cmd/kite
 GOEXE = $(shell go env GOEXE)
 BINARY  := $(APP)$(GOEXE)
 GO_VERSION := $(shell go version | sed -e 's/^[^0-9.]*\([0-9.]*\).*/\1/')
-ROOT_PACKAGE := github.com/inhere/kite
+ROOT_PACKAGE := github.com/inhere/kite-go
 
 # Build metadata
 BUILD_TIME := $(shell date +%Y-%m-%dT%H:%M:%S)
@@ -16,7 +16,7 @@ LDFLAGS := -s -w \
 	-X $(ROOT_PACKAGE).Version=$(VERSION)\
 	-X $(ROOT_PACKAGE).Revision=$(GIT_HASH)\
 	-X $(ROOT_PACKAGE).Branch=$(BRANCH)\
-	-X $(ROOT_PACKAGE).BuildDate=$(BUILD_DATE)\
+	-X $(ROOT_PACKAGE).BuildDate=$(BUILD_TIME)\
 	-X $(ROOT_PACKAGE).GoVersion=$(GO_VERSION)
 
 .PHONY: all build backend clean help latest
@@ -45,9 +45,18 @@ run: build
 # ─── Cross Compilation ────────────────────────────────────────────────────────
 
 DIST_DIR := dist
+DESCRIPTION := "Personal developer tool command application"
 
 ## build-all: cross-compile for all platforms
-build-all: build-linux build-linux-arm64 build-darwin build-darwin-arm64 build-windows latest-yaml
+build-all: dump-info build-linux build-linux-arm64 build-darwin build-darwin-arm64 build-windows latest-yaml
+	ls -ah $(DIST_DIR)
+
+## dump-info: dump build info
+dump-info:
+	@echo "Build Info:"
+	@echo "  VERSION: $(VERSION)"
+	@echo "  GIT_HASH: $(GIT_HASH)"
+	@echo "  BUILD_TIME: $(BUILD_TIME)"
 
 ## latest-yaml: generate latest.yaml release metadata
 latest-yaml:
@@ -56,6 +65,7 @@ latest-yaml:
 		echo "name: $(APP)"; \
 		echo "version: $(VERSION)"; \
 		echo "released_at: $(BUILD_TIME)"; \
+		echo "description: $(DESCRIPTION)"; \
 	} > $(DIST_DIR)/latest.yaml
 	@echo "   → $(DIST_DIR)/latest.yaml"
 

@@ -132,8 +132,8 @@ github.com/gookit/easytpl v1.1.0        // 简单模板
 
 #### HTTP 和 Web
 ```go
-github.com/gookit/rux v1.4.0            // HTTP 路由器
-github.com/gookit/greq v0.4.0           // HTTP 客户端
+github.com/gookit/rux/v2           // HTTP 路由器
+github.com/gookit/greq            // HTTP 客户端
 ```
 
 #### 脚本执行
