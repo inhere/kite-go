@@ -7,7 +7,6 @@ import (
 	"github.com/gookit/color/colorp"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/builtin"
-	"github.com/gookit/gcli/v3/events"
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/cliutil"
@@ -88,7 +87,7 @@ var (
 )
 
 func addListener(cli *gcli.App) {
-	cli.On(events.OnAppInitAfter, func(ctx *gcli.HookCtx) (stop bool) {
+	cli.On(gcli.EvtAppInit, func(ctx *gcli.HookCtx) (stop bool) {
 		app.Log().WithValue("workdir", cli.WorkDir()).Info("kite cli app init completed. osArgs:", os.Args[1:])
 		if err := changeWorkdir(cli, defWorkdir); err != nil {
 			colorp.Redln(err.Error())
@@ -97,9 +96,9 @@ func addListener(cli *gcli.App) {
 	})
 
 	// bind new app options
-	cli.On(events.OnAppBindOptsAfter, onAppBindOptsAfter(cli))
+	cli.On(gcli.EvtAppBindOptsAfter, onAppBindOptsAfter(cli))
 
-	cli.On(events.OnAppHelpBefore, func(ctx *gcli.HookCtx) (stop bool) {
+	cli.On(gcli.EvtAppHelpBefore, func(ctx *gcli.HookCtx) (stop bool) {
 		var sb strutil.Builder
 		sb.WriteString("\n\n<mga>Command Aliases:</>\n  ")
 		sb.WriteString(strutil.JoinList(", ", app.Kas.AliasesNames()))
@@ -116,7 +115,7 @@ func addListener(cli *gcli.App) {
 		return
 	})
 
-	cli.On(events.OnCmdRunBefore, func(ctx *gcli.HookCtx) (stop bool) {
+	cli.On(gcli.EvtCmdRunBefore, func(ctx *gcli.HookCtx) (stop bool) {
 		app.Log().
 			WithValue("workdir", cli.WorkDir()).
 			Infof("%s: will run the command %q with args: %v", ctx.Name(), ctx.Cmd.ID(), ctx.Cmd.RawArgs())
@@ -124,14 +123,14 @@ func addListener(cli *gcli.App) {
 		return
 	})
 
-	cli.On(events.OnCmdRunAfter, func(ctx *gcli.HookCtx) (stop bool) {
+	cli.On(gcli.EvtCmdRunAfter, func(ctx *gcli.HookCtx) (stop bool) {
 		app.Log().Infof("%s: kite cli app command %q run completed", ctx.Name(), ctx.Cmd.ID())
 		return
 	})
 
-	cli.On(events.OnAppCmdNotFound, onAppCmdNotFound)
+	cli.On(gcli.EvtAppCmdNotFound, onAppCmdNotFound)
 
-	cli.On(events.OnAppExit, func(ctx *gcli.HookCtx) (stop bool) {
+	cli.On(gcli.EvtAppExit, func(ctx *gcli.HookCtx) (stop bool) {
 		if waitSec > 0 {
 			app.Log().Infof("%s: will wait %d seconds before app exit. code=%d", ctx.Name(), waitSec, ctx.Int("code"))
 			time.Sleep(time.Duration(waitSec) * time.Second)
