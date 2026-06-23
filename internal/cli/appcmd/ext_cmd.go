@@ -6,7 +6,6 @@ import (
 	"github.com/gookit/cliui/interact"
 	"github.com/gookit/cliui/show"
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/gcli/v3/events"
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/x/ccolor"
@@ -40,7 +39,7 @@ func NewAppExtCmd() *gcli.Command {
 		},
 		Config: func(c *gcli.Command) {
 			c.MustFromStruct(&extRunOpts)
-			c.On(events.OnCmdSubNotFound, SubCmdNotFound)
+			c.On(gcli.EvtCmdSubNotFound, SubCmdNotFound)
 		},
 	}
 }

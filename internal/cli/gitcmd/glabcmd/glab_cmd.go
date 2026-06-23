@@ -2,7 +2,6 @@ package glabcmd
 
 import (
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/gcli/v3/events"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/internal/biz/cmdbiz"
 	"github.com/inhere/kite-go/internal/cli/gitcmd"
@@ -37,13 +36,13 @@ var GitLabCmd = &gcli.Command{
 		glOpts.BindCommonFlags(c)
 		glOpts.BindChdirFlags(c)
 
-		c.On(events.OnCmdRunBefore, func(ctx *gcli.HookCtx) (stop bool) {
+		c.On(gcli.EvtCmdRunBefore, func(ctx *gcli.HookCtx) (stop bool) {
 			wd := c.WorkDir()
 			c.Infoln("[kite.GLAB] Workdir:", wd)
 			return false
 		})
 
-		c.On(events.OnCmdSubNotFound, gitcmd.RedirectToGitx)
+		c.On(gcli.EvtCmdSubNotFound, gitcmd.RedirectToGitx)
 	},
 }
 

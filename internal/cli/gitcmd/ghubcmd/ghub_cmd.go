@@ -2,7 +2,6 @@ package ghubcmd
 
 import (
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/gcli/v3/events"
 	"github.com/gookit/goutil/errorx"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/internal/biz/cmdbiz"
@@ -38,12 +37,12 @@ var GithubCmd = &gcli.Command{
 		GhOpts.BindCommonFlags(c)
 		GhOpts.BindChdirFlags(c)
 
-		c.On(events.OnCmdRunBefore, func(ctx *gcli.HookCtx) (stop bool) {
+		c.On(gcli.EvtCmdRunBefore, func(ctx *gcli.HookCtx) (stop bool) {
 			c.Infoln("[kite.GHub] Workdir:", c.WorkDir())
 			return false
 		})
 
-		c.On(events.OnCmdSubNotFound, gitcmd.RedirectToGitx)
+		c.On(gcli.EvtCmdSubNotFound, gitcmd.RedirectToGitx)
 	},
 }
 

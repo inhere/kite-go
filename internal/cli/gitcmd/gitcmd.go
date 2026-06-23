@@ -7,7 +7,6 @@ import (
 
 	"github.com/gookit/color/colorp"
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/gcli/v3/events"
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/gitw"
 	"github.com/gookit/goutil"
@@ -55,8 +54,8 @@ var GitCommands = &gcli.Command{
 		GitOpts.BindCommonFlags(c)
 		GitOpts.BindChdirFlags(c)
 
-		c.On(events.OnCmdSubNotFound, SubCmdNotFound)
-		c.On(events.OnCmdRunBefore, func(ctx *gcli.HookCtx) bool {
+		c.On(gcli.EvtCmdSubNotFound, SubCmdNotFound)
+		c.On(gcli.EvtCmdRunBefore, func(ctx *gcli.HookCtx) bool {
 			c.Infoln("[kite.GIT] Workdir:", c.WorkDir())
 			return false
 		})
