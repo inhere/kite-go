@@ -1,6 +1,6 @@
 package kserve
 
-import "github.com/gookit/rux"
+import "github.com/gookit/rux/v2"
 
 // WebApp struct
 type WebApp struct {

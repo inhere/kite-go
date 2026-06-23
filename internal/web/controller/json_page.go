@@ -1,6 +1,6 @@
 package controller
 
-import "github.com/gookit/rux"
+import "github.com/gookit/rux/v2"
 
 // JSONPage json page controller
 type JSONPage struct {

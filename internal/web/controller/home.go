@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/gookit/easytpl"
-	"github.com/gookit/rux"
+	"github.com/gookit/rux/v2"
 	"github.com/inhere/kite-go/internal/appconst"
 )
 

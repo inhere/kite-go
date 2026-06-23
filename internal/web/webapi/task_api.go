@@ -1,6 +1,6 @@
 package webapi
 
-import "github.com/gookit/rux"
+import "github.com/gookit/rux/v2"
 
 // TaskApiController struct
 type TaskApiController struct{}

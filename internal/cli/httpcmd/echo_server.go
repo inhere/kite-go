@@ -6,9 +6,9 @@ import (
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/testutil"
 	"github.com/gookit/goutil/timex"
-	"github.com/gookit/rux"
-	"github.com/gookit/rux/pkg/handlers"
-	"github.com/gookit/rux/pkg/render"
+	"github.com/gookit/rux/v2"
+	"github.com/gookit/rux/v2/pkg/handlers"
+	"github.com/gookit/rux/v2/pkg/render"
 )
 
 // NewEchoServerCmd instance

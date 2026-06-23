@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/gookit/color"
-	"github.com/gookit/rux"
+	"github.com/gookit/rux/v2"
 	"github.com/gookit/slog"
 )
 

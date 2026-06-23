@@ -1,6 +1,6 @@
 package webhook
 
-import "github.com/gookit/rux"
+import "github.com/gookit/rux/v2"
 
 // Webhook api for the application
 func Webhook(c *rux.Context) {

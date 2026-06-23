@@ -1,7 +1,7 @@
 package web
 
 import (
-	"github.com/gookit/rux"
+	"github.com/gookit/rux/v2"
 	"github.com/inhere/kite-go/internal/web/controller"
 )
 

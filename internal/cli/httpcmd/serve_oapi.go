@@ -8,7 +8,7 @@ import (
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/goutil/strutil"
-	"github.com/gookit/rux"
+	"github.com/gookit/rux/v2"
 )
 
 // https://github.com/swagger-api/swagger-ui

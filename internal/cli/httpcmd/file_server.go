@@ -7,7 +7,7 @@ import (
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/goutil/timex"
-	"github.com/gookit/rux"
+	"github.com/gookit/rux/v2"
 	"github.com/inhere/kite-go/internal/apputil"
 	"github.com/inhere/kite-go/internal/biz/cmdbiz"
 	"github.com/inhere/kite-go/pkg/httpserve"

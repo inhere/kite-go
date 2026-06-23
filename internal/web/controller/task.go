@@ -3,7 +3,7 @@ package controller
 import (
 	"strings"
 
-	"github.com/gookit/rux"
+	"github.com/gookit/rux/v2"
 )
 
 type TaskController struct{}

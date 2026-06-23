@@ -6,7 +6,7 @@
 package api
 
 import (
-	"github.com/gookit/rux"
+	"github.com/gookit/rux/v2"
 )
 
 {{range $i, $m := .Actions }}
@@ -15,5 +15,3 @@ func (*{{ $.GroupName}}) {{ $m.MethodName }}(c *rux.Context) {
 	c.Text(200, "hello")
 }
 {{end}}
-
-

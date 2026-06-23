@@ -4,7 +4,7 @@ import (
 	"github.com/gookit/config/v2"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/maputil"
-	"github.com/gookit/rux"
+	"github.com/gookit/rux/v2"
 	"github.com/gookit/slog"
 	"github.com/inhere/kite-go/pkg/gitx"
 	"github.com/inhere/kite-go/pkg/gitx/github"
