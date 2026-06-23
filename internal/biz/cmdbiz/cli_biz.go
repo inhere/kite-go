@@ -12,9 +12,13 @@ import (
 )
 
 // CommonOpts some common vars struct
+//
+// 注意: 这些字段统一通过下面的 Bind* 方法绑定为命令选项, 不要加 flag tag。
+// 否则当命令匿名内嵌 CommonOpts 并用 FromStruct 时, 会与 Bind 方法重复注册同名
+// 选项而 panic(gcli v3.5+ 的 FromStruct 会自动展开匿名内嵌结构体的 tag)。
 type CommonOpts struct {
 	Proxy   bool
-	DryRun  bool `flag:"name=dry-run;desc=run workflow, but dont real execute command;shorts=dry"`
+	DryRun  bool
 	Confirm bool
 	Workdir string
 }
