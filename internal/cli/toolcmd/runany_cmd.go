@@ -75,8 +75,8 @@ $ kite run --var key0=value0 --var key1=value1 task_name [args ... for task]
 
 > default in the $config/scripts.yml or dir: $base/scripts
 
-Can use '$@' '$*' at script line. will auto replace to input arguments
-examples:
+Can use '$@' '$*' ${ENV_KEY} ${name} ${top.name} at script. will auto replace to input arguments
+<info>Examples</>:
 
   # scripts.yml
   st: git status

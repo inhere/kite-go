@@ -27,8 +27,8 @@ import (
 // Variable dynamic variable definition. 动态变量 TODO
 type Variable struct {
 	// Type of variable, allow: sh, bash, zsh, go or empty.
-	Type string
-	Expr string
+	Type  string
+	Expr  string
 	Value string
 }
 
@@ -140,8 +140,8 @@ type ScriptTask struct {
 	//  - global: 全局任务，来自 DefineFiles 配置
 	//  - project: 项目任务，来自当前目录自动发现的文件
 	Scope string `json:"scope"`
-	// Alias names for the script task
-	Alias []string
+	// Aliases names for the script task
+	Aliases []string
 	// Silent mode, dont print exec command line and output.
 	Silent bool `json:"silent"`
 
@@ -214,7 +214,7 @@ func (st *ScriptTask) LoadFromMap(mp map[string]any) error {
 	st.Workdir = data.StrOne("dir", "workdir")
 	st.Desc = data.StrOne("desc", "description")
 	// task alias
-	st.Alias = data.StringsOne("alias", "aliases")
+	st.Aliases = data.StringsOne("alias", "aliases")
 
 	taskTimeout := data.Str("timeout")
 	if taskTimeout != "" {

@@ -292,8 +292,8 @@ func (r *Runner) renderTaskVars(line string, vars map[string]any, ctx *RunCtx) s
 	envs := ctx.FullEnv()
 
 	rpl.SetGetter(func(name string) (val string, ok bool) {
-		// eg: $SHELL
-		if r.ParseEnv {
+		// eg: $SHELL -> name=SHELL
+		if r.ParseEnv && strutil.IsEnvName(name) {
 			if val, ok = envs[name]; ok {
 				return val, true
 			}
