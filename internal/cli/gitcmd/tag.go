@@ -59,6 +59,7 @@ var tcOpts = struct {
 	Hash    string `flag:"create tag by commit hash;false;;cid"`
 	Message string `flag:"tag message;false;;m"`
 	Version string `flag:"tag version, eg: v2.0.1;false;;v"`
+	Yes     bool   `flag:"dont confirm;false;;y"`
 }{}
 
 // TagCreateCmd instance
@@ -117,7 +118,7 @@ var TagCreateCmd = &gcli.Command{
 			"Dry Run":     GitOpts.DryRun,
 		})
 
-		if interact.Unconfirmed("Ensure create and push new tag?", true) {
+		if !tcOpts.Yes && interact.Unconfirmed("Ensure create and push new tag?", true) {
 			colorp.Infoln("Quit, Bye!")
 			return nil
 		}
@@ -137,12 +138,17 @@ var TagCreateCmd = &gcli.Command{
 	},
 }
 
+var tagDelOpts = struct {
+	Yes bool `flag:"dont confirm;false;;y"`
+}{}
+
 // TagDeleteCmd instance
 var TagDeleteCmd = &gcli.Command{
 	Name:    "delete",
 	Aliases: []string{"del", "rm", "remove"},
 	Desc:    "delete exists tags by `git tag`",
 	Config: func(c *gcli.Command) {
+		c.MustFromStruct(&tagDelOpts, gflag.TagRuleSimple)
 		c.AddArg("tags", "tags name to delete", true, true)
 	},
 	Func: func(c *gcli.Command, _ []string) error {
@@ -157,7 +163,7 @@ var TagDeleteCmd = &gcli.Command{
 
 		// 确认删除操作
 		colorp.Infof("Tags to delete: %v\n", tagNames)
-		if interact.Unconfirmed("Are you sure you want to delete these tags?", true) {
+		if !tagDelOpts.Yes && interact.Unconfirmed("Are you sure you want to delete these tags?", true) {
 			colorp.Infoln("Operation cancelled.")
 			return nil
 		}

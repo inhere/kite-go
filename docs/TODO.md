@@ -6,19 +6,31 @@
 - 已实现emoji: ✅
 - 待实现emoji: ⏳
 
+## kite 使用问题
+
+- [ ] kite -w subdir/git-repo gl open 时会报错 invalid memory address or nil pointer dereference 
+
+## 使用体验优化
+
+- [ ] jump 命令支持自动补全；输入名称匹配跳转时，优先返回最后一段匹配的路径
+
 ## TODO List
 
-- [ ] 使用 Golang + HTML/JS 实现一个简单的服务端页面，可以让多台机器通过浏览器打开此页面
 - [ ] 实现一个简单的 HTTP API, 支持简单的集合数据操作
   - 本地存储为 JSON 文件
   - 支持 CRUD 操作
   - 支持查询参数过滤、排序、分页等
 - [ ] kite agent
+
+### ssh commands
+
+> 无需再做，使用独立的cli工具 https://github.com/inhere/sshc
+
 - [x] 新增命令 kite net sshexec, 用于在多台机器上执行 ssh 命令
-- [ ] 新增命令 kite net sshsend 发送文件到远程机器
+- 新增命令 kite net sshsend 发送文件到远程机器
   - 支持发送本地文件到远程机器
   - 支持发送 stdin 到远程机器
-- [ ] 新增命令 kite net sshdown 从远程机器下载文件
+- 新增命令 kite net sshdown 从远程机器下载文件
 - [x] 新增命令 kite net sshc 连接到远程机器的 ssh 会话
 
 ## kite app
@@ -26,7 +38,7 @@
 - [ ] generate metadata file for kite
 - [ ] 将所有命令和参数导出生成 json/yaml 文件, 用于智能搜索和智能匹配执行
   - 树形 还是 扁平化结构
-- [ ] 使用统一的 app shell 命令生成不同shell环境的脚本
+- [x] 使用统一的 app shell 命令生成不同shell环境的脚本
   - 内置支持 bash, zsh, fish, pwsh, cmd(clink) 等
   - 内置支持常用别名设置
   - 支持自定义脚本内容
