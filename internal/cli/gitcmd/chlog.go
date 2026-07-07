@@ -11,21 +11,21 @@ import (
 	"github.com/gookit/goutil/dump"
 )
 
-var (
-	chlogOpts = struct {
-		limit     cflag.String
-		sha1      string
-		sha2      string
-		style     string
-		repoUrl   string
-		dstFile   string
-		noMerges  bool
-		unShallow bool
-		fetchTags bool
-	}{}
+var chlogOpts = struct {
+	limit     cflag.String
+	sha1      string
+	sha2      string
+	style     string
+	repoUrl   string
+	dstFile   string
+	noMerges  bool
+	unShallow bool
+	fetchTags bool
+}{}
 
-	// ChangelogCmd instance
-	ChangelogCmd = &gcli.Command{
+// NewChangelogCmd instance
+func NewChangelogCmd() *gcli.Command {
+	return &gcli.Command{
 		Name:    "chlog",
 		Desc:    "Generate changelog message for git repository",
 		Aliases: []string{"cl", "clog", "changelog"},
@@ -103,4 +103,4 @@ The style for generate for changelog.
 			return nil
 		},
 	}
-)
+}

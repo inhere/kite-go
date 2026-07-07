@@ -6,19 +6,19 @@ import (
 	"github.com/gookit/goutil"
 )
 
-var (
-	logOpts = struct {
-		Abbrev    bool `flag:"Only display the abbrev commit ID"`
-		NoColor   bool `flag:"Dont use color render git output"`
-		NoMerges  bool `flag:"No contains merge request logs"`
-		MaxCommit int  `flag:"Max display how many commits;;15"`
-		Format    string
-		RepoDir   string      `flag:"repo directory for run git log, default is work dir"`
-		Logfile   string      `flag:"export changelog message to file"`
-		Exclude   gcli.String `flag:"exclude contains given sub-string. multi by comma split."`
-	}{}
+var logOpts = struct {
+	Abbrev    bool `flag:"Only display the abbrev commit ID"`
+	NoColor   bool `flag:"Dont use color render git output"`
+	NoMerges  bool `flag:"No contains merge request logs"`
+	MaxCommit int  `flag:"Max display how many commits;;15"`
+	Format    string
+	RepoDir   string      `flag:"repo directory for run git log, default is work dir"`
+	Logfile   string      `flag:"export changelog message to file"`
+	Exclude   gcli.String `flag:"exclude contains given sub-string. multi by comma split."`
+}{}
 
-	ShowLogCmd = &gcli.Command{
+func NewShowLogCmd() *gcli.Command {
+	return &gcli.Command{
 		Name: "log",
 		Desc: "display recently git commits information by `git log`",
 		// Aliases: []string{"cl", "clog", "changelog"},
@@ -54,4 +54,4 @@ var (
 			return gitLog.Run()
 		},
 	}
-)
+}

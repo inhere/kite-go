@@ -12,23 +12,23 @@ import (
 	"github.com/inhere/kite-go/pkg/gitx/gitlab"
 )
 
-var (
-	mrOpts = struct {
-		cmdbiz.CommonOpts
-		new bool
-		// create pr link
-		direct bool
-		source string
-		target string
-		openBr string // same of target + openIt=true
-		// open link on browser
-		openIt bool
-		// auto search .git repo on parent dir
-		// findRepo bool
-	}{}
+var mrOpts = struct {
+	cmdbiz.CommonOpts
+	new bool
+	// create pr link
+	direct bool
+	source string
+	target string
+	openBr string // same of target + openIt=true
+	// open link on browser
+	openIt bool
+	// auto search .git repo on parent dir
+	// findRepo bool
+}{}
 
-	// MergeRequestCmd command
-	MergeRequestCmd = &gcli.Command{
+// NewMergeRequestCmd command
+func NewMergeRequestCmd() *gcli.Command {
+	return &gcli.Command{
 		Name:    "merge-request",
 		Aliases: []string{"pr", "mr", "pull-request"},
 		Desc:    "Create new merge requests(PR/MR) by given project information",
@@ -63,7 +63,7 @@ Special:
 `,
 		Func: mergeRequestHandle,
 	}
-)
+}
 
 func mergeRequestHandle(c *gcli.Command, _ []string) (err error) {
 	repoDir := mrOpts.Workdir

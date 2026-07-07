@@ -11,32 +11,36 @@ var riOpts = struct {
 	cmdbiz.CommonOpts
 }{}
 
-// RepoInfoCmd instance
-var RepoInfoCmd = &gcli.Command{
-	Name: "info",
-	// Aliases: []string{"ls"},
-	Desc: "show some info for the git repository",
-	Config: func(c *gcli.Command) {
-		riOpts.BindCommonFlags(c)
-	},
-	Func: func(c *gcli.Command, args []string) error {
-		rp := gitw.NewRepo(riOpts.Workdir)
+// NewRepoInfoCmd instance
+func NewRepoInfoCmd() *gcli.Command {
+	return &gcli.Command{
+		Name: "info",
+		// Aliases: []string{"ls"},
+		Desc: "show some info for the git repository",
+		Config: func(c *gcli.Command) {
+			riOpts.BindCommonFlags(c)
+		},
+		Func: func(c *gcli.Command, args []string) error {
+			rp := gitw.NewRepo(riOpts.Workdir)
 
-		show.AList("Information", rp.Info())
-		return nil
-	},
+			show.AList("Information", rp.Info())
+			return nil
+		},
+	}
 }
 
-// RemoteInfoCmd instance
-var RemoteInfoCmd = &gcli.Command{
-	Name:    "remote",
-	Aliases: []string{"rmt"},
-	Desc:    "git remote command",
-	Func: func(c *gcli.Command, args []string) error {
-		err := gitw.New("remote", "-v").Run()
-		if err != nil {
-			return err
-		}
-		return nil
-	},
+// NewRemoteInfoCmd instance
+func NewRemoteInfoCmd() *gcli.Command {
+	return &gcli.Command{
+		Name:    "remote",
+		Aliases: []string{"rmt"},
+		Desc:    "git remote command",
+		Func: func(c *gcli.Command, args []string) error {
+			err := gitw.New("remote", "-v").Run()
+			if err != nil {
+				return err
+			}
+			return nil
+		},
+	}
 }

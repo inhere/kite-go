@@ -13,13 +13,15 @@ import (
 	ghapi "github.com/inhere/kite-go/pkg/gitx/github"
 )
 
-// ApiCommitCmd groups github commit api commands.
-var ApiCommitCmd = &gcli.Command{
-	Name: "commit",
-	Desc: "github commit api commands",
-	Subs: []*gcli.Command{
-		ApiCommitLatestCmd,
-	},
+// NewApiCommitCmd groups github commit api commands.
+func NewApiCommitCmd() *gcli.Command {
+	return &gcli.Command{
+		Name: "commit",
+		Desc: "github commit api commands",
+		Subs: []*gcli.Command{
+			NewApiCommitLatestCmd(),
+		},
+	}
 }
 
 type apiLatestCommitOptions struct {
@@ -41,44 +43,46 @@ func (o apiLatestCommitOptions) toInput() (string, error) {
 
 var apiLatestCommitOpts = &apiLatestCommitOptions{}
 
-// ApiCommitLatestCmd gets latest commit info by github api.
-var ApiCommitLatestCmd = &gcli.Command{
-	Name: "latest",
-	Desc: "get latest commit info by github api",
-	Help: `
+// NewApiCommitLatestCmd gets latest commit info by github api.
+func NewApiCommitLatestCmd() *gcli.Command {
+	return &gcli.Command{
+		Name: "latest",
+		Desc: "get latest commit info by github api",
+		Help: `
 # Examples:
   {$fullCmd} -r owner/repo
 `,
-	Config: func(c *gcli.Command) {
-		c.StrOpt2(&apiLatestCommitOpts.RepoPath, "repo, r", "repository path, format: owner/repo")
-	},
-	Func: func(c *gcli.Command, _ []string) error {
-		repoPath, err := apiLatestCommitOpts.toInput()
-		if err != nil {
-			return err
-		}
+		Config: func(c *gcli.Command) {
+			c.StrOpt2(&apiLatestCommitOpts.RepoPath, "repo, r", "repository path, format: owner/repo")
+		},
+		Func: func(c *gcli.Command, _ []string) error {
+			repoPath, err := apiLatestCommitOpts.toInput()
+			if err != nil {
+				return err
+			}
 
-		gh := app.Ghub()
-		if strutil.IsBlank(gh.Token) {
-			return c.NewErr("github token is empty, please configure github.token or GITHUB_PA_TOKEN")
-		}
+			gh := app.Ghub()
+			if strutil.IsBlank(gh.Token) {
+				return c.NewErr("github token is empty, please configure github.token or GITHUB_PA_TOKEN")
+			}
 
-		info, err := gh.GetLatestCommit(repoPath)
-		if err != nil {
-			return err
-		}
+			info, err := gh.GetLatestCommit(repoPath)
+			if err != nil {
+				return err
+			}
 
-		show.AList("latest github commit", map[string]any{
-			"Repo":    repoPath,
-			"SHA":     info.SHA,
-			"Author":  info.Commit.Author.Name,
-			"Email":   info.Commit.Author.Email,
-			"Date":    info.Commit.Author.Date,
-			"Message": info.Commit.Message,
-			"URL":     info.HTMLURL,
-		})
-		return nil
-	},
+			show.AList("latest github commit", map[string]any{
+				"Repo":    repoPath,
+				"SHA":     info.SHA,
+				"Author":  info.Commit.Author.Name,
+				"Email":   info.Commit.Author.Email,
+				"Date":    info.Commit.Author.Date,
+				"Message": info.Commit.Message,
+				"URL":     info.HTMLURL,
+			})
+			return nil
+		},
+	}
 }
 
 type apiTagListOptions struct {
@@ -113,49 +117,51 @@ func (o apiTagListOptions) toInput() (ghapi.TagListInput, error) {
 
 var apiTagListOpts = &apiTagListOptions{}
 
-// ApiTagListCmd lists tags by github api.
-var ApiTagListCmd = &gcli.Command{
-	Name:    "list",
-	Aliases: []string{"ls"},
-	Desc:    "list tags by github api",
-	Help: `
+// NewApiTagListCmd lists tags by github api.
+func NewApiTagListCmd() *gcli.Command {
+	return &gcli.Command{
+		Name:    "list",
+		Aliases: []string{"ls"},
+		Desc:    "list tags by github api",
+		Help: `
 # Examples:
   {$fullCmd} -r owner/repo
   {$fullCmd} -r owner/repo --limit 10
 `,
-	Config: func(c *gcli.Command) {
-		c.StrOpt2(&apiTagListOpts.RepoPath, "repo, r", "repository path, format: owner/repo")
-		c.IntOpt2(&apiTagListOpts.Limit, "limit, l", "max tags count for listing")
-	},
-	Func: func(c *gcli.Command, _ []string) error {
-		in, err := apiTagListOpts.toInput()
-		if err != nil {
-			return err
-		}
-
-		gh := app.Ghub()
-		if strutil.IsBlank(gh.Token) {
-			return c.NewErr("github token is empty, please configure github.token or GITHUB_PA_TOKEN")
-		}
-
-		items, err := gh.ListTags(in)
-		if err != nil {
-			return err
-		}
-
-		if len(items) == 0 {
-			colorp.Infof("No tags found for the repository: %s\n", in.RepoPath)
-			return nil
-		}
-
-		colorp.Infof("Tags for the repository %s:\n", in.RepoPath)
-		for _, item := range items {
-			line := "  " + item.Name
-			if item.Commit.SHA != "" {
-				line += "  " + item.Commit.SHA
+		Config: func(c *gcli.Command) {
+			c.StrOpt2(&apiTagListOpts.RepoPath, "repo, r", "repository path, format: owner/repo")
+			c.IntOpt2(&apiTagListOpts.Limit, "limit, l", "max tags count for listing")
+		},
+		Func: func(c *gcli.Command, _ []string) error {
+			in, err := apiTagListOpts.toInput()
+			if err != nil {
+				return err
 			}
-			colorp.Cyanf("%s\n", line)
-		}
-		return nil
-	},
+
+			gh := app.Ghub()
+			if strutil.IsBlank(gh.Token) {
+				return c.NewErr("github token is empty, please configure github.token or GITHUB_PA_TOKEN")
+			}
+
+			items, err := gh.ListTags(in)
+			if err != nil {
+				return err
+			}
+
+			if len(items) == 0 {
+				colorp.Infof("No tags found for the repository: %s\n", in.RepoPath)
+				return nil
+			}
+
+			colorp.Infof("Tags for the repository %s:\n", in.RepoPath)
+			for _, item := range items {
+				line := "  " + item.Name
+				if item.Commit.SHA != "" {
+					line += "  " + item.Commit.SHA
+				}
+				colorp.Cyanf("%s\n", line)
+			}
+			return nil
+		},
+	}
 }

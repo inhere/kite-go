@@ -15,48 +15,52 @@ var GhOpts = struct {
 	cmdbiz.CommonOpts
 }{}
 
-// GithubCmd commands
-var GithubCmd = &gcli.Command{
-	Name:    "github",
-	Aliases: []string{"gh", "hub", "ghub"},
-	Desc:    "useful tools for use github",
-	Subs: []*gcli.Command{
-		ApiCmd,
-		DownloadAssetCmd,
-		gitcmd.NewPullRequestCmd(),
-		gitcmd.BatchCmd,
-		gitcmd.NewBranchCmd(),
-		gitcmd.NewCloneCmd(configProvider),
-		gitcmd.NewAddCommitCmd(),
-		gitcmd.NewAddCommitPush(),
-		gitcmd.NewUpdateCmd(),
-		gitcmd.NewUpdatePushCmd(),
-		gitcmd.NewOpenRemoteCmd(configProvider),
-	},
-	Config: func(c *gcli.Command) {
-		GhOpts.BindCommonFlags(c)
-		GhOpts.BindChdirFlags(c)
+// NewGithubCmd commands
+func NewGithubCmd() *gcli.Command {
+	return &gcli.Command{
+		Name:    "github",
+		Aliases: []string{"gh", "hub", "ghub"},
+		Desc:    "useful tools for use github",
+		Subs: []*gcli.Command{
+			NewApiCmd(),
+			NewDownloadAssetCmd(),
+			gitcmd.NewPullRequestCmd(),
+			gitcmd.NewBatchCmd(),
+			gitcmd.NewBranchCmd(),
+			gitcmd.NewCloneCmd(configProvider),
+			gitcmd.NewAddCommitCmd(),
+			gitcmd.NewAddCommitPush(),
+			gitcmd.NewUpdateCmd(),
+			gitcmd.NewUpdatePushCmd(),
+			gitcmd.NewOpenRemoteCmd(configProvider),
+		},
+		Config: func(c *gcli.Command) {
+			GhOpts.BindCommonFlags(c)
+			GhOpts.BindChdirFlags(c)
 
-		c.On(gcli.EvtCmdRunBefore, func(ctx *gcli.HookCtx) (stop bool) {
-			c.Infoln("[kite.GHub] Workdir:", c.WorkDir())
-			return false
-		})
+			c.On(gcli.EvtCmdRunBefore, func(ctx *gcli.HookCtx) (stop bool) {
+				c.Infoln("[kite.GHub] Workdir:", c.WorkDir())
+				return false
+			})
 
-		c.On(gcli.EvtCmdSubNotFound, gitcmd.RedirectToGitx)
-	},
+			c.On(gcli.EvtCmdSubNotFound, gitcmd.RedirectToGitx)
+		},
+	}
 }
 
 func configProvider() *gitx.Config {
 	return app.Ghub().Config
 }
 
-// DownloadAssetCmd instance
-var DownloadAssetCmd = &gcli.Command{
-	Name:    "down",
-	Desc:    "checkout an new branch for development from `source` remote",
-	Aliases: []string{"download"},
-	Func: func(c *gcli.Command, args []string) error {
+// NewDownloadAssetCmd instance
+func NewDownloadAssetCmd() *gcli.Command {
+	return &gcli.Command{
+		Name:    "down",
+		Desc:    "checkout an new branch for development from `source` remote",
+		Aliases: []string{"download"},
+		Func: func(c *gcli.Command, args []string) error {
 
-		return errorx.New("TODO")
-	},
+			return errorx.New("TODO")
+		},
+	}
 }
