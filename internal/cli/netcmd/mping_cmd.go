@@ -1,6 +1,7 @@
 package netcmd
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -200,7 +201,7 @@ func pingHostForResult(host string, count, timeout int) pingResult {
 func pingHost(host string, count, timeout int) error {
 	result := pingHostForResult(host, count, timeout)
 	if !result.success {
-		return fmt.Errorf(result.errorMessage)
+		return errors.New(result.errorMessage)
 	}
 	return nil
 }
