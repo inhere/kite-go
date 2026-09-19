@@ -41,6 +41,8 @@ type Bridge struct {
 	legacy   *kscript.Runner
 	baseDir  string
 	extras   []string
+	envNames []string
+	parseEnv bool
 	handlers map[string]kscript2.Handler
 	io       kscript2.IO
 	fallback bool
@@ -98,12 +100,20 @@ func WithLegacyFallback(enabled bool) Option {
 	return func(b *Bridge) { b.fallback = enabled }
 }
 
+// WithParseEnv enables the legacy ParseEnv behavior, where a bare $NAME that
+// matches an environment variable is replaced by its value at render time.
+// When disabled, such references are left for the shell to expand.
+func WithParseEnv(enabled bool) Option {
+	return func(b *Bridge) { b.parseEnv = enabled }
+}
+
 // New creates a bridge over an initialized or not yet initialized legacy
 // runner.
 func New(legacy *kscript.Runner, opts ...Option) *Bridge {
 	b := &Bridge{
-		legacy: legacy,
-		cache:  map[string]*entry{},
+		legacy:   legacy,
+		cache:    map[string]*entry{},
+		parseEnv: legacy != nil && legacy.ParseEnv,
 	}
 	for _, opt := range opts {
 		opt(b)
@@ -123,7 +133,7 @@ func New(legacy *kscript.Runner, opts ...Option) *Bridge {
 // Definition converts the loaded legacy configuration. The shell argument is
 // the legacy per-run shell wrapper (RunCtx.Type); an empty value keeps the
 // definition time conversion.
-func (b *Bridge) Definition(shell string, varNames []string) (kscript2.Definition, []string, error) {
+func (b *Bridge) Definition(shell string, varNames, envNames []string) (kscript2.Definition, []string, error) {
 	if err := b.legacy.InitLoad(); err != nil {
 		return kscript2.Definition{}, nil, err
 	}
@@ -142,6 +152,7 @@ func (b *Bridge) Definition(shell string, varNames []string) (kscript2.Definitio
 		BaseDir:      b.baseDir,
 		DefaultShell: shell,
 		RuntimeVars:  varNames,
+		EnvNames:     envNames,
 		Files:        files,
 	})
 	if err != nil {
@@ -152,14 +163,14 @@ func (b *Bridge) Definition(shell string, varNames []string) (kscript2.Definitio
 
 // runnerFor returns the converted runner for a shell and runtime variable set.
 // Definitions are cached because conversion and validation are pure.
-func (b *Bridge) runnerFor(shell string, varNames []string) (*entry, error) {
-	key := shell + "\x00" + strings.Join(varNames, ",")
+func (b *Bridge) runnerFor(shell string, varNames, envNames []string) (*entry, error) {
+	key := shell + "\x00" + strings.Join(varNames, ",") + "\x00" + strings.Join(envNames, ",")
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	if cached, ok := b.cache[key]; ok {
 		return cached, nil
 	}
-	def, warnings, err := b.Definition(shell, varNames)
+	def, warnings, err := b.Definition(shell, varNames, envNames)
 	if err != nil {
 		return nil, err
 	}
@@ -191,7 +202,8 @@ func (b *Bridge) TryRun(ctx context.Context, name string, args []string, lctx *k
 	workdir := b.workdir(lctx)
 	vars := b.runtimeVars(lctx, args, workdir)
 	names := b.runtimeVarNames(vars)
-	cached, err := b.runnerFor(lctx.Type, names)
+	envNames := b.envNameList(lctx)
+	cached, err := b.runnerFor(lctx.Type, names, envNames)
 	if err != nil {
 		if b.fallback {
 			slog.Warnf("kscript bridge: conversion failed, falling back to the legacy runner: %v", err)
@@ -382,4 +394,41 @@ func (b *Bridge) runtimeVarNames(vars map[string]any) []string {
 	}
 	sort.Strings(names)
 	return names
+}
+
+// envNameList lists the environment names the legacy ParseEnv option could
+// substitute. It is empty unless ParseEnv is enabled, in which case the process
+// environment, the run context environment and any configured extras are
+// included.
+func (b *Bridge) envNameList(lctx *kscript.RunCtx) []string {
+	if !b.parseEnv {
+		return nil
+	}
+	seen := map[string]bool{}
+	for _, item := range os.Environ() {
+		if index := strings.IndexByte(item, '='); index > 0 {
+			seen[item[:index]] = true
+		}
+	}
+	if lctx != nil {
+		for name := range lctx.Env {
+			seen[name] = true
+		}
+	}
+	for _, name := range b.envNames {
+		seen[name] = true
+	}
+	names := make([]string, 0, len(seen))
+	for name := range seen {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	return names
+}
+
+// WithEnvNames adds environment names for ParseEnv substitution.
+func WithEnvNames(names ...string) Option {
+	return func(b *Bridge) {
+		b.envNames = append(b.envNames, names...)
+	}
 }

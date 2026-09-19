@@ -179,18 +179,18 @@ func TestBridgeReportsConversionProblems(t *testing.T) {
 func TestBridgeDefinitionIsCachedPerShell(t *testing.T) {
 	legacy := newLegacy(t, map[string]any{"plain": "echo hi"})
 	b := New(legacy, WithBaseDir(t.TempDir()))
-	first, err := b.runnerFor("", []string{"gvs"})
+	first, err := b.runnerFor("", []string{"gvs"}, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	second, err := b.runnerFor("", []string{"gvs"})
+	second, err := b.runnerFor("", []string{"gvs"}, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if first != second {
 		t.Fatal("converted runner was not cached")
 	}
-	third, err := b.runnerFor("sh", []string{"gvs"})
+	third, err := b.runnerFor("sh", []string{"gvs"}, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
