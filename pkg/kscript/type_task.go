@@ -348,6 +348,12 @@ func (st *ScriptTask) CmdsToString(sep ...string) string {
 }
 
 func (st *ScriptTask) resolveIfExpr(vars map[string]any) (ok bool) {
+	// An empty condition means true; compiling it would panic with a syntax
+	// error. The standalone implementation rejects this crash outright.
+	if strings.TrimSpace(st.If) == "" {
+		return true
+	}
+
 	program, err := expr.Compile(st.If, expr.Env(vars))
 	if err != nil {
 		panic(err) // TODO

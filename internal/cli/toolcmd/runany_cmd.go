@@ -145,7 +145,7 @@ func runAnything(c *gcli.Command, args []string) (err error) {
 		colorp.Infof("TIP: will direct run %q as script name (by --type=script)\n", name)
 		ctx.WithNameArgs(name, args)
 		cmdbiz.ConfigScriptCtx(ctx)
-		return app.Scripts.Run(name, args, ctx)
+		return cmdbiz.RunScriptOnly(name, args, ctx)
 	}
 
 	// search ...

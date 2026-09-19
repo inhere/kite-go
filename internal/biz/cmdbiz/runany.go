@@ -54,7 +54,7 @@ func RunAny(name string, args []string, ctx *kscript.RunCtx) error {
 	ConfigScriptCtx(ctx)
 
 	// try run as script-task/script-file
-	found, err := app.Scripts.TryRun(name, args, ctx)
+	found, err := RunScriptName(name, args, ctx)
 	if found {
 		return err
 	}

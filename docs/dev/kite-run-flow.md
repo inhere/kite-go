@@ -71,8 +71,11 @@ name
  ├─②  app.Exts.Exists(name)
  │      → app.Exts.Run(name, &kiteext.RunCtx{Args: args})
  │
- ├─③  app.Scripts.TryRun(name, args, ctx)
- │      → kscript.Runner（见第3节）
+ ├─③  cmdbiz.RunScriptName(name, args, ctx)
+ │      → 按配置 script_engine 选择引擎：
+ │         legacy   → app.Scripts.TryRun()（默认，见第3节）
+ │         kscript  → pkg/kscript/bridge（独立库 github.com/gookit/kscript，
+ │                    转换失败时回退到 legacy 并记录 warning）
  │
  ├─④  (TODO) plugin
  │
@@ -80,6 +83,9 @@ name
         → cmdr.NewCmd(name, args...).FlushRun()
         未找到 → 返回错误
 ```
+
+> `script_engine` 默认 `legacy`，旧 Runner 在迁移完成前保留为回退点。
+> 迁移映射与差异见 `gookit2/kscript/docs/kite-migration.md`。
 
 ---
 
