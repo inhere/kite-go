@@ -44,6 +44,7 @@ type Bridge struct {
 	envNames []string
 	parseEnv bool
 	handlers map[string]taskrun.Handler
+	observer taskrun.Observer
 	io       taskrun.IO
 	fallback bool
 
@@ -93,6 +94,12 @@ func WithIO(io taskrun.IO) Option {
 	return func(b *Bridge) { b.io = io }
 }
 
+// WithEventObserver receives execution events instead of the default debug
+// logger. Kite binds it when it wants to render progress itself.
+func WithEventObserver(observer taskrun.Observer) Option {
+	return func(b *Bridge) { b.observer = observer }
+}
+
 // WithLegacyFallback makes TryRun fall back to the legacy runner when the
 // conversion fails, so a partially converted configuration never regresses. It
 // logs the conversion error at warning level.
@@ -127,7 +134,28 @@ func New(legacy *kscript.Runner, opts ...Option) *Bridge {
 	if b.io.Stderr == nil {
 		b.io.Stderr = os.Stderr
 	}
+	if b.observer == nil {
+		b.observer = b.logEvent
+	}
 	return b
+}
+
+// logEvent forwards library events to the Kite logger. Visibility follows the
+// host log level, which is how Kite's verbose and silent flags stay in the
+// host: the library only reports data.
+func (b *Bridge) logEvent(event taskrun.Event) {
+	switch event.Kind {
+	case taskrun.EventTaskSkipped, taskrun.EventStepSkipped:
+		slog.Debugf("kscript: %s task=%s step=%s reason=%s", event.Kind, event.Task, event.Step, event.Reason)
+	case taskrun.EventTaskFinished, taskrun.EventStepFinished:
+		if event.Err != nil {
+			slog.Warnf("kscript: %s task=%s step=%s status=%s err=%v", event.Kind, event.Task, event.Step, event.Status, event.Err)
+			return
+		}
+		slog.Debugf("kscript: %s task=%s step=%s status=%s", event.Kind, event.Task, event.Step, event.Status)
+	default:
+		slog.Debugf("kscript: %s task=%s step=%s depth=%d", event.Kind, event.Task, event.Step, event.Depth)
+	}
 }
 
 // Definition converts the loaded legacy configuration. The shell argument is
@@ -177,6 +205,9 @@ func (b *Bridge) runnerFor(shell string, varNames, envNames []string) (*entry, e
 	opts := make([]taskrun.Option, 0, len(b.handlers))
 	for name, handler := range b.handlers {
 		opts = append(opts, taskrun.WithHandler(name, handler))
+	}
+	if b.observer != nil {
+		opts = append(opts, taskrun.WithObserver(b.observer))
 	}
 	runner, err := taskrun.New(def, opts...)
 	if err != nil {
