@@ -53,7 +53,7 @@ require (
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/gookit/gsr v0.1.1 // indirect
 	github.com/gookit/rotatefile v0.3.0 // indirect
-	github.com/gookit/taskrun v0.1.0
+	github.com/gookit/taskrun v0.2.0
 	github.com/gorilla/css v1.0.1 // indirect
 	github.com/lucasb-eyer/go-colorful v1.4.0 // indirect
 	github.com/mattn/go-isatty v0.0.22 // indirect
