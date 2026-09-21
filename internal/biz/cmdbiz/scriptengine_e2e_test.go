@@ -142,7 +142,7 @@ func runTaskWithEngine(t *testing.T, engine, name string, args []string) string 
 // loaded through DefineFiles.
 func TestEnginesAgreeOnRealConfigFile(t *testing.T) {
 	legacyOut := runTaskWithEngine(t, ScriptEngineLegacy, "build", nil)
-	kscriptOut := runTaskWithEngine(t, ScriptEngineKscript, "build", nil)
+	kscriptOut := runTaskWithEngine(t, ScriptEngineTaskrun, "build", nil)
 	if legacyOut != kscriptOut {
 		t.Fatalf("engines disagree:\nlegacy:\n%s\nkscript:\n%s", legacyOut, kscriptOut)
 	}
@@ -171,7 +171,7 @@ func TestEnginesAgreeOnScriptFile(t *testing.T) {
 	file, _ := scriptFileName()
 	name := strings.TrimSuffix(file, filepath.Ext(file))
 	legacyOut := runTaskWithEngine(t, ScriptEngineLegacy, name, nil)
-	kscriptOut := runTaskWithEngine(t, ScriptEngineKscript, name, nil)
+	kscriptOut := runTaskWithEngine(t, ScriptEngineTaskrun, name, nil)
 	if legacyOut != kscriptOut {
 		t.Fatalf("engines disagree on a script file:\nlegacy:\n%s\nkscript:\n%s", legacyOut, kscriptOut)
 	}

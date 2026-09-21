@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	kscript2 "github.com/gookit/kscript"
+	"github.com/gookit/taskrun"
 
 	"github.com/inhere/kite-go/pkg/kscript"
 )
@@ -89,7 +89,7 @@ func TestRepositoryConfigConvertsCleanly(t *testing.T) {
 	if len(def.Tasks) == 0 {
 		t.Fatal("no tasks were converted")
 	}
-	converted, err := kscript2.New(def)
+	converted, err := taskrun.New(def)
 	if err != nil {
 		t.Fatalf("the converted definition did not validate: %v", err)
 	}
@@ -99,9 +99,9 @@ func TestRepositoryConfigConvertsCleanly(t *testing.T) {
 	// run, so planning uses the same view.
 	runtimeVars := b.runtimeVars(&kscript.RunCtx{}, nil, root)
 	for name := range def.Tasks {
-		plan, err := converted.Inspect(context.Background(), kscript2.Request{Task: name, Vars: runtimeVars})
+		plan, err := converted.Inspect(context.Background(), taskrun.Request{Task: name, Vars: runtimeVars})
 		if err != nil {
-			if errors.Is(err, kscript2.ErrInvalidRequest) {
+			if errors.Is(err, taskrun.ErrInvalidRequest) {
 				// A task whose arguments are required can only be planned with
 				// them; that is correct behavior, not a conversion problem.
 				requiresArgs++

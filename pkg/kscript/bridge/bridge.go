@@ -1,5 +1,5 @@
 // Package bridge runs legacy Kite script tasks through the standalone
-// github.com/gookit/kscript library.
+// github.com/gookit/taskrun library.
 //
 // The legacy runner in pkg/kscript stays in place as the rollback point. This
 // package only converts what the legacy configuration already loaded and runs a
@@ -22,9 +22,9 @@ import (
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/sysutil"
-	kscript2 "github.com/gookit/kscript"
-	"github.com/gookit/kscript/formats"
 	"github.com/gookit/slog"
+	"github.com/gookit/taskrun"
+	"github.com/gookit/taskrun/formats"
 
 	"github.com/inhere/kite-go/pkg/kscript"
 )
@@ -43,8 +43,8 @@ type Bridge struct {
 	extras   []string
 	envNames []string
 	parseEnv bool
-	handlers map[string]kscript2.Handler
-	io       kscript2.IO
+	handlers map[string]taskrun.Handler
+	io       taskrun.IO
 	fallback bool
 
 	mu    sync.Mutex
@@ -52,7 +52,7 @@ type Bridge struct {
 }
 
 type entry struct {
-	runner   *kscript2.Runner
+	runner   *taskrun.Runner
 	warnings []string
 }
 
@@ -79,17 +79,17 @@ func WithVarNames(names ...string) Option {
 }
 
 // WithHandler registers a host action for converted definitions.
-func WithHandler(name string, handler kscript2.Handler) Option {
+func WithHandler(name string, handler taskrun.Handler) Option {
 	return func(b *Bridge) {
 		if b.handlers == nil {
-			b.handlers = map[string]kscript2.Handler{}
+			b.handlers = map[string]taskrun.Handler{}
 		}
 		b.handlers[name] = handler
 	}
 }
 
 // WithIO sets the streams used for runs. It defaults to the process streams.
-func WithIO(io kscript2.IO) Option {
+func WithIO(io taskrun.IO) Option {
 	return func(b *Bridge) { b.io = io }
 }
 
@@ -133,9 +133,9 @@ func New(legacy *kscript.Runner, opts ...Option) *Bridge {
 // Definition converts the loaded legacy configuration. The shell argument is
 // the legacy per-run shell wrapper (RunCtx.Type); an empty value keeps the
 // definition time conversion.
-func (b *Bridge) Definition(shell string, varNames, envNames []string) (kscript2.Definition, []string, error) {
+func (b *Bridge) Definition(shell string, varNames, envNames []string) (taskrun.Definition, []string, error) {
 	if err := b.legacy.InitLoad(); err != nil {
-		return kscript2.Definition{}, nil, err
+		return taskrun.Definition{}, nil, err
 	}
 	extToBin := b.legacy.ExtToBin()
 	files := map[string]formats.LegacyScriptFile{}
@@ -156,7 +156,7 @@ func (b *Bridge) Definition(shell string, varNames, envNames []string) (kscript2
 		Files:        files,
 	})
 	if err != nil {
-		return kscript2.Definition{}, result.Warnings, err
+		return taskrun.Definition{}, result.Warnings, err
 	}
 	return result.Definition, result.Warnings, nil
 }
@@ -174,11 +174,11 @@ func (b *Bridge) runnerFor(shell string, varNames, envNames []string) (*entry, e
 	if err != nil {
 		return nil, err
 	}
-	opts := make([]kscript2.Option, 0, len(b.handlers))
+	opts := make([]taskrun.Option, 0, len(b.handlers))
 	for name, handler := range b.handlers {
-		opts = append(opts, kscript2.WithHandler(name, handler))
+		opts = append(opts, taskrun.WithHandler(name, handler))
 	}
-	runner, err := kscript2.New(def, opts...)
+	runner, err := taskrun.New(def, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -239,8 +239,8 @@ func (b *Bridge) Run(ctx context.Context, name string, args []string, lctx *kscr
 	return err
 }
 
-func (b *Bridge) runTask(ctx context.Context, runner *kscript2.Runner, name string, args []string, lctx *kscript.RunCtx, vars map[string]any, workdir string) error {
-	request := kscript2.Request{
+func (b *Bridge) runTask(ctx context.Context, runner *taskrun.Runner, name string, args []string, lctx *kscript.RunCtx, vars map[string]any, workdir string) error {
+	request := taskrun.Request{
 		Task:   name,
 		Args:   args,
 		Vars:   vars,
@@ -283,24 +283,24 @@ func (b *Bridge) runFile(ctx context.Context, file formats.LegacyScriptFile, nam
 		return fmt.Errorf("script file %q has no interpreter", name)
 	}
 	fileKey := "file"
-	def := kscript2.Definition{
+	def := taskrun.Definition{
 		Version: 1,
 		BaseDir: b.baseDir,
-		Files: map[string]kscript2.ScriptFile{
+		Files: map[string]taskrun.ScriptFile{
 			fileKey: {
 				Name:        fileKey,
 				Path:        file.Path,
-				Interpreter: kscript2.Interpreter{Program: program, PrefixArgs: prefix},
+				Interpreter: taskrun.Interpreter{Program: program, PrefixArgs: prefix},
 			},
 		},
-		Tasks: map[string]kscript2.Task{
+		Tasks: map[string]taskrun.Task{
 			name: {
 				Name:  name,
-				Steps: []kscript2.Step{{Name: name, File: &kscript2.FileSpec{Name: fileKey, Args: args}}},
+				Steps: []taskrun.Step{{Name: name, File: &taskrun.FileSpec{Name: fileKey, Args: args}}},
 			},
 		},
 	}
-	runner, err := kscript2.New(def)
+	runner, err := taskrun.New(def)
 	if err != nil {
 		return err
 	}

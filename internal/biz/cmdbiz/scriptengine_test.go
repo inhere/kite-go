@@ -34,8 +34,8 @@ func TestScriptEngineSelection(t *testing.T) {
 	if got := ScriptEngine(); got != ScriptEngineLegacy {
 		t.Fatalf("engine=%q", got)
 	}
-	newScriptRunner(t, map[string]any{"t": "echo hi"}, ScriptEngineKscript)
-	if got := ScriptEngine(); got != ScriptEngineKscript {
+	newScriptRunner(t, map[string]any{"t": "echo hi"}, ScriptEngineTaskrun)
+	if got := ScriptEngine(); got != ScriptEngineTaskrun {
 		t.Fatalf("engine=%q", got)
 	}
 	// An unknown value falls back to the legacy runner.
@@ -51,7 +51,7 @@ func TestRunScriptNameUsesKscriptEngine(t *testing.T) {
 			"vars": map[string]any{"who": "switched"},
 			"run":  "echo ${who}",
 		},
-	}, ScriptEngineKscript)
+	}, ScriptEngineTaskrun)
 
 	found, err := RunScriptName("tpl", nil, &kscript.RunCtx{Silent: true})
 	if err != nil {
@@ -63,7 +63,7 @@ func TestRunScriptNameUsesKscriptEngine(t *testing.T) {
 }
 
 func TestRunScriptNameReportsUnknownName(t *testing.T) {
-	newScriptRunner(t, map[string]any{"known": "echo hi"}, ScriptEngineKscript)
+	newScriptRunner(t, map[string]any{"known": "echo hi"}, ScriptEngineTaskrun)
 	found, err := RunScriptName("definitely-unknown", nil, &kscript.RunCtx{Silent: true})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -90,7 +90,7 @@ func TestRunScriptNameExecutesAndDryRunDoesNot(t *testing.T) {
 	}
 	newScriptRunner(t, map[string]any{
 		"mark": map[string]any{"type": shell, "run": script},
-	}, ScriptEngineKscript)
+	}, ScriptEngineTaskrun)
 
 	if _, err := RunScriptName("mark", nil, &kscript.RunCtx{Silent: true, DryRun: true}); err != nil {
 		t.Fatalf("dry run: %v", err)

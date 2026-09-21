@@ -5,7 +5,7 @@ import (
 	"os"
 	"sync"
 
-	kscript2 "github.com/gookit/kscript"
+	"github.com/gookit/taskrun"
 
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/pkg/kscript"
@@ -15,15 +15,15 @@ import (
 // Script engine selection.
 //
 // The legacy runner in pkg/kscript remains the default so this migration is
-// reversible: set `script_engine: kscript` in the config to run script tasks
-// through the standalone github.com/gookit/kscript library. Command aliases,
+// reversible: set `script_engine: taskrun` in the config to run script tasks
+// through the standalone github.com/gookit/taskrun library. Command aliases,
 // extensions, plugins and system command fallback are unaffected either way and
 // stay owned by Kite.
 const (
 	// ScriptEngineLegacy runs script tasks with the in-tree runner.
 	ScriptEngineLegacy = "legacy"
-	// ScriptEngineKscript runs script tasks through the standalone library.
-	ScriptEngineKscript = "kscript"
+	// ScriptEngineTaskrun runs script tasks through the standalone library.
+	ScriptEngineTaskrun = "taskrun"
 	// configScriptEngine is the configuration key that selects the engine.
 	configScriptEngine = "script_engine"
 )
@@ -38,7 +38,7 @@ var (
 func ScriptEngine() string {
 	name := app.Cfg().String(configScriptEngine, ScriptEngineLegacy)
 	switch name {
-	case ScriptEngineLegacy, ScriptEngineKscript:
+	case ScriptEngineLegacy, ScriptEngineTaskrun:
 		return name
 	default:
 		return ScriptEngineLegacy
@@ -56,7 +56,7 @@ func scriptBridgeInstance() *bridge.Bridge {
 	}
 	scriptBridge = bridge.New(app.Scripts,
 		bridge.WithLegacyFallback(true),
-		bridge.WithIO(kscript2.IO{Stdin: os.Stdin, Stdout: os.Stdout, Stderr: os.Stderr}),
+		bridge.WithIO(taskrun.IO{Stdin: os.Stdin, Stdout: os.Stdout, Stderr: os.Stderr}),
 	)
 	scriptBridgeFor = app.Scripts
 	return scriptBridge
@@ -67,7 +67,7 @@ func scriptBridgeInstance() *bridge.Bridge {
 // continue with system command fallback.
 func RunScriptName(name string, args []string, ctx *kscript.RunCtx) (found bool, err error) {
 	switch ScriptEngine() {
-	case ScriptEngineKscript:
+	case ScriptEngineTaskrun:
 		return scriptBridgeInstance().TryRun(context.Background(), name, args, ctx)
 	default:
 		return app.Scripts.TryRun(name, args, ctx)
@@ -78,7 +78,7 @@ func RunScriptName(name string, args []string, ctx *kscript.RunCtx) (found bool,
 // configured engine. It backs the explicit `kite run --type=script` path.
 func RunScriptOnly(name string, args []string, ctx *kscript.RunCtx) error {
 	switch ScriptEngine() {
-	case ScriptEngineKscript:
+	case ScriptEngineTaskrun:
 		return scriptBridgeInstance().Run(context.Background(), name, args, ctx)
 	default:
 		return app.Scripts.Run(name, args, ctx)

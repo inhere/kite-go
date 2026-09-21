@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	kscript2 "github.com/gookit/kscript"
+	"github.com/gookit/taskrun"
 
 	"github.com/inhere/kite-go/pkg/kscript"
 )
@@ -96,7 +96,7 @@ func runBridged(t *testing.T, fixture map[string]any, args []string) string {
 	var out bytes.Buffer
 	b := New(runner,
 		WithBaseDir(dir),
-		WithIO(kscript2.IO{Stdout: &out, Stderr: &out, CaptureLimit: 1 << 16}),
+		WithIO(taskrun.IO{Stdout: &out, Stderr: &out, CaptureLimit: 1 << 16}),
 	)
 	found, err := b.TryRun(context.Background(), "collect", args, &kscript.RunCtx{
 		Silent:  true,
@@ -172,7 +172,7 @@ func captureBridgeError(t *testing.T, fixture map[string]any, args []string) err
 	runner.ScriptAppDirs = nil
 	runner.ScriptAppExts = nil
 	var out bytes.Buffer
-	b := New(runner, WithBaseDir(dir), WithIO(kscript2.IO{Stdout: &out, Stderr: &out, CaptureLimit: 1 << 16}))
+	b := New(runner, WithBaseDir(dir), WithIO(taskrun.IO{Stdout: &out, Stderr: &out, CaptureLimit: 1 << 16}))
 	_, err := b.TryRun(context.Background(), "boom", args, &kscript.RunCtx{Silent: true, Workdir: dir})
 	return err
 }

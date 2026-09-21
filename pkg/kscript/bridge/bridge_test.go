@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	kscript2 "github.com/gookit/kscript"
+	"github.com/gookit/taskrun"
 
 	"github.com/inhere/kite-go/pkg/kscript"
 )
@@ -34,7 +34,7 @@ func TestBridgeRunsLegacyTask(t *testing.T) {
 		},
 	})
 	var out bytes.Buffer
-	b := New(legacy, WithIO(kscript2.IO{Stdout: &out, Stderr: &out, CaptureLimit: 1 << 16}), WithBaseDir(t.TempDir()))
+	b := New(legacy, WithIO(taskrun.IO{Stdout: &out, Stderr: &out, CaptureLimit: 1 << 16}), WithBaseDir(t.TempDir()))
 	found, err := b.TryRun(context.Background(), "tpl", nil, &kscript.RunCtx{Silent: true})
 	if err != nil {
 		t.Fatalf("TryRun: %v", err)
@@ -65,7 +65,7 @@ func TestBridgeRunsExplicitShellTask(t *testing.T) {
 		"typed": map[string]any{"type": shell, "run": script},
 	})
 	var out bytes.Buffer
-	b := New(legacy, WithIO(kscript2.IO{Stdout: &out, Stderr: &out, CaptureLimit: 1 << 16}), WithBaseDir(t.TempDir()))
+	b := New(legacy, WithIO(taskrun.IO{Stdout: &out, Stderr: &out, CaptureLimit: 1 << 16}), WithBaseDir(t.TempDir()))
 	found, err := b.TryRun(context.Background(), "typed", nil, &kscript.RunCtx{Silent: true})
 	if err != nil || !found {
 		t.Fatalf("found=%v err=%v", found, err)
@@ -80,7 +80,7 @@ func TestBridgePassesArgumentsToTask(t *testing.T) {
 		"args": "echo ${1}-${2}",
 	})
 	var out bytes.Buffer
-	b := New(legacy, WithIO(kscript2.IO{Stdout: &out, Stderr: &out, CaptureLimit: 1 << 16}), WithBaseDir(t.TempDir()))
+	b := New(legacy, WithIO(taskrun.IO{Stdout: &out, Stderr: &out, CaptureLimit: 1 << 16}), WithBaseDir(t.TempDir()))
 	if _, err := b.TryRun(context.Background(), "args", []string{"one", "two"}, &kscript.RunCtx{Silent: true}); err != nil {
 		t.Fatalf("TryRun: %v", err)
 	}
@@ -105,7 +105,7 @@ func TestBridgeRunsScriptFile(t *testing.T) {
 	legacy.ExtToBinMap = map[string]string{ext: bin}
 
 	var out bytes.Buffer
-	b := New(legacy, WithIO(kscript2.IO{Stdout: &out, Stderr: &out, CaptureLimit: 1 << 16}), WithBaseDir(t.TempDir()))
+	b := New(legacy, WithIO(taskrun.IO{Stdout: &out, Stderr: &out, CaptureLimit: 1 << 16}), WithBaseDir(t.TempDir()))
 	found, err := b.TryRun(context.Background(), "hello", nil, &kscript.RunCtx{Silent: true})
 	if err != nil || !found {
 		t.Fatalf("found=%v err=%v", found, err)
@@ -125,7 +125,7 @@ func TestBridgePassesSettingsVarsAndRuntimeVars(t *testing.T) {
 	})
 	var out bytes.Buffer
 	b := New(legacy,
-		WithIO(kscript2.IO{Stdout: &out, Stderr: &out, CaptureLimit: 1 << 16}),
+		WithIO(taskrun.IO{Stdout: &out, Stderr: &out, CaptureLimit: 1 << 16}),
 		WithBaseDir(t.TempDir()),
 		WithVarNames("gvs"),
 	)
@@ -163,7 +163,7 @@ func TestBridgeReportsConversionProblems(t *testing.T) {
 	fallback := New(legacy,
 		WithBaseDir(t.TempDir()),
 		WithLegacyFallback(true),
-		WithIO(kscript2.IO{Stdout: &out, Stderr: &out, CaptureLimit: 1 << 16}),
+		WithIO(taskrun.IO{Stdout: &out, Stderr: &out, CaptureLimit: 1 << 16}),
 	)
 	found, fallbackErr := fallback.TryRun(context.Background(), "broken", nil, &kscript.RunCtx{Silent: true})
 	if !found {
@@ -202,7 +202,7 @@ func TestBridgeDefinitionIsCachedPerShell(t *testing.T) {
 func TestBridgeDryRunDoesNotExecute(t *testing.T) {
 	legacy := newLegacy(t, map[string]any{"greet": "echo should-not-run"})
 	var out bytes.Buffer
-	b := New(legacy, WithIO(kscript2.IO{Stdout: &out, Stderr: &out, CaptureLimit: 1 << 16}), WithBaseDir(t.TempDir()))
+	b := New(legacy, WithIO(taskrun.IO{Stdout: &out, Stderr: &out, CaptureLimit: 1 << 16}), WithBaseDir(t.TempDir()))
 	if _, err := b.TryRun(context.Background(), "greet", nil, &kscript.RunCtx{Silent: true, DryRun: true}); err != nil {
 		t.Fatalf("TryRun: %v", err)
 	}
