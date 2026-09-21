@@ -1,6 +1,7 @@
 package bridge
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"os"
@@ -152,5 +153,56 @@ func TestBridgeHandlesShippedConfigExpressions(t *testing.T) {
 	brArgs := def.Tasks["br"].Steps[0].Exec.Args
 	if strings.Join(brArgs, " ") != "branch $?" {
 		t.Fatalf("br args=%v (the legacy renderer left $? untouched)", brArgs)
+	}
+}
+
+// TestRepositoryConfigShippedTaskExecutes runs one task from the configuration
+// this repository ships through the standalone library, so the migration is
+// covered end to end (load -> convert -> execute) and not only conversion and
+// planning. The chosen task is `st: git status`: it is read only and `git` is a
+// real executable on every platform, unlike the `echo` task which only works
+// where a shell resolves the name.
+func TestRepositoryConfigShippedTaskExecutes(t *testing.T) {
+	root := repoRoot(t)
+	resolve := repositoryResolver(root)
+	if _, err := os.Stat(resolve("$config/module/scripts.yml")); err != nil {
+		t.Skipf("shipped script config is unavailable: %v", err)
+	}
+
+	runner := kscript.NewRunner()
+	runner.PathResolver = resolve
+	runner.DefineFiles = []string{"$config/module/scripts.yml", "?$config/module/scripts.$os.yml"}
+	runner.ScriptDirs = []string{"$base/scripts"}
+	runner.AutoTaskFiles = nil
+	if err := runner.InitLoad(); err != nil {
+		t.Fatalf("InitLoad: %v", err)
+	}
+	b := New(runner, WithBaseDir(root), WithParseEnv(runner.ParseEnv))
+	def, _, err := b.Definition("", b.runtimeVarNames(map[string]any{}), nil)
+	if err != nil {
+		t.Fatalf("conversion failed for the shipped config: %v", err)
+	}
+	converted, err := taskrun.New(def)
+	if err != nil {
+		t.Fatalf("the converted definition did not validate: %v", err)
+	}
+
+	var out bytes.Buffer
+	result, err := converted.Run(context.Background(), taskrun.Request{
+		Task: "st",
+		Vars: b.runtimeVars(&kscript.RunCtx{}, nil, root),
+		IO:   taskrun.IO{Stdout: &out, CaptureLimit: 1 << 16},
+	})
+	if err != nil {
+		t.Fatalf("running the shipped `st` task failed: %v", err)
+	}
+	if result.Status != taskrun.StatusSucceeded {
+		t.Fatalf("status=%s", result.Status)
+	}
+	if len(result.Steps) == 0 || len(result.Steps[0].Output) == 0 {
+		t.Fatalf("the shipped task produced no captured output: %+v", result.Steps)
+	}
+	if len(out.String()) == 0 {
+		t.Fatal("the shipped task wrote nothing to the request writer")
 	}
 }
