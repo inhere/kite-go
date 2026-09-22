@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/gookit/goutil/fsutil"
-	"github.com/gookit/goutil/testutil/assert"
+	"github.com/gookit/goutil/x/assert"
 	"github.com/inhere/kite-go/pkg/quickjump"
 )
 
@@ -26,7 +26,7 @@ func TestQuickJump_Save(t *testing.T) {
 
 	ss := qj.Search([]string{"path3", "home"}, 3, true)
 	assert.NotEmpty(t, ss)
-	assert.Len(t, ss, 1)
+	assert.Require(t, assert.Len(t, ss, 1))
 	assert.Eq(t, "/path3/to/home", ss[0])
 
 	qj.AddHistory("path4/to/sub4")

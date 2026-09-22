@@ -73,8 +73,8 @@ github.com/gookit/config/v2 v2.2.9 h1:ojnE2743wU+DHKWR07x2lWjoONaSkkaTzoNozyHF1b
 github.com/gookit/config/v2 v2.2.9/go.mod h1:PgwcvKHnKZk8w/JdqvdF452OXeYnaHj72OEPhffrniA=
 github.com/gookit/easytpl v1.1.1 h1:3eECOaJMmbbNRmH51HiKlwm01uVWXPyFZfzH0OiptS0=
 github.com/gookit/easytpl v1.1.1/go.mod h1:EO9yMzhvpHTpU4CVkKsqM6TQ3Z0bsO+PaGECKjShPWs=
-github.com/gookit/gcli/v3 v3.8.1 h1:Sr4O7Js/akzNC72TlZQxOCzJC/aLewhANxcQzxbK1d4=
-github.com/gookit/gcli/v3 v3.8.1/go.mod h1:o+bAsqwwH+XdOcmWnZmZ8GJQ7A1GluqxYCQ83H63YME=
+github.com/gookit/gcli/v3 v3.8.3 h1:sLYPh8y85mc+OLGrD7xUSbHanW0WyELihFs87Ps7IRc=
+github.com/gookit/gcli/v3 v3.8.3/go.mod h1:o+bAsqwwH+XdOcmWnZmZ8GJQ7A1GluqxYCQ83H63YME=
 github.com/gookit/gitw v0.4.1 h1:wfhH9VpWNkaUjmPGiIDT+WbHLJ0q8YvkhW8qOJRPCBQ=
 github.com/gookit/gitw v0.4.1/go.mod h1:eQJqzWoznK+MEdCnhKnljhB55dd5UxVXImgUERLoeSs=
 github.com/gookit/goutil v0.8.0 h1:efZWxfesXw8+5tQfTfRMSIC6A0ax527/H+A/aIiaSrw=
