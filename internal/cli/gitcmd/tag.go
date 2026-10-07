@@ -59,7 +59,8 @@ func NewTagListCmd() *gcli.Command {
 }
 
 var tcOpts = struct {
-	Next    bool   `flag:"create next version tag;false;;n"`
+	Next    bool   `flag:"create next version tag(patch);false;;n"`
+	Bump    string `flag:"bump the version by level: major|minor|patch;false;;b"`
 	Hash    string `flag:"create tag by commit hash;false;;cid"`
 	Message string `flag:"tag message;false;;m"`
 	Version string `flag:"tag version, eg: v2.0.1;false;;v"`
@@ -74,8 +75,11 @@ func NewTagCreateCmd() *gcli.Command {
 		Desc:    "create new tag by `git tag`",
 		Help: `
 # Examples:
-  {$fullCmd} --next
-  {$fullCmd} -v v2.0.1
+  {$fullCmd}                 # bump patch version; v1.2.3 -> v1.2.4
+  {$fullCmd} -n              # same as above
+  {$fullCmd} -b minor        # bump minor version; v1.2.3 -> v1.3.0
+  {$fullCmd} --bump major    # bump major version; v1.2.3 -> v2.0.0
+  {$fullCmd} -v v2.0.1       # create tag by the specified version
 `,
 		Config: func(c *gcli.Command) {
 			c.MustFromStruct(&tcOpts, gflag.TagRuleSimple)
@@ -99,7 +103,16 @@ func NewTagCreateCmd() *gcli.Command {
 			lastVer := lp.LargestTag()
 			nextVer := tcOpts.Version
 			if len(nextVer) == 0 {
-				nextVer = gitutil.NextVersion(lastVer)
+				bumpLevel := tcOpts.Bump
+				if bumpLevel == "" && tcOpts.Next {
+					bumpLevel = "patch"
+				}
+
+				level, ok := ParseBumpLevel(bumpLevel)
+				if !ok {
+					return c.NewErrf("invalid bump level: %s, supported: major, minor, patch", tcOpts.Bump)
+				}
+				nextVer = BumpVersion(lastVer, level)
 			} else {
 				var ok bool
 				nextVer, ok = gitutil.FormatVersion(nextVer)
