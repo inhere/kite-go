@@ -14,7 +14,7 @@ require (
 	github.com/goccy/go-yaml v1.19.2
 	github.com/gofrs/uuid/v5 v5.4.0
 	github.com/gomarkdown/markdown v0.0.0-20260614204949-e08cff860f76
-	github.com/gookit/cliui v0.5.2
+	github.com/gookit/cliui v0.5.3
 	github.com/gookit/color v1.6.2-0.20260604125953-289d54c4470a
 	github.com/gookit/config/v2 v2.2.9
 	github.com/gookit/easytpl v1.1.1

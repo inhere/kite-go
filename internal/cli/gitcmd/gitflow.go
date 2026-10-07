@@ -30,10 +30,7 @@ func NewInitFlowCmd() *gcli.Command {
 
 			defRmt := cfg.DefaultRemote
 			c.Infoln("Begin config remote URLs:")
-			defUrl, err := interact.Ask("Please input URL for remote: "+defRmt, "", nil)
-			if err != nil {
-				return err
-			}
+			defUrl := interact.Ask("Please input URL for remote: "+defRmt, "", nil)
 
 			if len(defUrl) > 18 {
 				err := lr.Cmd("remote", "set-url", defRmt, defUrl).Run()
@@ -49,10 +46,7 @@ func NewInitFlowCmd() *gcli.Command {
 			}
 
 			srcRmt := cfg.SourceRemote
-			srcUrl, err := interact.Ask("Please input URL for remote: "+srcRmt, "", nil)
-			if err != nil {
-				return err
-			}
+			srcUrl := interact.Ask("Please input URL for remote: "+srcRmt, "", nil)
 
 			if len(srcUrl) > 18 {
 				op := strutil.OrCond(lr.HasSourceRemote(), "set-url", "add")
