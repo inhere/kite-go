@@ -49,7 +49,7 @@ DESCRIPTION := "Personal developer tool command application"
 
 ## build-all: cross-compile for all platforms
 build-all: dump-info build-linux build-linux-arm64 build-darwin build-darwin-arm64 build-windows latest-yaml
-	ls -ah $(DIST_DIR)
+	ls -alh $(DIST_DIR)
 
 ## dump-info: dump build info
 dump-info:
