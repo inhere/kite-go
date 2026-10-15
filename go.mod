@@ -15,7 +15,7 @@ require (
 	github.com/gofrs/uuid/v5 v5.4.0
 	github.com/gomarkdown/markdown v0.0.0-20260614204949-e08cff860f76
 	github.com/gookit/cliui v0.5.3
-	github.com/gookit/color v1.6.2
+	github.com/gookit/color v1.6.3
 	github.com/gookit/config/v2 v2.2.9
 	github.com/gookit/easytpl v1.1.1
 	github.com/gookit/gcli/v3 v3.8.3
