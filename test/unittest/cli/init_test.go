@@ -7,7 +7,7 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/sysutil"
-	"github.com/gookit/goutil/testutil/assert"
+	"github.com/gookit/goutil/x/assert"
 	"github.com/gookit/slog"
 	"github.com/inhere/kite-go/internal/app"
 	"github.com/inhere/kite-go/internal/boot"

@@ -3,7 +3,7 @@ package fscmd
 import (
 	"testing"
 
-	"github.com/gookit/goutil/testutil/assert"
+	"github.com/gookit/goutil/x/assert"
 )
 
 func Test_formatRenamePattern(t *testing.T) {
